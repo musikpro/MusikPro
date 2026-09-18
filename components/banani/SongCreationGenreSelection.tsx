@@ -1,5 +1,6 @@
 "use client";
 const t = (text: string) => text;
+import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import { demoDestination } from "@/lib/demo/navigation";
 
@@ -80,7 +81,7 @@ const secondaryNav = [
   { icon: "download", label: t("Téléchargements"), active: false },
   { icon: "heart", label: t("Favoris"), active: false },
   { icon: "trophy", label: t("Concours"), active: false },
-  { icon: "zap", label: t("Crédits"), active: false },
+  { icon: "zap", label: t("Packs"), active: false },
   { icon: "credit-card", label: t("Paiement"), active: false },
 ];
 
@@ -111,7 +112,7 @@ export default function SongCreationGenre() {
           <div className="flex items-center gap-2 mb-3">
             <Icon i="zap" size={16} className="text-primary" />
             <span className="text-sm font-bold text-foreground">
-              {t("Crédits")}
+              {t("Packs")}
             </span>
           </div>
           <p className="text-2xl font-headings font-bold text-primary mb-2">
@@ -126,7 +127,7 @@ export default function SongCreationGenre() {
             onClick={() => demo.go("/dashboard/credits")}
             className="w-full bg-primary text-primary-foreground text-xs font-semibold py-2 rounded-lg"
           >
-            {t("Acheter des crédits")}
+            {t("Acheter des chansons")}
           </button>
         </div>
 
@@ -293,7 +294,7 @@ export default function SongCreationGenre() {
                 onClick={() => demo.choose("genre", genre.name)}
                 aria-pressed={demo.choices.genre === genre.name}
                 key={genre.name}
-                className={`rounded-2xl p-6 flex flex-col items-center justify-center text-center border-2 transition-all ${
+                className={`demo-choice-card rounded-2xl p-6 flex flex-col items-center justify-center text-center border-2 transition-all ${
                   demo.choices.genre === genre.name
                     ? "border-primary bg-secondary"
                     : "border-border bg-card hover:border-primary/30"
@@ -305,6 +306,7 @@ export default function SongCreationGenre() {
                       : "0 2px 8px rgba(0,0,0,0.06)",
                 }}
               >
+                <SelectionMark selected={demo.choices.genre === genre.name} />
                 <div
                   className={`w-16 h-16 ${genre.color} rounded-2xl flex items-center justify-center mb-3`}
                 >

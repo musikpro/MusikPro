@@ -38,7 +38,7 @@ type KitConfig = {
 };
 
 function exists(rel: string) {
-  return fs.existsSync(path.join(process.cwd(), rel));
+  return fs.existsSync(path.join(/* turbopackIgnore: true */ process.cwd(), rel));
 }
 
 function readConfig(): KitConfig | null {

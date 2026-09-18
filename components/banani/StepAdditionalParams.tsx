@@ -1,5 +1,7 @@
 "use client";
 const t = (text: string) => text;
+import SelectionMark from "./SelectionMark";
+import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
@@ -39,7 +41,8 @@ export default function StepAdditionalParams() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          🎂 {demo.choices.occasion} • 🚀 {demo.choices.mood}
+          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion} •
+          🚀 {demo.choices.mood}
         </span>
       </div>
 
@@ -71,8 +74,9 @@ export default function StepAdditionalParams() {
                 onClick={() => demo.choose("language", lang.name)}
                 aria-pressed={demo.choices.language === lang.name}
                 key={lang.name}
-                className="bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
+                className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
               >
+                <SelectionMark selected={demo.choices.language === lang.name} />
                 <span className="text-lg">{lang.flag}</span>
                 <p className="text-sm font-semibold text-foreground">
                   {lang.name}
@@ -100,8 +104,9 @@ export default function StepAdditionalParams() {
                 onClick={() => demo.choose("voice", voice.text)}
                 aria-pressed={demo.choices.voice === voice.text}
                 key={voice.text}
-                className="bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
+                className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
               >
+                <SelectionMark selected={demo.choices.voice === voice.text} />
                 <span className="text-lg">{voice.emoji}</span>
                 <p className="text-sm font-semibold text-foreground">
                   {voice.text}
@@ -176,7 +181,7 @@ export default function StepAdditionalParams() {
           {t("Générer les paroles")} <Icon i="arrow-right" size={18} />
         </button>
         <p className="text-xs text-muted-foreground text-center mt-2">
-          {t("Cela utilisera 1 crédit")}
+          {t("Une chanson de votre pack")}
         </p>
       </div>
     </div>

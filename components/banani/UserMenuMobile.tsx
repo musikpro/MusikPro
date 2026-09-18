@@ -20,7 +20,7 @@ const menuItems = [
     sub: t("Chansons hors ligne"),
   },
   { icon: "bell", label: t("Notifications"), sub: t("Gérer les alertes") },
-  { icon: "zap", label: t("Crédits"), sub: t("Il te reste 3 chansons") },
+  { icon: "zap", label: t("Packs"), sub: t("Il te reste 3 chansons") },
   {
     icon: "help-circle",
     label: t("Aide & FAQ"),

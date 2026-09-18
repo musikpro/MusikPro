@@ -142,7 +142,10 @@ export default function PaymentScreen() {
               {demo.pack.name}
             </span>
             <span className="text-sm font-semibold text-foreground">
-              {demo.pack.credits ?? "Illimité"} crédits fictifs
+              {demo.pack.songs === null
+                ? "Chansons illimitées"
+                : `${demo.pack.songs} chansons`}{" "}
+              · pack de démonstration
             </span>
           </div>
 

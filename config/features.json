@@ -61,7 +61,8 @@
         "lib/billing/reconcile.ts",
         "app/api/payments/checkout/route.ts",
         "app/api/webhooks/[provider]/route.ts",
-        "lib/payments/health.ts"
+        "lib/payments/health.ts",
+        "lib/validation/payment-providers.ts"
       ],
       "routes": ["/api/payments/checkout", "/api/webhooks/[provider]"],
       "removalComplexity": "with-care",

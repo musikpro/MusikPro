@@ -35,7 +35,7 @@ export default function MobileTopBar({ credits = 3 }) {
         <button
           type="button"
           data-demo-ready
-          aria-label="Voir mes crédits"
+          aria-label="Voir mes chansons disponibles"
           onClick={() => demo.go("/dashboard/credits")}
           className="flex items-center gap-1 bg-secondary px-3 py-1.5 rounded-xl"
         >

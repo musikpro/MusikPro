@@ -23,6 +23,20 @@ export default function DemoField({
   const props = {
     id: `demo-${name}`,
     "aria-label": label,
+    autoComplete:
+      type === "email"
+        ? "email"
+        : type === "tel"
+          ? "tel-national"
+          : name.endsWith("name")
+            ? "name"
+            : undefined,
+    inputMode:
+      type === "tel"
+        ? ("tel" as const)
+        : type === "email"
+          ? ("email" as const)
+          : undefined,
     value: demo.fields[name] ?? "",
     placeholder,
     maxLength,

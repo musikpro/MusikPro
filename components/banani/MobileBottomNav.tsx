@@ -15,14 +15,14 @@ const items = [
   { icon: "compass", label: t("Découvrir"), active: false },
   { icon: "plus", label: t("Créer"), active: false, isCenter: true },
   { icon: "music", label: t("Mes chansons"), active: false },
-  { icon: "zap", label: t("Crédits"), badge: "3", active: false },
+  { icon: "zap", label: t("Packs"), badge: "3", active: false },
 ];
 
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
   const demo = useDemo();
   const pathname = usePathname();
   const currentTab = pathname.startsWith("/dashboard/credits")
-    ? "Crédits"
+    ? "Packs"
     : pathname.startsWith("/dashboard/discover")
       ? "Découvrir"
       : pathname.startsWith("/dashboard/songs")
@@ -33,7 +33,8 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
             ? "Accueil"
             : activeTab;
   return (
-    <div
+    <nav
+      aria-label="Navigation mobile"
       className="banani-bottom-nav bg-card border border-border rounded-xl mx-4 mb-4 px-2 py-2 flex items-center justify-around"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}
     >
@@ -87,6 +88,6 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
           </button>
         );
       })}
-    </div>
+    </nav>
   );
 }

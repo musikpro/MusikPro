@@ -74,7 +74,7 @@ export default function ContactSupportScreen() {
               value={demo.fields["support.category"]}
               onChange={(e) => demo.field("support.category", e.target.value)}
             >
-              {["Problème technique", "Compte", "Crédits"].map((s) => (
+              {["Problème technique", "Compte", "Packs"].map((s) => (
                 <option key={s}>{s}</option>
               ))}
             </select>

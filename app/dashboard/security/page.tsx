@@ -8,14 +8,16 @@ export default async function Page({
 }) {
   const s = await requireUser();
   const q = await searchParams;
-  const enabled = Boolean((s.user as any).twoFactorEnabled);
+  const enabled = Boolean(
+    (s.user as { twoFactorEnabled?: boolean }).twoFactorEnabled,
+  );
   return (
     <main className="shell">
       <DashboardNav />
       {q.required && (
         <p className="notice">
           La politique de sécurité actuelle exige le 2FA pour accéder à
-          l'administration.
+          l’administration.
         </p>
       )}
       <h1>Sécurité du compte</h1>

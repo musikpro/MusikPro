@@ -125,6 +125,7 @@
     "zod": "4.5.4"
   },
   "devDependencies": {
+    "@eslint/compat": "2.1.1",
     "@types/node": "26.5.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
@@ -134,7 +135,19 @@
     "eslint-config-next": "16.3.4",
     "prettier": "3.9.6",
     "prisma": "6.16.2",
-    "typescript": "7.0.2",
+    "typescript": "5.9.3",
     "vitest": "4.1.11"
+  },
+  "overrides": {
+    "fedapay": {
+      "axios": "1.20.0"
+    },
+    "@prisma/config": {
+      "deepmerge-ts": "8.0.2",
+      "effect": "3.22.2"
+    },
+    "@esbuild-kit/core-utils": {
+      "esbuild": "0.28.2"
+    }
   }
 }

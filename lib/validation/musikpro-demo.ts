@@ -24,7 +24,7 @@ export const demoProfileSchema = z.object({
 });
 export const demoSupportSchema = z.object({
   subject: z.string().trim().min(2).max(150),
-  category: z.enum(["Problème technique", "Compte", "Crédits"]),
+  category: z.enum(["Problème technique", "Compte", "Packs"]),
   message: z.string().trim().min(10).max(5000),
   email: z.email().max(254),
   phone: z

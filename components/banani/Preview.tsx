@@ -64,7 +64,7 @@ export default function Preview({ children }: { children: ReactNode }) {
                 ["Modifier le profil", "/profile/edit"],
                 ["Paramètres", "/settings"],
                 ["Réglages des notifications", "/settings/notifications"],
-                ["Crédits", "/credits"],
+                ["Packs", "/credits"],
                 ["Commande simulée", "/payment-preview"],
                 ["Redirection simulée", "/payment-preview/chariow"],
                 ["Confirmation simulée", "/payment-preview/confirmed"],

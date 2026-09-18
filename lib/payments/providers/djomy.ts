@@ -5,7 +5,9 @@ export class DjomyProvider extends HttpPaymentProvider {
   id = "djomy" as const;
 
   async createCheckout(_input: CheckoutInput): Promise<CheckoutResult> {
-    throw new Error("djomy adapter is scaffolded but requires your merchant credentials and final API mapping before production use.");
+    throw new Error(
+      "djomy adapter is scaffolded but requires your merchant credentials and final API mapping before production use.",
+    );
   }
 
   async verifyPayment(_externalId: string): Promise<CheckoutResult> {
@@ -16,7 +18,9 @@ export class DjomyProvider extends HttpPaymentProvider {
     return false;
   }
 
-  async parseWebhook(_request: Request): Promise<{ id: string; type: string; payload: unknown }> {
+  async parseWebhook(
+    _request: Request,
+  ): Promise<{ id: string; type: string; payload: unknown }> {
     throw new Error("djomy webhook parser not configured yet.");
   }
 }

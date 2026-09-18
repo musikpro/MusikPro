@@ -1,5 +1,7 @@
 "use client";
 const t = (text: string) => text;
+import { matchesSongSearch } from "@/lib/demo/search";
+import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
 
 import { useState } from "react";
@@ -54,6 +56,9 @@ const libraryTrends = [
 export default function DiscoverLibraryScreen() {
   const demo = useDemo();
   const [search, setSearch] = useState("");
+  const results = libraryTrends.filter((song) =>
+    matchesSongSearch(search, song.title, song.style),
+  );
   return (
     <div className="bg-background flex flex-col">
       <MobileTopBar credits={3} />
@@ -70,66 +75,61 @@ export default function DiscoverLibraryScreen() {
 
       {/* Search Bar */}
       <div className="px-4 pb-4">
-        <div className="border border-border rounded-lg px-3 py-2.5 bg-input flex items-center gap-2">
-          <Icon i="search" size={16} className="text-muted-foreground" />
-          <input
-            aria-label="Rechercher dans la bibliothèque"
-            className="demo-field text-sm"
-            placeholder="Rechercher une chanson..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          label="Rechercher dans la bibliothèque"
+        />
       </div>
 
+      <p
+        role="status"
+        aria-live="polite"
+        className="px-4 pb-3 text-xs text-muted-foreground"
+      >
+        {results.length} chanson{results.length !== 1 ? "s" : ""} trouvée
+        {results.length !== 1 ? "s" : ""}
+      </p>
       {/* Library Grid */}
       <div className="flex-1 px-4 pb-6 overflow-y-auto">
         <div className="grid grid-cols-2 gap-3">
-          {!libraryTrends.some((s) =>
-            s.title.toLowerCase().includes(search.toLowerCase()),
-          ) && (
+          {results.length === 0 && (
             <p role="status" className="text-sm text-muted-foreground">
               Aucune chanson trouvée.
             </p>
           )}
-          {libraryTrends
-            .filter((s) => s.title.toLowerCase().includes(search.toLowerCase()))
-            .map((song) => (
-              <div
-                key={song.title}
-                className="rounded-xl overflow-hidden relative group"
-              >
-                <Image ar="1:1" prompt={song.img} className="w-full" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-between p-3">
-                  <div className="text-left">
-                    <span className="inline-block bg-primary/90 text-primary-foreground text-xs font-bold px-2 py-1 rounded-lg">
-                      {song.style}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm mb-1">
-                      {song.title}
-                    </p>
-                    <p className="text-white/70 text-xs flex items-center gap-1">
-                      <Icon i="headphones" size={10} /> {song.plays}
-                    </p>
-                  </div>
+          {results.map((song) => (
+            <div
+              key={song.title}
+              className="rounded-xl overflow-hidden relative group"
+            >
+              <Image ar="1:1" prompt={song.img} className="w-full" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-between p-3">
+                <div className="text-left">
+                  <span className="inline-block bg-primary/90 text-primary-foreground text-xs font-bold px-2 py-1 rounded-lg">
+                    {song.style}
+                  </span>
                 </div>
-                <button
-                  type="button"
-                  data-demo-ready="true"
-                  onClick={() => demo.openSong(song.title)}
-                  aria-label="Écouter la chanson"
-                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90"
-                >
-                  <Icon
-                    i="play"
-                    size={12}
-                    className="text-primary-foreground"
-                  />
-                </button>
+                <div>
+                  <p className="text-white font-bold text-sm mb-1">
+                    {song.title}
+                  </p>
+                  <p className="text-white/70 text-xs flex items-center gap-1">
+                    <Icon i="headphones" size={10} /> {song.plays}
+                  </p>
+                </div>
               </div>
-            ))}
+              <button
+                type="button"
+                data-demo-ready="true"
+                onClick={() => demo.openSong(song.title)}
+                aria-label="Écouter la chanson"
+                className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90"
+              >
+                <Icon i="play" size={12} className="text-primary-foreground" />
+              </button>
+            </div>
+          ))}
         </div>
       </div>
 

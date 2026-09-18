@@ -3,6 +3,7 @@ const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
+import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { demoStorySchema } from "@/lib/validation/musikpro-demo";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
@@ -39,7 +40,7 @@ export default function StepStory() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          🎂 {demo.choices.occasion}
+          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
         </span>
       </div>
 

@@ -96,7 +96,7 @@ export default function DesktopWorkspace({
             <section className="workspace-context-card workspace-credit-card">
               <h2>
                 <Icon i="zap" size={18} />
-                Crédits
+                Chansons disponibles
               </h2>
               <strong className="workspace-credit-number">3</strong>
               <p>chansons restantes · démonstration</p>

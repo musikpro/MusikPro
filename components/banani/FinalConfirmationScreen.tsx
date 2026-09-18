@@ -1,5 +1,6 @@
 "use client";
 const t = (text: string) => text;
+import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 7 — Générer ma chanson";
@@ -35,7 +36,8 @@ export default function FinalConfirmationScreen() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          🎂 {demo.choices.occasion} • 🎵 {demo.choices.genre}
+          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion} •
+          🎵 {demo.choices.genre}
         </span>
       </div>
 
@@ -58,7 +60,7 @@ export default function FinalConfirmationScreen() {
               {t("Occasion")}
             </label>
             <p className="text-base font-semibold text-foreground mt-1">
-              🎂 {demo.choices.occasion}
+              {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
             </p>
           </div>
           <div className="border-t border-border pt-3">

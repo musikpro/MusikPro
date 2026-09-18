@@ -1,3 +1,4 @@
+import { paymentSummarySchema } from "@/lib/validation/payment-providers";
 import { and, eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { getServiceDb } from "@/db";
@@ -9,7 +10,10 @@ import {
 } from "@/db/schema";
 import { getPaymentProvider } from "@/lib/payments";
 
-function rawReference(raw: any): string | undefined {
+function rawReference(input: unknown): string | undefined {
+  const parsed = paymentSummarySchema.safeParse(input);
+  if (!parsed.success) throw new Error("Invalid payment provider summary");
+  const raw = parsed.data;
   const data = raw?.data ?? raw;
   const meta =
     data?.custom_metadata ??
@@ -44,7 +48,10 @@ function sameMoney(a: number, b: number, currency: string) {
   return moneyMinorUnits(a, currency) === moneyMinorUnits(b, currency);
 }
 
-function paidDate(raw: any, fallback: Date) {
+function paidDate(input: unknown, fallback: Date) {
+  const parsed = paymentSummarySchema.safeParse(input);
+  if (!parsed.success) throw new Error("Invalid payment provider summary");
+  const raw = parsed.data;
   const data = raw?.data ?? raw;
   const candidates = [
     data?.settled_at,

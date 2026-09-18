@@ -18,7 +18,7 @@ for (const requiredIgnore of [".env.production", ".env.development", ".env.test"
   if (!gitignoreText.split(/\r?\n/).includes(requiredIgnore)) errors.push(`.gitignore must explicitly ignore ${requiredIgnore}`);
 }
 const paydunyaText = fs.readFileSync("lib/payments/providers/paydunya.ts", "utf8");
-if (!paydunyaText.includes("money: Number.isFinite(normalized.amount)")) errors.push("PayDunya verifyPayment must return normalized money for reconciliation");
+if (!/money:\s*Number\.isFinite\(normalized\.amount\)/.test(paydunyaText)) errors.push("PayDunya verifyPayment must return normalized money for reconciliation");
 const providerBaseText = fs.readFileSync("lib/payments/provider-base.ts", "utf8");
 if (providerBaseText.includes("JSON.stringify(body)")) errors.push("Provider HTTP errors must not persist raw provider bodies");
 const webhookText = fs.readFileSync("lib/billing/webhook.ts", "utf8");
@@ -139,6 +139,28 @@ if (!emailText.includes('NODE_ENV === "production"') || !emailText.includes("Res
 if (!setupText.includes("emailPasswordEnabled") || !setupText.includes("googleAuth")) errors.push("Setup must prevent an auth configuration with neither email/password nor Google OAuth");
 
 if (!fs.existsSync(".agents/skills/computer-use/SKILL.md") || !pkgJson.scripts?.["computer-use:check"] || !pkgJson.scripts?.["computer-use:mark"]) errors.push("Computer Use / Browser Tools workflow missing");
+// Inspect actual Next.js deployment traces after a build, rather than relying
+// only on .gitignore: file tracing can otherwise package local MCP credentials.
+function checkDeploymentTraces(dir) {
+  if (!fs.existsSync(dir)) return;
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const file = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) checkDeploymentTraces(file);
+    else if (entry.name.endsWith(".nft.json")) {
+      try {
+        const trace = JSON.parse(fs.readFileSync(file, "utf8"));
+        if (!Array.isArray(trace.files)) throw new Error("Invalid trace manifest");
+        if (trace.files.some((value) => typeof value === "string" && /(?:^|\/)(?:\.codex|\.agents|\.git)(?:\/|$)|(?:^|\/)\.env(?:\.|$)/.test(value.replaceAll("\\", "/")))) {
+          errors.push(`${file}: deployment trace includes local credentials/tooling`);
+        }
+      } catch {
+        errors.push(`${file}: deployment trace cannot be inspected`);
+      }
+    }
+  }
+}
+checkDeploymentTraces(".next/server");
+
 if (warnings.length) console.warn(warnings.map(w=>`WARNING: ${w}`).join("\n"));
 if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
 console.log(`Security preflight: ${kitVersionLabel} checks passed.`);

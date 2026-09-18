@@ -10,6 +10,7 @@ const destinations: Record<string, string> = {
   Favoris: "/dashboard/favorites",
   "Mes Favoris": "/dashboard/favorites",
   Notifications: "/dashboard/notifications",
+  Packs: "/dashboard/credits",
   Crédits: "/dashboard/credits",
   Paiement: "/dashboard/payment-preview",
   Paiements: "/dashboard/payment-preview",

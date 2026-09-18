@@ -8,7 +8,6 @@ import { requestId, withRequestId } from "@/lib/observability/request-id";
 
 const log = createLogger("payment-webhook");
 
-
 export const runtime = "nodejs";
 
 const MAX_WEBHOOK_BYTES = 1_000_000;
@@ -50,39 +49,93 @@ function replayRequest(request: Request, body: Uint8Array) {
   return new Request(request.url, {
     method: "POST",
     headers: new Headers(request.headers),
-    body,
+    body: new Uint8Array(body).buffer,
   });
 }
 
-export async function POST(request: Request, { params }: { params: Promise<{ provider: string }> }) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ provider: string }> },
+) {
   const rid = requestId(request);
   const rawBody = await readLimitedBody(request);
-  if (!rawBody) return new Response("Payload too large", { status: 413, headers: withRequestId(undefined, rid) });
+  if (!rawBody)
+    return new Response("Payload too large", {
+      status: 413,
+      headers: withRequestId(undefined, rid),
+    });
 
   const { provider: providerId } = await params;
   if (!providerEnvironmentConfigured(providerId as PaymentProviderId)) {
-    return new Response("Not found", { status: 404, headers: withRequestId(undefined, rid) });
+    return new Response("Not found", {
+      status: 404,
+      headers: withRequestId(undefined, rid),
+    });
   }
   let provider;
-  try { provider = getPaymentProvider(providerId); }
-  catch { return new Response("Unknown provider", { status: 404, headers: withRequestId(undefined, rid) }); }
+  try {
+    provider = getPaymentProvider(providerId);
+  } catch {
+    return new Response("Unknown provider", {
+      status: 404,
+      headers: withRequestId(undefined, rid),
+    });
+  }
 
   const valid = await provider.verifyWebhook(replayRequest(request, rawBody));
   if (!valid) {
-    await writeAuditLog({ action: "payment.webhook.invalid_signature", metadata: { provider: providerId } });
-    log.warn("Invalid webhook signature", { provider: providerId, requestId: rid });
-    return new Response("Invalid signature", { status: 401, headers: withRequestId(undefined, rid) });
+    await writeAuditLog({
+      action: "payment.webhook.invalid_signature",
+      metadata: { provider: providerId },
+    });
+    log.warn("Invalid webhook signature", {
+      provider: providerId,
+      requestId: rid,
+    });
+    return new Response("Invalid signature", {
+      status: 401,
+      headers: withRequestId(undefined, rid),
+    });
   }
 
   try {
     const event = await provider.parseWebhook(replayRequest(request, rawBody));
     const result = await processPaymentWebhook(provider, event);
-    await writeAuditLog({ action: "payment.webhook.processed", metadata: { provider: providerId, eventId: event.id, type: event.type, ...result } });
-    log.info("Webhook processed", { provider: providerId, eventId: event.id, type: event.type, requestId: rid });
-    return Response.json({ received: true, eventId: event.id, ...result }, { headers: withRequestId({ "Cache-Control": "no-store" }, rid) });
+    await writeAuditLog({
+      action: "payment.webhook.processed",
+      metadata: {
+        provider: providerId,
+        eventId: event.id,
+        type: event.type,
+        ...result,
+      },
+    });
+    log.info("Webhook processed", {
+      provider: providerId,
+      eventId: event.id,
+      type: event.type,
+      requestId: rid,
+    });
+    return Response.json(
+      { received: true, eventId: event.id, ...result },
+      { headers: withRequestId({ "Cache-Control": "no-store" }, rid) },
+    );
   } catch (error) {
-    await writeAuditLog({ action: "payment.webhook.processing_failed", metadata: { provider: providerId, error: error instanceof Error ? error.message.slice(0, 200) : "unknown" } });
-    log.error("Webhook processing failed", { provider: providerId, requestId: rid, error: error instanceof Error ? error.message : "unknown" });
-    return new Response("Webhook processing failed", { status: 500, headers: withRequestId(undefined, rid) });
+    await writeAuditLog({
+      action: "payment.webhook.processing_failed",
+      metadata: {
+        provider: providerId,
+        error: error instanceof Error ? error.message.slice(0, 200) : "unknown",
+      },
+    });
+    log.error("Webhook processing failed", {
+      provider: providerId,
+      requestId: rid,
+      error: error instanceof Error ? error.message : "unknown",
+    });
+    return new Response("Webhook processing failed", {
+      status: 500,
+      headers: withRequestId(undefined, rid),
+    });
   }
 }

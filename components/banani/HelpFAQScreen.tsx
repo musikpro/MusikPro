@@ -24,9 +24,9 @@ const faqs = [
       'Oui, vous pouvez télécharger vos chansons générées au format MP3 directement depuis votre bibliothèque "Mes chansons".',
   },
   {
-    question: "Comment fonctionne le système de crédit ?",
+    question: "Comment fonctionnent les packs de chansons ?",
     answer:
-      "Chaque création de chanson consomme un crédit. Vous obtenez des crédits avec votre abonnement et vous pouvez en acheter des supplémentaires selon vos besoins.",
+      "Choisissez un pack de chansons : Découverte inclut 2 chansons et Populaire inclut 5 chansons. Le récapitulatif affiche le nombre de chansons incluses avant de continuer.",
   },
   {
     question: "Puis-je partager mes chansons ?",

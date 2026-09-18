@@ -1,5 +1,6 @@
 "use client";
 const t = (text: string) => text;
+import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 1 — Choisir une occasion";
@@ -7,17 +8,7 @@ export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
-
-const occasions = [
-  { emoji: "🎂", label: "Anniversaire", id: "birthday" },
-  { emoji: "💕", label: "Amour", id: "love" },
-  { emoji: "🎓", label: "Graduation", id: "graduation" },
-  { emoji: "🎉", label: "Fête", id: "party" },
-  { emoji: "💔", label: "Séparation", id: "breakup" },
-  { emoji: "🙏", label: "Gratitude", id: "gratitude" },
-  { emoji: "🌙", label: "Sérénité", id: "serenity" },
-  { emoji: "🔥", label: "Motivation", id: "motivation" },
-];
+import { demoOccasions } from "@/lib/demo/musikpro-data";
 
 export default function SongCreationStep1Mobile() {
   const demo = useDemo();
@@ -56,15 +47,18 @@ export default function SongCreationStep1Mobile() {
       {/* Occasions Grid */}
       <div className="flex-1 px-4 pb-4 overflow-y-auto">
         <div className="grid grid-cols-2 gap-3">
-          {occasions.map((occasion) => (
+          {demoOccasions.map((occasion) => (
             <button
               type="button"
               data-demo-ready="true"
               onClick={() => demo.choose("occasion", occasion.label)}
               aria-pressed={demo.choices.occasion === occasion.label}
               key={occasion.id}
-              className="bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center"
+              className="demo-choice-card bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center"
             >
+              <SelectionMark
+                selected={demo.choices.occasion === occasion.label}
+              />
               <span className="text-3xl">{occasion.emoji}</span>
               <p className="text-sm font-semibold text-foreground">
                 {occasion.label}

@@ -1,5 +1,6 @@
 "use client";
 const t = (text: string) => text;
+import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import DemoToggle from "./DemoToggle";
 import { demoDestination } from "@/lib/demo/navigation";
@@ -59,8 +60,9 @@ export default function SettingsMobile() {
                   onClick={() => {
                     demo.choose("theme", "Clair");
                   }}
-                  className="demo-theme-choice flex-1 py-2.5 bg-input border border-border text-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                  className="demo-choice-card demo-theme-choice flex-1 py-2.5 bg-input border border-border text-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
                 >
+                  <SelectionMark selected={demo.choices.theme === "Clair"} />
                   <Icon i="sun" size={13} />
                   {t("Clair")}
                 </button>
@@ -71,8 +73,9 @@ export default function SettingsMobile() {
                   onClick={() => {
                     demo.choose("theme", "Sombre");
                   }}
-                  className="demo-theme-choice flex-1 py-2.5 bg-input border border-border text-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                  className="demo-choice-card demo-theme-choice flex-1 py-2.5 bg-input border border-border text-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
                 >
+                  <SelectionMark selected={demo.choices.theme === "Sombre"} />
                   <Icon i="moon" size={13} />
                   {t("Sombre")}
                 </button>
@@ -83,8 +86,9 @@ export default function SettingsMobile() {
                   onClick={() => {
                     demo.choose("theme", "Auto");
                   }}
-                  className="demo-theme-choice flex-1 py-2.5 bg-input border border-border text-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
+                  className="demo-choice-card demo-theme-choice flex-1 py-2.5 bg-input border border-border text-foreground rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5"
                 >
+                  <SelectionMark selected={demo.choices.theme === "Auto"} />
                   <Icon i="monitor" size={13} />
                   {t("Auto")}
                 </button>
@@ -140,8 +144,11 @@ export default function SettingsMobile() {
                 onClick={() => demo.choose("appLanguage", lang.name)}
                 aria-pressed={demo.choices.appLanguage === lang.name}
                 key={lang.code}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg ${demo.choices.appLanguage === lang.name ? "bg-secondary border border-primary/15" : "bg-input border border-border"}`}
+                className={`demo-choice-card w-full flex items-center justify-between px-3 py-2.5 rounded-lg ${demo.choices.appLanguage === lang.name ? "bg-secondary border border-primary/15" : "bg-input border border-border"}`}
               >
+                <SelectionMark
+                  selected={demo.choices.appLanguage === lang.name}
+                />
                 <span
                   className={`text-sm font-semibold ${demo.choices.appLanguage === lang.name ? "text-primary" : "text-foreground"}`}
                 >

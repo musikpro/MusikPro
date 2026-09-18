@@ -251,7 +251,7 @@ export default function UserDashboardDesktop() {
               <div className="flex items-center gap-2 mb-4">
                 <Icon i="zap" size={20} className="text-primary" />
                 <span className="text-lg font-bold text-foreground">
-                  {t("Crédits")}
+                  {t("Packs")}
                 </span>
               </div>
               <p className="text-5xl font-headings font-bold text-primary mb-2">
@@ -264,10 +264,10 @@ export default function UserDashboardDesktop() {
                 type="button"
                 data-demo-ready
                 onClick={() => demo.go("/dashboard/credits")}
-                aria-label="Acheter des crédits"
+                aria-label="Acheter des chansons"
                 className="w-full bg-primary text-primary-foreground font-semibold py-3 rounded-full hover:shadow-lg transition-shadow"
               >
-                {t("Acheter des crédits")}
+                {t("Acheter des chansons")}
               </button>
             </div>
 

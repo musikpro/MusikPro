@@ -311,3 +311,10 @@ Avant l’implémentation d’un nouvel import : lire `DESIGN.md` et ce document
 ### Défilement du menu bureau
 
 La sidebar utilise le fond `input` pour se distinguer du contenu. Aucun scroll interne ni scrollbar/flèches : elle défile avec le document puis devient sticky à `min(0, hauteur viewport − hauteur menu)` afin de conserver son dernier élément visible. Un ResizeObserver réévalue ce seuil lors des changements de dimensions ; aucun listener de scroll permanent. `align-self: flex-start` évite son étirement sur toute la hauteur du dashboard. Les menus plus courts que l’écran restent ancrés en haut.
+
+### Choix et recherches interactifs
+Les cartes sélectionnées utilisent un fond secondaire, une bordure primaire orange renforcée et une coche fonctionnelle. Les packs ajoutent le libellé « Sélectionné ». La recherche filtre immédiatement les données de démonstration par titre, style et occasion lorsque disponible ; elle ignore la casse et les accents, combine les mots, annonce le nombre de résultats et propose un effacement accessible.
+Les quantités des packs sont centralisées dans `demoSongPacks` : Découverte 2 chansons, Populaire 5 chansons à 2 000 FCFA, Maxi 12 chansons bonus inclus, Illimité un mois. Ces données de démonstration ne configurent aucun paiement réel.
+
+### Ergonomie mobile — contrôle Phase 11
+À moins de 768 px, les vrais champs de texte sont à 16 px pour limiter le zoom automatique iOS. Les cartes de choix font au minimum 44 px de hauteur. Les thèmes utilisent un marqueur compact en ligne et des boutons de largeur égale. Toute icône superposée à une zone éditable doit avoir un espace réservé dans le champ. La navigation du bas est un landmark `nav` nommé « Navigation mobile ».

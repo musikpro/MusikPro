@@ -12,7 +12,7 @@ import {
   demoLibrarySongs,
   demoDiscoverSongs,
   demoFavoriteSongs,
-  demoCreditPacks,
+  demoSongPacks,
   demoLyrics,
 } from "@/lib/demo/musikpro-data";
 
@@ -236,7 +236,7 @@ function useDemoState() {
     setPlaying,
     packIndex,
     setPackIndex,
-    pack: demoCreditPacks[packIndex],
+    pack: demoSongPacks[packIndex],
     paymentConfirmed,
     setPaymentConfirmed,
     generateSong,

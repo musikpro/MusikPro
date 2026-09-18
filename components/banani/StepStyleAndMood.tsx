@@ -1,5 +1,7 @@
 "use client";
 const t = (text: string) => text;
+import SelectionMark from "./SelectionMark";
+import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 3 — Choisis le style et l'ambiance";
@@ -36,7 +38,7 @@ export default function StepStyleAndMood() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          🎂 {demo.choices.occasion}
+          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
         </span>
       </div>
 
@@ -71,8 +73,9 @@ export default function StepStyleAndMood() {
                 onClick={() => demo.choose("genre", genre.name)}
                 aria-pressed={demo.choices.genre === genre.name}
                 key={genre.name}
-                className="bg-card border-2 border-border rounded-lg p-3 text-left flex items-start gap-3"
+                className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 text-left flex items-start gap-3"
               >
+                <SelectionMark selected={demo.choices.genre === genre.name} />
                 <div className="w-5 h-5 border-2 border-primary rounded-full flex-shrink-0 mt-0.5"></div>
                 <div className="flex-1">
                   <p className="font-semibold text-sm text-foreground">
@@ -105,8 +108,9 @@ export default function StepStyleAndMood() {
                 onClick={() => demo.choose("mood", mood.label)}
                 aria-pressed={demo.choices.mood === mood.label}
                 key={mood.label}
-                className="bg-card border-2 border-border rounded-lg py-3 px-2 flex flex-col items-center gap-1"
+                className="demo-choice-card bg-card border-2 border-border rounded-lg py-3 px-2 flex flex-col items-center gap-1"
               >
+                <SelectionMark selected={demo.choices.mood === mood.label} />
                 <span className="text-2xl">{mood.emoji}</span>
                 <p className="font-semibold text-xs text-foreground text-center">
                   {mood.label}

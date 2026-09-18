@@ -135,47 +135,43 @@ export async function POST(request: Request) {
   const paymentId = randomUUID();
   const reference = `ask_${randomUUID()}`;
   // Store a neutral pending payment first; provider is set when a checkout succeeds.
-  await db
-    .insert(payments)
-    .values({
-      id: paymentId,
-      userId: session.user.id,
-      planId: plan.id,
-      provider: ranked[0].provider,
-      reference,
-      amount: plan.amount,
-      currency: plan.currency,
-      status: "pending",
-      country,
-      method: body.method,
-      metadata: {
-        source: "pricing",
-        routerCandidates: ranked.map((x) => x.provider),
-      },
-    });
+  await db.insert(payments).values({
+    id: paymentId,
+    userId: session.user.id,
+    planId: plan.id,
+    provider: ranked[0].provider,
+    reference,
+    amount: plan.amount,
+    currency: plan.currency,
+    status: "pending",
+    country,
+    method: body.method,
+    metadata: {
+      source: "pricing",
+      routerCandidates: ranked.map((x) => x.provider),
+    },
+  });
 
   const failures: Array<{ provider: string; message: string }> = [];
   for (const candidate of ranked) {
     const providerId = candidate.provider as PaymentProviderId;
     const attemptId = randomUUID();
     const started = Date.now();
-    await db
-      .insert(paymentAttempts)
-      .values({
-        id: attemptId,
-        paymentId,
-        provider: providerId,
-        country,
-        method: body.method,
-        outcome: "selected",
-        metadata: {
-          routerScore: candidate.score,
-          priority: candidate.priority,
-          successRate: candidate.successRate,
-          degradedWindowAttempts: candidate.degradedWindowAttempts,
-          degradedWindowSuccessRate: candidate.degradedWindowSuccessRate,
-        },
-      });
+    await db.insert(paymentAttempts).values({
+      id: attemptId,
+      paymentId,
+      provider: providerId,
+      country,
+      method: body.method,
+      outcome: "selected",
+      metadata: {
+        routerScore: candidate.score,
+        priority: candidate.priority,
+        successRate: candidate.successRate,
+        degradedWindowAttempts: candidate.degradedWindowAttempts,
+        degradedWindowSuccessRate: candidate.degradedWindowSuccessRate,
+      },
+    });
     try {
       const [mapping] = await db
         .select()
@@ -189,7 +185,11 @@ export async function POST(request: Request) {
         .limit(1);
       const result = await getPaymentProvider(providerId).createCheckout({
         reference,
-        money: { amount: plan.amount, currency: plan.currency as any },
+        money: {
+          amount: plan.amount,
+          currency:
+            plan.currency as import("@/lib/payments/types").Money["currency"],
+        },
         customer: {
           id: session.user.id,
           name: session.user.name,

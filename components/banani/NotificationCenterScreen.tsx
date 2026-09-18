@@ -36,7 +36,7 @@ const notifications = [
     id: 4,
     type: "bell",
     title: "Concours du mois",
-    message: "Participez à notre concours mensuel et gagnez des crédits !",
+    message: "Participez à notre concours mensuel et gagnez des chansons !",
     time: "Il y a 2 jours",
     unread: false,
   },

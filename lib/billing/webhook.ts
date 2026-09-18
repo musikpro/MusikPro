@@ -1,3 +1,4 @@
+import { paymentSummarySchema } from "@/lib/validation/payment-providers";
 import { randomUUID } from "node:crypto";
 import { and, eq, isNull, or } from "drizzle-orm";
 import { getServiceDb } from "@/db";
@@ -5,7 +6,10 @@ import { payments, webhookEvents } from "@/db/schema";
 import type { PaymentProvider } from "@/lib/payments/types";
 import { reconcilePayment } from "@/lib/billing/reconcile";
 
-function eventTransactionId(payload: any): string | undefined {
+function eventTransactionId(input: unknown): string | undefined {
+  const parsed = paymentSummarySchema.safeParse(input);
+  if (!parsed.success) throw new Error("Invalid payment provider summary");
+  const payload = parsed.data;
   const entity =
     payload?.transaction ??
     payload?.entity ??
@@ -17,7 +21,10 @@ function eventTransactionId(payload: any): string | undefined {
   return value == null ? undefined : String(value);
 }
 
-function eventReference(payload: any): string | undefined {
+function eventReference(input: unknown): string | undefined {
+  const parsed = paymentSummarySchema.safeParse(input);
+  if (!parsed.success) throw new Error("Invalid payment provider summary");
+  const payload = parsed.data;
   const data = payload?.data ?? payload;
   const metadata =
     data?.custom_metadata ??
@@ -35,7 +42,10 @@ function eventReference(payload: any): string | undefined {
   );
 }
 
-function eventStatus(payload: any): string | undefined {
+function eventStatus(input: unknown): string | undefined {
+  const parsed = paymentSummarySchema.safeParse(input);
+  if (!parsed.success) throw new Error("Invalid payment provider summary");
+  const payload = parsed.data;
   const data = payload?.data ?? payload;
   const value = data?.status ?? data?.payment_status ?? data?.state;
   return value == null ? undefined : String(value).slice(0, 80);

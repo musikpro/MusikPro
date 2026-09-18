@@ -1,5 +1,7 @@
 "use client";
 const t = (text: string) => text;
+import { matchesSongSearch } from "@/lib/demo/search";
+import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
 
 import { useState } from "react";
@@ -26,7 +28,7 @@ export default function MySongsGenerated() {
   const generatedSongs = demo.songs
     .filter(
       (s) =>
-        s.title.toLowerCase().includes(search.toLowerCase()) &&
+        matchesSongSearch(search, s.title, s.style, s.occasion) &&
         (selectedTab !== "Favorites" || demo.favorites.includes(s.title)),
     )
     .slice()
@@ -60,16 +62,11 @@ export default function MySongsGenerated() {
 
       {/* Filter Bar */}
       <div className="px-4 pb-4 flex gap-2">
-        <div className="flex-1 flex items-center gap-2 bg-input border border-border rounded-lg px-3 py-2">
-          <Icon i="search" size={14} className="text-muted-foreground" />
-          <input
-            aria-label="Rechercher une chanson"
-            className="demo-field text-sm"
-            placeholder="Rechercher une chanson…"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          label="Rechercher une chanson"
+        />
         <button
           type="button"
           data-demo-ready="true"
@@ -105,6 +102,14 @@ export default function MySongsGenerated() {
         ))}
       </div>
 
+      <p
+        role="status"
+        aria-live="polite"
+        className="px-4 pb-3 text-xs text-muted-foreground"
+      >
+        {generatedSongs.length} chanson{generatedSongs.length !== 1 ? "s" : ""}{" "}
+        trouvée{generatedSongs.length !== 1 ? "s" : ""}
+      </p>
       {/* Song Cards */}
       <div className="workspace-song-grid px-4 flex flex-col gap-4 pb-28">
         {generatedSongs.length === 0 && (

@@ -1,3 +1,20 @@
+export const demoOccasions = [
+  { emoji: "🎂", label: "Anniversaire", id: "birthday" },
+  { emoji: "💕", label: "Amour", id: "love" },
+  { emoji: "🎓", label: "Graduation", id: "graduation" },
+  { emoji: "🎉", label: "Fête", id: "party" },
+  { emoji: "💔", label: "Séparation", id: "breakup" },
+  { emoji: "🙏", label: "Gratitude", id: "gratitude" },
+  { emoji: "🌙", label: "Sérénité", id: "serenity" },
+  { emoji: "🔥", label: "Motivation", id: "motivation" },
+];
+
+export function demoOccasionEmoji(label: string) {
+  return (
+    demoOccasions.find((occasion) => occasion.label === label)?.emoji ?? ""
+  );
+}
+
 const t = (text: string) => text;
 
 export const demoGeneratedSongs = [
@@ -151,7 +168,7 @@ export const demoNotifications = [
     id: 4,
     type: "bell",
     title: "Concours du mois",
-    message: "Participez à notre concours mensuel et gagnez des crédits !",
+    message: "Participez à notre concours mensuel et gagnez des chansons !",
     time: "Il y a 2 jours",
     unread: false,
   },
@@ -165,11 +182,11 @@ export const demoNotifications = [
   },
 ];
 
-export const demoCreditPacks = [
+export const demoSongPacks = [
   {
     id: 1,
     name: t("Découverte"),
-    credits: 1,
+    songs: 2,
     price: "1 000 FCFA",
     priceValue: 1000,
     description: t("Parfait pour commencer"),
@@ -179,27 +196,27 @@ export const demoCreditPacks = [
   {
     id: 2,
     name: t("Populaire"),
-    credits: 3,
+    songs: 5,
     price: "2 000 FCFA",
     priceValue: 2000,
     description: t("Meilleur rapport qualité-prix"),
     popular: true,
-    bonus: t("+1 crédit offert"),
+    bonus: null,
   },
   {
     id: 3,
     name: t("Maxi"),
-    credits: 10,
+    songs: 12,
     price: "5 000 FCFA",
     priceValue: 5000,
     description: t("Pour les gros créateurs"),
     popular: false,
-    bonus: t("+2 crédits offerts"),
+    bonus: null,
   },
   {
     id: 4,
     name: t("Illimité (1 mois)"),
-    credits: null,
+    songs: null,
     price: "10 000 FCFA",
     priceValue: 10000,
     description: t("Créer autant que tu veux"),
