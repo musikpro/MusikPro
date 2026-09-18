@@ -1,4 +1,5 @@
 import { asc, desc, gte, sql } from "drizzle-orm";
+import { requireAdmin } from "@/lib/auth/session";
 import { db } from "@/db";
 import {
   paymentAttempts,
@@ -11,6 +12,7 @@ import { providerCapabilities } from "@/lib/payments/capabilities";
 import { saveCountryRoute, savePlanMapping, saveProvider } from "./actions";
 
 export default async function PaymentProvidersPage() {
+  await requireAdmin();
   const [configs, routes, allPlans, mappings, attempts] = await Promise.all([
     db
       .select()
