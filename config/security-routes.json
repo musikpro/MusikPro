@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "policy": "Every app/api route must be classified. A new route fails security:baseline until authentication, server validation and rate limiting are explicitly declared.",
+  "routes": {
+    "app/api/auth/[...all]/route.ts": {
+      "auth": "better-auth-framework",
+      "validation": "framework-owned",
+      "rateLimit": "better-auth-database",
+      "markers": [
+        "toNextJsHandler(auth)"
+      ]
+    },
+    "app/api/cron/reconcile-payments/route.ts": {
+      "auth": "cron-secret",
+      "validation": "no-user-body",
+      "rateLimit": "scheduler-exempt",
+      "markers": [
+        "verifyCronRequest(request)"
+      ]
+    },
+    "app/api/health/route.ts": {
+      "auth": "public-health",
+      "validation": "no-input",
+      "rateLimit": "read-only-exempt",
+      "markers": [
+        "Cache-Control"
+      ]
+    },
+    "app/api/readyz/route.ts": {
+      "auth": "public-readiness",
+      "validation": "no-input",
+      "rateLimit": "read-only-exempt",
+      "markers": [
+        "getReadinessReport"
+      ]
+    },
+    "app/api/payments/checkout/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
+    "app/api/uploads/images/route.ts": {
+      "auth": "session",
+      "validation": "zod-file+type-size-magic-bytes",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "uploadFormSchema.safeParse",
+        "uploadImageToCloudinary",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
+    "app/api/webhooks/[provider]/route.ts": {
+      "auth": "provider-signature",
+      "validation": "provider-webhook-verifier",
+      "rateLimit": "signed-provider-retry-exempt",
+      "markers": [
+        "verifyWebhook",
+        "replayRequest"
+      ]
+    },
+    "app/api/clients/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "clientCreateSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
+    "app/api/clients/[id]/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "clientUpdateSchema.safeParse",
+        "clientIdSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation"
+      ]
+    }
+  }
+}

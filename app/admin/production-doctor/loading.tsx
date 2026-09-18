@@ -1,0 +1,2 @@
+import { Skeleton, SkeletonKpiGrid, SkeletonTable } from "@/components/ui/skeleton";
+export default function Loading(){return <main className="shell skeleton-page" aria-busy="true" aria-label="Chargement du Production Doctor"><Skeleton className="skeleton-page-title"/><SkeletonKpiGrid count={3}/><Skeleton className="skeleton-section-title"/><SkeletonTable columns={4} rows={8}/><span className="sr-only">Chargement…</span></main>}

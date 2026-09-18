@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "policy": "All database tables must be classified. User/tenant business data is RLS-required. Framework/global/service-only tables require an explicit exemption reason and must not be directly exposed to untrusted clients.",
+  "required": {
+    "subscriptions": "user_id / organization_id tenant data",
+    "payments": "user_id / organization_id financial data",
+    "credits": "user-owned balance",
+    "audit_logs": "organization-scoped audit data"
+  },
+  "exempt": {
+    "plans": "global catalog, server-managed; public reads are filtered by active flag",
+    "payment_fulfillments": "server-only idempotency ledger; never client queried",
+    "webhook_events": "server-only provider event ledger",
+    "security_events": "server-only security telemetry",
+    "payment_provider_configs": "server/admin-only global configuration",
+    "payment_country_routes": "server/admin-only global routing configuration",
+    "plan_provider_mappings": "server/admin-only global mapping configuration",
+    "payment_attempts": "server-only payment routing telemetry",
+    "user": "Better Auth framework-owned table; enforce authorization through Better Auth",
+    "session": "Better Auth framework-owned table; framework/session server access only",
+    "account": "Better Auth framework-owned credential table; server access only",
+    "verification": "Better Auth framework-owned verification table; server access only",
+    "organization": "Better Auth framework-owned organization table",
+    "member": "Better Auth framework-owned membership table",
+    "invitation": "Better Auth framework-owned invitation table",
+    "team": "Better Auth framework-owned team table",
+    "team_member": "Better Auth framework-owned team membership table",
+    "two_factor": "Better Auth framework-owned 2FA secret table; server access only",
+    "rateLimit": "Better Auth framework-owned rate-limit table"
+  },
+  "conditional": {
+    "Client": "userId owner-scoped CRM data; Prisma transactions must set app.current_user_id before access. Required when the optional CRUD Clients migration is applied."
+  }
+}

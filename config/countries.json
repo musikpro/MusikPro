@@ -1,0 +1,129 @@
+{
+  "CI": {
+    "name": "Côte d'Ivoire",
+    "currency": "XOF",
+    "methods": [
+      "wave",
+      "orange_money",
+      "mtn",
+      "moov",
+      "card"
+    ],
+    "recommendedProviders": [
+      "paydunya",
+      "fedapay",
+      "chariow",
+      "bictorys",
+      "paytech",
+      "flutterwave",
+      "moneroo"
+    ]
+  },
+  "SN": {
+    "name": "Sénégal",
+    "currency": "XOF",
+    "methods": [
+      "wave",
+      "orange_money",
+      "free_money",
+      "card"
+    ],
+    "recommendedProviders": [
+      "paydunya",
+      "paytech",
+      "bictorys",
+      "fedapay",
+      "flutterwave",
+      "moneroo"
+    ]
+  },
+  "BJ": {
+    "name": "Bénin",
+    "currency": "XOF",
+    "methods": [
+      "mtn",
+      "moov",
+      "card"
+    ],
+    "recommendedProviders": [
+      "fedapay",
+      "paydunya",
+      "paytech",
+      "moneroo"
+    ]
+  },
+  "BF": {
+    "name": "Burkina Faso",
+    "currency": "XOF",
+    "methods": [
+      "orange_money",
+      "moov",
+      "card"
+    ],
+    "recommendedProviders": [
+      "paydunya",
+      "fedapay",
+      "flutterwave",
+      "moneroo"
+    ]
+  },
+  "TG": {
+    "name": "Togo",
+    "currency": "XOF",
+    "methods": [
+      "t_money",
+      "moov",
+      "card"
+    ],
+    "recommendedProviders": [
+      "paydunya",
+      "moneroo"
+    ]
+  },
+  "CM": {
+    "name": "Cameroun",
+    "currency": "XAF",
+    "methods": [
+      "mtn",
+      "orange_money",
+      "card"
+    ],
+    "recommendedProviders": [
+      "flutterwave",
+      "moneroo"
+    ]
+  },
+  "NG": {
+    "name": "Nigeria",
+    "currency": "NGN",
+    "methods": [
+      "bank_transfer",
+      "card"
+    ],
+    "recommendedProviders": [
+      "flutterwave"
+    ]
+  },
+  "GH": {
+    "name": "Ghana",
+    "currency": "GHS",
+    "methods": [
+      "mobile_money",
+      "card"
+    ],
+    "recommendedProviders": [
+      "flutterwave"
+    ]
+  },
+  "KE": {
+    "name": "Kenya",
+    "currency": "KES",
+    "methods": [
+      "m_pesa",
+      "card"
+    ],
+    "recommendedProviders": [
+      "flutterwave"
+    ]
+  }
+}

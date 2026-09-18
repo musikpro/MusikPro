@@ -1,0 +1,41 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # Non-secret placeholders used only so build-time module initialization can compile.
+      # CI does not connect to this database; integration tests use staging separately.
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_DIRECT: postgresql://ci:ci@localhost:5432/ci
+      BETTER_AUTH_SECRET: ci-only-secret-ci-only-secret-ci-only-secret-123456
+      BETTER_AUTH_URL: http://localhost:3000
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      CRON_SECRET: ci-only-cron-secret-ci-only-cron-secret-123456
+      SECURITY_LEVEL: high
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        shell: bash
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "package-lock.json absent in starter; generating it with npm install"
+            npm install
+          fi
+      - name: Canonical code/quality/security gate
+        run: npm run ci:check
+      - name: Final kit conformity
+        run: npm run conformity:check

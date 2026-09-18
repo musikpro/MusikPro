@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1789716878811,
+      "tag": "0000_woozy_saracen",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789717045898,
+      "tag": "0001_runtime_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789717184004,
+      "tag": "0002_service_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789718037672,
+      "tag": "0003_neat_harrier",
+      "breakpoints": true
+    }
+  ]
+}

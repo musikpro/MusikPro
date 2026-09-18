@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "name": "MusikPro",
+  "reference": "DESIGN-SYSTEM.md",
+  "status": "extracted-from-two-imported-dashboards",
+  "sources": [
+    "components/banani/UserDashboardMobile.tsx",
+    "components/banani/UserDashboardDesktop.tsx",
+    "app/dashboard/banani.css"
+  ],
+  "colors": {
+    "background": "#fafaf7",
+    "foreground": "#1a1a1a",
+    "border": "#e8e3dc",
+    "input": "#f3efe9",
+    "primary": "#f26522",
+    "primary-foreground": "#ffffff",
+    "secondary": "#fde8d8",
+    "secondary-foreground": "#f26522",
+    "coral": "#f4845f",
+    "coral-foreground": "#ffffff",
+    "muted": "#ede8e2",
+    "muted-foreground": "#8c8782",
+    "success": "#22c55e",
+    "success-foreground": "#ffffff",
+    "card": "#ffffff",
+    "card-foreground": "#1a1a1a",
+    "surface": "#f7f3ee"
+  },
+  "typography": {
+    "family": "DM Sans",
+    "weights": [400, 500, 600, 700],
+    "sizesPx": {
+      "xs": 11,
+      "sm": 13,
+      "base": 15,
+      "lg": 17,
+      "xl": 20,
+      "2xl": 24,
+      "3xl": 30,
+      "4xl": 38,
+      "5xl": 52
+    }
+  },
+  "radiiPx": {
+    "sm": 8,
+    "md": 14,
+    "lg": 20,
+    "xl": 32
+  },
+  "spacingPx": [2, 4, 6, 8, 10, 12, 16, 20, 24, 32],
+  "shadows": {
+    "song": "0 1px 8px rgba(0,0,0,0.06)",
+    "create": "0 4px 20px rgba(242,101,34,0.35)",
+    "bottomNavigation": "0 4px 24px rgba(0,0,0,0.10)",
+    "centralAction": "0 4px 16px rgba(242,101,34,0.40)"
+  },
+  "opacity": {
+    "createIconBackground": 0.2,
+    "createSubtitle": 0.8,
+    "createChevron": 0.7,
+    "accentBorder": 0.2,
+    "downloadGradientStart": 0.1,
+    "imageOverlayMobile": 0.6,
+    "imageOverlayDesktop": 0.7,
+    "imageMetadata": 0.7
+  },
+  "layout": {
+    "desktopBreakpointPx": 1100,
+    "tabletStartPx": 768,
+    "tabletContentMaxPx": 540,
+    "sidebarPx": 240,
+    "rightColumnPx": 320,
+    "desktopHeaderPx": 64,
+    "mobileGutterPx": 16,
+    "compactGutterPx": 12,
+    "bottomNavigation": {
+      "position": "fixed",
+      "zIndex": 50,
+      "sideInsetPx": 16,
+      "bottomInsetPx": 16,
+      "reservedSpacePx": 110,
+      "safeArea": "env(safe-area-inset-bottom, 0px)",
+      "tabletWidthPx": 508
+    }
+  },
+  "authority": {
+    "newBananiScreen": "screen-specific-source-of-truth",
+    "missingDetail": "use-observed-common-tokens",
+    "unobservedStates": "must-not-be-described-as-imported"
+  },
+  "modernization": {
+    "status": "user-requested-refresh",
+    "date": "2026-09-18",
+    "scope": ".musik-modern",
+    "mutedForeground": "#736a62",
+    "heroGradient": ["#b83d13", "#ed6826", "#f69962"],
+    "shadow": "0 8px 28px rgb(70 43 23 / 6%), 0 1px 3px rgb(70 43 23 / 4%)",
+    "raisedShadow": "0 16px 40px rgb(70 43 23 / 12%)",
+    "motion": {
+      "revealMs": 350,
+      "cardEntryMs": 400,
+      "hoverMs": 220,
+      "reducedMotion": "disabled"
+    },
+    "navigationBlurPx": 20
+  },
+  "desktopWorkspace": {
+    "status": "dashboard-derived-user-requested",
+    "breakpointPx": 1024,
+    "sidebarWidthPx": [210, 230],
+    "contextWidthPx": [220, 260],
+    "pageCardRadiusPx": 28,
+    "columnsGapPx": [20, 24],
+    "settingsGridBreakpointPx": 1280,
+    "songGridBreakpointPx": 1440,
+    "sidebarBehavior": {
+      "overflow": "visible",
+      "scrollbar": "hidden",
+      "stickyTop": "min(0, viewportHeight - menuHeight)",
+      "background": "input",
+      "resize": "ResizeObserver and window resize"
+    }
+  }
+}

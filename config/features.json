@@ -1,0 +1,369 @@
+{
+  "version": "0.10.1",
+  "features": {
+    "database": {
+      "description": "Neon PostgreSQL + Drizzle",
+      "optional": false,
+      "env": ["DATABASE_URL", "DATABASE_URL_DIRECT", "DATABASE_SERVICE_URL"],
+      "files": [
+        "db/index.ts",
+        "db/schema/index.ts",
+        "drizzle.config.ts",
+        "scripts/neon-runtime-setup.mjs",
+        "db/migrations/0001_runtime_rls.sql",
+        "docs/security/database-runtime-roles.md",
+        "db/migrations/0002_service_grants.sql"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": [],
+      "notes": [
+        "DATABASE_URL uses the non-owner musikpro_runtime role; userQuery sets transaction-local authenticated identity. DATABASE_SERVICE_URL is server-only, restricted to guarded admin operations and trusted jobs. DATABASE_URL_DIRECT is migration-only."
+      ]
+    },
+    "auth": {
+      "description": "Better Auth, rôles, organisations, 2FA",
+      "optional": false,
+      "env": [
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_URL",
+        "AUTH_EMAIL_PASSWORD_ENABLED",
+        "AUTH_REQUIRE_EMAIL_VERIFICATION"
+      ],
+      "files": ["lib/auth/index.ts", "app/api/auth/[...all]/route.ts"],
+      "routes": ["/api/auth/[...all]"],
+      "notes": [
+        "Email/password est optionnel seulement si un autre mode d’auth réel (ex. Google OAuth) est activé.",
+        "En production, email/password ne doit pas être activé sans canal de livraison Resend opérationnel lorsque la vérification email est requise."
+      ],
+      "removalComplexity": "never",
+      "dependsOn": ["database"]
+    },
+    "health": {
+      "description": "Liveness/readiness backend",
+      "optional": false,
+      "env": [],
+      "files": [
+        "app/api/health/route.ts",
+        "app/api/readyz/route.ts",
+        "lib/health/readiness.ts"
+      ],
+      "routes": ["/api/health", "/api/readyz"],
+      "removalComplexity": "never",
+      "dependsOn": ["database"]
+    },
+    "payments": {
+      "description": "Smart Router + providers africains optionnels + réconciliation",
+      "optional": true,
+      "env": ["PAYMENT_WEBHOOK_BASE_URL"],
+      "files": [
+        "lib/payments/routing.ts",
+        "lib/billing/reconcile.ts",
+        "app/api/payments/checkout/route.ts",
+        "app/api/webhooks/[provider]/route.ts",
+        "lib/payments/health.ts"
+      ],
+      "routes": ["/api/payments/checkout", "/api/webhooks/[provider]"],
+      "removalComplexity": "with-care",
+      "dependsOn": ["database", "auth"],
+      "disableBehavior": "paymentsEnabled=false + providers=[]; garder le code inerte si aucun paiement n’est requis."
+    },
+    "payment-reconciliation-cron": {
+      "description": "Rattrapage des paiements asynchrones ou tardifs",
+      "optional": true,
+      "env": ["CRON_SECRET"],
+      "files": ["app/api/cron/reconcile-payments/route.ts", "lib/cron/auth.ts"],
+      "routes": ["/api/cron/reconcile-payments"],
+      "removalComplexity": "safe-if-payments-disabled",
+      "dependsOn": ["payments"],
+      "disableBehavior": "Ne pas générer le cron lorsque paymentsEnabled=false."
+    },
+    "cloudinary": {
+      "description": "Upload d'images optionnel avec validation MIME + magic bytes",
+      "optional": true,
+      "env": [
+        "CLOUDINARY_CLOUD_NAME",
+        "CLOUDINARY_API_KEY",
+        "CLOUDINARY_API_SECRET"
+      ],
+      "files": ["lib/storage/cloudinary.ts", "app/api/uploads/images/route.ts"],
+      "routes": ["/api/uploads/images"],
+      "removalComplexity": "safe",
+      "dependsOn": ["auth"],
+      "disableBehavior": "cloudinaryEnabled=false; la route d’upload reste inerte/non disponible."
+    },
+    "email": {
+      "description": "Emails transactionnels Resend; requis si email/password + vérification/récupération sont activés",
+      "optional": "conditional",
+      "env": ["RESEND_API_KEY", "EMAIL_FROM"],
+      "files": ["lib/email/index.ts"],
+      "routes": [],
+      "requiredWhen": "AUTH_EMAIL_PASSWORD_ENABLED=true",
+      "disableBehavior": "Si Resend est absent, désactiver email/password et utiliser un autre provider d’auth; ne jamais laisser un flux de vérification/récupération sans livraison.",
+      "removalComplexity": "conditional",
+      "dependsOn": ["auth"]
+    },
+    "google": {
+      "description": "Google OAuth + Search Console",
+      "optional": true,
+      "env": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+      "files": [
+        "lib/google/search-console.ts",
+        "app/admin/integrations/google/page.tsx"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": ["auth"],
+      "disableBehavior": "googleAuth=false/searchConsole=false selon les besoins."
+    },
+    "seo": {
+      "description": "Metadata, sitemap, robots, Open Graph",
+      "optional": false,
+      "env": [],
+      "files": [
+        "lib/seo/metadata.ts",
+        "app/sitemap.ts",
+        "app/robots.ts",
+        "app/opengraph-image.tsx"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": []
+    },
+    "banani-planner": {
+      "description": "Connexion Banani MCP + /import-banani + gap analysis + plan d’implémentation",
+      "optional": true,
+      "env": [],
+      "files": [
+        "DESIGN.md",
+        "design/banani/screens.json",
+        "scripts/generate-implementation-plan.mjs",
+        ".agents/skills/import-banani/SKILL.md",
+        "design/banani/import-schema.json",
+        "scripts/import-banani-analyze.mjs",
+        "scripts/import-banani-check.mjs",
+        "docs/design/import-banani.md"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": []
+    },
+    "clients-crud-prisma": {
+      "description": "CRUD Clients post-Banani avec modèle Prisma Client, routes /api/clients/*, Zod, Better Auth, rate limiting et RLS propriétaire.",
+      "optional": true,
+      "env": ["DATABASE_URL"],
+      "files": [
+        "prisma/schema.prisma",
+        "lib/prisma.ts",
+        "lib/validation/clients.ts",
+        "lib/clients/repository.ts",
+        "app/api/clients/route.ts",
+        "app/api/clients/[id]/route.ts",
+        "docs/features/clients-crud.md"
+      ],
+      "routes": ["/api/clients", "/api/clients/[id]"],
+      "notes": [
+        "La brique est attachée seulement après import des écrans Banani.",
+        "Drizzle reste l’ORM principal du kit; Prisma est ciblé sur le CRUD Clients demandé."
+      ],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "auth", "banani-planner"],
+      "disableBehavior": "Si le SaaS ne gère pas de clients, conserver la brique non branchée et ne pas exécuter la migration Prisma."
+    },
+    "observability-core": {
+      "description": "Logs structurés, redaction des secrets et request IDs",
+      "optional": false,
+      "env": [],
+      "files": [
+        "lib/observability/logger.ts",
+        "lib/observability/request-id.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": []
+    },
+    "api-client": {
+      "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
+      "optional": false,
+      "env": [],
+      "files": ["lib/api/client.ts"],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": []
+    },
+    "computer-use": {
+      "description": "Assistance navigateur/Computer Use Antigravity pour vérification continue du SaaS",
+      "optional": "environment-conditional",
+      "env": [],
+      "files": [
+        ".agents/skills/computer-use/SKILL.md",
+        "scripts/computer-use-check.mjs",
+        "scripts/computer-use-mark.mjs",
+        "docs/computer-use/antigravity-browser.md"
+      ],
+      "routes": [],
+      "removalComplexity": "safe-outside-antigravity",
+      "dependsOn": [],
+      "disableBehavior": "Hors Antigravity, utiliser un outil navigateur équivalent ou marquer la phase Computer Use skipped avec justification. Dans Antigravity, Browser Tools doivent être vérifiés avant de poursuivre."
+    },
+    "upstash": {
+      "description": "Upstash Redis optionnel pour cache TTL, rate limiting distribué et états temporaires",
+      "optional": true,
+      "env": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+      "files": [
+        "lib/cache/upstash.ts",
+        "lib/security/rate-limit.ts",
+        "lib/health/readiness.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": [],
+      "disableBehavior": "upstashEnabled=false et variables absentes; le SaaS continue directement avec Neon."
+    },
+    "premium-icons": {
+      "description": "Qualité visuelle permanente : icônes SVG premium cohérentes + blocage Sparkle/Sparklet et glyphes UI génériques",
+      "optional": false,
+      "env": [],
+      "files": [
+        "components/ui/premium-icon.tsx",
+        "scripts/premium-icon-check.mjs",
+        "docs/ui/premium-icons.md"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": []
+    },
+    "security-baseline-gate": {
+      "description": "Garde-fou permanent de sécurité: secrets/.env, inventaire API, validation serveur, auth middleware, email verification, rate limiting, RLS/policies et audit dépendances",
+      "optional": false,
+      "env": [
+        "DATABASE_URL",
+        "DATABASE_URL_DIRECT",
+        "UPSTASH_REDIS_REST_URL",
+        "UPSTASH_REDIS_REST_TOKEN",
+        "AUTH_REQUIRE_EMAIL_VERIFICATION"
+      ],
+      "files": [
+        "scripts/security-baseline-check.mjs",
+        "scripts/security-db-check.mjs",
+        "config/security-routes.json",
+        "config/security-rls.json",
+        "db/security/rls-baseline.sql",
+        "docs/security/security-baseline-gate.md"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": ["observability-core"]
+    },
+    "zod-validation-gate": {
+      "description": "Validation Zod permanente côté client et serveur : Server Actions, routes API mutantes et formulaires sensibles contrôlés avant CI/livraison.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "lib/validation/auth.ts",
+        "scripts/zod-validation-check.mjs",
+        "config/zod-validation.json",
+        "docs/security/zod-validation-gate.md"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": ["security-baseline-gate"]
+    },
+    "continuous-refactor-gate": {
+      "description": "Garde-fou global permanent : autorisation serveur des zones privées, hygiène des réponses paiements, protections requêtes mutantes, identifiants cryptographiques, headers prod/dev et cohérence CI.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "scripts/general-refactor-check.mjs",
+        "lib/security/request-guards.ts",
+        "lib/payments/public-result.ts",
+        "scripts/dependency-security-floor.mjs",
+        "config/security-dependency-floors.json"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
+    },
+    "mobileAppPipeline": {
+      "description": "Pipeline Android/iOS optionnel après déploiement Web, basé sur Capacitor",
+      "optional": true,
+      "env": [],
+      "files": [
+        "scripts/mobile-app-configure.mjs",
+        "scripts/mobile-app-install.mjs",
+        "scripts/mobile-app-prepare.mjs",
+        "scripts/mobile-app-check.mjs",
+        "docs/mobile/mobile-app-pipeline.md",
+        "lib/mobile/native-runtime.ts",
+        "components/mobile/native-only.tsx",
+        "components/mobile/native-bottom-nav.tsx"
+      ],
+      "routes": [],
+      "notes": [
+        "Désactivé par défaut.",
+        "Le SaaS Web reste la source principale; aucune dépendance Capacitor n’est requise tant que le pipeline n’est pas activé."
+      ],
+      "removalComplexity": "low",
+      "dependsOn": []
+    },
+    "security-saas-audit": {
+      "description": "Audit sécurité à la demande /security-saas avec scan des fichiers, score/rang, Zod, RLS, auth, rate limiting et npm audit.",
+      "optional": false,
+      "env": [],
+      "files": [
+        ".agents/skills/security-saas/SKILL.md",
+        "scripts/security-saas.mjs",
+        "lib/security/security-saas-report.ts",
+        "docs/security/security-saas-command.md"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
+    },
+    "staging-gate": {
+      "description": "Staging Vercel obligatoire avant production : Preview isolée, smoke tests, approbation traçable et gate de production.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "config/staging.json",
+        "scripts/staging-check.mjs",
+        "scripts/staging-deploy.mjs",
+        "scripts/staging-test.mjs",
+        "scripts/production-release-gate.mjs",
+        "docs/deployment/staging-vercel.md"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
+    },
+    "musikpro-demo": {
+      "description": "Écrans Banani MusikPro reliés en démonstration locale : fixtures, contexte client en mémoire, formulaires Zod UX, aucune API métier ni mutation Neon.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "components/banani/DemoProvider.tsx",
+        "lib/demo/musikpro-data.ts",
+        "lib/demo/navigation.ts",
+        "lib/validation/musikpro-demo.ts",
+        "design/banani/selected-implementation-plan.md",
+        "DESIGN-SYSTEM.md",
+        "components/banani/DesktopWorkspace.tsx",
+        "components/banani/DesktopSidebar.tsx"
+      ],
+      "routes": [],
+      "dependsOn": ["auth", "banani-planner"],
+      "removalComplexity": "medium",
+      "disableBehavior": "Remplacer les pages et le provider de démonstration par des adaptateurs de données réelles via un plan dédié ; ne pas supprimer auth, billing ou les primitives du kit.",
+      "notes": [
+        "29 écrans importés correspondent à 28 routes, dont 27 nouvelles.",
+        "Les paiements, le support, la génération et la lecture audio restent simulés ou explicitement indisponibles."
+      ]
+    }
+  },
+  "removalProtocol": [
+    "Avant de retirer une feature, vérifier dependsOn et les routes/fichiers possédés.",
+    "Préférer désactiver une feature env-gated plutôt que supprimer son code si elle peut être réutilisée.",
+    "Après toute suppression: npm run features:check && npm run verify:code.",
+    "Ne jamais supprimer database/auth/observability-core comme une feature optionnelle."
+  ]
+}

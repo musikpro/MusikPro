@@ -1,0 +1,371 @@
+{
+  "groups": [
+    {
+      "id": "app",
+      "label": "Application / domaine",
+      "variables": [
+        {
+          "name": "NEXT_PUBLIC_APP_URL",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "URL publique de l'application. En production, utiliser le domaine HTTPS final.",
+          "example": "https://app.example.com"
+        },
+        {
+          "name": "APP_NAME",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "Nom interne de l'application.",
+          "example": "Mon SaaS"
+        },
+        {
+          "name": "DEFAULT_COUNTRY",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "Pays ISO2 principal du SaaS.",
+          "example": "CI"
+        },
+        {
+          "name": "SECURITY_LEVEL",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "Niveau de sécurité : standard, high ou maximum.",
+          "example": "high"
+        },
+        {
+          "name": "PAYMENT_WEBHOOK_BASE_URL",
+          "sensitive": false,
+          "required": "payments",
+          "vercel": ["Production"],
+          "source": "Base HTTPS utilisée pour les webhooks de paiement. En production, utiliser le domaine final, jamais ngrok.",
+          "example": "https://app.example.com"
+        }
+      ]
+    },
+    {
+      "id": "payments-core",
+      "label": "Paiements — configuration commune",
+      "variables": [
+        {
+          "name": "PAYMENT_DEFAULT_PROVIDER",
+          "sensitive": false,
+          "required": "payments",
+          "vercel": ["Production", "Preview"],
+          "source": "Provider par défaut configuré dans Africa SaaS Kit.",
+          "example": "fedapay"
+        },
+        {
+          "name": "FEDAPAY_ENVIRONMENT",
+          "sensitive": false,
+          "required": "if-fedapay",
+          "vercel": ["Production", "Preview"],
+          "source": "sandbox en Preview/test ; valeur production selon configuration fournisseur.",
+          "example": "sandbox"
+        },
+        {
+          "name": "PAYDUNYA_ENVIRONMENT",
+          "sensitive": false,
+          "required": "if-paydunya",
+          "vercel": ["Production", "Preview"],
+          "source": "sandbox/test en Preview ; production uniquement après validation.",
+          "example": "sandbox"
+        },
+        {
+          "name": "FLUTTERWAVE_ENVIRONMENT",
+          "sensitive": false,
+          "required": "if-flutterwave",
+          "vercel": ["Production", "Preview"],
+          "source": "sandbox en test ; live seulement lorsque l’adaptateur/provider est validé.",
+          "example": "sandbox"
+        },
+        {
+          "name": "PAYTECH_ENVIRONMENT",
+          "sensitive": false,
+          "required": "if-paytech",
+          "vercel": ["Production", "Preview"],
+          "source": "test en Preview ; live uniquement après validation du provider.",
+          "example": "test"
+        },
+        {
+          "name": "BICTORYS_ENVIRONMENT",
+          "sensitive": false,
+          "required": "if-bictorys",
+          "vercel": ["Production", "Preview"],
+          "source": "sandbox en test ; production uniquement après validation du provider.",
+          "example": "sandbox"
+        }
+      ]
+    },
+    {
+      "id": "database",
+      "label": "Neon PostgreSQL",
+      "variables": [
+        {
+          "name": "DATABASE_URL",
+          "sensitive": true,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "Neon Console > Project > Connection Details. Utiliser une chaîne compatible avec l'application/serverless.",
+          "example": "postgresql://..."
+        },
+        {
+          "name": "DATABASE_URL_DIRECT",
+          "sensitive": true,
+          "required": "recommended",
+          "vercel": ["Production", "Preview"],
+          "source": "Neon Console > Connection Details > Direct connection. Recommandée pour Drizzle Kit et les migrations, tandis que DATABASE_URL reste utilisée par l’application.",
+          "example": "postgresql://..."
+        },
+        {
+          "name": "DATABASE_SERVICE_URL",
+          "sensitive": true,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "Restricted musikpro_service role for guarded server jobs/admin. Provision independently per environment; never use the owner connection.",
+          "example": ""
+        }
+      ]
+    },
+    {
+      "id": "auth",
+      "label": "Better Auth",
+      "variables": [
+        {
+          "name": "BETTER_AUTH_SECRET",
+          "sensitive": true,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "Générer un secret aléatoire fort, distinct par environnement.",
+          "example": "openssl rand -base64 48"
+        },
+        {
+          "name": "BETTER_AUTH_URL",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "URL publique exacte de l'application pour Better Auth.",
+          "example": "https://app.example.com"
+        },
+        {
+          "name": "AUTH_EMAIL_PASSWORD_ENABLED",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "true = email/mot de passe activé ; false = utiliser un provider OAuth externe (ex. Google).",
+          "example": "true"
+        },
+        {
+          "name": "AUTH_REQUIRE_EMAIL_VERIFICATION",
+          "sensitive": false,
+          "required": "always",
+          "vercel": ["Production", "Preview"],
+          "source": "En production, true impose la vérification email pour les comptes email/mot de passe.",
+          "example": "true"
+        }
+      ]
+    },
+    {
+      "id": "email",
+      "label": "Resend",
+      "variables": [
+        {
+          "name": "RESEND_API_KEY",
+          "sensitive": true,
+          "required": "email",
+          "vercel": ["Production", "Preview"],
+          "source": "Resend > API Keys.",
+          "example": "re_..."
+        },
+        {
+          "name": "EMAIL_FROM",
+          "sensitive": false,
+          "required": "email",
+          "vercel": ["Production", "Preview"],
+          "source": "Adresse d'envoi vérifiée chez Resend.",
+          "example": "noreply@example.com"
+        }
+      ]
+    },
+    {
+      "id": "google",
+      "label": "Google Cloud / Search Console",
+      "variables": [
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "sensitive": false,
+          "required": "google-oauth",
+          "vercel": ["Production", "Preview"],
+          "source": "Google Cloud Console > APIs & Services > Credentials > OAuth 2.0 Client ID.",
+          "example": "...apps.googleusercontent.com"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "sensitive": true,
+          "required": "google-oauth",
+          "vercel": ["Production", "Preview"],
+          "source": "Google Cloud Console > OAuth client secret.",
+          "example": "GOCSPX-..."
+        },
+        {
+          "name": "NEXT_PUBLIC_GOOGLE_AUTH_ENABLED",
+          "sensitive": false,
+          "required": "google-oauth",
+          "vercel": ["Production", "Preview"],
+          "source": "Activer le bouton Google après configuration complète.",
+          "example": "true"
+        },
+        {
+          "name": "GOOGLE_SITE_VERIFICATION",
+          "sensitive": false,
+          "required": "seo",
+          "vercel": ["Production"],
+          "source": "Google Search Console > méthode de vérification HTML/meta, valeur content uniquement.",
+          "example": "verification-token"
+        },
+        {
+          "name": "GOOGLE_SEARCH_CONSOLE_ENABLED",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production"],
+          "source": "Activer seulement si l'intégration API Search Console OAuth est réellement utilisée.",
+          "example": "false"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "label": "Sécurité / rate limiting / cron",
+      "variables": [
+        {
+          "name": "UPSTASH_REDIS_REST_URL",
+          "sensitive": false,
+          "required": "production-security",
+          "vercel": ["Production", "Preview"],
+          "source": "Upstash Redis > REST API.",
+          "example": "https://...upstash.io"
+        },
+        {
+          "name": "UPSTASH_REDIS_REST_TOKEN",
+          "sensitive": true,
+          "required": "production-security",
+          "vercel": ["Production", "Preview"],
+          "source": "Upstash Redis > REST token.",
+          "example": "..."
+        },
+        {
+          "name": "CRON_SECRET",
+          "sensitive": true,
+          "required": "production-security",
+          "vercel": ["Production"],
+          "source": "Secret aléatoire fort pour /api/cron/reconcile-payments.",
+          "example": "openssl rand -base64 48"
+        },
+        {
+          "name": "TURNSTILE_SECRET_KEY",
+          "sensitive": true,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Cloudflare Turnstile secret key si le module est activé.",
+          "example": "..."
+        },
+        {
+          "name": "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Cloudflare Turnstile site key.",
+          "example": "..."
+        }
+      ]
+    },
+    {
+      "id": "cloudinary",
+      "label": "Cloudinary — uploads d’images (optionnel)",
+      "variables": [
+        {
+          "name": "CLOUDINARY_CLOUD_NAME",
+          "sensitive": false,
+          "required": "cloudinary",
+          "vercel": ["Production", "Preview"],
+          "source": "Cloudinary Console > Cloud name. Requis seulement si Cloudinary est activé.",
+          "example": "my-cloud"
+        },
+        {
+          "name": "CLOUDINARY_API_KEY",
+          "sensitive": true,
+          "required": "cloudinary",
+          "vercel": ["Production", "Preview"],
+          "source": "Cloudinary Console > API Keys.",
+          "example": "..."
+        },
+        {
+          "name": "CLOUDINARY_API_SECRET",
+          "sensitive": true,
+          "required": "cloudinary",
+          "vercel": ["Production", "Preview"],
+          "source": "Cloudinary Console > API Secret. Secret serveur uniquement.",
+          "example": "..."
+        },
+        {
+          "name": "CLOUDINARY_FOLDER",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Dossier racine Cloudinary utilisé par le SaaS.",
+          "example": "africa-saas-kit"
+        }
+      ]
+    },
+    {
+      "id": "branding",
+      "label": "SEO / branding public",
+      "variables": [
+        {
+          "name": "NEXT_PUBLIC_APP_NAME",
+          "sensitive": false,
+          "required": "seo",
+          "vercel": ["Production", "Preview"],
+          "source": "Nom public du SaaS.",
+          "example": "Mon SaaS"
+        },
+        {
+          "name": "NEXT_PUBLIC_APP_DESCRIPTION",
+          "sensitive": false,
+          "required": "seo",
+          "vercel": ["Production", "Preview"],
+          "source": "Description publique concise utilisée dans les metadata.",
+          "example": "Description du SaaS"
+        },
+        {
+          "name": "NEXT_PUBLIC_APP_LANGUAGE",
+          "sensitive": false,
+          "required": "seo",
+          "vercel": ["Production", "Preview"],
+          "source": "Langue principale ISO courte.",
+          "example": "fr"
+        },
+        {
+          "name": "NEXT_PUBLIC_APP_LOCALE",
+          "sensitive": false,
+          "required": "seo",
+          "vercel": ["Production", "Preview"],
+          "source": "Locale principale.",
+          "example": "fr_CI"
+        }
+      ]
+    }
+  ],
+  "reserved": [
+    "CLOUDFLARE_R2_ACCOUNT_ID",
+    "CLOUDFLARE_R2_ACCESS_KEY_ID",
+    "CLOUDFLARE_R2_SECRET_ACCESS_KEY",
+    "CLOUDFLARE_R2_BUCKET",
+    "SENTRY_DSN",
+    "NEXT_PUBLIC_POSTHOG_KEY",
+    "INNGEST_EVENT_KEY"
+  ]
+}

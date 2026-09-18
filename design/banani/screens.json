@@ -1,0 +1,1019 @@
+{
+  "project": "MusikPro",
+  "source": "banani-mcp",
+  "importedAt": "2026-09-18T09:48:01.278Z",
+  "screens": [
+    {
+      "id": "QMj5OQRWpKXU/screens/ContactSupportScreen.jsx",
+      "name": "Contacter le support",
+      "route": "/dashboard/support",
+      "auth": "authenticated",
+      "purpose": "Nous sommes ici pour vous aider ; Nous pouvons aussi vous contacter",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Nous sommes ici pour vous aider",
+        "Nous pouvons aussi vous contacter",
+        "Retour",
+        "Contacter le support",
+        "Décrivez votre problème et notre équipe vous répondra rapidement.",
+        "Sujet",
+        "Sélectionner un sujet...",
+        "Catégorie",
+        "Problème technique",
+        "Votre message",
+        "Décrivez votre problème en détail...",
+        "Email",
+        "amelie.kouassi@example.com",
+        "Téléphone (optionnel)",
+        "+225 XX XX XX XX",
+        "Notre équipe vous répondra dans les 24 heures. Assurez-vous que vos informations de contact sont correctes.",
+        "Envoyer mon message",
+        "Annuler"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/GeneratingScreen.jsx",
+      "name": "Écran de génération musicale",
+      "route": "/dashboard/payment-preview/confirmed",
+      "auth": "authenticated",
+      "purpose": "Paiement confirmé !",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Paiement confirmé !",
+        "MusikPro",
+        "Quitter",
+        "Vous serez redirigé vers la page de génération de votre musique",
+        "Veuillez patienter quelques secondes pendant que nous vous redirigeons vers la page de création…",
+        "Redirection automatique en cours…"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/HelpFAQScreen.jsx",
+      "name": "Aide & FAQ",
+      "route": "/dashboard/help",
+      "auth": "authenticated",
+      "purpose": "Questions fréquemment posées ; Vous n'avez pas trouvé votre réponse ?",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Questions fréquemment posées",
+        "Vous n'avez pas trouvé votre réponse ?",
+        "Retour",
+        "Aide & FAQ",
+        "Trouvez les réponses à vos questions sur Musika.",
+        "Contactez notre équipe de support, nous sommes là pour vous aider.",
+        "Contacter le support"
+      ],
+      "interactions": [
+        "Accordéons FAQ natifs details/summary",
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/MySongsGeneratedScreen.jsx",
+      "name": "Mes Chansons Générées",
+      "route": "/dashboard/songs",
+      "auth": "authenticated",
+      "purpose": "Mes chansons",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Mes chansons",
+        "Créer",
+        "3 chansons · 6 versions générées",
+        "Rechercher une chanson…",
+        "Toutes",
+        "Récentes",
+        "Favorites",
+        "Versions",
+        "Modifier paroles",
+        "Regénérer"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/NotificationCenterScreen.jsx",
+      "name": "Centre de notifications",
+      "route": "/dashboard/notifications",
+      "auth": "authenticated",
+      "purpose": "Centre de notifications",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Retour",
+        "Notifications",
+        "Marquer tout"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/PaymentRedirectChariowScreen.jsx",
+      "name": "Redirection Paiement Chariow",
+      "route": "/dashboard/payment-preview/chariow",
+      "auth": "authenticated",
+      "purpose": "Redirection en cours…",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Redirection en cours…",
+        "Vous serez redirigé vers Chariow pour finaliser votre paiement",
+        "Plateforme sécurisée",
+        "Chariow est notre partenaire de paiement de confiance. Vos informations sont protégées.",
+        "Effectuez votre paiement",
+        "Montant : 2 000 FCFA",
+        "Revenez à Musika",
+        "Vous serez automatiquement redirigé après le paiement",
+        "Génération instantanée",
+        "Votre chanson sera générée automatiquement",
+        "Si vous n'êtes pas redirigé automatiquement, cliquez sur le bouton ci-dessous",
+        "Aller à Chariow",
+        "Annuler"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": [
+        "Chariow nommé visuellement ; connexion fournisseur NON VÉRIFIÉE"
+      ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/UserProfileScreen_next1.jsx",
+      "name": "Profil Utilisateur (Next)",
+      "route": "/dashboard/profile/next",
+      "auth": "authenticated",
+      "purpose": "Kofi Mensah ; Plan actuel ; Compte ; Support",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Kofi Mensah",
+        "Plan actuel",
+        "Compte",
+        "Support",
+        "Accra, Ghana",
+        "Membre depuis octobre 2024",
+        "Chansons",
+        "Écoutes",
+        "Likes",
+        "Populaire",
+        "5 chansons/mois • 2 000 FCFA",
+        "Voir les autres plans",
+        "Profil",
+        "Mot de passe",
+        "Notifications",
+        "Aide & FAQ",
+        "Contacter le support",
+        "Se déconnecter"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/CreditsPurchaseScreen.jsx",
+      "name": "Crédits - Acheter des Chansons",
+      "route": "/dashboard/credits",
+      "auth": "authenticated",
+      "purpose": "Crédits ; Acheter des crédits ; Historique",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Crédits",
+        "Acheter des crédits",
+        "Historique",
+        "Découverte",
+        "Parfait pour commencer",
+        "Populaire",
+        "Meilleur rapport qualité-prix",
+        "+1 crédit offert",
+        "Maxi",
+        "Pour les gros créateurs",
+        "+2 crédits offerts",
+        "Illimité (1 mois)",
+        "Créer autant que tu veux",
+        "Accès complet",
+        "Gère tes chansons",
+        "Crédits disponibles",
+        "= 3 chansons à créer",
+        "crédits",
+        "Comment fonctionnent les crédits ?",
+        "Chaque crédit = 1 chanson générée. Les crédits n'expirent jamais.",
+        "Acheter maintenant",
+        "Profil"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/DiscoverLibraryScreen.jsx",
+      "name": "Découvrir — Bibliothèque",
+      "route": "/dashboard/discover",
+      "auth": "authenticated",
+      "purpose": "Découvrir la bibliothèque",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Découvrir la bibliothèque",
+        "Explorez les chansons créées par notre communauté",
+        "Rechercher une chanson...",
+        "Découvrir"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/EditLyricsScreen.jsx",
+      "name": "Étape 5 — Édition des paroles",
+      "route": "/dashboard/create/lyrics/edit",
+      "auth": "authenticated",
+      "purpose": "Édite tes paroles",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Édite tes paroles",
+        "Retour",
+        "Édition",
+        "Personnalise la chanson à ton goût",
+        "Tes paroles",
+        "Clique pour éditer · Maximum 500 mots",
+        "Nombre de mots",
+        "max",
+        "Réinitialiser",
+        "Copier",
+        "Enregistrer"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/EditProfileScreen.jsx",
+      "name": "Éditer le profil",
+      "route": "/dashboard/profile/edit",
+      "auth": "authenticated",
+      "purpose": "Éditer le profil",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Retour",
+        "Éditer profil",
+        "Nom complet",
+        "Amélie Kouassi",
+        "Email",
+        "amelie.kouassi@example.com",
+        "Localisation",
+        "Abidjan, Côte d'Ivoire",
+        "Enregistrer les modifications",
+        "Annuler"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/FinalConfirmationScreen.jsx",
+      "name": "Étape 7 — Générer ma chanson",
+      "route": "/dashboard/create/confirm",
+      "auth": "authenticated",
+      "purpose": "Prêt à générer",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Prêt à générer",
+        "Retour",
+        "Étape 7 sur 7",
+        "Anniversaire",
+        "Afrobeat",
+        "Voici un résumé de ta chanson",
+        "Occasion",
+        "Style musical",
+        "Voix",
+        "Femme",
+        "Langue",
+        "Français",
+        "Aperçu des paroles",
+        "Voir les paroles complètes",
+        "Tu es sur le point de générer ta chanson",
+        "Si tu n'as pas encore payé, tu seras redirigé vers la page de paiement.",
+        "Générer votre chanson"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/MyFavoritesSongsScreen.jsx",
+      "name": "Mes Favoris - Chansons Aimées",
+      "route": "/dashboard/favorites",
+      "auth": "authenticated",
+      "purpose": "Mes Favoris",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Mes Favoris",
+        "4 chansons · 5 heures de musique",
+        "Profil"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/MySongsScreen.jsx",
+      "name": "Mes chansons",
+      "route": "/dashboard/songs/overview",
+      "auth": "authenticated",
+      "purpose": "Mes chansons",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Mes chansons",
+        "Gérez vos créations musicales",
+        "Trier"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/NotificationsSettingsScreen.jsx",
+      "name": "Paramètres de notifications",
+      "route": "/dashboard/settings/notifications",
+      "auth": "authenticated",
+      "purpose": "Vos chansons ; Communauté ; Système",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Vos chansons",
+        "Communauté",
+        "Système",
+        "Retour",
+        "Notifications",
+        "Génération terminée",
+        "Nouvelles likes",
+        "Nouvelles écoutes",
+        "Concours & événements",
+        "Tendances musicales",
+        "Emails promotionnels",
+        "Alertes de sécurité",
+        "Vous pouvez modifier ces paramètres à tout moment. Vos préférences seront sauvegardées automatiquement."
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/PaymentScreen.jsx",
+      "name": "Page de Paiement",
+      "route": "/dashboard/payment-preview",
+      "auth": "authenticated",
+      "purpose": "Finalisez votre paiement ; Vos informations ; Résumé de commande",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Finalisez votre paiement",
+        "Vos informations",
+        "Résumé de commande",
+        "Retour",
+        "Remplissez vos informations pour générer votre chanson",
+        "Nom complet",
+        "Jean Dupont",
+        "Email",
+        "jean@example.com",
+        "Numéro de téléphone",
+        "+225",
+        "XX XX XX XX XX",
+        "10 chiffres requis",
+        "Plan Populaire",
+        "5 chansons",
+        "Total",
+        "2 000 FCFA",
+        "Paiement 100% sécurisé",
+        "Vous recevrez un lien de paiement mobile money par SMS pour finaliser votre achat.",
+        "Confirmer le paiement",
+        "Annuler"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/ReviewLyricsScreen.jsx",
+      "name": "Étape 5 — Révision des paroles",
+      "route": "/dashboard/create/lyrics",
+      "auth": "authenticated",
+      "purpose": "Révise les paroles",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Révise les paroles",
+        "Retour",
+        "Étape 5 sur 7",
+        "Anniversaire",
+        "Afrobeat",
+        "Tu peux les modifier avant la génération",
+        "Paroles générées",
+        "Généré par l'IA",
+        "Durée estimée",
+        "~1:50",
+        "max",
+        "Rallonger les paroles",
+        "Modifier les paroles",
+        "Les paroles peuvent être éditées librement. Elles seront utilisées pour la génération musicale finale.",
+        "Continuer"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/SettingsAppearanceLanguageMobile.jsx",
+      "name": "Paramètres - Apparence et Langue",
+      "route": "/dashboard/settings",
+      "auth": "authenticated",
+      "purpose": "Paramètres ; Apparence ; Langue ; Audio ; Données ; À propos",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Paramètres",
+        "Apparence",
+        "Langue",
+        "Audio",
+        "Données",
+        "À propos",
+        "Personnalise ton expérience",
+        "Thème",
+        "Clair",
+        "Sombre",
+        "Auto",
+        "Taille du texte",
+        "Normal",
+        "Petit",
+        "Grand",
+        "Français",
+        "English",
+        "Español",
+        "Português",
+        "Volume des notifications",
+        "Sons de l'app",
+        "Qualité audio",
+        "Haute qualité",
+        "Effacer le cache",
+        "42 MB",
+        "Assistant de téléchargement"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/SongCreationGenreSelection.jsx",
+      "name": "Créer une Chanson - Sélection Genre",
+      "route": "/dashboard/create/genre",
+      "auth": "authenticated",
+      "purpose": "Créer une Chanson ; Quel est ton genre préféré ?",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "desktop",
+      "keyElements": [
+        "Créer une Chanson",
+        "Quel est ton genre préféré ?",
+        "Accueil",
+        "Découvrir",
+        "Créer",
+        "Bibliothèque",
+        "Mes chansons",
+        "Téléchargements",
+        "Favoris",
+        "Concours",
+        "Crédits",
+        "Paiement",
+        "Profil",
+        "Paramètres",
+        "Statistiques",
+        "Musika",
+        "chansons restantes",
+        "Acheter des crédits",
+        "Français",
+        "Déconnexion",
+        "Étape 1 sur 10 • Sélection du genre",
+        "Progression",
+        "Choisis le style musical qui te correspond le mieux pour ta chanson",
+        "Retour",
+        "Continuer"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/SongCreationStep1Mobile.jsx",
+      "name": "Étape 1 — Choisir une occasion",
+      "route": "/dashboard/create",
+      "auth": "authenticated",
+      "purpose": "Quelle est l'occasion ?",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Quelle est l'occasion ?",
+        "Retour",
+        "Étape 1 sur 8",
+        "Choisis le thème de ta chanson",
+        "Continuer"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/SongPlayerScreen.jsx",
+      "name": "Lecteur de chanson",
+      "route": "/dashboard/songs/player",
+      "auth": "authenticated",
+      "purpose": "Lecteur de chanson",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "En écoute",
+        "Partager",
+        "Télécharger",
+        "Suivant",
+        "Découvrir"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/StepAdditionalParams.jsx",
+      "name": "Étape 4 — Paramètres additionnels",
+      "route": "/dashboard/create/parameters",
+      "auth": "authenticated",
+      "purpose": "Paramètres additionnels",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Paramètres additionnels",
+        "Retour",
+        "Étape 4 sur 7",
+        "Anniversaire",
+        "Énergique",
+        "Affine ta chanson avec plus d'options",
+        "Langue des paroles",
+        "Voix du chanteur",
+        "Femme",
+        "Homme",
+        "Duo",
+        "Détail spécial (optionnel)",
+        "Y a-t-il un événement ou moment spécial que tu aimerais ajouter ?",
+        "Maximum 50 mots · L'IA transcrit automatiquement le vocal",
+        "Info :",
+        "Tu pourras modifier les paroles avant la génération musicale",
+        "Générer les paroles",
+        "Cela utilisera 1 crédit"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/StepGeneratingLyrics.jsx",
+      "name": "Étape 4 — Génération des paroles (Animation)",
+      "route": "/dashboard/create/lyrics/generating",
+      "auth": "authenticated",
+      "purpose": "Génération en cours...",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Génération en cours...",
+        "MusikPro crée tes paroles uniques",
+        "Au cœur de la nuit étoilée",
+        "Ton amour brille de mille feux",
+        "À jamais gravé dans nos cœurs...",
+        "Les moments partagés...",
+        "Étape 5 sur 7 — Génération",
+        "Les paroles seront personnalisées pour ton moment spécial"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/StepStory.jsx",
+      "name": "Étape 2 — Raconte ton histoire",
+      "route": "/dashboard/create/story",
+      "auth": "authenticated",
+      "purpose": "Raconte ton histoire",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Raconte ton histoire",
+        "Retour",
+        "Étape 2 sur 7",
+        "Anniversaire",
+        "Décris ce que tu veux dans ta chanson",
+        "Ex: Une chanson pour les 50 ans de ma mère Fatou, elle adore danser et est toujours joyeuse...",
+        "0 / 1000 caractères",
+        "Tu peux aussi parler !",
+        "Appuie sur le micro et parle librement. L'IA transcrit et améliore automatiquement ton texte.",
+        "Durée recommandée : 30 à 60 secondes",
+        "Astuce :",
+        "Plus tu donnes de détails, plus ta chanson sera personnalisée ! Mentionne les prénoms, souvenirs, traits de caractère...",
+        "Continuer",
+        "Minimum 10 caractères"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/StepStyleAndMood.jsx",
+      "name": "Étape 3 — Choisis le style et l'ambiance",
+      "route": "/dashboard/create/style",
+      "auth": "authenticated",
+      "purpose": "Choisis le style et l'ambiance ; Genre musical ; Ambiance",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Choisis le style et l'ambiance",
+        "Genre musical",
+        "Ambiance",
+        "Retour",
+        "Étape 3 sur 7",
+        "Anniversaire",
+        "Sélectionne le genre musicale et l'émotion",
+        "Rythmes énergiques et dansants",
+        "Ambiance cool et urbaine",
+        "Émotion et spiritualité",
+        "Smooth et moderne",
+        "Intime et personnel",
+        "Upbeat",
+        "Tender",
+        "Majestic",
+        "Fun",
+        "Epic",
+        "Magical",
+        "Conseil :",
+        "Combine un genre avec une ambiance pour plus de personnalisation !",
+        "Continuer",
+        "Sélectionne au moins un genre et une ambiance"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/UserMenuMobile.jsx",
+      "name": "Menu Utilisateur Mobile",
+      "route": "/dashboard/menu",
+      "auth": "authenticated",
+      "purpose": "Menu ; Kofi Mensah",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Menu",
+        "Kofi Mensah",
+        "Mon Profil",
+        "Gérer mes informations",
+        "Mes Favoris",
+        "Chansons aimées",
+        "Téléchargements",
+        "Chansons hors ligne",
+        "Notifications",
+        "Gérer les alertes",
+        "Crédits",
+        "Il te reste 3 chansons",
+        "Aide & FAQ",
+        "Questions fréquentes",
+        "Support",
+        "Nous contacter",
+        "Paramètres",
+        "Apparence et langue",
+        "kofi.mensah@email.com",
+        "Premium",
+        "Français",
+        "Déconnexion",
+        "Profil"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/UserProfileScreen.jsx",
+      "name": "Profil Utilisateur",
+      "route": "/dashboard/profile",
+      "auth": "authenticated",
+      "purpose": "Kofi Mensah ; Plan actuel ; Compte ; Support",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Kofi Mensah",
+        "Plan actuel",
+        "Compte",
+        "Support",
+        "Accra, Ghana",
+        "Membre depuis octobre 2024",
+        "Chansons",
+        "Écoutes",
+        "Likes",
+        "Populaire",
+        "5 chansons/mois • 2 000 FCFA",
+        "Voir les autres plans",
+        "Profil",
+        "Mot de passe",
+        "Notifications",
+        "Aide & FAQ",
+        "Contacter le support",
+        "Se déconnecter"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/UserDashboardDesktop.jsx",
+      "name": "Dashboard Utilisateur Desktop",
+      "route": "/dashboard",
+      "auth": "authenticated",
+      "purpose": "Bonjour Kofi 👋 ; Mes chansons ; Témoignages ; Tendances ; Activité récente",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "desktop",
+      "keyElements": [
+        "Bonjour Kofi 👋",
+        "Mes chansons",
+        "Témoignages",
+        "Tendances",
+        "Activité récente",
+        "Accueil",
+        "Découvrir",
+        "Créer",
+        "Bibliothèque",
+        "Téléchargements",
+        "Favoris",
+        "Concours",
+        "Crédits",
+        "Paiement",
+        "Profil",
+        "Paramètres",
+        "Statistiques",
+        "MusikPro",
+        "Français",
+        "Déconnexion",
+        "Il te reste 3 chansons",
+        "+ Créer une chanson",
+        "Afrobeat, Amapiano, Gospel…",
+        "Concours — Voix d'Afrique",
+        "Se termine le 31 juillet · 50 000 FCFA",
+        "Participer"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/UserDashboardMobile.jsx",
+      "name": "Dashboard Utilisateur Mobile",
+      "route": "/dashboard",
+      "auth": "authenticated",
+      "purpose": "Bonjour Kofi 👋 ; Mes chansons ; Tendances ; Télécharger l'application ; Témoignages",
+      "states": [
+        "default"
+      ],
+      "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Bonjour Kofi 👋",
+        "Mes chansons",
+        "Tendances",
+        "Télécharger l'application",
+        "Témoignages",
+        "Il te reste 3 chansons",
+        "+ Créer une chanson",
+        "Afrobeat, Amapiano, Gospel…",
+        "Concours — Voix d'Afrique",
+        "Se termine le 31 juillet · 50 000 FCFA",
+        "Participer",
+        "Voir tout",
+        "Créez vos chansons partout, n'importe quand",
+        "Play Store",
+        "App Store",
+        "Accueil"
+      ],
+      "interactions": [
+        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
+      ],
+      "dataNeeds": [
+        "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
+      ],
+      "integrations": []
+    }
+  ]
+}

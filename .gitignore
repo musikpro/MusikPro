@@ -1,0 +1,36 @@
+node_modules
+.next
+out/
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+.env.*.local
+*.log
+.DS_Store
+coverage
+.vercel
+.idea/
+
+# Local setup output (V0.7.1)
+africa-saas.config.json
+generated/setup-summary.json
+generated/payment-routes.sql
+
+# Local setup progress / reports
+.africa-saas/
+generated/setup-saas-report.md
+generated/setup-saas-report.json
+
+# Local Codex MCP config (may contain bearer tokens)
+.codex/config.toml
+
+tsconfig.tsbuildinfo
+
+# Generated local reports/artifacts: keep directory only
+generated/*
+!generated/.gitkeep
+.env*
+
+!.env.example

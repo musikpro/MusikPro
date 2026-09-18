@@ -1,0 +1,42 @@
+{
+  "version": "0.10.1",
+  "appName": "My Africa SaaS",
+  "appUrl": "http://localhost:3000",
+  "country": "CI",
+  "currency": "XOF",
+  "database": "neon",
+  "auth": "better-auth",
+  "email": "resend",
+  "storage": "none",
+  "securityLevel": "high",
+  "paymentsEnabled": false,
+  "providers": [],
+  "defaultProvider": null,
+  "methods": [],
+  "googleAuth": true,
+  "searchConsole": true,
+  "banani": true,
+  "cloudinaryEnabled": false,
+  "emailPasswordEnabled": true,
+  "upstashEnabled": null,
+  "mobileAppEnabled": false,
+  "mobileApp": {
+    "enabled": false,
+    "appId": null,
+    "appName": null,
+    "productionUrl": null,
+    "platforms": [
+      "android",
+      "ios"
+    ],
+    "strategy": "webview-hosted",
+    "bottomNavigation": true,
+    "prepared": false
+  },
+  "staging": {
+    "required": true,
+    "provider": "vercel-preview",
+    "url": null,
+    "protectPreview": true
+  }
+}

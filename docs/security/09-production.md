@@ -1,0 +1,21 @@
+# 09 — Checklist production
+
+- [ ] HTTPS actif
+- [ ] `.env` absent du dépôt
+- [ ] secrets production séparés
+- [ ] Neon production séparé + sauvegarde testée
+- [ ] admin 2FA
+- [ ] email verification
+- [ ] Upstash rate limiting
+- [ ] Turnstile
+- [ ] CSP/headers vérifiés
+- [ ] webhooks signatures vérifiées
+- [ ] idempotence testée
+- [ ] montant/devise/référence vérifiés serveur
+- [ ] audit logs
+- [ ] Sentry/monitoring
+- [ ] fichiers privés R2
+- [ ] GitHub branch protection
+- [ ] Dependabot + secret scanning
+- [ ] tests permissions/IDOR
+- [ ] procédure de rotation des clés

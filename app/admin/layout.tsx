@@ -1,0 +1,5 @@
+import type { Metadata } from "next";
+import { privatePageMetadata } from "@/lib/seo/metadata";
+export const metadata: Metadata = privatePageMetadata;
+import Link from "next/link";import { requireAdmin } from "@/lib/auth/session";
+export default async function Layout({children}:{children:React.ReactNode}){await requireAdmin();return <><div className="shell"><div className="sidebar"><Link className="btn secondary" href="/admin">Admin</Link><Link className="btn secondary" href="/admin/users">Utilisateurs</Link><Link className="btn secondary" href="/admin/plans">Plans</Link><Link className="btn secondary" href="/admin/payments">Paiements</Link><Link className="btn secondary" href="/admin/payment-providers">Passerelles</Link><Link className="btn secondary" href="/admin/subscriptions">Abonnements</Link><Link className="btn secondary" href="/admin/credits">Crédits</Link><Link className="btn secondary" href="/admin/integrations/google">Google</Link><Link className="btn secondary" href="/admin/production-doctor">Production Doctor</Link><Link className="btn secondary" href="/dashboard">Mon dashboard</Link></div></div>{children}</>}

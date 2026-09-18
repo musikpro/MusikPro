@@ -1,0 +1,35 @@
+{
+  "version": "1.0",
+  "project": {
+    "id": "string-or-null",
+    "name": "string",
+    "source": "banani-mcp",
+    "observedAt": "ISO-8601"
+  },
+  "screens": [
+    {
+      "id": "stable-screen-id",
+      "name": "Screen name",
+      "route": "/route-or-TBD",
+      "auth": "public|authenticated|admin|TBD",
+      "purpose": "Visible purpose inferred from the design; business rules stay TBD",
+      "states": ["default"],
+      "viewport": "mobile|tablet|desktop|responsive|TBD",
+      "keyElements": ["visible UI element"],
+      "interactions": ["visible or explicitly described interaction"],
+      "dataNeeds": ["data visibly required by the screen"],
+      "integrations": ["only integrations explicitly visible or confirmed"],
+      "notes": "NON VÉRIFIÉ / À CONFIRMER when needed"
+    }
+  ],
+  "designSystem": {
+    "colors": [],
+    "typography": [],
+    "spacing": [],
+    "radii": [],
+    "navigation": [],
+    "notes": []
+  },
+  "flows": [],
+  "unverified": []
+}

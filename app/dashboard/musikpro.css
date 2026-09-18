@@ -1,0 +1,347 @@
+.musik-dashboard {
+  --musik-bg: #fafaf7;
+  --musik-ink: #1a1a1a;
+  --musik-orange: #f26522;
+  --musik-soft: #fde8d8;
+  --musik-border: #e8e3dc;
+  --musik-muted: #655f59;
+  background: var(--musik-bg);
+  color: var(--musik-ink);
+  min-height: 100dvh;
+  display: flex;
+  min-width: 0;
+  font-family: var(--font-musik), ui-sans-serif, system-ui, sans-serif;
+  padding-bottom: 90px;
+}
+.musik-dashboard * {
+  min-width: 0;
+}
+.musik-sidebar {
+  display: none;
+}
+.musik-workspace {
+  flex: 1;
+}
+.musik-brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 800;
+  font-size: 18px;
+}
+.musik-logo {
+  display: grid;
+  place-items: center;
+  background: var(--musik-orange);
+  color: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.musik-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--musik-border);
+  flex-wrap: wrap;
+}
+.musik-credit-pill {
+  margin-left: auto;
+  background: var(--musik-soft);
+  color: #88320b;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 10px;
+  border-radius: 14px;
+}
+.musik-avatar {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  width: 44px;
+  border-radius: 50%;
+  background: #ede8e2;
+  font-weight: 700;
+}
+.musik-main {
+  padding: 24px 16px;
+  max-width: 1400px;
+  margin: auto;
+}
+.musik-greeting {
+  margin-bottom: 24px;
+}
+.musik-greeting h1 {
+  font-size: clamp(24px, 5vw, 32px);
+  line-height: 1.2;
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.musik-greeting p {
+  color: var(--musik-muted);
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0;
+}
+.musik-greeting .musik-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+}
+.musik-columns,
+.musik-primary-column,
+.musik-secondary-column {
+  display: grid;
+  gap: 24px;
+}
+.musik-create {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 14px;
+  background: var(--musik-orange);
+  color: #19110c;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 20px #f2652226;
+}
+.musik-create-icon {
+  display: grid;
+  place-items: center;
+  height: 44px;
+  background: #ffffff40;
+  border-radius: 12px;
+}
+.musik-create h2 {
+  margin: 2px 0 5px;
+  font-size: 18px;
+}
+.musik-create p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.musik-create button {
+  grid-column: 1/-1;
+  background: #fff;
+  color: #88320b;
+  font-size: 13px;
+  font-weight: 700;
+  border: 0;
+  border-radius: 12px;
+  min-height: 44px;
+  padding: 10px 14px;
+  cursor: not-allowed;
+}
+.musik-create .musik-create-note {
+  grid-column: 1/-1;
+  font-size: 12px;
+}
+.musik-section {
+  scroll-margin-top: 24px;
+}
+.musik-section h2 {
+  font-size: 18px;
+  margin: 0 0 14px;
+}
+.musik-empty,
+.musik-panel {
+  background: #fff;
+  border: 1px solid var(--musik-border);
+  border-radius: 20px;
+  padding: 24px;
+}
+.musik-empty {
+  min-height: 220px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+.musik-empty-icon {
+  display: grid;
+  place-items: center;
+  background: var(--musik-soft);
+  color: #a53b0a;
+  width: 60px;
+  height: 60px;
+  border-radius: 18px;
+  margin-bottom: 10px;
+}
+.musik-empty h3,
+.musik-panel h3 {
+  font-size: 15px;
+  margin: 12px 0 8px;
+}
+.musik-empty p,
+.musik-panel p {
+  font-size: 13px;
+  line-height: 1.65;
+  color: var(--musik-muted);
+  margin: 0;
+  max-width: 340px;
+}
+.musik-panel > svg {
+  color: #a53b0a;
+}
+.musik-text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #a53b0a;
+}
+.musik-credit-card {
+  background: linear-gradient(135deg, var(--musik-soft), #fff);
+  border: 1px solid #f2652238;
+  border-radius: 24px;
+  padding: 26px;
+}
+.musik-credit-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 20px;
+  font-size: 18px;
+}
+.musik-balance {
+  display: block;
+  font-size: 52px;
+  color: #a53b0a;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.musik-credit-card p {
+  color: var(--musik-muted);
+  font-size: 13px;
+  margin: 8px 0 24px;
+}
+.musik-account-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 24px;
+  background: var(--musik-orange);
+  color: #19110c;
+  min-height: 48px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.musik-dashboard a:focus-visible,
+.musik-dashboard button:focus-visible {
+  outline: 3px solid #88320b;
+  outline-offset: 4px;
+}
+.musik-nav {
+  display: grid;
+  gap: 6px;
+  margin-top: 32px;
+}
+.musik-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 14px;
+  color: var(--musik-muted);
+  min-height: 48px;
+}
+.musik-nav a[aria-current="page"] {
+  background: var(--musik-soft);
+  color: #a53b0a;
+  font-weight: 700;
+}
+.musik-sidebar-note {
+  margin-top: auto;
+  padding-top: 32px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--musik-muted);
+}
+.musik-loading-block {
+  height: 220px;
+  border-radius: 20px;
+}
+.musik-loading-create {
+  height: 185px;
+  border-radius: 20px;
+  margin-bottom: 24px;
+}
+.musik-loading-credit {
+  height: 245px;
+  border-radius: 24px;
+}
+.musik-loading-title {
+  height: 24px;
+  width: 150px;
+  margin-bottom: 14px;
+}
+@media (min-width: 768px) {
+  .musik-dashboard {
+    padding-bottom: 0;
+  }
+  .musik-main {
+    padding: 32px;
+  }
+  .musik-header {
+    padding: 16px 32px;
+  }
+  .musik-columns {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+  .musik-create button {
+    max-width: 220px;
+  }
+  .musik-secondary-column {
+    align-content: start;
+  }
+}
+@media (min-width: 1200px) {
+  .musik-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: 232px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--musik-border);
+    padding: 28px 20px;
+  }
+  .musik-mobile-brand {
+    visibility: hidden;
+  }
+  .musik-main {
+    padding: 32px 36px;
+  }
+  .musik-columns {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 32px;
+  }
+  .musik-greeting {
+    margin-bottom: 28px;
+  }
+}
+
+.musik-dashboard .musik-brand {
+  min-height: 44px;
+}
+.musik-bottom-nav {
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  border: 1px solid #e8e3dc;
+  border-radius: 20px;
+  box-shadow: 0 4px 24px #00000012;
+}
+.musik-bottom-nav .mobile-bottom-link[aria-current="page"] {
+  background: #fde8d8;
+  color: #88320b;
+  font-weight: 700;
+}
+.musik-bottom-nav .mobile-bottom-link {
+  color: #655f59;
+}
