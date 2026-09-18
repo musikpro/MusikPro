@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+export const dynamic = "force-dynamic";
 import { privatePageMetadata } from "@/lib/seo/metadata";
 export const metadata: Metadata = privatePageMetadata;
 import Link from "next/link";import { requireAdmin } from "@/lib/auth/session";
