@@ -371,6 +371,21 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:320px;ov
   font-size: 12px;
   font-weight: 800;
 }
+.auth-reset-form .auth-hero-icon {
+  width: 68px;
+  height: 68px;
+  margin-bottom: 22px;
+}
+.auth-reset-form > form {
+  animation: auth-step-in 0.28s ease-out both;
+}
+.auth-reset-skeleton .auth-panel {
+  align-items: center;
+  gap: 32px;
+}
+.auth-reset-skeleton .auth-form {
+  margin: 0;
+}
 @keyframes auth-card-in {
   from {
     opacity: 0;
