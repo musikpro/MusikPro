@@ -20,6 +20,7 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 export default function StepAdditionalParams() {
   const demo = useDemo();
   const [detailError, setDetailError] = useState("");
+  const hasRequiredOptions = Boolean(demo.choices.language && demo.choices.voice);
 
   useEffect(() => {
     if (!detailError) return;
@@ -38,7 +39,8 @@ export default function StepAdditionalParams() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion} • 🚀 {demo.choices.mood}
+          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.choices.mood ? ` • 🚀 ${demo.choices.mood}` : ""}
         </span>
       </div>
 
@@ -61,7 +63,7 @@ export default function StepAdditionalParams() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("language", lang.name)}
+                onClick={() => demo.choose("language", demo.choices.language === lang.name ? "" : lang.name)}
                 aria-pressed={demo.choices.language === lang.name}
                 key={lang.name}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
@@ -87,7 +89,7 @@ export default function StepAdditionalParams() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("voice", voice.text)}
+                onClick={() => demo.choose("voice", demo.choices.voice === voice.text ? "" : voice.text)}
                 aria-pressed={demo.choices.voice === voice.text}
                 key={voice.text}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
@@ -146,6 +148,7 @@ export default function StepAdditionalParams() {
         <button
           type="button"
           data-demo-ready="true"
+          disabled={!hasRequiredOptions}
           onClick={() =>
             (() => {
               const parsed = demoDetailSchema.safeParse(demo.fields.detail);
@@ -162,7 +165,9 @@ export default function StepAdditionalParams() {
         >
           {t("Générer les paroles")} <Icon i="arrow-right" size={18} />
         </button>
-        <p className="text-xs text-muted-foreground text-center mt-2">{t("Une chanson de votre pack")}</p>
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          {hasRequiredOptions ? t("Une chanson de votre pack") : t("Choisis une langue et une voix pour continuer")}
+        </p>
       </div>
     </div>
   );

@@ -32,6 +32,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <DemoProvider
       mode={demo ? "demo" : "real"}
       initialBalance={balance}
+      persistenceId={demo ? "demo" : session.user.id}
       initialProfile={{
         name: session.user.name,
         email: session.user.email,

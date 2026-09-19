@@ -9,6 +9,7 @@ import {
 } from "@/db/schema";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import AdminSelect from "@/components/admin/AdminSelect";
 import { requireAdmin } from "@/lib/auth/session";
 import { providerCapabilities } from "@/lib/payments/capabilities";
 import { saveCountryRoute, savePlanMapping, saveProvider } from "./actions";
@@ -81,13 +82,18 @@ export default async function PaymentProvidersPage() {
                   <span>Priorité</span>
                   <input name="priority" type="number" defaultValue={config?.priority ?? 100} min="1" max="999" />
                 </label>
-                <label>
+                <div className="admin-provider-field">
                   <span>Mode</span>
-                  <select name="mode" defaultValue={config?.mode ?? "sandbox"}>
-                    <option value="sandbox">Sandbox</option>
-                    <option value="live">Live</option>
-                  </select>
-                </label>
+                  <AdminSelect
+                    name="mode"
+                    defaultValue={config?.mode ?? "sandbox"}
+                    ariaLabel={`Mode ${provider}`}
+                    options={[
+                      { value: "sandbox", label: "Sandbox" },
+                      { value: "live", label: "Live" },
+                    ]}
+                  />
+                </div>
                 <button type="submit">
                   <Icon i="save" size={16} />
                   Enregistrer
@@ -116,16 +122,16 @@ export default async function PaymentProvidersPage() {
                 <span>Pays ISO</span>
                 <input name="country" placeholder="CI" maxLength={2} required />
               </label>
-              <label className="admin-editor-field">
+              <div className="admin-editor-field">
                 <span>Fournisseur</span>
-                <select name="provider">
-                  {Object.entries(providerCapabilities)
+                <AdminSelect
+                  name="provider"
+                  ariaLabel="Fournisseur"
+                  options={Object.entries(providerCapabilities)
                     .filter(([, capability]) => !["scaffold", "merchant-validation"].includes(capability.readiness))
-                    .map(([provider]) => (
-                      <option key={provider}>{provider}</option>
-                    ))}
-                </select>
-              </label>
+                    .map(([provider]) => ({ value: provider, label: provider }))}
+                />
+              </div>
               <label className="admin-editor-field">
                 <span>Priorité</span>
                 <input name="priority" type="number" defaultValue="100" />

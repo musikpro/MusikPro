@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { getNameInitials } from "@/lib/profile/name-initials";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Icon from "@/components/banani/Icon";
+import { authClient } from "@/lib/auth/client";
 
 type AdminShellProps = {
   children: ReactNode;
@@ -147,8 +148,22 @@ function Account({ user }: { user: AdminShellProps["user"] }) {
 
 export default function AdminShell({ children, user }: AdminShellProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const sidebar = useRef<HTMLElement>(null);
+
+  const signOut = async () => {
+    if (signingOut) return;
+    setSigningOut(true);
+    try {
+      await authClient.signOut();
+      router.replace("/login");
+      router.refresh();
+    } finally {
+      setSigningOut(false);
+    }
+  };
 
   useEffect(() => {
     const element = sidebar.current;
@@ -204,6 +219,42 @@ export default function AdminShell({ children, user }: AdminShellProps) {
           </button>
         </header>
 
+        <header className="admin-desktop-topbar">
+          <div className="admin-topbar-context">
+            <span className="admin-topbar-icon">
+              <Icon i="command" size={17} />
+            </span>
+            <div>
+              <strong>Centre de pilotage</strong>
+              <small>Administration de la plateforme MusikPro</small>
+            </div>
+          </div>
+          <div className="admin-topbar-actions">
+            <span className="admin-topbar-status">
+              <span />
+              Production active
+            </span>
+            <Link className="admin-topbar-client" href="/dashboard">
+              <Icon i="arrow-up-right" size={16} />
+              Espace client
+            </Link>
+            <button
+              type="button"
+              className="admin-topbar-logout"
+              aria-label="Se déconnecter du compte propriétaire"
+              title="Se déconnecter"
+              disabled={signingOut}
+              onClick={() => void signOut()}
+            >
+              <Icon i="log-out" size={16} />
+              <span>{signingOut ? "Déconnexion…" : "Déconnexion"}</span>
+            </button>
+            <span className="admin-topbar-avatar" aria-label={`Compte de ${user.name}`}>
+              {getNameInitials(user.name)}
+            </span>
+          </div>
+        </header>
+
         <div className="admin-content">{children}</div>
 
         <nav className="admin-mobile-tabs" aria-label="Navigation propriétaire mobile">
@@ -253,6 +304,10 @@ export default function AdminShell({ children, user }: AdminShellProps) {
               <Icon i="arrow-left" size={17} />
               Espace client
             </Link>
+            <button type="button" className="admin-logout-action" disabled={signingOut} onClick={() => void signOut()}>
+              <Icon i="log-out" size={17} />
+              {signingOut ? "Déconnexion…" : "Se déconnecter"}
+            </button>
           </aside>
         </div>
       ) : null}

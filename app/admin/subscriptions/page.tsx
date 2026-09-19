@@ -62,21 +62,21 @@ export default async function AdminSubscriptionsPage() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.sub.id}>
-                    <td className="admin-table-primary">
+                    <td className="admin-table-primary" data-label="Utilisateur">
                       <strong>{row.user?.name ?? "Utilisateur"}</strong>
                       <small>{row.user?.email ?? row.sub.userId}</small>
                     </td>
-                    <td>{row.plan?.name ?? "Pack supprimé"}</td>
-                    <td>{row.sub.provider}</td>
-                    <td>
+                    <td data-label="Pack">{row.plan?.name ?? "Pack supprimé"}</td>
+                    <td data-label="Provider">{row.sub.provider}</td>
+                    <td data-label="Statut">
                       <span
                         className={`admin-status ${row.sub.status === "active" ? "is-success" : row.sub.status === "failed" ? "is-danger" : "is-pending"}`}
                       >
                         {row.sub.status}
                       </span>
                     </td>
-                    <td>{row.sub.renewalMode}</td>
-                    <td>{row.sub.currentPeriodEnd?.toLocaleDateString("fr-FR") ?? "—"}</td>
+                    <td data-label="Renouvellement">{row.sub.renewalMode}</td>
+                    <td data-label="Fin de période">{row.sub.currentPeriodEnd?.toLocaleDateString("fr-FR") ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>

@@ -3,6 +3,7 @@ import { getServiceDb } from "@/db";
 import { plans } from "@/db/schema";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import AdminSelect from "@/components/admin/AdminSelect";
 import { requireAdmin } from "@/lib/auth/session";
 import { createPlan, togglePlan } from "./actions";
 
@@ -72,25 +73,27 @@ export default async function AdminPlansPage() {
             <span>Montant</span>
             <input name="amount" type="number" min="1" step="1" required />
           </label>
-          <label className="admin-editor-field">
+          <div className="admin-editor-field">
             <span>Devise</span>
-            <select name="currency" defaultValue="XOF">
-              <option>XOF</option>
-              <option>XAF</option>
-              <option>NGN</option>
-              <option>GHS</option>
-              <option>KES</option>
-              <option>USD</option>
-              <option>EUR</option>
-            </select>
-          </label>
-          <label className="admin-editor-field">
+            <AdminSelect
+              name="currency"
+              defaultValue="XOF"
+              ariaLabel="Devise"
+              options={["XOF", "XAF", "NGN", "GHS", "KES", "USD", "EUR"].map((value) => ({ value, label: value }))}
+            />
+          </div>
+          <div className="admin-editor-field">
             <span>Période</span>
-            <select name="interval" defaultValue="month">
-              <option value="month">Mensuel</option>
-              <option value="year">Annuel</option>
-            </select>
-          </label>
+            <AdminSelect
+              name="interval"
+              defaultValue="month"
+              ariaLabel="Période"
+              options={[
+                { value: "month", label: "Mensuel" },
+                { value: "year", label: "Annuel" },
+              ]}
+            />
+          </div>
           <label className="admin-editor-field">
             <span>Description</span>
             <input name="description" maxLength={500} placeholder="À qui s’adresse ce pack ?" />

@@ -20,7 +20,7 @@ export default async function AdminUsersPage() {
         title="Utilisateurs"
         description={`${users.length.toLocaleString("fr-FR")} comptes récents chargés depuis Neon.`}
       />
-      <section className="admin-metric-row">
+      <section className="admin-metric-row admin-users-metrics">
         <AdminMetric
           icon="users"
           value={users.length.toLocaleString("fr-FR")}

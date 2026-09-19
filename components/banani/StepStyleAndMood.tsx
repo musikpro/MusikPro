@@ -2,6 +2,7 @@
 const t = (text: string) => text;
 import SelectionMark from "./SelectionMark";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
+import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 4 — Choisis le style et l'ambiance";
@@ -11,8 +12,18 @@ import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 
-export default function StepStyleAndMood() {
+export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[] }) {
   const demo = useDemo();
+  const hasSelectedGenre = genres.some((genre) => genre.name === demo.choices.genre);
+  const moods = [
+    { emoji: "🚀", label: "Énergique", desc: t("Upbeat") },
+    { emoji: "💕", label: "Romantique", desc: t("Tender") },
+    { emoji: "👑", label: "Épique", desc: t("Majestic") },
+    { emoji: "😂", label: "Joyeuse", desc: t("Fun") },
+    { emoji: "🎭", label: "Dramatique", desc: t("Epic") },
+    { emoji: "🌙", label: "Mystique", desc: t("Magical") },
+  ];
+  const hasSelectedMood = moods.some((mood) => mood.label === demo.choices.mood);
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create/recipient" current={4} total={8} />
@@ -40,32 +51,33 @@ export default function StepStyleAndMood() {
         {/* Genre/Style Section */}
         <div className="mb-6">
           <h2 className="text-sm font-bold text-foreground mb-3">{t("Genre musical")}</h2>
-          <div className="flex flex-col gap-2">
-            {[
-              { name: "Afrobeat", desc: t("Rythmes énergiques et dansants"), icon: "drum", tone: "orange" },
-              { name: "Amapiano", desc: t("Ambiance cool et urbaine"), icon: "audio-waveform", tone: "violet" },
-              { name: "Gospel", desc: t("Émotion et spiritualité"), icon: "church", tone: "green" },
-              { name: "R&B", desc: t("Doux et moderne"), icon: "heart-pulse", tone: "rose" },
-              { name: "Acoustique", desc: t("Intime et personnel"), icon: "guitar", tone: "amber" },
-            ].map((genre) => (
+          <div className="creation-genre-grid grid grid-cols-3 gap-2">
+            {genres.map((genre) => (
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("genre", genre.name)}
+                onClick={() => demo.choose("genre", demo.choices.genre === genre.name ? "" : genre.name)}
                 aria-pressed={demo.choices.genre === genre.name}
                 key={genre.name}
-                className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 text-left flex items-start gap-3"
+                className="creation-genre-card demo-choice-card bg-card border-2 border-border rounded-lg p-2 text-center flex flex-col items-center gap-2"
               >
                 <SelectionMark selected={demo.choices.genre === genre.name} />
                 <span className={`genre-choice-icon genre-choice-icon-${genre.tone}`}>
                   <Icon i={genre.icon} size={20} />
                 </span>
-                <div className="flex-1">
+                <div className="min-w-0">
                   <p className="font-semibold text-sm text-foreground">{genre.name}</p>
-                  <p className="text-xs text-muted-foreground">{genre.desc}</p>
+                  <p className="text-xs text-muted-foreground">{genre.description}</p>
                 </div>
               </button>
             ))}
+            {!genres.length ? (
+              <div className="music-style-empty">
+                <Icon i="music-2" size={24} />
+                <strong>Aucun style disponible</strong>
+                <p>Les styles musicaux seront bientôt proposés.</p>
+              </div>
+            ) : null}
           </div>
         </div>
 
@@ -73,18 +85,11 @@ export default function StepStyleAndMood() {
         <div className="mb-6">
           <h2 className="text-sm font-bold text-foreground mb-3">{t("Ambiance")}</h2>
           <div className="grid grid-cols-3 gap-2">
-            {[
-              { emoji: "🚀", label: "Énergique", desc: t("Upbeat") },
-              { emoji: "💕", label: "Romantique", desc: t("Tender") },
-              { emoji: "👑", label: "Épique", desc: t("Majestic") },
-              { emoji: "😂", label: "Joyeuse", desc: t("Fun") },
-              { emoji: "🎭", label: "Dramatique", desc: t("Epic") },
-              { emoji: "🌙", label: "Mystique", desc: t("Magical") },
-            ].map((mood) => (
+            {moods.map((mood) => (
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("mood", mood.label)}
+                onClick={() => demo.choose("mood", demo.choices.mood === mood.label ? "" : mood.label)}
                 aria-pressed={demo.choices.mood === mood.label}
                 key={mood.label}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg py-3 px-2 flex flex-col items-center gap-1"
@@ -112,6 +117,7 @@ export default function StepStyleAndMood() {
         <button
           type="button"
           data-demo-ready="true"
+          disabled={!hasSelectedGenre || !hasSelectedMood}
           onClick={() => demo.go("/dashboard/create/parameters")}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}

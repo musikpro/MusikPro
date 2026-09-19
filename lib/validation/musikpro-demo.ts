@@ -3,6 +3,14 @@ import { z } from "zod";
 const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
 export const DEMO_LYRICS_MAX_WORDS = 5000;
 export const DEMO_LYRICS_MAX_CHARACTERS = 60000;
+export const demoCreationChoicesSchema = z.object({
+  occasion: z.string().max(80),
+  genre: z.string().max(80),
+  mood: z.string().max(80),
+  language: z.string().max(80),
+  voice: z.string().max(80),
+  recipientRelation: z.string().max(100),
+});
 export const DEMO_PHONE_RULES = {
   CI: { digits: 10, placeholder: "0708807015" },
   SN: { digits: 9, placeholder: "771234567" },

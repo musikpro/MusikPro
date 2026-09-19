@@ -29,6 +29,13 @@
       "when": 1789718037672,
       "tag": "0003_neat_harrier",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789846756142,
+      "tag": "0004_public_sugar_man",
+      "breakpoints": true
     }
   ]
 }

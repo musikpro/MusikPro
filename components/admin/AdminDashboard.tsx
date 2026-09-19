@@ -51,9 +51,12 @@ function StatCard({
 }) {
   return (
     <article className="admin-stat-card">
-      <span className={`admin-stat-icon is-${tone}`}>
-        <Icon i={icon} size={19} />
-      </span>
+      <div className="admin-stat-card-head">
+        <span className={`admin-stat-icon is-${tone}`}>
+          <Icon i={icon} size={19} />
+        </span>
+        <span className="admin-stat-signal" aria-hidden="true" />
+      </div>
       <strong>{value}</strong>
       <h2>{label}</h2>
       <p>{note}</p>

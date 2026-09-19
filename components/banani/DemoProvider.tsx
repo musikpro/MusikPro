@@ -12,10 +12,16 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { authClient } from "@/lib/auth/client";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
+import { demoCreationChoicesSchema } from "@/lib/validation/musikpro-demo";
 
 type DemoProfile = { name: string; email: string; location: string };
 
-function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile, initialBalance: number) {
+function useDemoState(
+  mode: "demo" | "real",
+  initialProfile: DemoProfile,
+  initialBalance: number,
+  persistenceId: string,
+) {
   const router = useRouter();
   const browserPathname = usePathname();
   const isDemo = mode === "demo";
@@ -54,16 +60,39 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile, initia
   });
   const [choices, setChoices] = useState<Record<string, string>>({
     occasion: "Anniversaire",
-    genre: "Afrobeat",
-    mood: "Énergique",
-    language: "Français",
-    voice: "Femme",
+    genre: "",
+    mood: "",
+    language: "",
+    voice: "",
     theme: "Clair",
     appLanguage: "Français",
     currency: "XOF",
     phoneCountry: "CI",
     recipientRelation: "",
   });
+  const [creationDraftReady, setCreationDraftReady] = useState(false);
+  const creationDraftKey = `musikpro:creation-draft:v1:${persistenceId}`;
+  useEffect(() => {
+    let active = true;
+    let restoredChoices: Record<string, string> | null = null;
+    try {
+      const savedDraft = window.localStorage.getItem(creationDraftKey);
+      if (savedDraft) {
+        const parsed = demoCreationChoicesSchema.safeParse(JSON.parse(savedDraft));
+        if (parsed.success) restoredChoices = parsed.data;
+      }
+    } catch {
+      window.localStorage.removeItem(creationDraftKey);
+    }
+    window.queueMicrotask(() => {
+      if (!active) return;
+      if (restoredChoices) setChoices((current) => ({ ...current, ...restoredChoices }));
+      setCreationDraftReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [creationDraftKey]);
   const [profile, setProfile] = useState(initialProfile);
   const balance = defaults.balance;
   const [songs, setSongs] = useState(() => defaults.songs);
@@ -155,7 +184,20 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile, initia
     router.refresh();
   };
   const field = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
-  const choose = (key: string, value: string) => setChoices((prev) => ({ ...prev, [key]: value }));
+  const choose = (key: string, value: string) => {
+    const nextChoices = { ...choices, [key]: value };
+    setChoices(nextChoices);
+    if (!creationDraftReady || !["occasion", "genre", "mood", "language", "voice", "recipientRelation"].includes(key)) {
+      return;
+    }
+    const draft = demoCreationChoicesSchema.safeParse(nextChoices);
+    if (!draft.success) return;
+    try {
+      window.localStorage.setItem(creationDraftKey, JSON.stringify(draft.data));
+    } catch {
+      // A blocked or full browser storage must not interrupt song creation.
+    }
+  };
   const toggle = (key: string) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   const toggleFavorite = (title: string) =>
     setFavorites((prev) => (prev.includes(title) ? prev.filter((v) => v !== title) : [...prev, title]));
@@ -276,13 +318,15 @@ export function DemoProvider({
   mode,
   initialProfile,
   initialBalance = 0,
+  persistenceId,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
   initialProfile: DemoProfile;
   initialBalance?: number;
+  persistenceId: string;
 }) {
-  const state = useDemoState(mode, initialProfile, initialBalance);
+  const state = useDemoState(mode, initialProfile, initialBalance, persistenceId);
   const [offline, setOffline] = useState(false);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { AdminBackLink, AdminPage, AdminPageHeader, AdminSourceNotice } from "./AdminPage";
+import AdminSelect from "./AdminSelect";
 
 type Field = {
   label: string;
@@ -37,22 +38,31 @@ export default function AdminDraftForm({
       <AdminSourceNotice>{note}</AdminSourceNotice>
       <section className="admin-panel admin-editor-card">
         <div className="admin-editor-grid">
-          {fields.map((field) => (
-            <label className={`admin-editor-field ${field.type === "textarea" ? "is-wide" : ""}`} key={field.label}>
-              <span>{field.label}</span>
-              {field.type === "textarea" ? (
+          {fields.map((field) => {
+            const content =
+              field.type === "textarea" ? (
                 <textarea defaultValue={field.value} placeholder={field.placeholder} rows={5} />
               ) : field.type === "select" ? (
-                <select defaultValue={field.value ?? field.options?.[0]}>
-                  {field.options?.map((option) => (
-                    <option key={option}>{option}</option>
-                  ))}
-                </select>
+                <AdminSelect
+                  defaultValue={field.value ?? field.options?.[0]}
+                  options={(field.options ?? []).map((option) => ({ value: option, label: option }))}
+                  ariaLabel={field.label}
+                />
               ) : (
                 <input defaultValue={field.value} placeholder={field.placeholder} />
-              )}
-            </label>
-          ))}
+              );
+            return field.type === "select" ? (
+              <div className="admin-editor-field" key={field.label}>
+                <span>{field.label}</span>
+                {content}
+              </div>
+            ) : (
+              <label className={`admin-editor-field ${field.type === "textarea" ? "is-wide" : ""}`} key={field.label}>
+                <span>{field.label}</span>
+                {content}
+              </label>
+            );
+          })}
         </div>
         {choices?.length ? (
           <fieldset className="admin-choice-fieldset">

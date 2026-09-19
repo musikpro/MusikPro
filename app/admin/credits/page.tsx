@@ -93,14 +93,14 @@ export default async function AdminCreditsPage() {
               <tbody>
                 {rows.map((row) => (
                   <tr key={row.credit.id}>
-                    <td className="admin-table-primary">
+                    <td className="admin-table-primary" data-label="Utilisateur">
                       <strong>{row.name ?? "Utilisateur"}</strong>
                       <small>{row.email ?? row.credit.userId}</small>
                     </td>
-                    <td>
+                    <td data-label="Chansons">
                       <strong>{row.credit.balance}</strong>
                     </td>
-                    <td>{row.credit.updatedAt.toLocaleString("fr-FR")}</td>
+                    <td data-label="Dernière mise à jour">{row.credit.updatedAt.toLocaleString("fr-FR")}</td>
                   </tr>
                 ))}
               </tbody>

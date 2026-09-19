@@ -79,19 +79,19 @@ export default function AdminPaymentsTable({ rows }: { rows: AdminPaymentRow[] }
           <tbody>
             {filtered.map((row) => (
               <tr key={row.id}>
-                <td>{new Date(row.createdAt).toLocaleString("fr-FR")}</td>
-                <td className="admin-table-primary">
+                <td data-label="Date">{new Date(row.createdAt).toLocaleString("fr-FR")}</td>
+                <td className="admin-table-primary" data-label="Référence">
                   <strong>{row.reference}</strong>
                   <small>{row.country ?? "Pays non renseigné"}</small>
                 </td>
-                <td>{row.provider}</td>
-                <td>{row.method ?? "—"}</td>
-                <td>
+                <td data-label="Provider">{row.provider}</td>
+                <td data-label="Moyen">{row.method ?? "—"}</td>
+                <td data-label="Montant">
                   <strong>
                     {row.amount.toLocaleString("fr-FR")} {row.currency}
                   </strong>
                 </td>
-                <td>
+                <td data-label="Statut">
                   <span
                     className={`admin-status ${row.status === "paid" ? "is-success" : row.status === "failed" ? "is-danger" : "is-pending"}`}
                   >

@@ -9,6 +9,7 @@
   },
   "exempt": {
     "plans": "global catalog, server-managed; public reads are filtered by active flag",
+    "music_styles": "global music catalog, server-managed; client reads are filtered by active flag",
     "payment_fulfillments": "server-only idempotency ledger; never client queried",
     "webhook_events": "server-only provider event ledger",
     "security_events": "server-only security telemetry",

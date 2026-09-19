@@ -3,71 +3,13 @@ const t = (text: string) => text;
 import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import { demoDestination } from "@/lib/demo/navigation";
+import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 
 export const displayName = "Créer une Chanson - Sélection Genre";
 export const screenSize = "desktop";
 
 import Icon from "./Icon";
 import UserAvatar from "./UserAvatar";
-
-const genres = [
-  {
-    name: "Afrobeat",
-    icon: "music-2",
-    color: "bg-orange-50 text-orange-600",
-    description: "Rythmes africains énergiques",
-    selected: false,
-  },
-  {
-    name: "Amapiano",
-    icon: "music-2",
-    color: "bg-purple-50 text-purple-600",
-    description: "Piano et percussions sud-africaines",
-    selected: false,
-  },
-  {
-    name: "Gospel",
-    icon: "music-2",
-    color: "bg-green-50 text-green-600",
-    description: "Spirituel et inspirant",
-    selected: false,
-  },
-  {
-    name: "Zouglou",
-    icon: "music-2",
-    color: "bg-yellow-50 text-yellow-600",
-    description: "Traditionnel ivoirien",
-    selected: false,
-  },
-  {
-    name: "R&B",
-    icon: "music-2",
-    color: "bg-pink-50 text-pink-600",
-    description: "Moderne et sensuel",
-    selected: false,
-  },
-  {
-    name: "Reggae",
-    icon: "music-2",
-    color: "bg-red-50 text-red-600",
-    description: "Décontracté et positif",
-    selected: false,
-  },
-  {
-    name: "Drill",
-    icon: "music-2",
-    color: "bg-blue-50 text-blue-600",
-    description: "Urban et contemporain",
-    selected: false,
-  },
-  {
-    name: "Afrohouse",
-    icon: "music-2",
-    color: "bg-indigo-50 text-indigo-600",
-    description: "Électronique africaine",
-    selected: false,
-  },
-];
 
 const navItems = [
   { icon: "home", label: t("Accueil"), active: false },
@@ -91,8 +33,9 @@ const profileNav = [
   { icon: "bar-chart-2", label: t("Statistiques"), active: false },
 ];
 
-export default function SongCreationGenre() {
+export default function SongCreationGenre({ genres }: { genres: MusicStyleOption[] }) {
   const demo = useDemo();
+  const hasSelectedGenre = genres.some((genre) => genre.name === demo.choices.genre);
   return (
     <div className="bg-background flex min-h-full font-body">
       {/* Left Sidebar */}
@@ -256,12 +199,12 @@ export default function SongCreationGenre() {
           </div>
 
           {/* Genre Grid */}
-          <div className="grid grid-cols-4 gap-4 flex-1 max-h-96">
+          <div className="grid grid-cols-3 gap-4 flex-1 max-h-96">
             {genres.map((genre) => (
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("genre", genre.name)}
+                onClick={() => demo.choose("genre", demo.choices.genre === genre.name ? "" : genre.name)}
                 aria-pressed={demo.choices.genre === genre.name}
                 key={genre.name}
                 className={`demo-choice-card rounded-2xl p-6 flex flex-col items-center justify-center text-center border-2 transition-all ${
@@ -277,13 +220,22 @@ export default function SongCreationGenre() {
                 }}
               >
                 <SelectionMark selected={demo.choices.genre === genre.name} />
-                <div className={`w-16 h-16 ${genre.color} rounded-2xl flex items-center justify-center mb-3`}>
+                <div
+                  className={`w-16 h-16 genre-choice-icon genre-choice-icon-${genre.tone} rounded-2xl flex items-center justify-center mb-3`}
+                >
                   <Icon i={genre.icon} size={24} />
                 </div>
                 <p className="font-bold text-base text-foreground mb-1">{genre.name}</p>
                 <p className="text-xs text-muted-foreground">{genre.description}</p>
               </button>
             ))}
+            {!genres.length ? (
+              <div className="music-style-empty col-span-3">
+                <Icon i="music-2" size={25} />
+                <strong>Aucun style disponible</strong>
+                <p>Les styles musicaux seront bientôt proposés.</p>
+              </div>
+            ) : null}
           </div>
 
           {/* Bottom Actions */}
@@ -300,6 +252,7 @@ export default function SongCreationGenre() {
             <button
               type="button"
               data-demo-ready="true"
+              disabled={!hasSelectedGenre}
               onClick={() => demo.go("/dashboard/create/story")}
               className="bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-lg flex items-center gap-2"
             >

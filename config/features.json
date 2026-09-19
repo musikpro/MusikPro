@@ -337,6 +337,29 @@
         "29 écrans importés correspondent à 28 routes, dont 27 nouvelles.",
         "Les paiements, le support, la génération et la lecture audio restent simulés ou explicitement indisponibles."
       ]
+    },
+    "music-style-catalog": {
+      "description": "Catalogue Neon des styles musicaux piloté par le propriétaire et affiché dans le parcours de création client.",
+      "optional": false,
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0004_public_sugar_man.sql",
+        "lib/music-styles/catalog.ts",
+        "lib/music-styles/server.ts",
+        "app/admin/music-styles/actions.ts",
+        "app/admin/music-styles/page.tsx",
+        "app/admin/music-styles/new/page.tsx",
+        "components/banani/SongCreationGenreSelection.tsx",
+        "components/banani/StepStyleAndMood.tsx"
+      ],
+      "routes": [],
+      "dependsOn": ["database", "auth"],
+      "removalComplexity": "medium",
+      "notes": [
+        "Les mutations sont réservées aux administrateurs et validées par Zod.",
+        "Le mode démonstration conserve ses données locales; les comptes réels lisent uniquement les styles actifs depuis Neon."
+      ]
     }
   },
   "removalProtocol": [

@@ -3,6 +3,13 @@
 import { useMemo, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { setRole } from "@/app/admin/users/actions";
+import { getNameInitials } from "@/lib/profile/name-initials";
+import AdminSelect from "./AdminSelect";
+
+const roleOptions = [
+  { value: "user", label: "Utilisateur" },
+  { value: "admin", label: "Administrateur" },
+] as const;
 
 export type AdminUserRow = {
   id: string;
@@ -15,7 +22,13 @@ export type AdminUserRow = {
   banned: boolean;
 };
 
-export default function AdminUsersTable({ rows, twoFactorAvailable }: { rows: AdminUserRow[]; twoFactorAvailable: boolean }) {
+export default function AdminUsersTable({
+  rows,
+  twoFactorAvailable,
+}: {
+  rows: AdminUserRow[];
+  twoFactorAvailable: boolean;
+}) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<"all" | "active" | "inactive">("all");
   const filtered = useMemo(() => {
@@ -27,7 +40,7 @@ export default function AdminUsersTable({ rows, twoFactorAvailable }: { rows: Ad
     );
   }, [query, rows, state]);
   return (
-    <section className="admin-panel admin-table-panel">
+    <section className="admin-panel admin-table-panel admin-users-panel">
       <div className="admin-catalog-toolbar admin-table-toolbar">
         <label className="admin-search-field">
           <Icon i="search" size={17} />
@@ -69,8 +82,15 @@ export default function AdminUsersTable({ rows, twoFactorAvailable }: { rows: Ad
             {filtered.map((row) => (
               <tr key={row.id}>
                 <td className="admin-table-primary">
-                  <strong>{row.name}</strong>
-                  <small>{row.email}</small>
+                  <div className="admin-table-user">
+                    <span className="admin-table-avatar" aria-hidden="true">
+                      {getNameInitials(row.name)}
+                    </span>
+                    <span>
+                      <strong>{row.name}</strong>
+                      <small>{row.email}</small>
+                    </span>
+                  </div>
                 </td>
                 <td>{new Date(row.createdAt).toLocaleDateString("fr-FR")}</td>
                 <td>
@@ -88,12 +108,15 @@ export default function AdminUsersTable({ rows, twoFactorAvailable }: { rows: Ad
                 <td>
                   <form action={setRole} className="admin-inline-form">
                     <input type="hidden" name="userId" value={row.id} />
-                    <select name="role" defaultValue={row.role} aria-label={`Rôle de ${row.name}`}>
-                      <option value="user">Utilisateur</option>
-                      <option value="admin">Administrateur</option>
-                    </select>
+                    <AdminSelect
+                      name="role"
+                      defaultValue={row.role}
+                      options={roleOptions}
+                      ariaLabel={`Rôle de ${row.name}`}
+                    />
                     <button type="submit" aria-label={`Enregistrer le rôle de ${row.name}`}>
-                      <Icon i="save" size={15} />
+                      <Icon i="check" size={17} />
+                      <span>Valider</span>
                     </button>
                   </form>
                 </td>
@@ -101,6 +124,51 @@ export default function AdminUsersTable({ rows, twoFactorAvailable }: { rows: Ad
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="admin-users-mobile-list">
+        {filtered.map((row) => (
+          <article className="admin-user-mobile-card" key={row.id}>
+            <header>
+              <span className="admin-table-avatar" aria-hidden="true">
+                {getNameInitials(row.name)}
+              </span>
+              <div>
+                <strong>{row.name}</strong>
+                <small>{row.email}</small>
+              </div>
+              <span className={`admin-status ${row.banned ? "is-danger" : "is-success"}`}>
+                {row.banned ? "Suspendu" : "Actif"}
+              </span>
+            </header>
+            <dl>
+              <div>
+                <dt>Inscription</dt>
+                <dd>{new Date(row.createdAt).toLocaleDateString("fr-FR")}</dd>
+              </div>
+              <div>
+                <dt>Vérification</dt>
+                <dd>{row.verified ? "Vérifié" : "À vérifier"}</dd>
+              </div>
+              <div>
+                <dt>2FA</dt>
+                <dd>{twoFactorAvailable ? (row.twoFactor ? "Activée" : "Non") : "Suspendue"}</dd>
+              </div>
+            </dl>
+            <form action={setRole} className="admin-inline-form">
+              <input type="hidden" name="userId" value={row.id} />
+              <AdminSelect
+                name="role"
+                defaultValue={row.role}
+                options={roleOptions}
+                ariaLabel={`Rôle de ${row.name}`}
+              />
+              <button type="submit" aria-label={`Enregistrer le rôle de ${row.name}`}>
+                <Icon i="check" size={17} />
+                <span>Valider</span>
+              </button>
+            </form>
+          </article>
+        ))}
       </div>
       {!filtered.length ? (
         <div className="admin-empty-state">
