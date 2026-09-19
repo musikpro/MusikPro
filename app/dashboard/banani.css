@@ -3466,8 +3466,8 @@
 }
 .checkout-input::placeholder {
   color: var(--color-muted-foreground);
-  opacity: 0.46;
-  font-weight: 550;
+  opacity: 0.28;
+  font-weight: 500;
 }
 .checkout-input-shell:has([aria-invalid="true"]) {
   border-color: color-mix(in srgb, #dc2626 52%, var(--color-border));
