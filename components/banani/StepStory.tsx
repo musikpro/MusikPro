@@ -5,10 +5,7 @@ import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
-import {
-  demoRecipientSchema,
-  demoStorySchema,
-} from "@/lib/validation/musikpro-demo";
+import { demoRecipientSchema, demoStorySchema } from "@/lib/validation/musikpro-demo";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
 export const screenSize = "mobile";
@@ -16,6 +13,7 @@ export const screenSize = "mobile";
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
+import MusikSelect from "./MusikSelect";
 
 const recipientRelations = [
   "Ma femme",
@@ -38,12 +36,7 @@ function suggestPronunciation(name: string) {
   return name
     .trim()
     .split(/\s+/)
-    .map((word) =>
-      word.replace(
-        new RegExp(`([${vowels}]+)(?=[^${vowels}]+[${vowels}])`, "gi"),
-        "$1-",
-      ),
-    )
+    .map((word) => word.replace(new RegExp(`([${vowels}]+)(?=[^${vowels}]+[${vowels}])`, "gi"), "$1-"))
     .join(" ");
 }
 
@@ -81,20 +74,13 @@ export default function StepStory() {
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("Raconte ton histoire")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Décris ce que tu veux dans ta chanson")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Raconte ton histoire")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Décris ce que tu veux dans ta chanson")}</p>
       </div>
 
       {/* Text area */}
       <div className="px-4 mb-4">
-        <div
-          className="bg-card border border-border rounded-xl p-4 relative"
-          style={{ minHeight: 160 }}
-        >
+        <div className="bg-card border border-border rounded-xl p-4 relative" style={{ minHeight: 160 }}>
           <DemoField
             name="story"
             label="Ton histoire"
@@ -108,11 +94,7 @@ export default function StepStory() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.notify(
-                "Transcription vocale non disponible dans la démonstration.",
-              )
-            }
+            onClick={() => demo.notify("Transcription vocale non disponible dans la démonstration.")}
             aria-label="Raconter mon histoire avec le microphone"
             title="Raconter mon histoire avec le microphone"
             className="story-mic-button absolute top-3 right-3 flex items-center justify-center"
@@ -132,7 +114,33 @@ export default function StepStory() {
         )}
       </div>
 
-      <div className="story-recipient-section px-4 mb-4">
+      {/* Voice hint */}
+      <div className="px-4 mb-4">
+        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-start gap-3">
+          <span className="text-lg">🎙️</span>
+          <div>
+            <p className="text-sm font-semibold text-foreground">{t("Tu peux aussi parler !")}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t("Appuie sur le micro et parle librement. L'IA transcrit et améliore automatiquement ton texte.")}
+            </p>
+            <p className="text-xs text-primary font-medium mt-1">{t("Durée recommandée : 30 à 60 secondes")}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Tip */}
+      <div className="px-4 mb-4">
+        <div className="bg-secondary/60 rounded-xl px-4 py-3">
+          <p className="text-sm text-foreground leading-relaxed">
+            💡 <span className="font-semibold">{t("Astuce :")}</span>{" "}
+            {t(
+              "Plus tu donnes de détails, plus ta chanson sera personnalisée ! Mentionne les prénoms, souvenirs, traits de caractère...",
+            )}
+          </p>
+        </div>
+      </div>
+
+      <div className="story-recipient-section px-4 mb-6">
         <div className="story-recipient-card">
           <div className="story-recipient-heading">
             <span className="story-recipient-heading-icon">
@@ -168,75 +176,35 @@ export default function StepStory() {
                 value={demo.fields.recipientPronunciation}
                 maxLength={160}
                 placeholder="Aï-cha"
-                onChange={(event) =>
-                  demo.field("recipientPronunciation", event.target.value)
-                }
+                onChange={(event) => demo.field("recipientPronunciation", event.target.value)}
               />
             </label>
           </div>
 
-          <label className="story-relation-field">
+          <div className="story-relation-field">
             <span>Lien avec cette personne</span>
-            <span className="story-relation-select">
-              <Icon i="heart-handshake" size={16} />
-              <select
-                aria-label="Lien avec cette personne"
-                value={demo.choices.recipientRelation}
-                onChange={(event) => {
-                  demo.choose("recipientRelation", event.target.value);
-                  setRecipientError("");
-                }}
-              >
-                <option value="" disabled>
-                  Sélectionner une relation
-                </option>
-                {recipientRelations.map((relation) => (
-                  <option key={relation} value={relation}>
-                    {relation}
-                  </option>
-                ))}
-              </select>
-              <Icon i="chevron-down" size={14} aria-hidden="true" />
-            </span>
-          </label>
+            <MusikSelect
+              className="story-relation-select"
+              icon="heart-handshake"
+              ariaLabel="Lien avec cette personne"
+              placeholder="Sélectionner une relation"
+              value={demo.choices.recipientRelation}
+              onChange={(value) => {
+                demo.choose("recipientRelation", value);
+                setRecipientError("");
+              }}
+              options={recipientRelations.map((relation) => ({
+                value: relation,
+                label: relation,
+              }))}
+            />
+          </div>
           {recipientError && (
             <p className="story-field-error" role="alert">
               <Icon i="circle-alert" size={15} />
               {recipientError}
             </p>
           )}
-        </div>
-      </div>
-
-      {/* Voice hint */}
-      <div className="px-4 mb-4">
-        <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-start gap-3">
-          <span className="text-lg">🎙️</span>
-          <div>
-            <p className="text-sm font-semibold text-foreground">
-              {t("Tu peux aussi parler !")}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {t(
-                "Appuie sur le micro et parle librement. L'IA transcrit et améliore automatiquement ton texte.",
-              )}
-            </p>
-            <p className="text-xs text-primary font-medium mt-1">
-              {t("Durée recommandée : 30 à 60 secondes")}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Tip */}
-      <div className="px-4 mb-6">
-        <div className="bg-secondary/60 rounded-xl px-4 py-3">
-          <p className="text-sm text-foreground leading-relaxed">
-            💡 <span className="font-semibold">{t("Astuce :")}</span>{" "}
-            {t(
-              "Plus tu donnes de détails, plus ta chanson sera personnalisée ! Mentionne les prénoms, souvenirs, traits de caractère...",
-            )}
-          </p>
         </div>
       </div>
 

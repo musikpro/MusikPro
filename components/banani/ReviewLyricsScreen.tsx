@@ -13,6 +13,7 @@ import CreationTopNav from "./CreationTopNav";
 export default function ReviewLyricsScreen() {
   const demo = useDemo();
   const [lyricsScrollProgress, setLyricsScrollProgress] = useState(0);
+  const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create/parameters" current={5} />
@@ -31,21 +32,15 @@ export default function ReviewLyricsScreen() {
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("Révise les paroles")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Tu peux les modifier avant la génération")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Révise les paroles")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Tu peux les modifier avant la génération")}</p>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-4 pb-4 overflow-y-auto">
         {/* Lyrics Display */}
         <div className="mb-4">
-          <label className="block text-sm font-bold text-foreground mb-3">
-            {t("Paroles générées")}
-          </label>
+          <label className="block text-sm font-bold text-foreground mb-3">{t("Paroles générées")}</label>
           <div className="lyrics-scroll-shell">
             <div
               className="lyrics-scrollbox bg-card border border-border rounded-lg p-4"
@@ -58,18 +53,19 @@ export default function ReviewLyricsScreen() {
                 setLyricsScrollProgress(max > 0 ? element.scrollTop / max : 0);
               }}
             >
-              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-                {demo.fields.lyrics}
-              </p>
+              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{demo.fields.lyrics}</p>
             </div>
             <span className="lyrics-scroll-track" aria-hidden="true">
               <span style={{ transform: `translateY(${lyricsScrollProgress * 160}px)` }} />
             </span>
           </div>
-          <p className="lyrics-scroll-hint text-xs text-muted-foreground mt-2">
-            <Icon i="mouse-pointer-2" size={13} />
-            {t("Clique puis fais défiler pour lire toutes les paroles")}
-          </p>
+          <div className="lyrics-scroll-meta text-xs text-muted-foreground mt-2">
+            <p className="lyrics-scroll-hint">
+              <Icon i="mouse-pointer-2" size={13} />
+              {t("Clique puis fais défiler pour lire toutes les paroles")}
+            </p>
+            <span className="lyrics-word-count">{lyricsWordCount} / 500 mots</span>
+          </div>
         </div>
 
         <div className="lyrics-compact-actions mb-4">
@@ -97,19 +93,11 @@ export default function ReviewLyricsScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            demo.field(
-              "lyrics",
-              demo.fields.lyrics +
-                "\nUn nouveau refrain accompagne notre histoire.",
-            )
-          }
+          onClick={() => demo.field("lyrics", demo.fields.lyrics + "\nUn nouveau refrain accompagne notre histoire.")}
           className="w-full py-3 bg-background border border-border rounded-lg flex items-center justify-center gap-2 mb-6"
         >
           <Icon i="plus" size={16} className="text-muted-foreground" />
-          <span className="font-semibold text-sm text-foreground">
-            {t("Rallonger les paroles")}
-          </span>
+          <span className="font-semibold text-sm text-foreground">{t("Rallonger les paroles")}</span>
         </button>
 
         {/* Info */}

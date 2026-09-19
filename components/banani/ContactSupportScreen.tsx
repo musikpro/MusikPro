@@ -9,6 +9,7 @@ export const displayName = "Contacter le support";
 export const screenSize = "mobile";
 
 import Icon from "./Icon";
+import MusikSelect from "./MusikSelect";
 
 export default function ContactSupportScreen() {
   const demo = useDemo();
@@ -24,9 +25,7 @@ export default function ContactSupportScreen() {
         >
           <Icon i="arrow-left" size={18} /> {t("Retour")}
         </button>
-        <h1 className="text-sm font-medium text-muted-foreground">
-          {t("Contacter le support")}
-        </h1>
+        <h1 className="text-sm font-medium text-muted-foreground">{t("Contacter le support")}</h1>
       </div>
 
       {/* Content */}
@@ -37,17 +36,13 @@ export default function ContactSupportScreen() {
             {t("Nous sommes ici pour vous aider")}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {t(
-              "Décrivez votre problème et notre équipe vous répondra rapidement.",
-            )}
+            {t("Décrivez votre problème et notre équipe vous répondra rapidement.")}
           </p>
         </div>
 
         {/* Subject */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase block mb-2">
-            {t("Sujet")}
-          </label>
+          <label className="text-xs font-bold text-muted-foreground uppercase block mb-2">{t("Sujet")}</label>
           <div className="border border-border rounded-lg px-3 py-3 bg-input flex items-center gap-2">
             <Icon i="mail" size={16} className="text-muted-foreground" />
             <DemoField
@@ -63,29 +58,23 @@ export default function ContactSupportScreen() {
 
         {/* Category */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase block mb-2">
-            {t("Catégorie")}
-          </label>
-          <div className="border border-border rounded-lg px-3 py-3 bg-input flex items-center gap-2">
-            <Icon i="list" size={16} className="text-muted-foreground" />
-            <select
-              className="demo-field text-sm"
-              aria-label="Catégorie"
-              value={demo.fields["support.category"]}
-              onChange={(e) => demo.field("support.category", e.target.value)}
-            >
-              {["Problème technique", "Compte", "Packs"].map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </div>
+          <label className="text-xs font-bold text-muted-foreground uppercase block mb-2">{t("Catégorie")}</label>
+          <MusikSelect
+            className="support-category-select"
+            icon="list"
+            ariaLabel="Catégorie"
+            value={demo.fields["support.category"]}
+            onChange={(value) => demo.field("support.category", value)}
+            options={["Problème technique", "Compte", "Packs"].map((label) => ({
+              value: label,
+              label,
+            }))}
+          />
         </div>
 
         {/* Message */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase block mb-2">
-            {t("Votre message")}
-          </label>
+          <label className="text-xs font-bold text-muted-foreground uppercase block mb-2">{t("Votre message")}</label>
           <div className="border border-border rounded-lg px-3 py-3 bg-input min-h-32">
             <DemoField
               name="support.message"
@@ -104,9 +93,7 @@ export default function ContactSupportScreen() {
             {t("Nous pouvons aussi vous contacter")}
           </h3>
           <div>
-            <label className="text-xs font-medium text-foreground block mb-2">
-              {t("Email")}
-            </label>
+            <label className="text-xs font-medium text-foreground block mb-2">{t("Email")}</label>
             <div className="border border-border rounded-lg px-3 py-3 bg-input">
               <DemoField
                 name="support.email"
@@ -119,9 +106,7 @@ export default function ContactSupportScreen() {
             </div>
           </div>
           <div>
-            <label className="text-xs font-medium text-foreground block mb-2">
-              {t("Téléphone (optionnel)")}
-            </label>
+            <label className="text-xs font-medium text-foreground block mb-2">{t("Téléphone (optionnel)")}</label>
             <div className="border border-border rounded-lg px-3 py-3 bg-input flex items-center gap-2">
               <Icon i="phone" size={16} className="text-muted-foreground" />
               <DemoField
@@ -139,11 +124,7 @@ export default function ContactSupportScreen() {
         {/* Info Box */}
         <div className="bg-secondary/40 border border-secondary rounded-xl p-4">
           <div className="flex items-start gap-2">
-            <Icon
-              i="info"
-              size={16}
-              className="text-primary flex-shrink-0 mt-0.5"
-            />
+            <Icon i="info" size={16} className="text-primary flex-shrink-0 mt-0.5" />
             <p className="text-xs text-muted-foreground">
               {t(
                 "Notre équipe vous répondra dans les 24 heures. Assurez-vous que vos informations de contact sont correctes.",
