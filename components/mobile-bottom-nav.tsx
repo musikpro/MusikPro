@@ -17,7 +17,15 @@ const items: Array<{ href: string; label: string; icon: PremiumIconName }> = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const musik = pathname === "/dashboard" || (pathname.startsWith("/dashboard/") && !["/dashboard/billing", "/dashboard/security"].some(route => pathname.startsWith(route)));
+  const musikPath = pathname.startsWith("/demo")
+    ? pathname.replace(/^\/demo/, "/dashboard") || "/dashboard"
+    : pathname;
+  const musik =
+    musikPath === "/dashboard" ||
+    (musikPath.startsWith("/dashboard/") &&
+      !["/dashboard/billing", "/dashboard/security"].some((route) =>
+        musikPath.startsWith(route),
+      ));
   const destinations = musik
     ? [
         { href: "/dashboard", label: "Accueil", icon: "home" as const },

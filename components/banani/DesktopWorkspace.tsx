@@ -1,7 +1,6 @@
 "use client";
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useDemo } from "./DemoProvider";
 import DesktopSidebar from "./DesktopSidebar";
 import Icon from "./Icon";
@@ -9,8 +8,8 @@ import UserAvatar from "./UserAvatar";
 import MobileBottomNav from "./MobileBottomNav";
 
 export default function DesktopWorkspace({ children }: { children: ReactNode }) {
-  const pathname = usePathname();
   const demo = useDemo();
+  const pathname = demo.pathname;
   if (pathname === "/dashboard") return children;
   const focusedPaymentFlow = pathname.startsWith("/dashboard/payment-preview");
   const creation = pathname.startsWith("/dashboard/create") || focusedPaymentFlow;
@@ -61,10 +60,10 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
             <small>Chaque histoire mérite sa chanson</small>
           </div>
           <div className="workspace-header-actions">
-            <Link href="/dashboard/notifications" aria-label="Notifications">
+            <Link href={demo.href("/dashboard/notifications")} aria-label="Notifications">
               <Icon i="bell" size={20} />
             </Link>
-            <Link href="/dashboard/profile" aria-label="Mon profil">
+            <Link href={demo.href("/dashboard/profile")} aria-label="Mon profil">
               <UserAvatar
                 gender="male"
                 ageGroup="25-35"
@@ -101,9 +100,9 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
               </div>
               <p className="workspace-credit-demo">
                 <Icon i="check" size={14} />
-                Prêt pour 3 nouvelles créations · démonstration
+                {demo.isDemo ? "Prêt pour 3 nouvelles créations · démonstration" : "Prêt pour 3 nouvelles créations"}
               </p>
-              <Link href="/dashboard/credits" className="workspace-primary-link">
+              <Link href={demo.href("/dashboard/credits")} className="workspace-primary-link">
                 Voir les packs
                 <Icon i="arrow-right" size={16} />
               </Link>
@@ -150,7 +149,7 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                     </button>
                   ))}
                 </div>
-                <Link href="/dashboard/songs" className="workspace-text-link">
+                <Link href={demo.href("/dashboard/songs")} className="workspace-text-link">
                   Toutes mes chansons
                   <Icon i="arrow-right" size={14} />
                 </Link>
@@ -164,7 +163,7 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                   ? "Racontez un souvenir précis pour donner plus de personnalité à votre chanson."
                   : "Retrouvez nos conseils et les réponses à vos questions."}
               </p>
-              <Link href="/dashboard/help" className="workspace-text-link">
+              <Link href={demo.href("/dashboard/help")} className="workspace-text-link">
                 Consulter l’aide
                 <Icon i="arrow-right" size={14} />
               </Link>

@@ -8,7 +8,15 @@ import { emailSchema, loginSchema, registerSchema } from "@/lib/validation/auth"
 import Icon from "@/components/banani/Icon";
 import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
 
-export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "register"; googleEnabled?: boolean }) {
+export function AuthForm({
+  mode,
+  googleEnabled = false,
+  showDemoLink = false,
+}: {
+  mode: "login" | "register";
+  googleEnabled?: boolean;
+  showDemoLink?: boolean;
+}) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -84,9 +92,8 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
         return;
       }
       if (r.data && "twoFactorRedirect" in r.data && r.data.twoFactorRedirect) {
-        const methods = "twoFactorMethods" in r.data && Array.isArray(r.data.twoFactorMethods)
-          ? r.data.twoFactorMethods
-          : [];
+        const methods =
+          "twoFactorMethods" in r.data && Array.isArray(r.data.twoFactorMethods) ? r.data.twoFactorMethods : [];
         if (methods.includes("otp")) {
           await authClient.twoFactor.sendOtp({ trustDevice: false });
           sessionStorage.setItem("owner-2fa-method", "otp");
@@ -243,6 +250,12 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
                 {isLogin ? "Pas de compte ? " : "Vous avez déjà un compte ? "}
                 <Link href={isLogin ? "/register" : "/login"}>{isLogin ? "Créer un compte" : "Se connecter"}</Link>
               </p>
+            )}
+            {showDemoLink && !isLoginPasswordStep && (
+              <Link className="auth-demo-link" href="/demo">
+                <Icon i="play-circle" size={18} />
+                Visiter le mode démonstration
+              </Link>
             )}
           </div>
         </form>

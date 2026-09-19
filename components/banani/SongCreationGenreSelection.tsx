@@ -102,25 +102,17 @@ export default function SongCreationGenre() {
           <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
             <Icon i="music-2" size={16} className="text-primary-foreground" />
           </div>
-          <span className="font-headings font-bold text-lg text-foreground">
-            {t("Musika")}
-          </span>
+          <span className="font-headings font-bold text-lg text-foreground">{t("Musika")}</span>
         </div>
 
         {/* Credits Widget - Compact */}
         <div className="bg-secondary border border-primary/20 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Icon i="zap" size={16} className="text-primary" />
-            <span className="text-sm font-bold text-foreground">
-              {t("Packs")}
-            </span>
+            <span className="text-sm font-bold text-foreground">{t("Packs")}</span>
           </div>
-          <p className="text-2xl font-headings font-bold text-primary mb-2">
-            3
-          </p>
-          <p className="text-xs text-muted-foreground mb-3">
-            {t("chansons restantes")}
-          </p>
+          <p className="text-2xl font-headings font-bold text-primary mb-2">3</p>
+          <p className="text-xs text-muted-foreground mb-3">{t("chansons restantes")}</p>
           <button
             type="button"
             data-demo-ready="true"
@@ -143,9 +135,7 @@ export default function SongCreationGenre() {
               onClick={() => demo.go(demoDestination(item.label))}
               key={item.label}
               className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium ${
-                item.active
-                  ? "bg-secondary text-primary font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
+                item.active ? "bg-secondary text-primary font-semibold" : "text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon i={item.icon} size={17} />
@@ -200,11 +190,7 @@ export default function SongCreationGenre() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.notify(
-                "Action de démonstration : aucune opération réelle effectuée.",
-              )
-            }
+            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             <Icon i="globe" size={17} />
@@ -214,9 +200,7 @@ export default function SongCreationGenre() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.notify("Démonstration : le compte connecté reste inchangé.")
-            }
+            onClick={() => void demo.exitAccount()}
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-400 hover:text-red-500"
           >
             <Icon i="log-out" size={17} />
@@ -230,12 +214,8 @@ export default function SongCreationGenre() {
         {/* Top Bar */}
         <div className="h-16 border-b border-border px-8 flex items-center justify-between flex-shrink-0">
           <div>
-            <h1 className="font-headings font-bold text-xl text-foreground">
-              {t("Créer une Chanson")}
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              {t("Étape 1 sur 10 • Sélection du genre")}
-            </p>
+            <h1 className="font-headings font-bold text-xl text-foreground">{t("Créer une Chanson")}</h1>
+            <p className="text-xs text-muted-foreground">{t("Étape 1 sur 10 • Sélection du genre")}</p>
           </div>
           <div className="flex items-center gap-4">
             <button
@@ -248,13 +228,7 @@ export default function SongCreationGenre() {
               <Icon i="bell" size={20} className="text-muted-foreground" />
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
             </button>
-            <UserAvatar
-              gender="male"
-              ageGroup="25-35"
-              heritage="African"
-              index={1}
-              className="w-9 h-9 rounded-full"
-            />
+            <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-9 h-9 rounded-full" />
           </div>
         </div>
 
@@ -263,9 +237,7 @@ export default function SongCreationGenre() {
           {/* Progress Bar */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-semibold text-foreground">
-                {t("Progression")}
-              </span>
+              <span className="text-sm font-semibold text-foreground">{t("Progression")}</span>
               <span className="text-sm text-muted-foreground">10%</span>
             </div>
             <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
@@ -279,9 +251,7 @@ export default function SongCreationGenre() {
               {t("Quel est ton genre préféré ?")}
             </h2>
             <p className="text-base text-muted-foreground">
-              {t(
-                "Choisis le style musical qui te correspond le mieux pour ta chanson",
-              )}
+              {t("Choisis le style musical qui te correspond le mieux pour ta chanson")}
             </p>
           </div>
 
@@ -307,17 +277,11 @@ export default function SongCreationGenre() {
                 }}
               >
                 <SelectionMark selected={demo.choices.genre === genre.name} />
-                <div
-                  className={`w-16 h-16 ${genre.color} rounded-2xl flex items-center justify-center mb-3`}
-                >
+                <div className={`w-16 h-16 ${genre.color} rounded-2xl flex items-center justify-center mb-3`}>
                   <Icon i={genre.icon} size={24} />
                 </div>
-                <p className="font-bold text-base text-foreground mb-1">
-                  {genre.name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {genre.description}
-                </p>
+                <p className="font-bold text-base text-foreground mb-1">{genre.name}</p>
+                <p className="text-xs text-muted-foreground">{genre.description}</p>
               </button>
             ))}
           </div>

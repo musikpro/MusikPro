@@ -2,12 +2,11 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { usePathname } from "next/navigation";
 import { useDemo } from "./DemoProvider";
 import DesktopWorkspace from "./DesktopWorkspace";
 export default function Preview({ children }: { children: ReactNode }) {
   const demo = useDemo();
-  const pathname = usePathname();
+  const pathname = demo.pathname;
   return (
     <div
       className="banani-copy musik-modern"
@@ -22,14 +21,18 @@ export default function Preview({ children }: { children: ReactNode }) {
           control.tagName !== "BUTTON"
         ) {
           event.preventDefault();
-          demo.notify("Mode démonstration — cette action sera disponible avec les fonctionnalités MusikPro.");
+          demo.notify(
+            demo.isDemo
+              ? "Mode démonstration — cette action sera disponible avec les fonctionnalités MusikPro."
+              : "Cette action sera bientôt disponible dans votre espace MusikPro.",
+          );
         }
       }}
     >
-      <span className="sr-only">Maquette MusikPro avec données fictives.</span>
+      {demo.isDemo && <span className="sr-only">Maquette MusikPro avec données fictives.</span>}
       <DesktopWorkspace>
         {children}
-        {pathname !== "/dashboard" && (
+        {demo.isDemo && pathname !== "/dashboard" && (
           <details className="demo-page-directory">
             <summary>Explorer les écrans · démonstration</summary>
             <nav aria-label="Tous les écrans MusikPro">
@@ -66,7 +69,7 @@ export default function Preview({ children }: { children: ReactNode }) {
               ].map(([label, suffix]) => (
                 <Link
                   key={suffix}
-                  href={`/dashboard${suffix}`}
+                  href={demo.href(`/dashboard${suffix}`)}
                   prefetch={false}
                   data-demo-ready
                   aria-current={pathname === `/dashboard${suffix}` ? "page" : undefined}
@@ -86,7 +89,7 @@ export default function Preview({ children }: { children: ReactNode }) {
               className="w-full bg-primary text-white rounded-xl p-4 font-semibold"
               onClick={() => demo.go("/dashboard/create/lyrics")}
             >
-              Voir les paroles de démonstration
+              {demo.isDemo ? "Voir les paroles de démonstration" : "Voir les paroles"}
             </button>
           </div>
         )}

@@ -43,11 +43,7 @@
       "description": "Liveness/readiness backend",
       "optional": false,
       "env": [],
-      "files": [
-        "app/api/health/route.ts",
-        "app/api/readyz/route.ts",
-        "lib/health/readiness.ts"
-      ],
+      "files": ["app/api/health/route.ts", "app/api/readyz/route.ts", "lib/health/readiness.ts"],
       "routes": ["/api/health", "/api/readyz"],
       "removalComplexity": "never",
       "dependsOn": ["database"]
@@ -82,11 +78,7 @@
     "cloudinary": {
       "description": "Upload d'images optionnel avec validation MIME + magic bytes",
       "optional": true,
-      "env": [
-        "CLOUDINARY_CLOUD_NAME",
-        "CLOUDINARY_API_KEY",
-        "CLOUDINARY_API_SECRET"
-      ],
+      "env": ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"],
       "files": ["lib/storage/cloudinary.ts", "app/api/uploads/images/route.ts"],
       "routes": ["/api/uploads/images"],
       "removalComplexity": "safe",
@@ -108,10 +100,7 @@
       "description": "Google OAuth + Search Console",
       "optional": true,
       "env": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
-      "files": [
-        "lib/google/search-console.ts",
-        "app/admin/integrations/google/page.tsx"
-      ],
+      "files": ["lib/google/search-console.ts", "app/admin/integrations/google/page.tsx"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": ["auth"],
@@ -121,12 +110,7 @@
       "description": "Metadata, sitemap, robots, Open Graph",
       "optional": false,
       "env": [],
-      "files": [
-        "lib/seo/metadata.ts",
-        "app/sitemap.ts",
-        "app/robots.ts",
-        "app/opengraph-image.tsx"
-      ],
+      "files": ["lib/seo/metadata.ts", "app/sitemap.ts", "app/robots.ts", "app/opengraph-image.tsx"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": []
@@ -175,10 +159,7 @@
       "description": "Logs structurés, redaction des secrets et request IDs",
       "optional": false,
       "env": [],
-      "files": [
-        "lib/observability/logger.ts",
-        "lib/observability/request-id.ts"
-      ],
+      "files": ["lib/observability/logger.ts", "lib/observability/request-id.ts"],
       "routes": [],
       "removalComplexity": "never",
       "dependsOn": []
@@ -211,11 +192,7 @@
       "description": "Upstash Redis optionnel pour cache TTL, rate limiting distribué et états temporaires",
       "optional": true,
       "env": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
-      "files": [
-        "lib/cache/upstash.ts",
-        "lib/security/rate-limit.ts",
-        "lib/health/readiness.ts"
-      ],
+      "files": ["lib/cache/upstash.ts", "lib/security/rate-limit.ts", "lib/health/readiness.ts"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": [],
@@ -225,11 +202,7 @@
       "description": "Qualité visuelle permanente : icônes SVG premium cohérentes + blocage Sparkle/Sparklet et glyphes UI génériques",
       "optional": false,
       "env": [],
-      "files": [
-        "components/ui/premium-icon.tsx",
-        "scripts/premium-icon-check.mjs",
-        "docs/ui/premium-icons.md"
-      ],
+      "files": ["components/ui/premium-icon.tsx", "scripts/premium-icon-check.mjs", "docs/ui/premium-icons.md"],
       "routes": [],
       "removalComplexity": "never",
       "dependsOn": []
@@ -338,12 +311,13 @@
       "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
     },
     "musikpro-demo": {
-      "description": "Écrans Banani MusikPro reliés en démonstration locale : fixtures, contexte client en mémoire, formulaires Zod UX, aucune API métier ni mutation Neon.",
+      "description": "Parcours public /demo sans mot de passe, isolé du tableau de bord authentifié : fixtures, contexte client en mémoire, formulaires Zod UX, aucune API métier ni mutation Neon.",
       "optional": true,
       "env": [],
       "files": [
         "components/banani/DemoProvider.tsx",
         "lib/demo/musikpro-data.ts",
+        "lib/demo/routing.ts",
         "lib/demo/navigation.ts",
         "lib/validation/musikpro-demo.ts",
         "design/banani/selected-implementation-plan.md",

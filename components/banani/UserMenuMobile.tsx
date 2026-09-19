@@ -38,9 +38,7 @@ export default function UserMenuMobile() {
 
       {/* Header with Close Button */}
       <div className="px-4 pt-4 pb-4 flex items-center justify-between border-b border-border">
-        <h1 className="font-headings font-bold text-lg text-foreground">
-          {t("Menu")}
-        </h1>
+        <h1 className="font-headings font-bold text-lg text-foreground">{t("Menu")}</h1>
         <button
           type="button"
           data-demo-ready="true"
@@ -55,25 +53,13 @@ export default function UserMenuMobile() {
       {/* Profile Card */}
       <div className="px-4 py-4">
         <div className="bg-card border border-border rounded-xl p-4 flex items-center gap-3">
-          <UserAvatar
-            gender="male"
-            ageGroup="25-35"
-            heritage="African"
-            index={1}
-            className="w-14 h-14 rounded-lg"
-          />
+          <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-14 h-14 rounded-lg" />
           <div className="flex-1 min-w-0">
-            <h2 className="font-bold text-base text-foreground">
-              {demo.profile.name}
-            </h2>
-            <p className="text-xs text-muted-foreground">
-              {demo.profile.email}
-            </p>
+            <h2 className="font-bold text-base text-foreground">{demo.profile.name}</h2>
+            <p className="text-xs text-muted-foreground">{demo.profile.email}</p>
             <div className="flex items-center gap-1.5 mt-1">
               <div className="w-1.5 h-1.5 bg-success rounded-full" />
-              <span className="text-xs text-success font-semibold">
-                {t("Premium")}
-              </span>
+              <span className="text-xs text-success font-semibold">{t("Premium")}</span>
             </div>
           </div>
           <button
@@ -103,20 +89,12 @@ export default function UserMenuMobile() {
                 <Icon i={item.icon} size={16} className="text-primary" />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-foreground">
-                  {item.label}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{item.label}</p>
                 <p className="text-xs text-muted-foreground">{item.sub}</p>
               </div>
-              <Icon
-                i="chevron-right"
-                size={16}
-                className="text-muted-foreground flex-shrink-0"
-              />
+              <Icon i="chevron-right" size={16} className="text-muted-foreground flex-shrink-0" />
             </button>
-            {i < menuItems.length - 1 && (
-              <div className="border-t border-border" />
-            )}
+            {i < menuItems.length - 1 && <div className="border-t border-border" />}
           </div>
         ))}
       </div>
@@ -135,9 +113,7 @@ export default function UserMenuMobile() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            demo.notify("Démonstration : le compte connecté reste inchangé.")
-          }
+          onClick={() => void demo.exitAccount()}
           className="w-full py-3 bg-red-50 border border-red-100 rounded-lg text-sm font-semibold text-red-500 flex items-center justify-center gap-2"
         >
           <Icon i="log-out" size={14} />

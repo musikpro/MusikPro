@@ -74,9 +74,7 @@ export default function UserDashboardDesktop() {
     occasion: song.occasion,
     versions: song.versions.length,
     plays: song.versions.reduce((total, version) => total + version.plays, 0),
-    likes: demo.versionFavorites.filter((key) =>
-      key.startsWith(`${song.title}|`),
-    ).length,
+    likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
   }));
   return (
     <div className="bg-background flex min-h-full font-body">
@@ -90,9 +88,7 @@ export default function UserDashboardDesktop() {
             <h1 className="font-headings font-bold text-xl text-foreground">
               {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
             </h1>
-            <p className="text-xs text-muted-foreground">
-              {t("Il te reste 3 chansons")}
-            </p>
+            <p className="text-xs text-muted-foreground">{t("Il te reste 3 chansons")}</p>
           </div>
           <div className="flex items-center gap-4">
             <QuickLanguageSelect />
@@ -106,13 +102,7 @@ export default function UserDashboardDesktop() {
               <Icon i="bell" size={20} className="text-muted-foreground" />
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
             </button>
-            <UserAvatar
-              gender="male"
-              ageGroup="25-35"
-              heritage="African"
-              index={1}
-              className="w-9 h-9 rounded-full"
-            />
+            <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-9 h-9 rounded-full" />
           </div>
         </div>
 
@@ -133,38 +123,30 @@ export default function UserDashboardDesktop() {
                 <Icon i="plus" size={24} className="text-primary-foreground" />
               </div>
               <div className="text-left flex-1">
-                <p className="font-bold text-lg text-primary-foreground">
-                  {t("+ Créer une chanson")}
-                </p>
-                <p className="text-sm text-primary-foreground/80">
-                  {t("Afrobeat, Amapiano, Gospel…")}
-                </p>
+                <p className="font-bold text-lg text-primary-foreground">{t("+ Créer une chanson")}</p>
+                <p className="text-sm text-primary-foreground/80">{t("Afrobeat, Amapiano, Gospel…")}</p>
               </div>
-              <Icon
-                i="chevron-right"
-                size={20}
-                className="text-primary-foreground/70"
-              />
+              <Icon i="chevron-right" size={20} className="text-primary-foreground/70" />
             </button>
 
             {/* Concours Banner */}
             <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-5 flex items-center gap-4">
               <span className="text-4xl">🏆</span>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-base text-foreground">
-                  {t("Concours — Voix d'Afrique")}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {t("Se termine le 31 juillet · 50 000 FCFA")}
-                </p>
+                <p className="font-bold text-base text-foreground">{t("Concours — Voix d'Afrique")}</p>
+                <p className="text-sm text-muted-foreground">{t("Se termine le 31 juillet · 50 000 FCFA")}</p>
               </div>
               <button
                 type="button"
                 data-demo-ready
                 onClick={() =>
-                  demo.notify("Action de démonstration : service non connecté.")
+                  demo.notify(
+                    demo.isDemo
+                      ? "Action de démonstration : service non connecté."
+                      : "Cette fonctionnalité sera bientôt disponible.",
+                  )
                 }
-                aria-label="Action de démonstration"
+                aria-label="Participer au concours"
                 className="text-sm font-bold text-primary bg-secondary px-5 py-2.5 rounded-lg flex-shrink-0"
               >
                 {t("Participer")}
@@ -174,11 +156,9 @@ export default function UserDashboardDesktop() {
             {/* Mes chansons */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-headings font-bold text-lg text-foreground">
-                  {t("Mes chansons")}
-                </h2>
+                <h2 className="font-headings font-bold text-lg text-foreground">{t("Mes chansons")}</h2>
                 <a
-                  href="/dashboard/songs"
+                  href={demo.href("/dashboard/songs")}
                   onClick={(e) => {
                     e.preventDefault();
                     demo.go("/dashboard/songs");
@@ -197,31 +177,19 @@ export default function UserDashboardDesktop() {
 
             {/* Testimonials Section */}
             <div>
-              <h2 className="font-headings font-bold text-lg text-foreground mb-4">
-                {t("Témoignages")}
-              </h2>
+              <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Témoignages")}</h2>
               <div className="grid grid-cols-3 gap-4">
                 {testimonials.map((testimonial, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-card border border-border rounded-xl p-4"
-                  >
+                  <div key={idx} className="bg-card border border-border rounded-xl p-4">
                     {/* Rating */}
                     <div className="flex gap-0.5 mb-3">
                       {[...Array(testimonial.rating)].map((_, i) => (
-                        <Icon
-                          key={i}
-                          i="star"
-                          size={14}
-                          className="text-yellow-500"
-                        />
+                        <Icon key={i} i="star" size={14} className="text-yellow-500" />
                       ))}
                     </div>
 
                     {/* Testimonial text */}
-                    <p className="text-sm text-foreground mb-4 line-clamp-4">
-                      {testimonial.text}
-                    </p>
+                    <p className="text-sm text-foreground mb-4 line-clamp-4">{testimonial.text}</p>
 
                     {/* Author */}
                     <div className="flex items-center gap-3">
@@ -233,12 +201,8 @@ export default function UserDashboardDesktop() {
                         className="w-10 h-10"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">
-                          {testimonial.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {testimonial.role}
-                        </p>
+                        <p className="text-sm font-semibold text-foreground truncate">{testimonial.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">{testimonial.role}</p>
                       </div>
                     </div>
                   </div>
@@ -253,16 +217,10 @@ export default function UserDashboardDesktop() {
             <div className="bg-gradient-to-br from-secondary to-card border border-primary/20 rounded-3xl p-8">
               <div className="flex items-center gap-2 mb-4">
                 <Icon i="zap" size={20} className="text-primary" />
-                <span className="text-lg font-bold text-foreground">
-                  {t("Packs")}
-                </span>
+                <span className="text-lg font-bold text-foreground">{t("Packs")}</span>
               </div>
-              <p className="text-5xl font-headings font-bold text-primary mb-2">
-                3
-              </p>
-              <p className="text-sm text-muted-foreground mb-6">
-                {t("chansons restantes")}
-              </p>
+              <p className="text-5xl font-headings font-bold text-primary mb-2">3</p>
+              <p className="text-sm text-muted-foreground mb-6">{t("chansons restantes")}</p>
               <button
                 type="button"
                 data-demo-ready
@@ -279,11 +237,9 @@ export default function UserDashboardDesktop() {
             {/* Tendances */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-headings font-bold text-lg text-foreground">
-                  {t("Tendances")}
-                </h2>
+                <h2 className="font-headings font-bold text-lg text-foreground">{t("Tendances")}</h2>
                 <a
-                  href="/dashboard/discover"
+                  href={demo.href("/dashboard/discover")}
                   onClick={(e) => {
                     e.preventDefault();
                     demo.go("/dashboard/discover");
@@ -295,15 +251,8 @@ export default function UserDashboardDesktop() {
               </div>
               <div className="flex flex-col gap-3">
                 {trendingCards.map((tc) => (
-                  <div
-                    key={tc.title}
-                    className="rounded-xl overflow-hidden relative h-28"
-                  >
-                    <Image
-                      ar="16:9"
-                      prompt={tc.img}
-                      className="w-full h-full object-cover"
-                    />
+                  <div key={tc.title} className="rounded-xl overflow-hidden relative h-28">
+                    <Image ar="16:9" prompt={tc.img} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">
                       <p className="text-white font-bold text-sm">{tc.title}</p>
                       <p className="text-white/70 text-xs flex items-center gap-1">
@@ -317,11 +266,7 @@ export default function UserDashboardDesktop() {
                       aria-label="Écouter la chanson"
                       className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
                     >
-                      <Icon
-                        i="play"
-                        size={12}
-                        className="text-primary-foreground"
-                      />
+                      <Icon i="play" size={12} className="text-primary-foreground" />
                     </button>
                   </div>
                 ))}
@@ -330,9 +275,7 @@ export default function UserDashboardDesktop() {
 
             {/* Recent Activity */}
             <div>
-              <h2 className="font-headings font-bold text-lg text-foreground mb-4">
-                {t("Activité récente")}
-              </h2>
+              <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Activité récente")}</h2>
               <div className="bg-card border border-border rounded-xl overflow-hidden">
                 {[
                   {
@@ -351,24 +294,15 @@ export default function UserDashboardDesktop() {
                     time: t("Hier"),
                   },
                 ].map((act, i) => (
-                  <div
-                    key={i}
-                    className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}
-                  >
+                  <div key={i} className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}>
                     <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
                       <Icon i="zap" size={13} className="text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">
-                        {act.action}
-                      </p>
-                      <p className="text-xs text-muted-foreground truncate">
-                        {act.song}
-                      </p>
+                      <p className="text-sm font-medium text-foreground truncate">{act.action}</p>
+                      <p className="text-xs text-muted-foreground truncate">{act.song}</p>
                     </div>
-                    <span className="text-xs text-muted-foreground flex-shrink-0">
-                      {act.time}
-                    </span>
+                    <span className="text-xs text-muted-foreground flex-shrink-0">{act.time}</span>
                   </div>
                 ))}
               </div>

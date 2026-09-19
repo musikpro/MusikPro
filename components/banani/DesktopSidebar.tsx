@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { useDemo } from "./DemoProvider";
 import Icon from "./Icon";
@@ -27,8 +26,8 @@ const groups = [
   ],
 ];
 export default function DesktopSidebar() {
-  const pathname = usePathname();
   const demo = useDemo();
+  const pathname = demo.pathname;
   const sidebar = useRef<HTMLElement>(null);
   useEffect(() => {
     const element = sidebar.current;
@@ -51,12 +50,8 @@ export default function DesktopSidebar() {
     };
   }, []);
   return (
-    <aside
-      ref={sidebar}
-      className="workspace-sidebar"
-      aria-label="Navigation bureau"
-    >
-      <Link href="/dashboard" className="workspace-brand">
+    <aside ref={sidebar} className="workspace-sidebar" aria-label="Navigation bureau">
+      <Link href={demo.href("/dashboard")} className="workspace-brand">
         <span>
           <Icon i="music-2" size={19} />
         </span>
@@ -67,16 +62,9 @@ export default function DesktopSidebar() {
           <div className="workspace-nav-group" key={index}>
             {group.map(([icon, label, suffix]) => {
               const href = `/dashboard${suffix}`;
-              const active = suffix
-                ? pathname === href || pathname.startsWith(href + "/")
-                : pathname === href;
+              const active = suffix ? pathname === href || pathname.startsWith(href + "/") : pathname === href;
               return (
-                <Link
-                  key={href}
-                  href={href}
-                  prefetch={false}
-                  aria-current={active ? "page" : undefined}
-                >
+                <Link key={href} href={demo.href(href)} prefetch={false} aria-current={active ? "page" : undefined}>
                   <Icon i={icon} size={18} />
                   <span>{label}</span>
                 </Link>
@@ -85,17 +73,11 @@ export default function DesktopSidebar() {
           </div>
         ))}
       </nav>
-      <Link href="/dashboard/profile" className="workspace-account">
-        <UserAvatar
-          gender="male"
-          ageGroup="25-35"
-          heritage="African"
-          index={1}
-          className="w-9 h-9 rounded-full"
-        />
+      <Link href={demo.href("/dashboard/profile")} className="workspace-account">
+        <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-9 h-9 rounded-full" />
         <span>
           <strong>{demo.profile.name}</strong>
-          <small>Compte de démonstration</small>
+          <small>{demo.isDemo ? "Compte de démonstration" : "Compte MusikPro"}</small>
         </span>
         <Icon i="chevron-right" size={15} />
       </Link>

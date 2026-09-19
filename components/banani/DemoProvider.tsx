@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   demoGeneratedSongs,
   demoLibrarySongs,
@@ -10,13 +10,27 @@ import {
   demoLyrics,
 } from "@/lib/demo/musikpro-data";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { authClient } from "@/lib/auth/client";
+import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 
-function useDemoState() {
+type DemoProfile = { name: string; email: string; location: string };
+
+function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
   const router = useRouter();
-  const [message, notify] = useState("");
+  const browserPathname = usePathname();
+  const isDemo = mode === "demo";
+  const pathname = normalizeDashboardPath(browserPathname);
+  const href = (route: string) => dashboardHref(route, isDemo);
+  const [message, setMessage] = useState("");
+  const notify = (nextMessage: string) =>
+    setMessage(
+      !isDemo && /démonstration/i.test(nextMessage)
+        ? "Cette fonctionnalité sera bientôt disponible dans votre espace MusikPro."
+        : nextMessage,
+    );
   useEffect(() => {
     if (!message) return;
-    const timer = window.setTimeout(() => notify(""), 4200);
+    const timer = window.setTimeout(() => setMessage(""), 4200);
     return () => window.clearTimeout(timer);
   }, [message]);
   const [fields, setFields] = useState<Record<string, string>>({
@@ -25,13 +39,13 @@ function useDemoState() {
     recipientPronunciation: "",
     lyrics: demoLyrics,
     detail: "",
-    "profile.name": "Kofi Mensah",
-    "profile.email": "kofi.mensah@example.com",
-    "profile.location": "Accra, Ghana",
+    "profile.name": initialProfile.name,
+    "profile.email": initialProfile.email,
+    "profile.location": initialProfile.location,
     "support.subject": "",
     "support.category": "Problème technique",
     "support.message": "",
-    "support.email": "kofi.mensah@example.com",
+    "support.email": initialProfile.email,
     "support.phone": "",
     "payment.name": "",
     "payment.email": "",
@@ -49,11 +63,7 @@ function useDemoState() {
     phoneCountry: "CI",
     recipientRelation: "",
   });
-  const [profile, setProfile] = useState({
-    name: "Kofi Mensah",
-    email: "kofi.mensah@example.com",
-    location: "Accra, Ghana",
-  });
+  const [profile, setProfile] = useState(initialProfile);
   const [songs, setSongs] = useState(demoGeneratedSongs);
   const [favorites, setFavorites] = useState<string[]>(demoFavoriteSongs.map((s) => s.title));
   const [versionFavorites, setVersionFavorites] = useState<string[]>(
@@ -96,7 +106,7 @@ function useDemoState() {
         id: i + 100,
         plays: String(s.plays),
         duration: "1:32",
-        artist: "Création de démonstration",
+        artist: isDemo ? "Création de démonstration" : "Communauté MusikPro",
         likes: 0,
       })),
   ];
@@ -127,7 +137,7 @@ function useDemoState() {
     : (library.find((s) => s.title === selectedTitle) ?? {
         id: -1,
         title: selectedTitle,
-        style: "Création de démonstration",
+        style: isDemo ? "Création de démonstration" : "Création MusikPro",
         img: "",
         duration: "1:32",
         artist: profile.name,
@@ -135,7 +145,13 @@ function useDemoState() {
       });
   const go = (route: string) => {
     notify("");
-    router.push(route);
+    router.push(href(route));
+  };
+  const exitAccount = async () => {
+    notify("");
+    if (!isDemo) await authClient.signOut();
+    router.replace("/login");
+    router.refresh();
   };
   const field = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
   const choose = (key: string, value: string) => setChoices((prev) => ({ ...prev, [key]: value }));
@@ -176,7 +192,7 @@ function useDemoState() {
               title,
               occasion: choices.occasion,
               style: choices.genre,
-              date: "Session de démonstration",
+              date: isDemo ? "Session de démonstration" : "Session MusikPro",
               versions: [
                 {
                   label: "Version 1",
@@ -199,6 +215,9 @@ function useDemoState() {
     go("/dashboard/songs");
   };
   return {
+    isDemo,
+    pathname,
+    href,
     message,
     notify,
     fields,
@@ -234,16 +253,25 @@ function useDemoState() {
       setSongs((prev) => prev.filter((s) => s.title !== title));
       setFavorites((prev) => prev.filter((v) => v !== title));
       setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${title}|`)));
-      notify("Chanson retirée de cette démonstration locale.");
+      notify(isDemo ? "Chanson retirée de cette démonstration locale." : "Chanson retirée.");
     },
     go,
+    exitAccount,
   };
 }
 
 type DemoState = ReturnType<typeof useDemoState>;
 const Context = createContext<DemoState | null>(null);
-export function DemoProvider({ children }: { children: ReactNode }) {
-  const state = useDemoState();
+export function DemoProvider({
+  children,
+  mode,
+  initialProfile,
+}: {
+  children: ReactNode;
+  mode: "demo" | "real";
+  initialProfile: DemoProfile;
+}) {
+  const state = useDemoState(mode, initialProfile);
   const [offline, setOffline] = useState(false);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);
@@ -259,7 +287,9 @@ export function DemoProvider({ children }: { children: ReactNode }) {
     <Context.Provider value={state}>
       {offline && (
         <InlineNotice tone="warning" className="demo-offline">
-          Hors ligne — les données de cette démonstration restent locales.
+          {state.isDemo
+            ? "Hors ligne — les données de cette démonstration restent locales."
+            : "Hors ligne — certaines données peuvent être indisponibles."}
         </InlineNotice>
       )}
       {children}

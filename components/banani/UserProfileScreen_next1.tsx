@@ -137,7 +137,7 @@ export default function UserProfileScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.notify("Démonstration : le compte connecté reste inchangé.")}
+          onClick={() => void demo.exitAccount()}
           className="profile-logout w-full bg-card border border-border/50 rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-destructive mt-4"
         >
           <Icon i="log-out" size={16} />

@@ -8,7 +8,39 @@ export async function getSession() {
   return auth.api.getSession({ headers: await headers() });
 }
 
+export async function isDemoRequest() {
+  return (await headers()).get("x-musikpro-demo-route") === "1";
+}
+
+function demoSession() {
+  const now = new Date();
+  return {
+    user: {
+      id: "musikpro-public-demo",
+      name: "Visiteur MusikPro",
+      email: "demo@musikpro.net",
+      emailVerified: true,
+      image: null,
+      role: "user",
+      twoFactorEnabled: false,
+      createdAt: now,
+      updatedAt: now,
+    },
+    session: {
+      id: "musikpro-public-demo-session",
+      userId: "musikpro-public-demo",
+      token: "public-demo-no-auth-token",
+      expiresAt: now,
+      createdAt: now,
+      updatedAt: now,
+      ipAddress: null,
+      userAgent: null,
+    },
+  };
+}
+
 export async function requireUser() {
+  if (await isDemoRequest()) return demoSession();
   const session = await getSession();
   if (!session?.user) redirect("/login");
   return session;

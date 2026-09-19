@@ -22,7 +22,7 @@ export default function UserAvatar({
   return (
     <img
       src={src}
-      alt="Portrait de démonstration"
+      alt="Photo de profil MusikPro"
       className={className}
       style={{ objectFit: "cover", borderRadius: "50%", display: "block" }}
     />

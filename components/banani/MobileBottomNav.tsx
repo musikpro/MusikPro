@@ -1,15 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useDemo } from "./DemoProvider";
-import { usePathname } from "next/navigation";
 import { demoDestination } from "@/lib/demo/navigation";
 const t = (text: string) => text;
 
 import Icon from "./Icon";
 
 export const displayName = "Mobile Bottom Nav";
-export const shortDescription =
-  "Fixed bottom navigation bar for mobile screens";
+export const shortDescription = "Fixed bottom navigation bar for mobile screens";
 
 const items = [
   { icon: "home", label: t("Accueil"), active: true },
@@ -22,7 +20,7 @@ const items = [
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
   const demo = useDemo();
   const [launching, setLaunching] = useState(false);
-  const pathname = usePathname();
+  const pathname = demo.pathname;
   const currentTab = pathname.startsWith("/dashboard/credits")
     ? "Packs"
     : pathname.startsWith("/dashboard/discover")
@@ -50,10 +48,7 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
               onClick={() => {
                 if (launching) return;
                 setLaunching(true);
-                window.setTimeout(
-                  () => demo.go(demoDestination(item.label)),
-                  180,
-                );
+                window.setTimeout(() => demo.go(demoDestination(item.label)), 180);
               }}
               aria-label={item.label}
               aria-busy={launching}
@@ -80,19 +75,13 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
             key={item.label}
             className="flex flex-col items-center gap-0.5 px-2 py-1 relative"
           >
-            <Icon
-              i={item.icon}
-              size={22}
-              className={isActive ? "text-primary" : "text-muted-foreground"}
-            />
+            <Icon i={item.icon} size={22} className={isActive ? "text-primary" : "text-muted-foreground"} />
             {item.badge && (
               <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
                 {item.badge}
               </div>
             )}
-            <span
-              className={`text-xs font-body ${isActive ? "text-primary font-semibold" : "text-muted-foreground"}`}
-            >
+            <span className={`text-xs font-body ${isActive ? "text-primary font-semibold" : "text-muted-foreground"}`}>
               {item.label}
             </span>
           </button>

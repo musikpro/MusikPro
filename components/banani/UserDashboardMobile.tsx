@@ -83,9 +83,7 @@ export default function UserDashboardMobile() {
     occasion: song.occasion,
     versions: song.versions.length,
     plays: song.versions.reduce((total, version) => total + version.plays, 0),
-    likes: demo.versionFavorites.filter((key) =>
-      key.startsWith(`${song.title}|`),
-    ).length,
+    likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
   }));
   return (
     <div className="bg-background flex flex-col">
@@ -97,9 +95,7 @@ export default function UserDashboardMobile() {
           <h1 className="font-headings font-bold text-2xl text-foreground">
             {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {t("Il te reste 3 chansons")}
-          </p>
+          <p className="text-sm text-muted-foreground mt-0.5">{t("Il te reste 3 chansons")}</p>
         </div>
         <QuickLanguageSelect compact />
       </div>
@@ -119,18 +115,10 @@ export default function UserDashboardMobile() {
             <Icon i="plus" size={22} className="text-primary-foreground" />
           </div>
           <div className="text-left flex-1">
-            <p className="font-bold text-base text-primary-foreground">
-              {t("+ Créer une chanson")}
-            </p>
-            <p className="text-xs text-primary-foreground/80">
-              {t("Afrobeat, Amapiano, Gospel…")}
-            </p>
+            <p className="font-bold text-base text-primary-foreground">{t("+ Créer une chanson")}</p>
+            <p className="text-xs text-primary-foreground/80">{t("Afrobeat, Amapiano, Gospel…")}</p>
           </div>
-          <Icon
-            i="chevron-right"
-            size={18}
-            className="text-primary-foreground/70"
-          />
+          <Icon i="chevron-right" size={18} className="text-primary-foreground/70" />
         </button>
       </div>
 
@@ -139,20 +127,20 @@ export default function UserDashboardMobile() {
         <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-4 flex items-center gap-3">
           <span className="text-3xl">🏆</span>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-foreground">
-              {t("Concours — Voix d'Afrique")}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {t("Se termine le 31 juillet · 50 000 FCFA")}
-            </p>
+            <p className="font-bold text-sm text-foreground">{t("Concours — Voix d'Afrique")}</p>
+            <p className="text-xs text-muted-foreground">{t("Se termine le 31 juillet · 50 000 FCFA")}</p>
           </div>
           <button
             type="button"
             data-demo-ready
             onClick={() =>
-              demo.notify("Action de démonstration : service non connecté.")
+              demo.notify(
+                demo.isDemo
+                  ? "Action de démonstration : service non connecté."
+                  : "Cette fonctionnalité sera bientôt disponible.",
+              )
             }
-            aria-label="Action de démonstration"
+            aria-label="Participer au concours"
             className="text-xs font-bold text-primary bg-secondary px-3 py-1.5 rounded-lg flex-shrink-0"
           >
             {t("Participer")}
@@ -163,11 +151,9 @@ export default function UserDashboardMobile() {
       {/* Mes chansons */}
       <div className="px-4 mb-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-headings font-bold text-lg text-foreground">
-            {t("Mes chansons")}
-          </h2>
+          <h2 className="font-headings font-bold text-lg text-foreground">{t("Mes chansons")}</h2>
           <a
-            href="/dashboard/songs"
+            href={demo.href("/dashboard/songs")}
             onClick={(e) => {
               e.preventDefault();
               demo.go("/dashboard/songs");
@@ -187,11 +173,9 @@ export default function UserDashboardMobile() {
       {/* Tendances */}
       <div className="px-4 mb-6">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-headings font-bold text-lg text-foreground">
-            {t("Tendances")}
-          </h2>
+          <h2 className="font-headings font-bold text-lg text-foreground">{t("Tendances")}</h2>
           <a
-            href="/dashboard/discover"
+            href={demo.href("/dashboard/discover")}
             onClick={(e) => {
               e.preventDefault();
               demo.go("/dashboard/discover");
@@ -232,24 +216,14 @@ export default function UserDashboardMobile() {
 
       {/* Témoignages */}
       <div className="px-4 mb-6">
-        <h2 className="font-headings font-bold text-lg text-foreground mb-3">
-          {t("Témoignages")}
-        </h2>
+        <h2 className="font-headings font-bold text-lg text-foreground mb-3">{t("Témoignages")}</h2>
         <div className="flex flex-col gap-3">
           {testimonials.map((testimonial, idx) => (
-            <div
-              key={idx}
-              className="bg-card border border-border rounded-xl p-4"
-            >
+            <div key={idx} className="bg-card border border-border rounded-xl p-4">
               {/* Rating */}
               <div className="flex gap-0.5 mb-2">
                 {[...Array(testimonial.rating)].map((_, i) => (
-                  <Icon
-                    key={i}
-                    i="star"
-                    size={14}
-                    className="text-yellow-500"
-                  />
+                  <Icon key={i} i="star" size={14} className="text-yellow-500" />
                 ))}
               </div>
 
@@ -266,12 +240,8 @@ export default function UserDashboardMobile() {
                   className="w-8 h-8"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">
-                    {testimonial.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {testimonial.role}
-                  </p>
+                  <p className="text-xs font-semibold text-foreground">{testimonial.name}</p>
+                  <p className="text-xs text-muted-foreground">{testimonial.role}</p>
                 </div>
               </div>
             </div>
