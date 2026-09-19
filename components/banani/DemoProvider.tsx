@@ -26,6 +26,8 @@ function useDemoState() {
   }, [message]);
   const [fields, setFields] = useState<Record<string, string>>({
     story: "",
+    recipientName: "",
+    recipientPronunciation: "",
     lyrics: demoLyrics,
     detail: "",
     "profile.name": "Kofi Mensah",
@@ -49,6 +51,7 @@ function useDemoState() {
     theme: "Clair",
     appLanguage: "Français",
     currency: "XOF",
+    recipientRelation: "",
   });
   const [profile, setProfile] = useState({
     name: "Kofi Mensah",

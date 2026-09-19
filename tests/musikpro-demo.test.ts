@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   demoStorySchema,
+  demoRecipientSchema,
   demoLyricsSchema,
   demoDetailSchema,
   demoSupportSchema,
@@ -17,6 +18,22 @@ describe("frontières des saisies de démonstration MusikPro", () => {
     expect(demoStorySchema.parse("  Une chanson pour ma famille  ")).toBe(
       "Une chanson pour ma famille",
     );
+  });
+  it("valide le destinataire et sa relation", () => {
+    expect(
+      demoRecipientSchema.safeParse({
+        name: "Aïcha",
+        pronunciation: "Aï-cha",
+        relation: "Ma femme",
+      }).success,
+    ).toBe(true);
+    expect(
+      demoRecipientSchema.safeParse({
+        name: "",
+        pronunciation: "",
+        relation: "",
+      }).success,
+    ).toBe(false);
   });
   it("borne les paroles et les détails en mots, y compris les sauts de ligne", () => {
     expect(

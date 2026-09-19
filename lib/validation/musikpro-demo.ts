@@ -8,6 +8,28 @@ export const demoStorySchema = z
   .min(10, "Raconte ton histoire en au moins 10 caractères.")
   .max(2000)
   .refine(words(250), "Maximum 250 mots.");
+export const demoRecipientSchema = z.object({
+  name: z.string().trim().min(2, "Indique le nom de la personne concernée.").max(100),
+  pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
+  relation: z.enum(
+    [
+      "Ma femme",
+      "Mon mari",
+      "Ma copine",
+      "Mon copain",
+      "Ma mère",
+      "Mon père",
+      "Mes enfants",
+      "Mon frère",
+      "Ma sœur",
+      "Un ami",
+      "Une amie",
+      "Pour moi",
+      "Une personne qui compte",
+    ],
+    { error: "Choisis à qui la chanson est destinée." },
+  ),
+});
 export const demoLyricsSchema = z
   .string()
   .trim()

@@ -10,24 +10,29 @@ export default function SearchField({
   label: string;
 }) {
   return (
-    <div className="demo-search-field flex-1 flex items-center gap-2 bg-input border border-border rounded-lg px-3">
-      <Icon i="search" size={16} className="text-muted-foreground" />
-      <input
-        type="search"
-        aria-label={label}
-        className="demo-field text-sm"
-        placeholder="Titre, style ou occasion…"
-        maxLength={200}
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-      />
+    <div className="demo-search-field flex-1">
+      <span className="demo-search-icon" aria-hidden="true">
+        <Icon i="search" size={17} />
+      </span>
+      <label className="demo-search-content">
+        <span>Rechercher</span>
+        <input
+          type="search"
+          aria-label={label}
+          className="demo-field"
+          placeholder="Titre, style ou occasion…"
+          maxLength={200}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+        />
+      </label>
       {value && (
         <button
           type="button"
           data-demo-ready="true"
           aria-label="Effacer la recherche"
           onClick={() => onChange("")}
-          className="demo-search-clear text-muted-foreground"
+          className="demo-search-clear"
         >
           <Icon i="x" size={16} />
         </button>

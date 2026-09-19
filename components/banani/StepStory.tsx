@@ -5,7 +5,10 @@ import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
-import { demoStorySchema } from "@/lib/validation/musikpro-demo";
+import {
+  demoRecipientSchema,
+  demoStorySchema,
+} from "@/lib/validation/musikpro-demo";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
 export const screenSize = "mobile";
@@ -14,15 +17,51 @@ import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 
+const recipientRelations = [
+  "Ma femme",
+  "Mon mari",
+  "Ma copine",
+  "Mon copain",
+  "Ma mère",
+  "Mon père",
+  "Mes enfants",
+  "Mon frère",
+  "Ma sœur",
+  "Un ami",
+  "Une amie",
+  "Pour moi",
+  "Une personne qui compte",
+] as const;
+
+function suggestPronunciation(name: string) {
+  const vowels = "aeiouyàâäéèêëïîôöùûüÿœ";
+  return name
+    .trim()
+    .split(/\s+/)
+    .map((word) =>
+      word.replace(
+        new RegExp(`([${vowels}]+)(?=[^${vowels}]+[${vowels}])`, "gi"),
+        "$1-",
+      ),
+    )
+    .join(" ");
+}
+
 export default function StepStory() {
   const demo = useDemo();
   const [storyError, setStoryError] = useState("");
+  const [recipientError, setRecipientError] = useState("");
   const storyWordCount = demo.fields.story.trim().split(/\s+/).filter(Boolean).length;
   useEffect(() => {
     if (!storyError) return;
     const timer = window.setTimeout(() => setStoryError(""), 4200);
     return () => window.clearTimeout(timer);
   }, [storyError]);
+  useEffect(() => {
+    if (!recipientError) return;
+    const timer = window.setTimeout(() => setRecipientError(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [recipientError]);
 
   return (
     <div className="bg-surface flex flex-col">
@@ -93,6 +132,82 @@ export default function StepStory() {
         )}
       </div>
 
+      <div className="story-recipient-section px-4 mb-4">
+        <div className="story-recipient-card">
+          <div className="story-recipient-heading">
+            <span className="story-recipient-heading-icon">
+              <Icon i="user-round" size={16} />
+            </span>
+            <div>
+              <h2>À qui est destinée la chanson ?</h2>
+              <p>Ajoute le nom exact pour préserver sa prononciation.</p>
+            </div>
+          </div>
+
+          <div className="story-name-row">
+            <label className="story-recipient-field">
+              <span>Nom de la personne</span>
+              <input
+                type="text"
+                value={demo.fields.recipientName}
+                maxLength={100}
+                autoComplete="name"
+                placeholder="Ex. Aïcha"
+                onChange={(event) => {
+                  const name = event.target.value;
+                  demo.field("recipientName", name);
+                  demo.field("recipientPronunciation", suggestPronunciation(name));
+                  setRecipientError("");
+                }}
+              />
+            </label>
+            <label className="story-recipient-field is-pronunciation">
+              <span>Prononciation suggérée</span>
+              <input
+                type="text"
+                value={demo.fields.recipientPronunciation}
+                maxLength={160}
+                placeholder="Aï-cha"
+                onChange={(event) =>
+                  demo.field("recipientPronunciation", event.target.value)
+                }
+              />
+            </label>
+          </div>
+
+          <label className="story-relation-field">
+            <span>Lien avec cette personne</span>
+            <span className="story-relation-select">
+              <Icon i="heart-handshake" size={16} />
+              <select
+                aria-label="Lien avec cette personne"
+                value={demo.choices.recipientRelation}
+                onChange={(event) => {
+                  demo.choose("recipientRelation", event.target.value);
+                  setRecipientError("");
+                }}
+              >
+                <option value="" disabled>
+                  Sélectionner une relation
+                </option>
+                {recipientRelations.map((relation) => (
+                  <option key={relation} value={relation}>
+                    {relation}
+                  </option>
+                ))}
+              </select>
+              <Icon i="chevron-down" size={14} aria-hidden="true" />
+            </span>
+          </label>
+          {recipientError && (
+            <p className="story-field-error" role="alert">
+              <Icon i="circle-alert" size={15} />
+              {recipientError}
+            </p>
+          )}
+        </div>
+      </div>
+
       {/* Voice hint */}
       <div className="px-4 mb-4">
         <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-start gap-3">
@@ -137,8 +252,21 @@ export default function StepStory() {
                 setStoryError(parsed.error.issues[0].message);
                 return;
               }
+              const recipient = demoRecipientSchema.safeParse({
+                name: demo.fields.recipientName,
+                pronunciation: demo.fields.recipientPronunciation,
+                relation: demo.choices.recipientRelation,
+              });
+              if (!recipient.success) {
+                setRecipientError(recipient.error.issues[0].message);
+                return;
+              }
               setStoryError("");
+              setRecipientError("");
               demo.field("story", parsed.data);
+              demo.field("recipientName", recipient.data.name);
+              demo.field("recipientPronunciation", recipient.data.pronunciation);
+              demo.choose("recipientRelation", recipient.data.relation);
               demo.go("/dashboard/create/style");
             })()
           }
