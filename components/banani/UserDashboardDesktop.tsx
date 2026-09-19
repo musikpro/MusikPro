@@ -12,6 +12,7 @@ import Image from "./Image";
 import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
 import QuickLanguageSelect from "./QuickLanguageSelect";
+import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
 
 const trendingCards = [
   {
@@ -76,6 +77,11 @@ export default function UserDashboardDesktop() {
     plays: song.versions.reduce((total, version) => total + version.plays, 0),
     likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
   }));
+  const recentActivity = demo.songs.slice(0, 3).map((song, index) => ({
+    action: index === 0 ? t("Chanson créée") : t("Chanson mise à jour"),
+    song: song.title,
+    time: index === 0 ? t("Récemment") : t("Cette semaine"),
+  }));
   return (
     <div className="bg-background flex min-h-full font-body">
       <DesktopSidebar />
@@ -133,9 +139,10 @@ export default function UserDashboardDesktop() {
               <Icon i="chevron-right" size={20} className="text-primary-foreground/70" />
             </button>
 
-            {/* Les contenus éditoriaux d'exemple sont réservés au mode démo. */}
-            {demo.isDemo && <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-5 flex items-center gap-4">
-              <span className="text-4xl">🏆</span>
+            <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-5 flex items-center gap-4">
+              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Icon i="trophy" size={25} />
+              </span>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-base text-foreground">{t("Concours — Voix d'Afrique")}</p>
                 <p className="text-sm text-muted-foreground">{t("Se termine le 31 juillet · 50 000 FCFA")}</p>
@@ -143,19 +150,13 @@ export default function UserDashboardDesktop() {
               <button
                 type="button"
                 data-demo-ready
-                onClick={() =>
-                  demo.notify(
-                    demo.isDemo
-                      ? "Action de démonstration : service non connecté."
-                      : "Cette fonctionnalité sera bientôt disponible.",
-                  )
-                }
+                onClick={() => demo.notify("Cette fonctionnalité sera bientôt disponible.")}
                 aria-label="Participer au concours"
                 className="text-sm font-bold text-primary bg-secondary px-5 py-2.5 rounded-lg flex-shrink-0"
               >
                 {t("Participer")}
               </button>
-            </div>}
+            </div>
 
             {/* Mes chansons */}
             <div>
@@ -186,7 +187,7 @@ export default function UserDashboardDesktop() {
               </div>
             </div>
 
-            {demo.isDemo && <div>
+            <div>
               <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Témoignages")}</h2>
               <div className="grid grid-cols-3 gap-4">
                 {testimonials.map((testimonial, idx) => (
@@ -218,33 +219,16 @@ export default function UserDashboardDesktop() {
                   </div>
                 ))}
               </div>
-            </div>}
+            </div>
           </div>
 
           {/* Right Column */}
           <div className="w-80 flex-shrink-0 flex flex-col gap-6">
-            {/* Credits Box - Updated Style */}
-            <div className="bg-gradient-to-br from-secondary to-card border border-primary/20 rounded-3xl p-8">
-              <div className="flex items-center gap-2 mb-4">
-                <Icon i="zap" size={20} className="text-primary" />
-                <span className="text-lg font-bold text-foreground">{t("Packs")}</span>
-              </div>
-              <p className="text-5xl font-headings font-bold text-primary mb-2">{demo.balance}</p>
-              <p className="text-sm text-muted-foreground mb-6">{t("chansons restantes")}</p>
-              <button
-                type="button"
-                data-demo-ready
-                onClick={() => demo.go("/dashboard/credits")}
-                aria-label="Acheter des chansons"
-                className="w-full bg-primary text-primary-foreground font-semibold py-3 rounded-full hover:shadow-lg transition-shadow"
-              >
-                {t("Acheter des chansons")}
-              </button>
-            </div>
+            <WorkspaceBalanceCard />
 
             <StoreDownloadCard compact />
 
-            {demo.isDemo && <div>
+            <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-headings font-bold text-lg text-foreground">{t("Tendances")}</h2>
                 <a
@@ -280,28 +264,18 @@ export default function UserDashboardDesktop() {
                   </div>
                 ))}
               </div>
-            </div>}
+            </div>
 
-            {demo.isDemo && <div>
+            <div>
               <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Activité récente")}</h2>
               <div className="bg-card border border-border rounded-xl overflow-hidden">
-                {[
-                  {
-                    action: t("Chanson créée"),
-                    song: "Pour toi Mariam",
-                    time: t("Il y a 2h"),
-                  },
-                  {
-                    action: t("Favori ajouté"),
-                    song: "Mama Africa",
-                    time: t("Il y a 5h"),
-                  },
-                  {
-                    action: t("Chanson partagée"),
-                    song: "Gloire à Toi",
-                    time: t("Hier"),
-                  },
-                ].map((act, i) => (
+                {recentActivity.length === 0 && (
+                  <div className="px-4 py-5 text-center">
+                    <Icon i="clock" size={20} className="mx-auto mb-2 text-primary" />
+                    <p className="text-sm font-semibold text-foreground">Aucune activité récente</p>
+                  </div>
+                )}
+                {recentActivity.map((act, i) => (
                   <div key={i} className={`flex items-center gap-3 p-3 ${i > 0 ? "border-t border-border" : ""}`}>
                     <div className="w-8 h-8 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
                       <Icon i="zap" size={13} className="text-primary" />
@@ -314,7 +288,7 @@ export default function UserDashboardDesktop() {
                   </div>
                 ))}
               </div>
-            </div>}
+            </div>
           </div>
         </div>
       </div>

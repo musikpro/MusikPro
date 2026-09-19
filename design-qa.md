@@ -1,61 +1,56 @@
-# Design QA — Packs de chansons
+# Design QA — parité mode démo / compte réel
 
-## Référence
+**Source visual truth path:** `http://localhost:3000/demo` (mode démo, capture Browser Tools du 19 septembre 2026)
 
-- Captures fournies par l’utilisateur : carte « Chansons disponibles » et moyens de paiement acceptés.
-- Écran contrôlé : `/dashboard/credits`.
+**Implementation screenshot path:** `http://localhost:3000/dashboard` (compte réel authentifié, capture Browser Tools du 19 septembre 2026)
 
-## Comparaison finale
+**Viewport:** 1440 × 1000 CSS px, DPR 1. Captures pleine page : document réel 1425 × 1273 px, document démo 1425 × 1354 px. La différence de hauteur vient uniquement des chansons et activités présentes dans les fixtures démo.
 
-- La carte du solde conserve la palette orange MusikPro dans un format plus compact ; le chiffre et « chansons disponibles » restent sur une seule ligne.
-- Le contraste, les espacements, les rayons et l’ombre sont cohérents avec les autres cartes du tableau de bord.
-- Orange Money, MTN MoMo, Moov Money, Wave et Visa/Mastercard utilisent les ressources officielles déjà présentes dans le projet.
-- Les cinq emplacements restent sur une seule ligne de 320 à 1440 px.
-- Aucun débordement horizontal global n’a été détecté aux largeurs 320, 360, 390, 430, 768, 1024 et 1440 px.
+**State:** thème clair, tableau de bord bureau, compte réel vide contre mode démo avec données. Vérification responsive complémentaire à 320, 360, 390, 430, 768, 1024 et 1440 px.
 
-## Défauts bloquants
+## Findings
 
-- P0 : aucun.
-- P1 : aucun.
-- P2 : aucun.
+- Aucun écart P0, P1 ou P2 restant.
+- La carte de solde est désormais le même composant dans l’accueil et dans le rail latéral des autres pages. Ses dimensions mesurées sont identiques dans les deux modes : 320 × 205 px à 1440 px.
+- La structure Accueil, Concours, Mes chansons, Témoignages, Tendances, solde et Activité récente est identique. Les comptes sans contenu utilisent les états vides au même emplacement ; les données futures réutiliseront les cartes du mode démo.
+- Le répertoire technique d’écrans qui n’existait que dans le mode démo a été retiré afin de préserver la parité visuelle.
 
-## Ajustement — navigation de création
+## Required fidelity surfaces
 
-- Les boutons « Retour » et « Tableau de bord » disposent d’une hauteur et d’une marge intérieure plus généreuses.
-- L’indicateur « Étape » reprend exactement le style et les dimensions du bouton « Retour ».
-- Les trois éléments de la bande supérieure restent sur une seule ligne de 320 à 1440 px, sans débordement.
-- Une variante compacte conserve cet élargissement à 320 px sans provoquer de débordement horizontal.
+- **Fonts and typography:** DM Sans, graisses, tailles, interlignages et hiérarchie proviennent des mêmes composants et tokens dans les deux modes.
+- **Spacing and layout rhythm:** mêmes grilles, espacements, rayons, ombres et largeur de rail. Aucun débordement horizontal sur les sept viewports requis.
+- **Colors and visual tokens:** mêmes variables `--color-*`, gradients, bordures et états sémantiques. Seuls le nombre de crédits et les textes d’état changent.
+- **Image quality and asset fidelity:** mêmes images de tendances et avatars. L’emoji du concours a été remplacé par l’icône fonctionnelle `Trophy` de la bibliothèque commune.
+- **Copy and content:** les libellés de navigation et de cartes sont identiques ; le nom, le solde, les chansons et les activités restent propres au compte.
 
-## Ajustement — destinataire de la chanson
+## Full-view comparison evidence
 
-- Le champ du nom utilise un seul traitement de focus orange, sans second contour.
-- Le menu « Lien avec cette personne » reste au-dessus de la carte de conseils lorsqu’il est ouvert.
-- Le défilement interne de la liste ne ferme plus le menu ; seul le défilement de la page le referme.
-- Les relations « Mon oncle » et « Ma tante » sont proposées et acceptées par la validation.
-- La prononciation suggérée est affichée en lecture seule et ne peut recevoir ni clic ni focus clavier.
+Les captures Browser Tools réel/démo à 1440 × 1000 montrent la même composition. La carte de solde, le CTA, le concours, le rail de tendances et les témoignages sont alignés aux mêmes positions. Les variations visibles correspondent uniquement aux états vide/rempli.
 
-## Ajustement — révision des paroles
+## Focused region comparison evidence
 
-- Le compteur, l’éditeur et la validation partagent une limite maximale de 5 000 mots.
-- L’action de rallongement respecte également cette limite.
-- Une seule barre de défilement native et stylée reste visible dans le cadre des paroles.
+La carte « Votre solde / Chansons disponibles » a été comparée isolément : même composant `WorkspaceBalanceCard`, même classe `workspace-credit-card`, même taille 320 × 205 px, même bouton et même hiérarchie dans les deux modes.
 
-## Ajustement — finalisation de la création
+## Primary interactions tested
 
-- Le parcours suit désormais l’ordre « Prêt à générer → Vos informations → Choix du pack → paiement → génération ».
-- La page « Vos informations » ne contient plus de résumé de commande ; les trois champs ont la même hauteur et le téléphone intègre proprement l’indicatif +225.
-- L’indicatif téléphonique utilise un menu MusikPro personnalisé avec huit pays ; il reste au-dessus du contenu et se contrôle aussi au clavier.
-- Les champs d’identité utilisent désormais une hauteur standard de 48 px et des marges intérieures plus compactes.
-- La sélection du pack dispose de son propre écran, d’un état sélectionné visible, du choix de devise et des moyens de paiement sur une ligne.
-- L’écran du choix du pack reprend la carte, l’en-tête illustré, les bordures et la profondeur visuelle de la page « Vos informations ».
-- La navigation basse est absente des pages d’informations, de choix du pack et de redirection.
-- Les trois écrans ont été vérifiés à 320, 360, 390, 430, 768, 1024 et 1440 px sans débordement horizontal ni bouton tronqué.
+- Navigation réelle et démo sur Accueil, Découvrir, Mes chansons, Favoris, Packs, Profil, Paramètres et le parcours de création.
+- Affichage des états vide et rempli.
+- Absence de scroll horizontal global aux largeurs 320, 360, 390, 430, 768, 1024 et 1440 px.
+- Console : aucun défaut applicatif observé. Chrome signale seulement l’attribut `bis_skin_checked` injecté par une extension locale.
 
-## Ajustement — solde et grille des packs
+## Comparison history
 
-- La carte latérale « Chansons disponibles » utilise une composition plus compacte, une icône fonctionnelle et un fond en profondeur cohérent avec MusikPro.
-- Le chiffre du solde passe à 34 px et reste sur la même ligne que « chansons restantes ».
-- Les quatre packs sont disposés en grille 2 × 2 sur mobile et bureau, aussi bien sur la page générale que dans le parcours de création.
-- À 320 px, les cartes font 133 à 137 px de large sans débordement horizontal ; à 1440 px, la grille conserve deux colonnes égales.
+- **P1 initial — carte Packs divergente :** l’accueil utilisait une grande carte spécifique, alors que les autres pages utilisaient la carte de solde raffinée. Correction : extraction et utilisation commune de `WorkspaceBalanceCard`.
+- **P2 initial — structure réelle plus courte :** les sections éditoriales étaient masquées hors démo. Correction : structure commune, avec états de données vides pour les contenus personnels.
+- **P2 initial — navigation technique visible seulement en démo :** correction par suppression du répertoire technique du rendu utilisateur.
+- **Post-fix evidence :** parité structurelle confirmée sur 15 routes et parité responsive confirmée sur les sept viewports requis.
 
-final result: passed
+## Implementation checklist
+
+- [x] Composant de solde partagé.
+- [x] Sections communes aux deux modes.
+- [x] Activité réelle alimentée par les chansons du compte, avec état vide.
+- [x] Navigation technique retirée du mode démo.
+- [x] Responsive et absence de débordement vérifiés.
+
+**final result: passed**

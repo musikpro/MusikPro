@@ -6,6 +6,7 @@ import DesktopSidebar from "./DesktopSidebar";
 import Icon from "./Icon";
 import UserAvatar from "./UserAvatar";
 import MobileBottomNav from "./MobileBottomNav";
+import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
 
 export default function DesktopWorkspace({ children }: { children: ReactNode }) {
   const demo = useDemo();
@@ -84,31 +85,7 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
             )}
           </main>
           <aside className="workspace-context" aria-label={creation ? "Résumé de création" : "Raccourcis et activité"}>
-            <section className="workspace-context-card workspace-credit-card">
-              <div className="workspace-credit-heading">
-                <span aria-hidden="true">
-                  <Icon i="music-2" size={18} />
-                </span>
-                <div>
-                  <small>Votre solde</small>
-                  <h2>Chansons disponibles</h2>
-                </div>
-              </div>
-              <div className="workspace-credit-balance">
-                <strong className="workspace-credit-number">{demo.balance}</strong>
-                <span>chansons restantes</span>
-              </div>
-              <p className="workspace-credit-demo">
-                <Icon i="check" size={14} />
-                {demo.balance > 0
-                  ? `Prêt pour ${demo.balance} nouvelle${demo.balance > 1 ? "s" : ""} création${demo.balance > 1 ? "s" : ""}${demo.isDemo ? " · démonstration" : ""}`
-                  : "Choisissez un pack pour créer votre première chanson"}
-              </p>
-              <Link href={demo.href("/dashboard/credits")} className="workspace-primary-link">
-                Voir les packs
-                <Icon i="arrow-right" size={16} />
-              </Link>
-            </section>
+            <WorkspaceBalanceCard />
             {creation ? (
               <section className="workspace-context-card">
                 <h2>

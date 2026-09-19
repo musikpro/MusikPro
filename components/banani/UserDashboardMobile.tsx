@@ -129,7 +129,9 @@ export default function UserDashboardMobile() {
       {/* Concours Banner */}
       <div className="px-4 mb-5 hidden">
         <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-4 flex items-center gap-3">
-          <span className="text-3xl">🏆</span>
+          <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Icon i="trophy" size={23} />
+          </span>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-sm text-foreground">{t("Concours — Voix d'Afrique")}</p>
             <p className="text-xs text-muted-foreground">{t("Se termine le 31 juillet · 50 000 FCFA")}</p>
@@ -181,8 +183,7 @@ export default function UserDashboardMobile() {
         </div>
       </div>
 
-      {/* Les contenus éditoriaux d'exemple sont réservés au mode démo. */}
-      {demo.isDemo && <div className="px-4 mb-6">
+      <div className="px-4 mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-headings font-bold text-lg text-foreground">{t("Tendances")}</h2>
           <a
@@ -218,14 +219,14 @@ export default function UserDashboardMobile() {
             </div>
           ))}
         </div>
-      </div>}
+      </div>
 
       {/* Download App Section */}
       <div className="px-4 mb-6">
         <StoreDownloadCard />
       </div>
 
-      {demo.isDemo && <div className="px-4 mb-6">
+      <div className="px-4 mb-6">
         <h2 className="font-headings font-bold text-lg text-foreground mb-3">{t("Témoignages")}</h2>
         <div className="flex flex-col gap-3">
           {testimonials.map((testimonial, idx) => (
@@ -257,7 +258,7 @@ export default function UserDashboardMobile() {
             </div>
           ))}
         </div>
-      </div>}
+      </div>
 
       <MobileBottomNav activeTab={t("Accueil")} />
     </div>
