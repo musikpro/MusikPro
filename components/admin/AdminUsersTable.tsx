@@ -15,7 +15,7 @@ export type AdminUserRow = {
   banned: boolean;
 };
 
-export default function AdminUsersTable({ rows }: { rows: AdminUserRow[] }) {
+export default function AdminUsersTable({ rows, twoFactorAvailable }: { rows: AdminUserRow[]; twoFactorAvailable: boolean }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<"all" | "active" | "inactive">("all");
   const filtered = useMemo(() => {
@@ -78,7 +78,7 @@ export default function AdminUsersTable({ rows }: { rows: AdminUserRow[] }) {
                     {row.verified ? "Vérifié" : "À vérifier"}
                   </span>
                 </td>
-                <td>{row.twoFactor ? "Activée" : "Non"}</td>
+                <td>{twoFactorAvailable ? (row.twoFactor ? "Activée" : "Non") : "Suspendue"}</td>
                 <td>{row.role}</td>
                 <td>
                   <span className={`admin-status ${row.banned ? "is-danger" : "is-success"}`}>

@@ -11,8 +11,15 @@ export function maskEmail(email: string) {
   return `${visible}${"•".repeat(Math.max(3, local.length - visible.length))}@${domain}`;
 }
 
-export function shouldBootstrapOwnerTwoFactor(user: { role?: string | null; twoFactorEnabled?: boolean | null }) {
-  return hasAppRole(user.role, "admin") && user.twoFactorEnabled !== true;
+export function ownerTwoFactorEnabled(value = process.env.OWNER_2FA_ENABLED) {
+  return value === "true";
+}
+
+export function shouldBootstrapOwnerTwoFactor(
+  user: { role?: string | null; twoFactorEnabled?: boolean | null },
+  enabled = ownerTwoFactorEnabled(),
+) {
+  return enabled && hasAppRole(user.role, "admin") && user.twoFactorEnabled !== true;
 }
 
 export function ownerTwoFactor(): BetterAuthPlugin {

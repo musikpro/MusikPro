@@ -4,6 +4,7 @@ import { user } from "@/db/schema";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import AdminUsersTable from "@/components/admin/AdminUsersTable";
 import { requireAdmin } from "@/lib/auth/session";
+import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 
 export default async function AdminUsersPage() {
   await requireAdmin();
@@ -41,6 +42,7 @@ export default async function AdminUsersPage() {
         />
       </section>
       <AdminUsersTable
+        twoFactorAvailable={ownerTwoFactorEnabled()}
         rows={users.map((entry) => ({
           id: entry.id,
           name: entry.name,

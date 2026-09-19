@@ -37,6 +37,14 @@
           "example": "high"
         },
         {
+          "name": "OWNER_2FA_ENABLED",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Interrupteur du double facteur propriétaire. Laisser false tant que ce contrôle est temporairement désactivé.",
+          "example": "false"
+        },
+        {
           "name": "PAYMENT_WEBHOOK_BASE_URL",
           "sensitive": false,
           "required": "payments",

@@ -28,13 +28,15 @@
         "BETTER_AUTH_SECRET",
         "BETTER_AUTH_URL",
         "AUTH_EMAIL_PASSWORD_ENABLED",
-        "AUTH_REQUIRE_EMAIL_VERIFICATION"
+        "AUTH_REQUIRE_EMAIL_VERIFICATION",
+        "OWNER_2FA_ENABLED"
       ],
       "files": ["lib/auth/index.ts", "app/api/auth/[...all]/route.ts"],
       "routes": ["/api/auth/[...all]"],
       "notes": [
         "Email/password est optionnel seulement si un autre mode d’auth réel (ex. Google OAuth) est activé.",
-        "En production, email/password ne doit pas être activé sans canal de livraison Resend opérationnel lorsque la vérification email est requise."
+        "En production, email/password ne doit pas être activé sans canal de livraison Resend opérationnel lorsque la vérification email est requise.",
+        "Le double facteur propriétaire est conservé derrière OWNER_2FA_ENABLED et reste désactivé tant que cette variable ne vaut pas true."
       ],
       "removalComplexity": "never",
       "dependsOn": ["database"]

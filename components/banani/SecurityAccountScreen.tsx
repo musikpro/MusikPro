@@ -10,11 +10,13 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 export default function SecurityAccountScreen({
   emailVerified,
   twoFactorEnabled,
+  twoFactorAvailable,
   required,
   isOwner,
 }: {
   emailVerified: boolean;
   twoFactorEnabled: boolean;
+  twoFactorAvailable: boolean;
   required: boolean;
   isOwner: boolean;
 }) {
@@ -58,17 +60,19 @@ export default function SecurityAccountScreen({
             </div>
           </article>
           {isOwner && (
-            <article className={twoFactorEnabled ? "is-secure" : "is-warning"}>
+            <article className={twoFactorAvailable && twoFactorEnabled ? "is-secure" : "is-warning"}>
               <span><Icon i="smartphone" size={19} /></span>
               <div>
                 <small>Double facteur propriétaire</small>
-                <strong>{twoFactorEnabled ? "Activé" : "À activer"}</strong>
+                <strong>
+                  {twoFactorAvailable ? (twoFactorEnabled ? "Activé" : "À activer") : "Désactivé temporairement"}
+                </strong>
               </div>
             </article>
           )}
         </div>
 
-        {isOwner && <section className="security-panel">
+        {isOwner && twoFactorAvailable && <section className="security-panel">
           <div className="security-panel-heading">
             <span>
               <Icon i="key-round" size={20} />
@@ -80,6 +84,12 @@ export default function SecurityAccountScreen({
           </div>
           <TwoFactorSetup enabled={twoFactorEnabled} />
         </section>}
+
+        {isOwner && !twoFactorAvailable && (
+          <InlineNotice tone="info">
+            Le double facteur propriétaire est temporairement désactivé. Tu peux accéder à l’administration avec ton compte habituel.
+          </InlineNotice>
+        )}
 
         <section className="security-tips">
           <h2>
