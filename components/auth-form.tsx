@@ -11,12 +11,10 @@ import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
 export function AuthForm({
   mode,
   googleEnabled = false,
-  showDemoLink = false,
   initialError = "",
 }: {
   mode: "login" | "register";
   googleEnabled?: boolean;
-  showDemoLink?: boolean;
   initialError?: string;
 }) {
   const router = useRouter();
@@ -253,12 +251,6 @@ export function AuthForm({
                 {isLogin ? "Pas de compte ? " : "Vous avez déjà un compte ? "}
                 <Link href={isLogin ? "/register" : "/login"}>{isLogin ? "Créer un compte" : "Se connecter"}</Link>
               </p>
-            )}
-            {showDemoLink && !isLoginPasswordStep && (
-              <Link className="auth-demo-link" href="/demo">
-                <Icon i="play-circle" size={18} />
-                Visiter le mode démonstration
-              </Link>
             )}
           </div>
         </form>

@@ -846,4 +846,3 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:0;overfl
   background: #fff8e8;
   color: #805b13;
 }
-.auth-demo-link{display:flex;min-height:48px;align-items:center;justify-content:center;gap:8px;margin-top:16px;padding:10px 14px;border:1px solid var(--auth-border);border-radius:12px;background:#fff;color:var(--auth-fg);font-size:14px;font-weight:750;text-decoration:none;transition:border-color 160ms ease,background 160ms ease,color 160ms ease}.auth-demo-link:hover,.auth-demo-link:focus-visible{border-color:rgba(242,101,34,.5);background:var(--auth-secondary);color:var(--auth-primary)}

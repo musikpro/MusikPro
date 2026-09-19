@@ -13,7 +13,6 @@ export default async function Page({
     <AuthForm
       mode="login"
       googleEnabled={googleEnabled}
-      showDemoLink
       initialError={getOAuthErrorMessage(error)}
     />
   );
