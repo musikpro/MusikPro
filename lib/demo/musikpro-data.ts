@@ -224,7 +224,7 @@ export const demoSongPacks = [
 ];
 
 export const demoCurrencies = [
-  { code: "XOF", label: "Franc CFA (XOF)", symbol: "FCFA" },
+  { code: "XOF", label: "FCFA (XOF)", symbol: "FCFA" },
   { code: "EUR", label: "Euro (€)", symbol: "€" },
   { code: "USD", label: "Dollar ($)", symbol: "$" },
   { code: "NGN", label: "Naira (₦)", symbol: "₦" },
