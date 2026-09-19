@@ -120,7 +120,7 @@ export default function FinalConfirmationScreen() {
       </div>
 
       {/* CTA */}
-      <div className="px-4 pb-8 border-t border-border bg-background">
+      <div className="creation-mobile-cta px-4 pb-8 border-t border-border bg-background">
         <button
           type="button"
           data-demo-ready="true"

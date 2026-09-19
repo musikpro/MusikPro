@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
@@ -15,7 +16,14 @@ import CreationTopNav from "./CreationTopNav";
 
 export default function StepStory() {
   const demo = useDemo();
+  const [storyError, setStoryError] = useState("");
   const storyWordCount = demo.fields.story.trim().split(/\s+/).filter(Boolean).length;
+  useEffect(() => {
+    if (!storyError) return;
+    const timer = window.setTimeout(() => setStoryError(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [storyError]);
+
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create" current={2} />
@@ -73,9 +81,16 @@ export default function StepStory() {
             <Icon i="mic" size={20} />
           </button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2 text-right">
-          {storyWordCount} / 250 mots
-        </p>
+        <div className="story-field-meta">
+          <span>Minimum 10 caractères</span>
+          <span>{storyWordCount} / 250 mots</span>
+        </div>
+        {storyError && (
+          <p className="story-field-error" role="alert">
+            <Icon i="circle-alert" size={15} />
+            {storyError}
+          </p>
+        )}
       </div>
 
       {/* Voice hint */}
@@ -111,7 +126,7 @@ export default function StepStory() {
       </div>
 
       {/* CTA */}
-      <div className="px-4 pb-8">
+      <div className="creation-mobile-cta px-4 pb-8">
         <button
           type="button"
           data-demo-ready="true"
@@ -119,9 +134,10 @@ export default function StepStory() {
             (() => {
               const parsed = demoStorySchema.safeParse(demo.fields.story);
               if (!parsed.success) {
-                demo.notify(parsed.error.issues[0].message);
+                setStoryError(parsed.error.issues[0].message);
                 return;
               }
+              setStoryError("");
               demo.field("story", parsed.data);
               demo.go("/dashboard/create/style");
             })()
@@ -131,9 +147,6 @@ export default function StepStory() {
         >
           {t("Continuer")} <Icon i="chevron-right" size={18} />
         </button>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          {t("Minimum 10 caractères")}
-        </p>
       </div>
     </div>
   );

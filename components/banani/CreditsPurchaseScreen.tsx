@@ -78,8 +78,10 @@ export default function CreditsMobile() {
           {t("Acheter des chansons")}
         </h2>
         <div className="flex flex-col gap-2">
-          {demoSongPacks.map((pack) => (
-            <button
+          {demoSongPacks.map((pack) => {
+            const isSelected = demo.pack.id === pack.id;
+            return (
+              <button
               type="button"
               data-demo-ready="true"
               onClick={() =>
@@ -89,9 +91,9 @@ export default function CreditsMobile() {
               }
               aria-pressed={demo.pack.id === pack.id}
               key={pack.id}
-              className={`demo-choice-card relative rounded-xl p-4 border transition-all ${
-                pack.popular
-                  ? "bg-secondary border-primary/30 shadow-md"
+              className={`demo-choice-card pack-choice-card relative rounded-xl p-4 border transition-all ${
+                isSelected
+                  ? "bg-secondary border-primary shadow-md"
                   : "bg-card border-border"
               }`}
             >
@@ -104,7 +106,7 @@ export default function CreditsMobile() {
               <div className="flex items-start justify-between mb-2">
                 <div className="text-left">
                   <h3
-                    className={`font-bold text-sm ${pack.popular ? "text-primary" : "text-foreground"}`}
+                    className={`font-bold text-sm ${isSelected ? "text-primary" : "text-foreground"}`}
                   >
                     {pack.name}
                   </h3>
@@ -114,7 +116,7 @@ export default function CreditsMobile() {
                 </div>
                 {
                   <div
-                    className={`text-right ${pack.popular ? "text-primary" : "text-foreground"}`}
+                    className={`text-right ${isSelected ? "text-primary" : "text-foreground"}`}
                   >
                     <p className="font-bold text-sm">
                       {pack.songs ?? "Illimité"}
@@ -135,7 +137,7 @@ export default function CreditsMobile() {
 
               <div className="flex items-center justify-between pt-2 border-t border-border/30">
                 <span
-                  className={`font-bold ${pack.popular ? "text-primary" : "text-foreground"}`}
+                  className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}
                 >
                   {pack.price}
                 </span>
@@ -149,8 +151,9 @@ export default function CreditsMobile() {
                   )}
                 </span>
               </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -214,7 +217,7 @@ export default function CreditsMobile() {
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2"
         >
           <Icon i="zap" size={16} />
-          {t("Acheter maintenant")}
+          {t("Acheter des chansons")}
         </button>
       </div>
 

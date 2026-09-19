@@ -1202,30 +1202,121 @@
   position: relative;
   z-index: 10;
   display: grid;
-  gap: 10px;
-}
-.creation-top-nav-row {
-  display: flex;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
 }
 .creation-back-button,
 .creation-dashboard-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 7px;
+  gap: 6px;
+  min-height: 38px;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.creation-back-button {
+  padding: 0 8px;
+  color: var(--color-foreground);
 }
 .creation-dashboard-button {
-  width: 100%;
-  min-height: 42px;
+  min-width: 0;
+  padding: 0 10px;
   border: 1px solid color-mix(in srgb, var(--color-primary) 28%, var(--color-border));
-  border-radius: 12px;
   background: color-mix(in srgb, var(--color-secondary) 72%, var(--color-card));
   color: var(--color-primary);
-  font-size: 13px;
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  white-space: nowrap;
+}
+.creation-step-label {
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: var(--color-muted);
+  color: var(--color-muted-foreground);
+  font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
+}
+.story-field-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  color: var(--color-muted-foreground);
+  font-size: 12px;
+}
+.story-field-error {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  padding: 9px 11px;
+  border: 1px solid color-mix(in srgb, #dc2626 28%, var(--color-border));
+  border-radius: 10px;
+  background: color-mix(in srgb, #dc2626 7%, var(--color-card));
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 650;
+  animation: story-error-in 180ms ease-out both;
+}
+@keyframes story-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.pack-choice-card[aria-pressed="true"] {
+  transform: translateY(-1px);
+}
+@media (max-width: 767px) {
+  .workspace-layout[data-section="creation"] .banani-screen > div {
+    padding-bottom: calc(104px + env(safe-area-inset-bottom));
+  }
+  .creation-mobile-cta {
+    position: fixed;
+    z-index: 40;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding-top: 10px;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+    background: color-mix(in srgb, var(--color-background) 94%, transparent);
+    box-shadow: 0 -10px 28px rgb(45 35 29 / 10%);
+    backdrop-filter: blur(14px);
+  }
+  .creation-mobile-cta > button {
+    margin-top: 0 !important;
+  }
+  .creation-mobile-cta > p {
+    margin-top: 6px;
+  }
+}
+@media (max-width: 359px) {
+  .creation-top-nav {
+    gap: 5px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .creation-back-button,
+  .creation-dashboard-button {
+    gap: 4px;
+    padding-right: 6px;
+    padding-left: 6px;
+    font-size: 11px;
+  }
+  .creation-step-label {
+    padding-right: 6px;
+    padding-left: 6px;
+    font-size: 10px;
+  }
 }
 .musik-store-card {
   border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
