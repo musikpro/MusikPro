@@ -1,6 +1,7 @@
 "use client";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
+import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 
 import DemoField from "./DemoField";
 import { demoPaymentSchema } from "@/lib/validation/musikpro-demo";
@@ -154,7 +155,7 @@ export default function PaymentScreen() {
               {t("Total")}
             </span>
             <span className="text-2xl font-bold text-primary">
-              {demo.pack.price}
+              {formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}
             </span>
           </div>
 

@@ -25,6 +25,7 @@ export default function MySongsGenerated() {
   const demo = useDemo();
   const [selectedTab, setTab] = useState("Toutes");
   const [search, setSearch] = useState("");
+  const [playingVersion, setPlayingVersion] = useState<string | null>(null);
   const generatedSongs = demo.songs
     .filter(
       (s) =>
@@ -88,7 +89,7 @@ export default function MySongsGenerated() {
 
       {/* Sort Tabs */}
       <div className="px-4 pb-4 flex gap-2">
-        {[t("Toutes"), t("Récentes"), t("Favorites")].map((tab, i) => (
+        {[t("Toutes"), t("Récentes"), t("Favorites")].map((tab) => (
           <button
             type="button"
             data-demo-ready="true"
@@ -168,24 +169,28 @@ export default function MySongsGenerated() {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">
                 {t("Versions")}
               </p>
-              {song.versions.map((v, vi) => (
+              {song.versions.map((v, vi) => {
+                const versionKey = `${song.title}|${vi}`;
+                const isPlaying = playingVersion === versionKey;
+                return (
                 <div
                   key={vi}
-                  className={`flex items-center gap-3 px-3 py-2.5 rounded-lg ${vi === 0 ? "bg-secondary border border-primary/15" : "bg-input border border-border"}`}
+                  className={`song-version-row flex items-center gap-3 px-3 py-2.5 rounded-lg ${isPlaying ? "is-playing bg-secondary border border-primary" : "bg-input border border-border"}`}
                 >
                   {/* Play Button */}
                   <button
                     type="button"
                     data-demo-ready="true"
-                    onClick={() => demo.openSong(song.title, vi)}
-                    aria-label="Écouter la chanson"
-                    className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${vi === 0 ? "bg-primary" : "bg-muted"}`}
+                    onClick={() => setPlayingVersion(isPlaying ? null : versionKey)}
+                    aria-label={isPlaying ? `Mettre en pause ${song.title}, ${v.label}` : `Lire ${song.title}, ${v.label}`}
+                    aria-pressed={isPlaying}
+                    className={`song-inline-play w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isPlaying ? "bg-primary" : "bg-muted"}`}
                   >
                     <Icon
-                      i="play"
-                      size={14}
+                      i={isPlaying ? "pause" : "play"}
+                      size={16}
                       className={
-                        vi === 0
+                        isPlaying
                           ? "text-primary-foreground"
                           : "text-muted-foreground"
                       }
@@ -196,7 +201,7 @@ export default function MySongsGenerated() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
                       <span
-                        className={`text-sm font-semibold ${vi === 0 ? "text-primary" : "text-foreground"}`}
+                        className={`text-sm font-semibold ${isPlaying ? "text-primary" : "text-foreground"}`}
                       >
                         {v.label}
                       </span>
@@ -205,14 +210,14 @@ export default function MySongsGenerated() {
                       </span>
                     </div>
                     {/* Mini waveform */}
-                    <div className="flex items-end gap-0.5 h-4">
+                    <div className={`song-inline-waveform flex items-end gap-0.5 h-4 ${isPlaying ? "is-playing" : ""}`}>
                       {[
                         3, 6, 4, 9, 7, 5, 10, 8, 6, 9, 5, 7, 4, 8, 6, 10, 7, 5,
                         8, 4,
                       ].map((h, i) => (
                         <div
                           key={i}
-                          className={`w-1 rounded-sm ${vi === 0 ? "bg-primary/40" : "bg-muted-foreground/30"}`}
+                          className={`w-1 rounded-sm ${isPlaying ? "bg-primary/60" : "bg-muted-foreground/30"}`}
                           style={{ height: `${h}px` }}
                         />
                       ))}
@@ -266,13 +271,14 @@ export default function MySongsGenerated() {
                         )
                       }
                       aria-label="Télécharger"
-                      className="text-muted-foreground"
+                      className="song-download-button"
                     >
-                      <Icon i="download" size={15} />
+                      <Icon i="download" size={19} />
                     </button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Card Footer Actions */}
@@ -282,9 +288,11 @@ export default function MySongsGenerated() {
                 type="button"
                 data-demo-ready="true"
                 onClick={() => demo.go("/dashboard/create/lyrics/edit")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-input border border-border rounded-lg text-xs font-semibold text-foreground"
+                className="song-edit-lyrics-button flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold"
               >
-                <Icon i="pencil" size={12} />
+                <span className="song-edit-lyrics-icon">
+                  <Icon i="pencil" size={14} />
+                </span>
                 {t("Modifier paroles")}
               </button>
               <button

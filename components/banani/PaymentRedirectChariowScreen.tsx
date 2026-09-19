@@ -1,6 +1,7 @@
 "use client";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
+import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 
 export const displayName = "Redirection Paiement Chariow";
 export const screenSize = "mobile";
@@ -66,7 +67,7 @@ export default function PaymentRedirectScreen() {
                 {t("Effectuez votre paiement")}
               </p>
               <p className="text-xs text-muted-foreground">
-                Montant : {demo.pack.price}
+                Montant : {formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}
               </p>
             </div>
           </div>

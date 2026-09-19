@@ -1275,6 +1275,128 @@
 .pack-choice-card[aria-pressed="true"] {
   transform: translateY(-1px);
 }
+.dashboard-greeting {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.quick-language-select,
+.pack-currency-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
+  border-radius: 12px;
+  background: var(--color-card);
+  color: var(--color-primary);
+  box-shadow: 0 5px 15px rgb(45 35 29 / 7%);
+}
+.quick-language-select select,
+.pack-currency-select select {
+  appearance: none;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--color-foreground);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.quick-language-select > svg:last-child,
+.pack-currency-select > svg:last-child {
+  pointer-events: none;
+}
+.quick-language-select.is-compact {
+  flex: 0 0 auto;
+  min-height: 38px;
+  padding: 0 8px;
+}
+.quick-language-select.is-compact select {
+  width: 64px;
+}
+.pack-purchase-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.pack-currency-select {
+  flex: 0 0 auto;
+}
+.pack-currency-select select {
+  width: 72px;
+}
+.song-version-row {
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease;
+}
+.song-version-row.is-playing {
+  box-shadow: 0 5px 16px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.song-inline-play {
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+.song-inline-play[aria-pressed="true"] {
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgb(242 101 34 / 28%);
+}
+.song-inline-waveform.is-playing > div {
+  transform-origin: bottom;
+  animation: musik-inline-wave 720ms ease-in-out infinite alternate;
+}
+.song-inline-waveform.is-playing > div:nth-child(3n + 2) {
+  animation-delay: -240ms;
+}
+.song-inline-waveform.is-playing > div:nth-child(3n) {
+  animation-delay: -480ms;
+}
+@keyframes musik-inline-wave {
+  from {
+    transform: scaleY(0.45);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.song-download-button {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  margin-left: 4px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  border-radius: 10px;
+  background: var(--color-secondary);
+  color: var(--color-primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.song-edit-lyrics-button {
+  min-height: 46px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  background: linear-gradient(135deg, var(--color-secondary), var(--color-card));
+  color: var(--color-primary);
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  white-space: nowrap;
+}
+.song-edit-lyrics-icon {
+  width: 25px;
+  height: 25px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
 @media (max-width: 767px) {
   .workspace-layout[data-section="creation"] .banani-screen > div {
     padding-bottom: calc(104px + env(safe-area-inset-bottom));
@@ -1300,6 +1422,20 @@
   }
 }
 @media (max-width: 359px) {
+  .musik-topbar {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+  .musik-topbar > div {
+    gap: 6px;
+  }
+  .musik-topbar > div:first-child > div:last-child > span {
+    display: none;
+  }
+  .musik-topbar button[aria-label="Voir mes chansons disponibles"] {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
   .creation-top-nav {
     gap: 5px;
     padding-right: 10px;
@@ -1316,6 +1452,33 @@
     padding-right: 6px;
     padding-left: 6px;
     font-size: 10px;
+  }
+  .dashboard-greeting h1 {
+    font-size: 20px;
+  }
+  .quick-language-select.is-compact {
+    gap: 4px;
+    padding: 0 6px;
+  }
+  .quick-language-select.is-compact select {
+    width: 54px;
+    font-size: 11px;
+  }
+  .pack-purchase-heading h2 {
+    font-size: 14px;
+  }
+  .pack-currency-select {
+    gap: 4px;
+    padding: 0 7px;
+  }
+  .pack-currency-select select {
+    width: 62px;
+    font-size: 11px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .song-inline-waveform.is-playing > div {
+    animation: none;
   }
 }
 .musik-store-card {

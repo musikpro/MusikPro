@@ -48,6 +48,7 @@ function useDemoState() {
     voice: "Femme",
     theme: "Clair",
     appLanguage: "Français",
+    currency: "XOF",
   });
   const [profile, setProfile] = useState({
     name: "Kofi Mensah",

@@ -11,6 +11,7 @@ import Icon from "./Icon";
 import Image from "./Image";
 import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
+import QuickLanguageSelect from "./QuickLanguageSelect";
 
 const trendingCards = [
   {
@@ -94,6 +95,7 @@ export default function UserDashboardDesktop() {
             </p>
           </div>
           <div className="flex items-center gap-4">
+            <QuickLanguageSelect />
             <button
               type="button"
               data-demo-ready

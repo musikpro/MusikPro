@@ -14,6 +14,7 @@ import Icon from "./Icon";
 import Image from "./Image";
 import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
+import QuickLanguageSelect from "./QuickLanguageSelect";
 
 const trendingSongs = [
   {
@@ -91,13 +92,16 @@ export default function UserDashboardMobile() {
       <MobileTopBar credits={3} />
 
       {/* Greeting */}
-      <div className="px-4 pt-4 pb-3">
-        <h1 className="font-headings font-bold text-2xl text-foreground">
-          {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {t("Il te reste 3 chansons")}
-        </p>
+      <div className="dashboard-greeting px-4 pt-4 pb-3">
+        <div>
+          <h1 className="font-headings font-bold text-2xl text-foreground">
+            {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
+          </h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {t("Il te reste 3 chansons")}
+          </p>
+        </div>
+        <QuickLanguageSelect compact />
       </div>
 
       {/* CTA Créer */}

@@ -1,6 +1,10 @@
 "use client";
 const t = (text: string) => text;
-import { demoSongPacks } from "@/lib/demo/musikpro-data";
+import {
+  demoCurrencies,
+  demoSongPacks,
+  formatDemoPackPrice,
+} from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Packs - Acheter des Chansons";
@@ -74,9 +78,27 @@ export default function CreditsMobile() {
 
       {/* Credit Packs */}
       <div className="px-4 py-4">
-        <h2 className="font-bold text-base text-foreground mb-3">
-          {t("Acheter des chansons")}
-        </h2>
+        <div className="pack-purchase-heading">
+          <h2 className="font-bold text-base text-foreground">
+            {t("Acheter des chansons")}
+          </h2>
+          <label className="pack-currency-select">
+            <Icon i="coins" size={15} />
+            <span className="sr-only">Devise</span>
+            <select
+              aria-label="Devise"
+              value={demo.choices.currency}
+              onChange={(event) => demo.choose("currency", event.target.value)}
+            >
+              {demoCurrencies.map((currency) => (
+                <option key={currency.code} value={currency.code}>
+                  {currency.label}
+                </option>
+              ))}
+            </select>
+            <Icon i="chevron-down" size={13} aria-hidden="true" />
+          </label>
+        </div>
         <div className="flex flex-col gap-2">
           {demoSongPacks.map((pack) => {
             const isSelected = demo.pack.id === pack.id;
@@ -139,7 +161,7 @@ export default function CreditsMobile() {
                 <span
                   className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}
                 >
-                  {pack.price}
+                  {formatDemoPackPrice(pack.priceValue, demo.choices.currency)}
                 </span>
                 <span className="flex items-center gap-1 text-xs font-semibold text-primary">
                   {demo.pack.id === pack.id ? (

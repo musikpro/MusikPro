@@ -225,6 +225,20 @@ export const demoSongPacks = [
   },
 ];
 
+export const demoCurrencies = [
+  { code: "XOF", label: "FCFA" },
+  { code: "EUR", label: "EUR (€)" },
+  { code: "USD", label: "USD ($)" },
+  { code: "NGN", label: "NGN (₦)" },
+] as const;
+
+export function formatDemoPackPrice(valueInFcfa: number, currency: string) {
+  if (currency === "EUR") return `${(valueInFcfa / 655.957).toFixed(2).replace(".", ",")} €`;
+  if (currency === "USD") return `$${(valueInFcfa / 600).toFixed(2)}`;
+  if (currency === "NGN") return `₦${Math.round(valueInFcfa * 2.7).toLocaleString("en-NG")}`;
+  return `${valueInFcfa.toLocaleString("fr-FR")} FCFA`;
+}
+
 export const demoLyrics =
   "Une histoire de beauté et d'amour\nCélébrons ce jour merveilleux ensemble\nAu rythme de l'Afrique, dansons sans fin\nCette chanson est pour toi, mon ami\n\nDans les rues de notre quartier\nOù les rires résonnent à chaque coin\nTu es né pour briller et rayonner\nEt nous dansons sous les étoiles";
 
