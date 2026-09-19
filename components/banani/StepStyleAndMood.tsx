@@ -7,28 +7,15 @@ import { useDemo } from "./DemoProvider";
 export const displayName = "Étape 3 — Choisis le style et l'ambiance";
 export const screenSize = "mobile";
 
-import MobileTopBar from "./MobileTopBar";
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
+import CreationTopNav from "./CreationTopNav";
 
 export default function StepStyleAndMood() {
   const demo = useDemo();
   return (
     <div className="bg-surface flex flex-col">
-      {/* Top Nav */}
-      <div className="bg-background border-b border-border px-4 py-3 flex items-center justify-between">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/create/story")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-foreground"
-        >
-          <Icon i="arrow-left" size={18} /> {t("Retour")}
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">
-          {t("Étape 3 sur 7")}
-        </span>
-      </div>
+      <CreationTopNav backHref="/dashboard/create/story" current={3} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
@@ -48,7 +35,7 @@ export default function StepStyleAndMood() {
           {t("Choisis le style et l'ambiance")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {t("Sélectionne le genre musicale et l'émotion")}
+          {t("Sélectionne le genre musical et l'émotion")}
         </p>
       </div>
 
@@ -61,11 +48,11 @@ export default function StepStyleAndMood() {
           </h2>
           <div className="flex flex-col gap-2">
             {[
-              { name: "Afrobeat", desc: t("Rythmes énergiques et dansants") },
-              { name: "Amapiano", desc: t("Ambiance cool et urbaine") },
-              { name: "Gospel", desc: t("Émotion et spiritualité") },
-              { name: "R&B", desc: t("Smooth et moderne") },
-              { name: "Acoustique", desc: t("Intime et personnel") },
+              { name: "Afrobeat", desc: t("Rythmes énergiques et dansants"), icon: "drum", tone: "orange" },
+              { name: "Amapiano", desc: t("Ambiance cool et urbaine"), icon: "audio-waveform", tone: "violet" },
+              { name: "Gospel", desc: t("Émotion et spiritualité"), icon: "church", tone: "green" },
+              { name: "R&B", desc: t("Doux et moderne"), icon: "heart-pulse", tone: "rose" },
+              { name: "Acoustique", desc: t("Intime et personnel"), icon: "guitar", tone: "amber" },
             ].map((genre) => (
               <button
                 type="button"
@@ -76,7 +63,9 @@ export default function StepStyleAndMood() {
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 text-left flex items-start gap-3"
               >
                 <SelectionMark selected={demo.choices.genre === genre.name} />
-                <div className="w-5 h-5 border-2 border-primary rounded-full flex-shrink-0 mt-0.5"></div>
+                <span className={`genre-choice-icon genre-choice-icon-${genre.tone}`}>
+                  <Icon i={genre.icon} size={20} />
+                </span>
                 <div className="flex-1">
                   <p className="font-semibold text-sm text-foreground">
                     {genre.name}

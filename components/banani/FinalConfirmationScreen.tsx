@@ -8,25 +8,13 @@ export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
+import CreationTopNav from "./CreationTopNav";
 
 export default function FinalConfirmationScreen() {
   const demo = useDemo();
   return (
     <div className="bg-surface flex flex-col">
-      {/* Top Nav */}
-      <div className="bg-background border-b border-border px-4 py-3 flex items-center justify-between">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/create/lyrics")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-foreground"
-        >
-          <Icon i="arrow-left" size={18} /> {t("Retour")}
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">
-          {t("Étape 7 sur 7")}
-        </span>
-      </div>
+      <CreationTopNav backHref="/dashboard/create/lyrics" current={7} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">

@@ -1,18 +1,16 @@
 "use client";
 const t = (text: string) => text;
-import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 4 — Génération des paroles (Animation)";
 export const screenSize = "mobile";
 
-import MobileTopBar from "./MobileTopBar";
-import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
+import CreationTopNav from "./CreationTopNav";
 
 export default function StepGeneratingLyrics() {
-  const demo = useDemo();
   return (
-    <div className="bg-surface flex flex-col overflow-hidden h-full items-center justify-center relative overflow-hidden">
+    <div className="bg-surface flex flex-col min-h-full relative overflow-hidden">
+      <CreationTopNav backHref="/dashboard/create/parameters" current={5} />
       {/* Animated Background Elements */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="absolute w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
@@ -23,7 +21,7 @@ export default function StepGeneratingLyrics() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 px-4 text-center flex flex-col items-center justify-center w-full max-w-sm">
+      <div className="relative z-10 px-4 py-10 text-center flex flex-col items-center justify-center w-full max-w-sm mx-auto flex-1">
         {/* Animated Microphone Icon */}
         <div className="mb-8 relative">
           <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center relative">

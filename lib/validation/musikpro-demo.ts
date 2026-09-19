@@ -6,7 +6,8 @@ export const demoStorySchema = z
   .string()
   .trim()
   .min(10, "Raconte ton histoire en au moins 10 caractères.")
-  .max(1000);
+  .max(2000)
+  .refine(words(250), "Maximum 250 mots.");
 export const demoLyricsSchema = z
   .string()
   .trim()

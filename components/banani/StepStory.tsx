@@ -9,28 +9,16 @@ import { demoStorySchema } from "@/lib/validation/musikpro-demo";
 export const displayName = "Étape 2 — Raconte ton histoire";
 export const screenSize = "mobile";
 
-import MobileTopBar from "./MobileTopBar";
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
+import CreationTopNav from "./CreationTopNav";
 
 export default function StepStory() {
   const demo = useDemo();
+  const storyWordCount = demo.fields.story.trim().split(/\s+/).filter(Boolean).length;
   return (
     <div className="bg-surface flex flex-col">
-      {/* Top Nav */}
-      <div className="bg-background border-b border-border px-4 py-3 flex items-center justify-between">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/create")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-foreground"
-        >
-          <Icon i="arrow-left" size={18} /> {t("Retour")}
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">
-          {t("Étape 2 sur 7")}
-        </span>
-      </div>
+      <CreationTopNav backHref="/dashboard/create" current={2} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
@@ -65,9 +53,10 @@ export default function StepStory() {
             label="Ton histoire"
             multiline
             rows={5}
-            maxLength={1000}
+            maxLength={2000}
+            maxWords={250}
             className="text-base leading-relaxed"
-            placeholder="Ex: Une chanson pour les 50 ans de ma mère Fatou, elle adore danser et est toujours joyeuse..."
+            placeholder="Ex. : Je veux rendre hommage à ma femme Aïcha. Sa force, sa douceur et son sourire illuminent notre famille depuis toutes ces années..."
           />
           <button
             type="button"
@@ -77,14 +66,15 @@ export default function StepStory() {
                 "Transcription vocale non disponible dans la démonstration.",
               )
             }
-            aria-label="Microphone de démonstration"
-            className="absolute top-3 right-3 w-10 h-10 bg-secondary border border-primary/30 rounded-lg flex items-center justify-center"
+            aria-label="Raconter mon histoire avec le microphone"
+            title="Raconter mon histoire avec le microphone"
+            className="story-mic-button absolute top-3 right-3 flex items-center justify-center"
           >
-            <Icon i="mic" size={18} className="text-primary" />
+            <Icon i="mic" size={20} />
           </button>
         </div>
         <p className="text-xs text-muted-foreground mt-2 text-right">
-          {demo.fields.story.length} / 1000 caractères
+          {storyWordCount} / 250 mots
         </p>
       </div>
 

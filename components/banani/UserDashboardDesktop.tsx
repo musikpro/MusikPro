@@ -10,6 +10,7 @@ import SongCard from "./SongCard";
 import Icon from "./Icon";
 import Image from "./Image";
 import UserAvatar from "./UserAvatar";
+import StoreDownloadCard from "./StoreDownloadCard";
 
 const trendingCards = [
   {
@@ -270,6 +271,8 @@ export default function UserDashboardDesktop() {
                 {t("Acheter des chansons")}
               </button>
             </div>
+
+            <StoreDownloadCard compact />
 
             {/* Tendances */}
             <div>

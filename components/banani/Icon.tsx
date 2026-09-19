@@ -13,6 +13,7 @@ export default function Icon({
     "plus-circle": "CirclePlus",
     "bar-chart-2": "ChartNoAxesColumnIncreasing",
     "music-2": "Music2",
+    "edit-2": "Pencil",
   };
   const name =
     aliases[i] ??

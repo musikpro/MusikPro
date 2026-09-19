@@ -7,6 +7,7 @@ export default function DemoField({
   multiline = false,
   type = "text",
   maxLength = 1000,
+  maxWords,
   className = "text-sm text-foreground",
   rows = 4,
 }: {
@@ -16,6 +17,7 @@ export default function DemoField({
   multiline?: boolean;
   type?: string;
   maxLength?: number;
+  maxWords?: number;
   className?: string;
   rows?: number;
 }) {
@@ -43,7 +45,11 @@ export default function DemoField({
     className: `demo-field ${className}`,
     onChange: (
       event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    ) => demo.field(name, event.target.value),
+    ) => {
+      const value = event.target.value;
+      const wordCount = value.trim().split(/\s+/).filter(Boolean).length;
+      if (!maxWords || wordCount <= maxWords) demo.field(name, value);
+    },
   };
   return multiline ? (
     <textarea {...props} rows={rows} />

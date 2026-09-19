@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
@@ -7,25 +8,14 @@ export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
+import CreationTopNav from "./CreationTopNav";
 
 export default function ReviewLyricsScreen() {
   const demo = useDemo();
+  const [lyricsScrollProgress, setLyricsScrollProgress] = useState(0);
   return (
     <div className="bg-surface flex flex-col">
-      {/* Top Nav */}
-      <div className="bg-background border-b border-border px-4 py-3 flex items-center justify-between">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/create/parameters")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-foreground"
-        >
-          <Icon i="arrow-left" size={18} /> {t("Retour")}
-        </button>
-        <span className="text-sm font-medium text-muted-foreground">
-          {t("Étape 5 sur 7")}
-        </span>
-      </div>
+      <CreationTopNav backHref="/dashboard/create/parameters" current={5} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
@@ -56,29 +46,51 @@ export default function ReviewLyricsScreen() {
           <label className="block text-sm font-bold text-foreground mb-3">
             {t("Paroles générées")}
           </label>
-          <div className="bg-card border border-border rounded-lg p-4 min-h-48">
-            <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
-              {demo.fields.lyrics}
-            </p>
+          <div className="lyrics-scroll-shell">
+            <div
+              className="lyrics-scrollbox bg-card border border-border rounded-lg p-4"
+              role="region"
+              aria-label="Paroles générées, zone défilable"
+              tabIndex={0}
+              onScroll={(event) => {
+                const element = event.currentTarget;
+                const max = element.scrollHeight - element.clientHeight;
+                setLyricsScrollProgress(max > 0 ? element.scrollTop / max : 0);
+              }}
+            >
+              <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">
+                {demo.fields.lyrics}
+              </p>
+            </div>
+            <span className="lyrics-scroll-track" aria-hidden="true">
+              <span style={{ transform: `translateY(${lyricsScrollProgress * 160}px)` }} />
+            </span>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
-            {t("Généré par l'IA")}
+          <p className="lyrics-scroll-hint text-xs text-muted-foreground mt-2">
+            <Icon i="mouse-pointer-2" size={13} />
+            {t("Clique puis fais défiler pour lire toutes les paroles")}
           </p>
         </div>
 
-        {/* Duration Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-4 flex items-center gap-3">
-          <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-            <Icon i="clock" size={16} className="text-blue-600" />
+        <div className="lyrics-compact-actions mb-4">
+          <div className="lyrics-duration-chip">
+            <div className="lyrics-compact-icon">
+              <Icon i="clock" size={15} />
+            </div>
+            <div>
+              <p>{t("Durée estimée")}</p>
+              <strong>{t("~1:50")}</strong>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="text-xs text-muted-foreground">
-              {t("Durée estimée")}
-            </p>
-            <p className="font-bold text-sm text-foreground">
-              {t("~1:50")} / 4:00 {t("max")}
-            </p>
-          </div>
+          <button
+            type="button"
+            data-demo-ready="true"
+            onClick={() => demo.go("/dashboard/create/lyrics/edit")}
+            className="lyrics-edit-button"
+          >
+            <Icon i="edit-2" size={15} />
+            {t("Modifier les paroles")}
+          </button>
         </div>
 
         {/* Extend Lyrics Button */}
@@ -98,17 +110,6 @@ export default function ReviewLyricsScreen() {
           <span className="font-semibold text-sm text-foreground">
             {t("Rallonger les paroles")}
           </span>
-        </button>
-
-        {/* Edit Button */}
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/create/lyrics/edit")}
-          className="w-full py-3 bg-secondary border border-primary/30 text-primary font-semibold text-sm rounded-lg flex items-center justify-center gap-2 mb-6"
-        >
-          <Icon i="edit-2" size={16} />
-          {t("Modifier les paroles")}
         </button>
 
         {/* Info */}

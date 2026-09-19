@@ -81,7 +81,7 @@ export default function DesktopWorkspace({
         <div className="workspace-columns">
           <main className="workspace-content" id="workspace-content">
             {children}
-            {!hasImportedNavigation && (
+            {!hasImportedNavigation && !creation && (
               <div className="workspace-mobile-nav">
                 <MobileBottomNav activeTab="" />
               </div>

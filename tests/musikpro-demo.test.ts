@@ -11,7 +11,9 @@ import {
 describe("frontières des saisies de démonstration MusikPro", () => {
   it("refuse une histoire vide ou trop longue et normalise les espaces", () => {
     expect(demoStorySchema.safeParse("   ").success).toBe(false);
-    expect(demoStorySchema.safeParse("a".repeat(1001)).success).toBe(false);
+    expect(demoStorySchema.safeParse(Array(250).fill("mot").join(" ")).success).toBe(true);
+    expect(demoStorySchema.safeParse(Array(251).fill("mot").join(" ")).success).toBe(false);
+    expect(demoStorySchema.safeParse("a".repeat(2001)).success).toBe(false);
     expect(demoStorySchema.parse("  Une chanson pour ma famille  ")).toBe(
       "Une chanson pour ma famille",
     );

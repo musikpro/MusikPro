@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useDemo } from "./DemoProvider";
 
 const t = (text: string) => text;
@@ -12,6 +13,7 @@ import SongCard from "./SongCard";
 import Icon from "./Icon";
 import Image from "./Image";
 import UserAvatar from "./UserAvatar";
+import StoreDownloadCard from "./StoreDownloadCard";
 
 const trendingSongs = [
   {
@@ -68,6 +70,12 @@ const testimonials = [
 
 export default function UserDashboardMobile() {
   const demo = useDemo();
+  const [launching, setLaunching] = useState(false);
+  const openCreator = () => {
+    if (launching) return;
+    setLaunching(true);
+    window.setTimeout(() => demo.go("/dashboard/create"), 180);
+  };
   const recentSongs = demo.songs.slice(0, 2).map((song) => ({
     title: song.title,
     style: song.style,
@@ -97,9 +105,10 @@ export default function UserDashboardMobile() {
         <button
           type="button"
           data-demo-ready
-          onClick={() => demo.go("/dashboard/create")}
+          onClick={openCreator}
           aria-label="Créer une chanson"
-          className="musik-create-hero w-full bg-primary rounded-xl px-5 py-4 flex items-center gap-4"
+          aria-busy={launching}
+          className={`musik-create-hero w-full bg-primary rounded-xl px-5 py-4 flex items-center gap-4 ${launching ? "is-launching" : ""}`}
           style={{ boxShadow: "0 4px 20px rgba(242,101,34,0.35)" }}
         >
           <div className="w-10 h-10 bg-primary-foreground/20 rounded-lg flex items-center justify-center flex-shrink-0">
@@ -214,46 +223,7 @@ export default function UserDashboardMobile() {
 
       {/* Download App Section */}
       <div className="px-4 mb-6">
-        <div className="bg-gradient-to-br from-primary/10 to-secondary rounded-xl p-5 border border-primary/20">
-          <h2 className="font-headings font-bold text-lg text-foreground mb-3">
-            {t("Télécharger l'application")}
-          </h2>
-          <p className="text-sm text-muted-foreground mb-4">
-            {t("Créez vos chansons partout, n'importe quand")}
-          </p>
-          <div className="flex gap-3">
-            <button
-              type="button"
-              data-demo-ready
-              onClick={() =>
-                demo.notify("Action de démonstration : service non connecté.")
-              }
-              aria-label="Action de démonstration"
-              className="flex-1 bg-black text-white rounded-full px-4 py-3 flex items-center justify-center gap-2 font-semibold text-sm"
-            >
-              {/* Play Store Official Logo */}
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M3 13.5v8.8c0 .84.56 1.54 1.29 1.54h16.42c.73 0 1.29-.7 1.29-1.54v-8.8M3.29 3.29L12 12.57l8.71-9.28c-.42-.28-.91-.29-1.42-.29H4.71c-.51 0-1 .01-1.42.29z M3 10.5l8.94 6.06 8.06-6.06" />
-              </svg>
-              {t("Play Store")}
-            </button>
-            <button
-              type="button"
-              data-demo-ready
-              onClick={() =>
-                demo.notify("Action de démonstration : service non connecté.")
-              }
-              aria-label="Action de démonstration"
-              className="flex-1 bg-black text-white rounded-full px-4 py-3 flex items-center justify-center gap-2 font-semibold text-sm"
-            >
-              {/* App Store Official Logo */}
-              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.05 13.5c-.73 0-1.38.2-1.96.58.15-1.34.73-2.54 1.6-3.49.52-.56.85-1.3.85-2.11 0-1.66-1.34-3-3-3-.87 0-1.63.37-2.16.95-.3.33-.56.71-.75 1.13-.08.17-.15.34-.21.52H9.3c.19-.74.49-1.43.88-2.06.95-1.57 2.78-2.63 4.82-2.63 3.03 0 5.5 2.47 5.5 5.5 0 1.04-.29 2.01-.8 2.85-.51.87-1.29 1.63-2.25 2.14M12 22c5.5 0 10-4.5 10-10S17.5 2 12 2 2 6.5 2 12s4.5 10 10 10z" />
-              </svg>
-              {t("App Store")}
-            </button>
-          </div>
-        </div>
+        <StoreDownloadCard />
       </div>
 
       {/* Témoignages */}

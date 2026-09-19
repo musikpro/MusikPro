@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import { useDemo } from "./DemoProvider";
 import { usePathname } from "next/navigation";
 import { demoDestination } from "@/lib/demo/navigation";
@@ -20,6 +21,7 @@ const items = [
 
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
   const demo = useDemo();
+  const [launching, setLaunching] = useState(false);
   const pathname = usePathname();
   const currentTab = pathname.startsWith("/dashboard/credits")
     ? "Packs"
@@ -45,11 +47,19 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
             <button
               type="button"
               data-demo-ready
-              onClick={() => demo.go(demoDestination(item.label))}
+              onClick={() => {
+                if (launching) return;
+                setLaunching(true);
+                window.setTimeout(
+                  () => demo.go(demoDestination(item.label)),
+                  180,
+                );
+              }}
               aria-label={item.label}
+              aria-busy={launching}
               aria-current={isActive ? "page" : undefined}
               key={item.label}
-              className="flex flex-col items-center justify-center -mt-6"
+              className={`mobile-create-launch flex flex-col items-center justify-center -mt-6 ${launching ? "is-launching" : ""}`}
             >
               <div
                 className="bg-primary w-14 h-14 rounded-xl flex items-center justify-center"

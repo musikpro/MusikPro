@@ -19,6 +19,11 @@ import {
 function useDemoState() {
   const router = useRouter();
   const [message, notify] = useState("");
+  useEffect(() => {
+    if (!message) return;
+    const timer = window.setTimeout(() => notify(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [message]);
   const [fields, setFields] = useState<Record<string, string>>({
     story: "",
     lyrics: demoLyrics,
