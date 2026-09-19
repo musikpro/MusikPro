@@ -8,15 +8,12 @@ import Icon from "./Icon";
 import UserAvatar from "./UserAvatar";
 import MobileBottomNav from "./MobileBottomNav";
 
-export default function DesktopWorkspace({
-  children,
-}: {
-  children: ReactNode;
-}) {
+export default function DesktopWorkspace({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const demo = useDemo();
   if (pathname === "/dashboard") return children;
-  const creation = pathname.startsWith("/dashboard/create");
+  const focusedPaymentFlow = pathname.startsWith("/dashboard/payment-preview");
+  const creation = pathname.startsWith("/dashboard/create") || focusedPaymentFlow;
   const hasImportedNavigation = [
     "/dashboard/menu",
     "/dashboard/discover",
@@ -81,29 +78,32 @@ export default function DesktopWorkspace({
         <div className="workspace-columns">
           <main className="workspace-content" id="workspace-content">
             {children}
-            {!hasImportedNavigation && !creation && (
+            {!hasImportedNavigation && !creation && !focusedPaymentFlow && (
               <div className="workspace-mobile-nav">
                 <MobileBottomNav activeTab="" />
               </div>
             )}
           </main>
-          <aside
-            className="workspace-context"
-            aria-label={
-              creation ? "Résumé de création" : "Raccourcis et activité"
-            }
-          >
+          <aside className="workspace-context" aria-label={creation ? "Résumé de création" : "Raccourcis et activité"}>
             <section className="workspace-context-card workspace-credit-card">
-              <h2>
-                <Icon i="zap" size={18} />
-                Chansons disponibles
-              </h2>
-              <strong className="workspace-credit-number">3</strong>
-              <p>chansons restantes · démonstration</p>
-              <Link
-                href="/dashboard/credits"
-                className="workspace-primary-link"
-              >
+              <div className="workspace-credit-heading">
+                <span aria-hidden="true">
+                  <Icon i="music-2" size={18} />
+                </span>
+                <div>
+                  <small>Votre solde</small>
+                  <h2>Chansons disponibles</h2>
+                </div>
+              </div>
+              <div className="workspace-credit-balance">
+                <strong className="workspace-credit-number">3</strong>
+                <span>chansons restantes</span>
+              </div>
+              <p className="workspace-credit-demo">
+                <Icon i="check" size={14} />
+                Prêt pour 3 nouvelles créations · démonstration
+              </p>
+              <Link href="/dashboard/credits" className="workspace-primary-link">
                 Voir les packs
                 <Icon i="arrow-right" size={16} />
               </Link>
@@ -128,9 +128,7 @@ export default function DesktopWorkspace({
                     </div>
                   ))}
                 </dl>
-                <p className="workspace-hint">
-                  Vos choix restent disponibles pendant les étapes de création.
-                </p>
+                <p className="workspace-hint">Vos choix restent disponibles pendant les étapes de création.</p>
               </section>
             ) : (
               <section className="workspace-context-card">
@@ -140,12 +138,7 @@ export default function DesktopWorkspace({
                 </h2>
                 <div className="workspace-recent-list">
                   {demo.songs.slice(0, 3).map((song) => (
-                    <button
-                      key={song.title}
-                      type="button"
-                      data-demo-ready
-                      onClick={() => demo.openSong(song.title)}
-                    >
+                    <button key={song.title} type="button" data-demo-ready onClick={() => demo.openSong(song.title)}>
                       <span className="workspace-song-icon">
                         <Icon i="music-2" size={16} />
                       </span>

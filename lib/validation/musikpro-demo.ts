@@ -1,7 +1,8 @@
 import { z } from "zod";
 
-const words = (limit: number) => (value: string) =>
-  value.trim().split(/\s+/).filter(Boolean).length <= limit;
+const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
+export const DEMO_LYRICS_MAX_WORDS = 5000;
+export const DEMO_LYRICS_MAX_CHARACTERS = 60000;
 export const demoStorySchema = z
   .string()
   .trim()
@@ -19,6 +20,8 @@ export const demoRecipientSchema = z.object({
       "Mon copain",
       "Ma mère",
       "Mon père",
+      "Mon oncle",
+      "Ma tante",
       "Mes enfants",
       "Mon frère",
       "Ma sœur",
@@ -34,12 +37,9 @@ export const demoLyricsSchema = z
   .string()
   .trim()
   .min(1, "Ajoute des paroles.")
-  .max(12000)
-  .refine(words(500), "Maximum 500 mots.");
-export const demoDetailSchema = z
-  .string()
-  .max(3000)
-  .refine(words(50), "Maximum 50 mots.");
+  .max(DEMO_LYRICS_MAX_CHARACTERS)
+  .refine(words(DEMO_LYRICS_MAX_WORDS), `Maximum ${DEMO_LYRICS_MAX_WORDS} mots.`);
+export const demoDetailSchema = z.string().max(3000).refine(words(50), "Maximum 50 mots.");
 export const demoProfileSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.email().max(254),
@@ -58,7 +58,5 @@ export const demoSupportSchema = z.object({
 export const demoPaymentSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.email().max(254),
-  phone: z
-    .string()
-    .regex(/^\d{10}$/, "Saisis 10 chiffres pour cette maquette."),
+  phone: z.string().regex(/^\d{10}$/, "Saisis 10 chiffres pour cette maquette."),
 });

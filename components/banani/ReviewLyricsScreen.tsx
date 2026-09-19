@@ -1,5 +1,4 @@
 "use client";
-import { useState } from "react";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
@@ -9,10 +8,10 @@ export const screenSize = "mobile";
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
+import { DEMO_LYRICS_MAX_WORDS, demoLyricsSchema } from "@/lib/validation/musikpro-demo";
 
 export default function ReviewLyricsScreen() {
   const demo = useDemo();
-  const [lyricsScrollProgress, setLyricsScrollProgress] = useState(0);
   const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
   return (
     <div className="bg-surface flex flex-col">
@@ -47,24 +46,18 @@ export default function ReviewLyricsScreen() {
               role="region"
               aria-label="Paroles générées, zone défilable"
               tabIndex={0}
-              onScroll={(event) => {
-                const element = event.currentTarget;
-                const max = element.scrollHeight - element.clientHeight;
-                setLyricsScrollProgress(max > 0 ? element.scrollTop / max : 0);
-              }}
             >
               <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{demo.fields.lyrics}</p>
             </div>
-            <span className="lyrics-scroll-track" aria-hidden="true">
-              <span style={{ transform: `translateY(${lyricsScrollProgress * 160}px)` }} />
-            </span>
           </div>
           <div className="lyrics-scroll-meta text-xs text-muted-foreground mt-2">
             <p className="lyrics-scroll-hint">
               <Icon i="mouse-pointer-2" size={13} />
               {t("Clique puis fais défiler pour lire toutes les paroles")}
             </p>
-            <span className="lyrics-word-count">{lyricsWordCount} / 500 mots</span>
+            <span className="lyrics-word-count">
+              {lyricsWordCount} / {DEMO_LYRICS_MAX_WORDS} mots
+            </span>
           </div>
         </div>
 
@@ -93,7 +86,15 @@ export default function ReviewLyricsScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.field("lyrics", demo.fields.lyrics + "\nUn nouveau refrain accompagne notre histoire.")}
+          onClick={() => {
+            const extendedLyrics = `${demo.fields.lyrics}\nUn nouveau refrain accompagne notre histoire.`;
+            const parsed = demoLyricsSchema.safeParse(extendedLyrics);
+            if (!parsed.success) {
+              demo.notify(parsed.error.issues[0].message);
+              return;
+            }
+            demo.field("lyrics", parsed.data);
+          }}
           className="w-full py-3 bg-background border border-border rounded-lg flex items-center justify-center gap-2 mb-6"
         >
           <Icon i="plus" size={16} className="text-muted-foreground" />

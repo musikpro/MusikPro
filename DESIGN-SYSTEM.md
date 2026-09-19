@@ -1,6 +1,12 @@
 # MusikPro — Design system
 
-Version 2 · 18 septembre 2026 · Référence visuelle pour les futures pages.
+Version 3 · 19 septembre 2026 · Référence visuelle commune aux espaces client et propriétaire.
+
+## Consolidation de l’application client
+
+Cette version ne repose plus uniquement sur les deux dashboards Banani initiaux. Elle consolide les motifs réellement construits et corrigés sur l’ensemble du parcours client : dashboard mobile et bureau, navigation fixe, tiroir mobile, création en huit étapes, destinataire, formulaires, recherche, profil, sécurité, support, chansons, lecteur, packs, choix de monnaie, informations de commande et moyens de paiement.
+
+Ce vocabulaire devient la base du tableau de bord propriétaire. Les écrans propriétaire importés de Banani conservent leur composition et leurs informations propres, mais leurs surfaces, contrôles, états, mouvements et règles responsive doivent utiliser les mêmes fondations MusikPro. Une divergence Banani reste locale tant qu’elle n’a pas été validée comme nouveau token commun.
 
 ## Modernisation demandée après import
 
@@ -18,7 +24,7 @@ Les dashboards réutilisent maintenant le profil et les chansons du même état 
 
 ## 1. Périmètre et autorité
 
-Ce document analyse les **deux dashboards utilisateur importés de Banani**, mobile et bureau. Il définit leur vocabulaire commun et les règles permettant de prolonger leur style. Il ne remplace ni les écrans importés ni leurs compositions particulières. Il ne prétend pas décrire les autres écrans du projet Banani.
+Ce document décrit le système visuel consolidé de **l’espace client MusikPro** et son application au **tableau de bord propriétaire**. Il part des deux dashboards utilisateur importés, puis intègre les composants et corrections réellement livrés sur les pages de création, chansons, packs, profil, réglages, support et paiement de démonstration. Il ne remplace ni les écrans importés ni leurs compositions particulières.
 
 Ordre de décision pour toute nouvelle page :
 
@@ -40,6 +46,12 @@ Une différence avec un nouvel écran ne justifie **jamais** de remplacer cet é
 | `app/dashboard/banani.css`                                                  | Tokens et adaptations CSS réellement utilisés                                                |
 | `components/banani/assets.json`, `public/banani/`                           | Correspondances et 13 images/portraits importés                                              |
 | `design/banani/design-tokens.json`                                          | Catalogue lisible par les outils ; documentation, pas un deuxième thème chargé à l’exécution |
+| `components/banani/DesktopWorkspace.tsx`, `DesktopSidebar.tsx`              | Shell bureau client, navigation latérale et panneau contextuel                               |
+| `components/banani/MobileMenuDrawer.tsx`, `CreationTopNav.tsx`              | Navigation mobile secondaire et en-tête du parcours de création                              |
+| `components/banani/MusikSelect.tsx`, `SearchField.tsx`, `DemoField.tsx`     | Contrôles de formulaire, recherche et sélecteurs propres au produit                          |
+| `components/banani/CreditsPurchaseScreen.tsx`, `CreationPackScreen.tsx`     | Cartes de packs, monnaie et moyens de paiement                                               |
+| `components/banani/StepStory.tsx`, `StepRecipient.tsx`                      | Saisie guidée, validation proche du champ et conseils contextuels                            |
+| `design/banani/imported-design.json`                                        | Inventaire des écrans client et propriétaire réellement observés                             |
 
 **OBSERVÉ** = présent dans les sources importées. **ADAPTATION** = décision de l’implémentation actuelle, dont la barre fixe demandée par l’utilisateur. **DIRECTIVE** = règle de livraison pour les prochaines pages. **NON VÉRIFIÉ** = absent des sources ou non mesuré. Les valeurs CSS indiquées sont issues du code ; elles ne constituent pas une preuve de comparaison pixel par pixel avec Banani.
 
@@ -253,6 +265,84 @@ Panneau dégradé orange 10 %/pêche, contour orange 20 %, rayon 32 px, padding 
 
 Conteneur blanc, rayon 32 px, contour, overflow masqué. Lignes padding 12 px, gap 12 px, séparateurs à partir de la deuxième ligne. Vignette pêche 32 px/rayon 20 px, zap orange 13 px. Action 13 px/500, chanson et date 11 px gris ; textes tronqués, date sans rétrécissement. Ne pas inférer un système d’événements backend de cette liste.
 
+### Shell d’application et navigation
+
+**Mobile.** La barre basse est fixée au viewport, placée à 16 px des côtés et du bas, augmentée de la safe area. Elle contient au plus cinq destinations et réserve environ 110 px au contenu. L’action centrale peut dépasser visuellement, mais sa cible et les libellés voisins ne doivent jamais se chevaucher. Sur les pages de création et de paiement focalisé, cette barre disparaît.
+
+Le menu secondaire est un tiroir venant de gauche, largeur `min(86vw, 330px)`, fond presque opaque, ombre latérale et backdrop sombre flouté. Il se ferme par le bouton, le backdrop, Échap ou après navigation. Le focus reste visible et le document ne défile pas derrière le tiroir.
+
+**Bureau.** Le workspace utilise trois zones à partir de 1024 px : navigation de 210/230 px, contenu flexible, contexte de 220/260 px. La sidebar emploie le fond `input`, masque sa scrollbar, suit le document puis reste sticky lorsque son dernier élément est visible. Le contenu principal est une carte de rayon 28 px. Le panneau contextuel reste sticky à 24 px du haut.
+
+Le tableau de bord propriétaire réutilise cette logique, avec une sidebar de 240 px observée dans Banani. Sa navigation est organisée en groupes titrés ; sur mobile, elle devient le même tiroir latéral que l’espace client. Les tableaux peuvent conserver un scroll horizontal localisé, sans provoquer de débordement global.
+
+### En-têtes et navigation du parcours de création
+
+L’en-tête de création place sur une ligne : **Retour**, **Tableau de bord**, puis **Étape n/8**. Retour et étape partagent dimensions, fond neutre, bordure et rayon ; le bouton central garde l’accent orange. À 360 px et plus, les côtés visent 96 px et le centre au moins 135 px. À 320 px, les côtés peuvent descendre à 68 px et le centre à 145 px. La barre défile avec la page.
+
+La progression sous l’en-tête reste distincte. Les CTA « Continuer », « Générer les paroles » et « Générer la chanson » sont fixés en bas sur mobile avec fond protecteur et safe area. Sur bureau, ils reprennent le flux normal dans la carte centrale.
+
+### Cartes, panneaux et densité
+
+Quatre niveaux sont autorisés :
+
+1. **Carte standard** : fond blanc, bordure chaude, rayon 14–20 px, padding 16–20 px, ombre légère.
+2. **Carte de page** : rayon 24–28 px, contenu structurant ou formulaire long.
+3. **Carte mise en avant** : dégradé orange/corail, texte blanc, anneaux décoratifs discrets, ombre orange.
+4. **Panneau d’aide** : fond surface ou secondaire atténué, icône fonctionnelle, titre, texte court et éventuellement liste.
+
+Les cartes ne doivent pas toutes flotter. Les listes denses et tableaux utilisent une élévation faible ; les CTA, soldes et créations principales peuvent utiliser l’élévation forte. Sur mobile, conserver 12–16 px entre cartes. Sur bureau, employer 16–24 px.
+
+### Boutons et actions
+
+- **Primaire** : orange ou dégradé orange/corail, texte blanc, hauteur 48–52 px, rayon 13–16 px, poids 700–800.
+- **Secondaire** : carte ou fond neutre, bordure chaude, texte principal, hauteur minimale 44 px.
+- **Tertiaire** : texte ou icône orange, sans grande surface, cible tactile minimale 44 px.
+- **Destructif** : rouge réservé aux suppressions, révocations et déconnexion ; ne jamais employer l’orange pour confirmer une destruction.
+- **Icône seule** : 40–44 px, libellé accessible obligatoire.
+
+Pressed réduit légèrement la luminosité. Hover et élévation ne s’appliquent qu’aux pointeurs précis. Disabled diminue le contraste et supprime l’ombre ; le curseur et `aria-disabled` doivent refléter l’état.
+
+### Champs et formulaires
+
+Les champs standards ont une hauteur de 48 px, un rayon de 13–16 px, une bordure chaude et un fond carte ou input. La recherche peut atteindre 56 px. Les labels restent visibles au-dessus, en 11–13 px et poids 700–800. Le texte saisi est à 14 px sur bureau et au moins 16 px sous 768 px pour éviter le zoom iOS.
+
+Une icône de début occupe 18–20 px et ne doit pas réduire la zone de saisie. Les groupes téléphone rapprochent le préfixe et le numéro : préfixe compact de 68 px, séparateur vertical de 23 px, gap visuel de 4–5 px. Les champs en lecture seule utilisent un fond atténué, `aria-readonly` et ne reçoivent pas le focus lorsque leur consultation n’exige pas d’interaction.
+
+Focus : une seule indication orange, jamais un double contour. Utiliser soit la bordure/ombre du conteneur avec `:focus-within`, soit l’outline du contrôle, pas les deux. L’erreur apparaît immédiatement sous le champ concerné, avec icône et message concis ; elle peut disparaître après environ 4,2 secondes pour les validations de démonstration non bloquantes.
+
+### Sélecteurs propres à MusikPro
+
+Les menus déroulants du navigateur ne sont pas utilisés pour les sélections visuelles principales. `MusikSelect` fournit un bouton, une liste ARIA, navigation clavier, option surlignée, sélection et rendu en portail lorsqu’un parent pourrait couper ou recouvrir le menu.
+
+Le menu s’aligne au champ déclencheur et adopte sa largeur par défaut. Les variantes compactes peuvent fixer une largeur justifiée par leur contenu :
+
+- langue rapide : drapeaux centrés, sans cartes internes ni libellés textuels ;
+- monnaie : déclencheur et menu de même largeur, options alignées à droite, sans coche ;
+- relation : pleine largeur, liste défilable sans fermeture pendant le scroll ;
+- préfixe téléphonique : drapeau et indicatif uniquement, sans nom de pays.
+
+Le menu se place au-dessus des cartes, CTA et panneaux contextuels ; le portail utilise un z-index supérieur au tiroir local, sans dépasser les modales globales.
+
+### Recherche, choix et sélection
+
+La recherche standard combine une icône sur fond secondaire, un micro-label orange et une saisie sans contour interne. `:focus-within` colore une seule bordure orange et ajoute un halo léger. Le filtrage est immédiat, insensible aux accents et à la casse, annonce le nombre de résultats et propose l’effacement.
+
+Les cartes de choix utilisent `aria-pressed`. L’état sélectionné combine fond secondaire, bordure orange renforcée, halo léger et marque fonctionnelle lorsque la composition le permet. Un seul pack est actif à la fois ; le badge « Populaire » reste séparé du nombre de chansons. La grille des quatre packs est toujours 2 × 2, y compris sur mobile, avec typographie et padding adaptés à 320 px.
+
+### Profil, support et pages de réglages
+
+Le profil commence par un hero identitaire puis sépare statistiques, compte, sécurité et support en cartes. Les données courtes restent en lecture immédiate ; les actions secondaires sont regroupées par famille. Support et sécurité partagent la même carte de formulaire, les mêmes champs et un panneau de conseils.
+
+Sur bureau, les sections indépendantes passent en deux colonnes à partir de 1280 px. Sur mobile, elles restent en une colonne. Les pages data-driven doivent fournir skeleton, état vide, erreur, unauthorized et offline distincts.
+
+### Packs, paiement de démonstration et informations
+
+Le solde et les packs parlent en **chansons**, pas en crédits. Le nombre et le libellé restent sur la même ligne lorsque l’espace le permet. Les cartes packs affichent nom, bénéfice, quantité et prix avec une séparation claire entre information et sélection.
+
+Les moyens de paiement sont présentés sur une seule ligne lorsque cinq marques sont affichées, avec hauteur visuelle harmonisée et logos officiels seulement lorsque leur usage est autorisé. Le choix de devise utilise FCFA (XOF), Euro (€), Dollar ($) et Naira (₦).
+
+La page « Vos informations » utilise les mêmes champs standards et précède le choix du pack dans le parcours de démonstration. Ces écrans ne prouvent ni provider actif, ni transaction, ni prix serveur ; les règles de paiement restent gouvernées par le backend.
+
 ## 10. Iconographie, images et contenus
 
 Adaptateur actuel : Lucide, trait de 2 px, sans remplissage ajouté, SVG sans rétrécissement. Taille choisie par fonction, pas une taille globale : 10/11 px pour métadonnées, 12/16 px pour lecture, 14 px badges/notes, 17 px sidebar, 18/20 px notifications, 22 px navigation mobile, 22/24/28 px plus selon contexte.
@@ -265,16 +355,16 @@ Ton des contenus : français direct, titres courts, nom MusikPro. Tutoiement dan
 
 ## 11. Interactions, mouvement et états manquants
 
-OBSERVÉ : menus bureau inactifs passent du gris au texte principal au survol ; déconnexion rouge 400 → 500 ; achat crédits ajoute une ombre avec `transition-shadow`. Durée/easing techniques par défaut Tailwind : 150 ms, `cubic-bezier(0.4,0,0.2,1)`. Aucun déplacement, zoom, animation d’entrée, effet sonore ou hover mobile n’est spécifié.
+OBSERVÉ dans les imports initiaux : menus bureau inactifs passant du gris au texte principal au survol, déconnexion rouge et ombre d’achat. ADAPTÉ dans l’application client : révélation de section 350 ms, entrée de carte 400 ms avec déplacement vertical de 8 px, transitions de contrôle 140–220 ms, tiroir 220 ms et backdrop 180 ms. Le microphone peut avoir une animation fonctionnelle continue discrète ; aucune autre décoration permanente ne doit distraire du parcours.
 
-Les deux écrans ne décrivent **pas** les modales, formulaires, recherche, validation, erreurs de génération, paiement, notifications ouvertes, états pressed/disabled/focus, mode hors ligne ou états vides. Le token `input` ne suffit pas à définir un formulaire. Ne pas inventer leur style comme s’il était importé.
+Les formulaires, la recherche, la validation proche du champ, les sélecteurs, les packs, le tiroir, les CTA mobiles fixes et les états de sélection sont désormais des motifs consolidés de l’application. Loading, empty, error, unauthorized, offline et confirmation destructive restent à implémenter selon le contexte de chaque écran ; leur présence dans ce document ne vaut pas preuve d’un comportement backend.
 
 DIRECTIVES pour compléter un nouvel écran :
 
 - Prévoir loading, empty, error, unauthorized et offline séparément lorsque pertinents. Employer les primitives skeleton du kit ; géométrie proche du contenu, sans délai artificiel, avec réduction des animations si `prefers-reduced-motion`.
 - Décrire les variantes focus, hover, pressed et disabled du composant avant livraison. Ajouter un focus visible, libellé accessible des boutons à icône seule et état actif accessible de la navigation. L’export actuel ne démontre pas ces variantes.
 - Viser des cibles tactiles d’au moins 44 × 44 px ; plusieurs boutons observés font 32/36/40 px. Étendre la zone interactive sans déformer le visuel, puis vérifier qu’elle ne chevauche pas la voisine.
-- Formulaires nouveaux : une colonne mobile, labels visibles, erreurs près du champ, validation serveur Zod. Aucun style précis de formulaire n’est figé par ces dashboards.
+- Formulaires nouveaux : une colonne mobile, labels visibles, erreurs près du champ, contrôles de 48 px et validation serveur Zod. Réutiliser `DemoField`, `SearchField` et `MusikSelect` ou leurs primitives de production plutôt que recréer leur comportement.
 - Maintenir un H1 de page et des H2 de section, contrastes contrôlés, navigation clavier, safe areas et absence de contenu caché par la barre basse.
 
 L’implémentation de démonstration actuelle possède un skeleton et un écran d’erreur, qui sont des adaptations du kit ; elle ne prouve pas tous ces états ou critères. Les clics affichent un message de démonstration : cela ne constitue pas une interaction métier définitive.
@@ -301,20 +391,40 @@ Avant l’implémentation d’un nouvel import : lire `DESIGN.md` et ce document
 8. Gates du kit exécutés selon le changement : `mobile:check`, `ui:icons-check`, `validation:zod-check`, `refactor:check`, puis tests/build et gates spécialisés applicables.
 9. Ne déclarer ni fidélité pixel parfaite, ni AA, ni interactions complètes sans preuve réelle.
 
+### Contrat d’application au tableau de bord propriétaire
+
+Les écrans propriétaire utilisent les mêmes tokens de couleur, police, rayons, bordures, ombres, focus et mouvement. Leur densité peut être supérieure, mais elle ne crée pas un second design system.
+
+1. **Shell** : sidebar groupée sur bureau, tiroir latéral sur mobile, en-tête de 64–76 px et contenu sur surface ivoire.
+2. **Cartes KPI** : carte standard, icône fonctionnelle sur fond secondaire, valeur forte, libellé gris chaud et évolution sémantique.
+3. **Listes et tableaux** : en-tête clair, séparateurs chauds, actions compactes de 40–44 px ; cartes ou scroll horizontal localisé sur mobile.
+4. **Filtres** : `SearchField` et `MusikSelect`, mêmes focus, menus portalisés si nécessaire.
+5. **Création/édition** : carte de page, labels visibles, actions primaires et secondaires cohérentes, validation près du champ.
+6. **États** : badges utilisant succès, attention, erreur, information ou neutre ; la couleur n’est jamais le seul signal.
+7. **Destruction** : confirmation explicite, contrôle serveur de rôle, bouton danger distinct.
+8. **Chargement** : skeleton qui reprend la géométrie des KPI, cartes ou lignes du tableau.
+9. **Données fictives** : toujours identifiées dans le code de démonstration ; aucune métrique Banani n’est présentée comme réelle.
+10. **Responsive** : concevoir les variantes 320–430 px avant la grille bureau, même lorsque Banani ne fournit qu’un écran desktop.
+
+Les quatre variantes Banani « Packs & Tarifs » et les deux variantes « Entonnoir » sont des sources visuelles à consolider dans une route unique par fonction. Le contenu « crédits » doit être traduit dans le modèle MusikPro en nombre de chansons. Les valeurs Branding bleu/Inter restent des données administrables affichées, pas la palette active du back-office.
+
 ## 13. Historique
 
 | Date              | Évolution                                                                                                                                                                                                                                          |
 | ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | 18 septembre 2026 | V1 extraite des deux dashboards ; tokens, composants, variantes, limites de contraste et règles de futurs imports documentés ; navigation mobile fixe intégrée comme demande explicite                                                             |
 | 18 septembre 2026 | Lot de 27 nouveaux écrans transcrit selon ses sources ; grilles adaptées sur mobile, démonstrations signalées et icône Mystique remplacée par une lune pour respecter le gate. Sources et limites : `generated/musikpro-banani-demo-validation.md` |
+| 19 septembre 2026 | V3 consolidée depuis toutes les pages client réalisées : shell responsive, tiroir mobile, création, formulaires, sélecteurs, recherche, profil, packs, paiement de démonstration, feedback et contrat d’application au tableau propriétaire.       |
 
 ### Défilement du menu bureau
 
 La sidebar utilise le fond `input` pour se distinguer du contenu. Aucun scroll interne ni scrollbar/flèches : elle défile avec le document puis devient sticky à `min(0, hauteur viewport − hauteur menu)` afin de conserver son dernier élément visible. Un ResizeObserver réévalue ce seuil lors des changements de dimensions ; aucun listener de scroll permanent. `align-self: flex-start` évite son étirement sur toute la hauteur du dashboard. Les menus plus courts que l’écran restent ancrés en haut.
 
 ### Choix et recherches interactifs
+
 Les cartes sélectionnées utilisent un fond secondaire, une bordure primaire orange renforcée et une coche fonctionnelle. Les packs ajoutent le libellé « Sélectionné ». La recherche filtre immédiatement les données de démonstration par titre, style et occasion lorsque disponible ; elle ignore la casse et les accents, combine les mots, annonce le nombre de résultats et propose un effacement accessible.
 Les quantités des packs sont centralisées dans `demoSongPacks` : Découverte 2 chansons, Populaire 5 chansons à 2 000 FCFA, Maxi 12 chansons bonus inclus, Illimité un mois. Ces données de démonstration ne configurent aucun paiement réel.
 
 ### Ergonomie mobile — contrôle Phase 11
+
 À moins de 768 px, les vrais champs de texte sont à 16 px pour limiter le zoom automatique iOS. Les cartes de choix font au minimum 44 px de hauteur. Les thèmes utilisent un marqueur compact en ligne et des boutons de largeur égale. Toute icône superposée à une zone éditable doit avoir un espace réservé dans le champ. La navigation du bas est un landmark `nav` nommé « Navigation mobile ».

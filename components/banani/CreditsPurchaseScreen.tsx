@@ -58,13 +58,23 @@ export default function CreditsMobile() {
 
       {/* Current Credits */}
       <div className="px-4 py-4">
-        <div
-          className="bg-gradient-to-br from-primary to-coral rounded-xl p-6 text-center text-primary-foreground"
-          style={{ boxShadow: "0 4px 20px rgba(242,101,34,0.35)" }}
-        >
-          <p className="text-sm font-semibold mb-1 opacity-90">{t("Chansons disponibles")}</p>
-          <p className="font-headings font-bold text-4xl mb-2">3</p>
-          <p className="text-xs opacity-80">{t("= 3 chansons à créer")}</p>
+        <div className="song-balance-card">
+          <div className="song-balance-heading">
+            <span className="song-balance-icon" aria-hidden="true">
+              <Icon i="music" size={18} />
+            </span>
+            <span>{t("Votre solde")}</span>
+          </div>
+          <div className="song-balance-total">
+            <strong>3</strong>
+            <span>{t("chansons disponibles")}</span>
+          </div>
+          <div className="song-balance-message">
+            <Icon i="check" size={16} />
+            <span>
+              {t("Vous pouvez créer")} <strong>3 {t("nouvelles chansons")}</strong>
+            </span>
+          </div>
         </div>
       </div>
 
@@ -87,7 +97,7 @@ export default function CreditsMobile() {
             }))}
           />
         </div>
-        <div className="flex flex-col gap-2">
+        <div className="pack-grid">
           {demoSongPacks.map((pack) => {
             const isSelected = demo.pack.id === pack.id;
             return (
@@ -97,46 +107,40 @@ export default function CreditsMobile() {
                 onClick={() => demo.setPackIndex(demoSongPacks.findIndex((p) => p.id === pack.id))}
                 aria-pressed={demo.pack.id === pack.id}
                 key={pack.id}
-                className={`demo-choice-card pack-choice-card relative rounded-xl p-4 border transition-all ${
+                className={`demo-choice-card pack-choice-card relative rounded-xl border transition-all ${
                   isSelected ? "bg-secondary border-primary shadow-md" : "bg-card border-border"
                 }`}
               >
-                {pack.popular && (
-                  <div className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs font-bold px-2.5 py-1 rounded-lg">
-                    {t("Populaire")}
-                  </div>
-                )}
+                {pack.popular && <span className="pack-popular-badge">{t("Populaire")}</span>}
 
-                <div className="flex items-start justify-between mb-2">
-                  <div className="text-left">
+                <div className="pack-grid-card-heading">
+                  <div>
                     <h3 className={`font-bold text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
                       {pack.name}
                     </h3>
                     <p className="text-xs text-muted-foreground">{pack.description}</p>
                   </div>
-                  {
-                    <div className={`text-right ${isSelected ? "text-primary" : "text-foreground"}`}>
-                      <p className="font-bold text-sm">{pack.songs ?? "Illimité"}</p>
-                      <p className="text-xs text-muted-foreground">{t("chansons")}</p>
-                    </div>
-                  }
+                  <div className={`pack-grid-song-count ${isSelected ? "text-primary" : "text-foreground"}`}>
+                    <strong>{pack.songs ?? "∞"}</strong>
+                    <span>{pack.songs === 1 ? t("chanson") : t("chansons")}</span>
+                  </div>
                 </div>
 
                 {pack.bonus && (
-                  <div className="flex items-center gap-1 mb-2 text-xs text-success bg-green-50 px-2 py-1 rounded-lg w-fit">
+                  <span className="pack-grid-bonus">
                     <Icon i="gift" size={12} />
                     {pack.bonus}
-                  </div>
+                  </span>
                 )}
 
-                <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                <div className="pack-grid-card-footer">
                   <span className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
                     {formatDemoPackPrice(pack.priceValue, demo.choices.currency)}
                   </span>
-                  <span className="flex items-center gap-1 text-xs font-semibold text-primary">
+                  <span className="pack-grid-card-status">
                     {demo.pack.id === pack.id ? (
                       <>
-                        <Icon i="check" size={16} /> Sélectionné
+                        <Icon i="check" size={15} /> <span>Sélectionné</span>
                       </>
                     ) : (
                       <Icon i="arrow-right" size={14} />
@@ -178,16 +182,16 @@ export default function CreditsMobile() {
         <div className="pack-payment-methods" aria-label="Moyens de paiement acceptés">
           <p>Moyens de paiement acceptés</p>
           <div className="pack-payment-logos">
-            <span className="payment-logo" title="Orange Money">
+            <span className="payment-logo payment-logo-orange-money" title="Orange Money">
               <Image src="/banani/payment-logos/orange-money.png" alt="Orange Money" width={132} height={36} />
             </span>
-            <span className="payment-logo" title="MTN MoMo">
+            <span className="payment-logo payment-logo-mtn-momo" title="MTN MoMo">
               <Image src="/banani/payment-logos/mtn-momo.png" alt="MTN MoMo" width={96} height={45} />
             </span>
-            <span className="payment-logo" title="Moov Money">
+            <span className="payment-logo payment-logo-moov-money" title="Moov Money">
               <Image src="/banani/payment-logos/moov-money.png" alt="Moov Money" width={54} height={54} />
             </span>
-            <span className="payment-logo" title="Wave">
+            <span className="payment-logo payment-logo-wave-money" title="Wave">
               <Image src="/banani/payment-logos/wave.png" alt="Wave" width={96} height={42} />
             </span>
             <span className="payment-logo payment-logo-card" title="Carte bancaire Visa ou Mastercard">

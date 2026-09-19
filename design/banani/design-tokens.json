@@ -1,12 +1,25 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "name": "MusikPro",
   "reference": "DESIGN-SYSTEM.md",
-  "status": "extracted-from-two-imported-dashboards",
+  "status": "consolidated-client-system-for-owner-dashboard",
   "sources": [
     "components/banani/UserDashboardMobile.tsx",
     "components/banani/UserDashboardDesktop.tsx",
-    "app/dashboard/banani.css"
+    "app/dashboard/banani.css",
+    "components/banani/DesktopWorkspace.tsx",
+    "components/banani/DesktopSidebar.tsx",
+    "components/banani/MobileMenuDrawer.tsx",
+    "components/banani/CreationTopNav.tsx",
+    "components/banani/MusikSelect.tsx",
+    "components/banani/SearchField.tsx",
+    "components/banani/CreditsPurchaseScreen.tsx",
+    "components/banani/CreationPackScreen.tsx",
+    "components/banani/PaymentScreen.tsx",
+    "components/banani/UserProfileScreen.tsx",
+    "components/banani/StepStory.tsx",
+    "components/banani/StepRecipient.tsx",
+    "design/banani/imported-design.json"
   ],
   "colors": {
     "background": "#fafaf7",
@@ -53,7 +66,11 @@
     "song": "0 1px 8px rgba(0,0,0,0.06)",
     "create": "0 4px 20px rgba(242,101,34,0.35)",
     "bottomNavigation": "0 4px 24px rgba(0,0,0,0.10)",
-    "centralAction": "0 4px 16px rgba(242,101,34,0.40)"
+    "centralAction": "0 4px 16px rgba(242,101,34,0.40)",
+    "card": "0 8px 28px rgb(70 43 23 / 6%), 0 1px 3px rgb(70 43 23 / 4%)",
+    "raised": "0 16px 40px rgb(70 43 23 / 12%)",
+    "primary": "0 9px 20px rgb(242 101 34 / 24%)",
+    "drawer": "24px 0 60px rgb(32 22 17 / 26%)"
   },
   "opacity": {
     "createIconBackground": 0.2,
@@ -121,5 +138,158 @@
       "background": "input",
       "resize": "ResizeObserver and window resize"
     }
+  },
+  "updatedAt": "2026-09-19",
+  "semanticColors": {
+    "success": "#22c55e",
+    "successStrong": "#16844b",
+    "danger": "#dc2626",
+    "warning": "#d97706",
+    "info": "#2563eb",
+    "focus": "#f26522"
+  },
+  "controls": {
+    "touchTargetMinPx": 44,
+    "fieldHeightPx": 48,
+    "searchHeightPx": 56,
+    "fieldRadiusPx": [13, 16],
+    "mobileInputFontMinPx": 16,
+    "focus": {
+      "color": "primary",
+      "widthPx": 2,
+      "haloPx": 3,
+      "rule": "single visible indicator; never outline plus container ring"
+    },
+    "errors": {
+      "placement": "directly below related field",
+      "dismissibleDemoMs": 4200
+    },
+    "readOnly": {
+      "focusable": false,
+      "surface": "muted"
+    }
+  },
+  "selects": {
+    "primitive": "MusikSelect",
+    "nativeBrowserMenu": false,
+    "defaultWidth": "trigger width",
+    "portalWhenClipped": true,
+    "variants": {
+      "language": "flags only, centered, no inner cards",
+      "currency": "trigger and menu same width, right-aligned, no selection mark",
+      "relation": "full width, scrollable without closing",
+      "phonePrefix": "flag and dialing prefix only"
+    }
+  },
+  "cards": {
+    "standard": {
+      "radiusPx": [14, 20],
+      "paddingPx": [16, 20],
+      "surface": "card",
+      "shadow": "card"
+    },
+    "page": {
+      "radiusPx": [24, 28],
+      "surface": "card"
+    },
+    "featured": {
+      "radiusPx": [19, 32],
+      "surface": "primary-to-coral gradient",
+      "shadow": "primary"
+    },
+    "help": {
+      "surface": "surface or softened secondary",
+      "icon": "functional"
+    }
+  },
+  "buttons": {
+    "primary": {
+      "heightPx": [48, 52],
+      "radiusPx": [13, 16],
+      "weight": [700, 800]
+    },
+    "secondary": {
+      "minHeightPx": 44
+    },
+    "iconOnly": {
+      "sizePx": [40, 44],
+      "accessibleName": true
+    },
+    "destructive": {
+      "color": "danger",
+      "confirmationRequired": true
+    }
+  },
+  "selection": {
+    "pressedAttribute": "aria-pressed",
+    "surface": "secondary",
+    "border": "primary",
+    "mark": "functional check when composition allows",
+    "packs": {
+      "grid": "2x2 all viewports",
+      "singleSelection": true,
+      "popularBadgeSeparateFromSongCount": true
+    }
+  },
+  "creationFlow": {
+    "steps": 8,
+    "topNavigation": {
+      "items": ["back", "dashboard", "step"],
+      "scrollsWithPage": true,
+      "sideWidthPx": {
+        "default": 96,
+        "compact": 68
+      },
+      "centerMinWidthPx": {
+        "default": 135,
+        "compact": 145
+      }
+    },
+    "mobileCta": {
+      "position": "fixed",
+      "safeArea": true,
+      "actions": ["continue", "generate lyrics", "generate song"]
+    },
+    "hideBottomNavigation": true
+  },
+  "mobileNavigation": {
+    "bottom": {
+      "position": "fixed",
+      "maxItems": 5,
+      "sideInsetPx": 16,
+      "bottomInsetPx": 16,
+      "reservedSpacePx": 110,
+      "safeArea": true
+    },
+    "drawer": {
+      "side": "left",
+      "width": "min(86vw, 330px)",
+      "backdrop": true,
+      "escapeClose": true,
+      "lockBodyScroll": true,
+      "animationMs": 220
+    }
+  },
+  "contentRules": {
+    "currencyLabels": ["FCFA (XOF)", "Euro (€)", "Dollar ($)", "Naira (₦)"],
+    "packUnit": "songs",
+    "creditTerminologyAllowed": false,
+    "paymentLogos": "official assets only when authorized",
+    "demoData": "must never be presented as production data"
+  },
+  "feedbackStates": ["loading", "empty", "error", "success", "disabled", "unauthorized", "offline", "pending"],
+  "ownerDashboard": {
+    "inheritsClientDesignSystem": true,
+    "desktopSidebarPx": 240,
+    "headerHeightPx": [64, 76],
+    "mobileNavigation": "left drawer",
+    "tables": "cards when practical, otherwise localized horizontal scroll",
+    "kpiCard": "standard card + functional icon + value + label + semantic delta",
+    "duplicateBananiVariants": {
+      "packs": "one route",
+      "funnel": "one route"
+    },
+    "mobileFirstViewportsPx": [320, 360, 390, 430, 768, 1024, 1440],
+    "serverAuthorization": "requireAdmin"
   }
 }

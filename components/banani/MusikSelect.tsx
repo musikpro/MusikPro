@@ -60,7 +60,11 @@ export default function MusikSelect({
       const target = event.target as Node;
       if (!rootRef.current?.contains(target) && !menuRef.current?.contains(target)) setOpen(false);
     };
-    const closeOnViewportChange = () => setOpen(false);
+    const closeOnViewportChange = (event: Event) => {
+      const target = event.target;
+      if (target instanceof Node && menuRef.current?.contains(target)) return;
+      setOpen(false);
+    };
     document.addEventListener("pointerdown", closeOnOutsideClick);
     window.addEventListener("resize", closeOnViewportChange);
     window.addEventListener("scroll", closeOnViewportChange, true);

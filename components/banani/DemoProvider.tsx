@@ -1,11 +1,5 @@
 "use client";
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  type ReactNode,
-} from "react";
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import {
   demoGeneratedSongs,
@@ -51,6 +45,7 @@ function useDemoState() {
     theme: "Clair",
     appLanguage: "Français",
     currency: "XOF",
+    phoneCountry: "CI",
     recipientRelation: "",
   });
   const [profile, setProfile] = useState({
@@ -59,13 +54,9 @@ function useDemoState() {
     location: "Accra, Ghana",
   });
   const [songs, setSongs] = useState(demoGeneratedSongs);
-  const [favorites, setFavorites] = useState<string[]>(
-    demoFavoriteSongs.map((s) => s.title),
-  );
+  const [favorites, setFavorites] = useState<string[]>(demoFavoriteSongs.map((s) => s.title));
   const [versionFavorites, setVersionFavorites] = useState<string[]>(
-    demoGeneratedSongs.flatMap((s) =>
-      s.versions.flatMap((v, i) => (v.liked ? [`${s.title}|${i}`] : [])),
-    ),
+    demoGeneratedSongs.flatMap((s) => s.versions.flatMap((v, i) => (v.liked ? [`${s.title}|${i}`] : []))),
   );
   const [readNotifications, setReadNotifications] = useState<number[]>([]);
   const [toggles, setToggles] = useState<Record<string, boolean>>({
@@ -117,11 +108,7 @@ function useDemoState() {
       title,
       occasion: original?.occasion ?? own?.occasion ?? "Communauté",
       style: original?.style ?? own?.style ?? publicSong?.style ?? "Afrobeat",
-      plays:
-        original?.plays ??
-        own?.versions.reduce((n, v) => n + v.plays, 0) ??
-        publicSong?.plays ??
-        0,
+      plays: original?.plays ?? own?.versions.reduce((n, v) => n + v.plays, 0) ?? publicSong?.plays ?? 0,
       img: original?.img ?? publicSong?.img ?? "",
     };
   });
@@ -149,16 +136,11 @@ function useDemoState() {
     notify("");
     router.push(route);
   };
-  const field = (key: string, value: string) =>
-    setFields((prev) => ({ ...prev, [key]: value }));
-  const choose = (key: string, value: string) =>
-    setChoices((prev) => ({ ...prev, [key]: value }));
-  const toggle = (key: string) =>
-    setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
+  const field = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
+  const choose = (key: string, value: string) => setChoices((prev) => ({ ...prev, [key]: value }));
+  const toggle = (key: string) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   const toggleFavorite = (title: string) =>
-    setFavorites((prev) =>
-      prev.includes(title) ? prev.filter((v) => v !== title) : [...prev, title],
-    );
+    setFavorites((prev) => (prev.includes(title) ? prev.filter((v) => v !== title) : [...prev, title]));
   const toggleVersion = (title: string, index: number) => {
     const key = `${title}|${index}`;
     const next = versionFavorites.includes(key)
@@ -180,9 +162,7 @@ function useDemoState() {
   };
   const nextSong = (direction: number) => {
     const index = library.findIndex((s) => s.title === selectedTitle);
-    setSelectedTitle(
-      library[(index + direction + library.length) % library.length].title,
-    );
+    setSelectedTitle(library[(index + direction + library.length) % library.length].title);
   };
   const generateSong = () => {
     const title = `Ma chanson — ${choices.occasion}`;
@@ -252,9 +232,7 @@ function useDemoState() {
     removeSong: (title: string) => {
       setSongs((prev) => prev.filter((s) => s.title !== title));
       setFavorites((prev) => prev.filter((v) => v !== title));
-      setVersionFavorites((prev) =>
-        prev.filter((v) => !v.startsWith(`${title}|`)),
-      );
+      setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${title}|`)));
       notify("Chanson retirée de cette démonstration locale.");
     },
     go,
@@ -285,12 +263,7 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       )}
       {children}
       {state.message && (
-        <button
-          type="button"
-          className="demo-notice"
-          role="status"
-          onClick={() => state.notify("")}
-        >
+        <button type="button" className="demo-notice" role="status" onClick={() => state.notify("")}>
           {state.message}
           <span className="sr-only"> Fermer le message</span>
         </button>

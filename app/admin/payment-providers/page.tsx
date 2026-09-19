@@ -1,6 +1,5 @@
 import { asc, desc, gte, sql } from "drizzle-orm";
-import { requireAdmin } from "@/lib/auth/session";
-import { db } from "@/db";
+import { getServiceDb } from "@/db";
 import {
   paymentAttempts,
   paymentCountryRoutes,
@@ -8,23 +7,21 @@ import {
   planProviderMappings,
   plans,
 } from "@/db/schema";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import Icon from "@/components/banani/Icon";
+import { requireAdmin } from "@/lib/auth/session";
 import { providerCapabilities } from "@/lib/payments/capabilities";
 import { saveCountryRoute, savePlanMapping, saveProvider } from "./actions";
 
 export default async function PaymentProvidersPage() {
   await requireAdmin();
+  const db = getServiceDb();
   const [configs, routes, allPlans, mappings, attempts] = await Promise.all([
-    db
-      .select()
-      .from(paymentProviderConfigs)
-      .orderBy(asc(paymentProviderConfigs.priority)),
+    db.select().from(paymentProviderConfigs).orderBy(asc(paymentProviderConfigs.priority)),
     db
       .select()
       .from(paymentCountryRoutes)
-      .orderBy(
-        asc(paymentCountryRoutes.country),
-        asc(paymentCountryRoutes.priority),
-      ),
+      .orderBy(asc(paymentCountryRoutes.country), asc(paymentCountryRoutes.priority)),
     db.select().from(plans).orderBy(asc(plans.name)),
     db.select().from(planProviderMappings),
     db
@@ -34,139 +31,177 @@ export default async function PaymentProvidersPage() {
       .orderBy(desc(paymentAttempts.createdAt))
       .limit(500),
   ]);
-  const configMap = new Map(configs.map((x) => [x.provider, x]));
-  const mapKey = new Map(mappings.map((x) => [`${x.planId}:${x.provider}`, x]));
-  const health = Object.keys(providerCapabilities).map((provider) => {
-    const a = attempts.filter(
-      (x) =>
-        x.provider === provider &&
-        ["checkout_created", "provider_error"].includes(x.outcome),
-    );
-    const ok = a.filter((x) => x.outcome === "checkout_created").length;
-    return {
-      provider,
-      total: a.length,
-      success: ok,
-      rate: a.length ? Math.round((ok / a.length) * 100) : null,
-    };
-  });
+  const configMap = new Map(configs.map((entry) => [entry.provider, entry]));
+  const mappingMap = new Map(mappings.map((entry) => [`${entry.planId}:${entry.provider}`, entry]));
   return (
-    <main>
-      <h1>Passerelles de paiement Afrique — Smart Router</h1>
-      <p>
-        Priorité configurée + santé des dernières 24 h. Les secrets restent
-        exclusivement dans les variables d’environnement.
-      </p>
-      <h2>Santé (24 h)</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Provider</th>
-            <th>Tentatives</th>
-            <th>Succès checkout</th>
-            <th>Taux</th>
-          </tr>
-        </thead>
-        <tbody>
-          {health.map((h) => (
-            <tr key={h.provider}>
-              <td>{h.provider}</td>
-              <td>{h.total}</td>
-              <td>{h.success}</td>
-              <td>{h.rate === null ? "—" : `${h.rate}%`}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <h2>Passerelles</h2>
-      {Object.entries(providerCapabilities).map(([provider, cap]) => {
-        const c = configMap.get(provider);
-        const blocked = ["scaffold", "merchant-validation"].includes(
-          cap.readiness,
-        );
-        return (
-          <form
-            action={saveProvider}
-            key={provider}
-            style={{ border: "1px solid #ddd", padding: 12, marginBottom: 10 }}
-          >
-            <input type="hidden" name="provider" value={provider} />
-            <strong>{provider}</strong> — {cap.readiness} — {cap.note}
-            <br />
-            <span>Méthodes: {cap.methods.join(", ")}</span>
-            <br />
-            <label>
-              <input
-                type="checkbox"
-                name="enabled"
-                defaultChecked={c?.enabled}
-                disabled={blocked}
-              />{" "}
-              activé
-            </label>{" "}
-            <input
-              name="priority"
-              type="number"
-              defaultValue={c?.priority ?? 100}
-              min="1"
-              max="999"
-            />{" "}
-            <select name="mode" defaultValue={c?.mode ?? "sandbox"}>
-              <option>sandbox</option>
-              <option>live</option>
-            </select>{" "}
-            <button>Enregistrer</button>
+    <AdminPage>
+      <AdminPageHeader
+        eyebrow="Paiements"
+        title="Passerelles"
+        description="Configure le Smart Router sans exposer les secrets des fournisseurs."
+      />
+      <section className="admin-provider-grid">
+        {Object.entries(providerCapabilities).map(([provider, capability]) => {
+          const config = configMap.get(provider);
+          const providerAttempts = attempts.filter(
+            (entry) => entry.provider === provider && ["checkout_created", "provider_error"].includes(entry.outcome),
+          );
+          const successes = providerAttempts.filter((entry) => entry.outcome === "checkout_created").length;
+          const rate = providerAttempts.length ? Math.round((successes / providerAttempts.length) * 100) : null;
+          const blocked = ["scaffold", "merchant-validation"].includes(capability.readiness);
+          return (
+            <article className="admin-panel admin-provider-card" key={provider}>
+              <div className="admin-provider-heading">
+                <span className="admin-catalog-icon">
+                  <Icon i="waypoints" size={20} />
+                </span>
+                <div>
+                  <h2>{provider}</h2>
+                  <p>{capability.note}</p>
+                </div>
+                <span className={`admin-status ${config?.enabled ? "is-success" : "is-pending"}`}>
+                  {config?.enabled ? "Actif" : capability.readiness}
+                </span>
+              </div>
+              <div className="admin-provider-facts">
+                <span>
+                  <strong>{providerAttempts.length}</strong>Tentatives 24 h
+                </span>
+                <span>
+                  <strong>{rate === null ? "—" : `${rate}%`}</strong>Succès checkout
+                </span>
+              </div>
+              <form action={saveProvider} className="admin-provider-form">
+                <input type="hidden" name="provider" value={provider} />
+                <label className="admin-check-control">
+                  <input type="checkbox" name="enabled" defaultChecked={config?.enabled} disabled={blocked} />
+                  <span>Activer</span>
+                </label>
+                <label>
+                  <span>Priorité</span>
+                  <input name="priority" type="number" defaultValue={config?.priority ?? 100} min="1" max="999" />
+                </label>
+                <label>
+                  <span>Mode</span>
+                  <select name="mode" defaultValue={config?.mode ?? "sandbox"}>
+                    <option value="sandbox">Sandbox</option>
+                    <option value="live">Live</option>
+                  </select>
+                </label>
+                <button type="submit">
+                  <Icon i="save" size={16} />
+                  Enregistrer
+                </button>
+              </form>
+            </article>
+          );
+        })}
+      </section>
+      <section className="admin-insight-grid">
+        <article className="admin-panel">
+          <div className="admin-panel-heading">
+            <div>
+              <span className="admin-panel-icon">
+                <Icon i="map-pinned" size={18} />
+              </span>
+              <div>
+                <h2>Routage par pays</h2>
+                <p>Priorité, moyens et devises autorisés</p>
+              </div>
+            </div>
+          </div>
+          <form action={saveCountryRoute} className="admin-stack-form">
+            <div className="admin-editor-grid">
+              <label className="admin-editor-field">
+                <span>Pays ISO</span>
+                <input name="country" placeholder="CI" maxLength={2} required />
+              </label>
+              <label className="admin-editor-field">
+                <span>Fournisseur</span>
+                <select name="provider">
+                  {Object.entries(providerCapabilities)
+                    .filter(([, capability]) => !["scaffold", "merchant-validation"].includes(capability.readiness))
+                    .map(([provider]) => (
+                      <option key={provider}>{provider}</option>
+                    ))}
+                </select>
+              </label>
+              <label className="admin-editor-field">
+                <span>Priorité</span>
+                <input name="priority" type="number" defaultValue="100" />
+              </label>
+              <label className="admin-editor-field">
+                <span>Moyens</span>
+                <input name="methods" placeholder="wave, orange_money" />
+              </label>
+              <label className="admin-editor-field">
+                <span>Devises</span>
+                <input name="currencies" placeholder="XOF, USD" />
+              </label>
+              <label className="admin-check-control">
+                <input name="enabled" type="checkbox" defaultChecked />
+                <span>Route active</span>
+              </label>
+            </div>
+            <button className="admin-form-submit" type="submit">
+              <Icon i="plus" size={16} />
+              Ajouter ou modifier
+            </button>
           </form>
-        );
-      })}
-      <h2>Routage par pays/opérateur</h2>
-      <form action={saveCountryRoute}>
-        <input name="country" placeholder="CI" maxLength={2} />
-        <select name="provider">
-          {Object.entries(providerCapabilities)
-            .filter(
-              ([, c]) =>
-                !["scaffold", "merchant-validation"].includes(c.readiness),
-            )
-            .map(([pr]) => (
-              <option key={pr}>{pr}</option>
+          {routes.length ? (
+            <div className="admin-route-list">
+              {routes.map((route) => (
+                <div key={route.id}>
+                  <strong>
+                    {route.country} → {route.provider}
+                  </strong>
+                  <span>
+                    Priorité {route.priority} · {route.enabled ? "Active" : "Désactivée"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="admin-empty-state">
+              <Icon i="route" size={22} />
+              <strong>Aucune route</strong>
+              <p>Ajoute une première règle de routage.</p>
+            </div>
+          )}
+        </article>
+        <article className="admin-panel">
+          <div className="admin-panel-heading">
+            <div>
+              <span className="admin-panel-icon">
+                <Icon i="package-check" size={18} />
+              </span>
+              <div>
+                <h2>Produits Chariow</h2>
+                <p>Correspondance entre packs et produits externes</p>
+              </div>
+            </div>
+          </div>
+          <div className="admin-mapping-list">
+            {allPlans.map((plan) => (
+              <form action={savePlanMapping} key={plan.id}>
+                <input type="hidden" name="planId" value={plan.id} />
+                <input type="hidden" name="provider" value="chariow" />
+                <label>
+                  <span>{plan.name}</span>
+                  <input
+                    name="externalProductId"
+                    placeholder="prd_..."
+                    defaultValue={mappingMap.get(`${plan.id}:chariow`)?.externalProductId ?? ""}
+                  />
+                </label>
+                <button type="submit" aria-label={`Enregistrer le mapping ${plan.name}`}>
+                  <Icon i="save" size={15} />
+                </button>
+              </form>
             ))}
-        </select>
-        <input name="priority" type="number" defaultValue="100" />
-        <input name="methods" placeholder="wave,orange_money,mtn" />
-        <input name="currencies" placeholder="XOF,USD" />
-        <label>
-          <input name="enabled" type="checkbox" defaultChecked /> actif
-        </label>
-        <button>Ajouter / modifier</button>
-      </form>
-      <ul>
-        {routes.map((r) => (
-          <li key={r.id}>
-            {r.country} → {r.provider} (priorité {r.priority}) devises:{" "}
-            {Array.isArray(r.currencies) ? r.currencies.join(", ") : "toutes"}{" "}
-            méthodes:{" "}
-            {Array.isArray(r.methods) ? r.methods.join(", ") : "toutes"}{" "}
-            {r.enabled ? "✓" : "désactivé"}
-          </li>
-        ))}
-      </ul>
-      <h2>Mapping plans → produits Chariow</h2>
-      {allPlans.map((plan) => (
-        <form action={savePlanMapping} key={plan.id}>
-          <input type="hidden" name="planId" value={plan.id} />
-          <input type="hidden" name="provider" value="chariow" />
-          <strong>{plan.name}</strong>{" "}
-          <input
-            name="externalProductId"
-            placeholder="prd_..."
-            defaultValue={
-              mapKey.get(`${plan.id}:chariow`)?.externalProductId ?? ""
-            }
-          />
-          <button>Enregistrer</button>
-        </form>
-      ))}
-    </main>
+          </div>
+        </article>
+      </section>
+    </AdminPage>
   );
 }

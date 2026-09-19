@@ -3,7 +3,7 @@ const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
-import { demoLyricsSchema } from "@/lib/validation/musikpro-demo";
+import { DEMO_LYRICS_MAX_CHARACTERS, DEMO_LYRICS_MAX_WORDS, demoLyricsSchema } from "@/lib/validation/musikpro-demo";
 import { demoLyrics } from "@/lib/demo/musikpro-data";
 
 export const displayName = "Étape 5 — Édition des paroles";
@@ -20,43 +20,39 @@ export default function EditLyricsScreen() {
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("Édite tes paroles")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Personnalise la chanson à ton goût")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Édite tes paroles")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Personnalise la chanson à ton goût")}</p>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-4 pb-4 flex flex-col gap-4">
         {/* Lyrics Text Area */}
         <div className="flex-1 flex flex-col">
-          <label className="block text-sm font-bold text-foreground mb-3">
-            {t("Tes paroles")}
-          </label>
+          <label className="block text-sm font-bold text-foreground mb-3">{t("Tes paroles")}</label>
           <div className="bg-card border border-border rounded-lg p-4 flex-1 flex items-start justify-start">
             <DemoField
               name="lyrics"
               label="Tes paroles"
               multiline
               rows={12}
-              maxLength={12000}
+              maxLength={DEMO_LYRICS_MAX_CHARACTERS}
+              maxWords={DEMO_LYRICS_MAX_WORDS}
               className="text-sm leading-relaxed whitespace-pre-wrap"
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {t("Clique pour éditer · Maximum 500 mots")}
+            {t(`Clique pour éditer · Maximum ${DEMO_LYRICS_MAX_WORDS} mots`)}
           </p>
         </div>
 
         {/* Character Count */}
         <div className="flex justify-between items-center">
           <span className="text-xs text-muted-foreground">
-            {t("Nombre de mots")}:{" "}
-            {demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length}
+            {t("Nombre de mots")}: {demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length}
           </span>
-          <span className="text-xs text-muted-foreground">500 {t("max")}</span>
+          <span className="text-xs text-muted-foreground">
+            {DEMO_LYRICS_MAX_WORDS} {t("max")}
+          </span>
         </div>
 
         {/* Quick Actions */}
@@ -77,10 +73,7 @@ export default function EditLyricsScreen() {
               (() => {
                 navigator.clipboard.writeText(demo.fields.lyrics).then(
                   () => demo.notify("Paroles copiées."),
-                  () =>
-                    demo.notify(
-                      "La copie est indisponible dans ce navigateur.",
-                    ),
+                  () => demo.notify("La copie est indisponible dans ce navigateur."),
                 );
               })()
             }

@@ -97,7 +97,7 @@ export default function FinalConfirmationScreen() {
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
         >
-          {t("Continuer vers le paiement")} <Icon i="arrow-right" size={18} />
+          {t("Continuer")} <Icon i="arrow-right" size={18} />
         </button>
       </div>
     </div>

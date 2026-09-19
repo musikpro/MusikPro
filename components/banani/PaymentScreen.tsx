@@ -1,226 +1,145 @@
 "use client";
-const t = (text: string) => text;
-import { useDemo } from "./DemoProvider";
-import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 
+import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
+import Icon from "./Icon";
+import CreationTopNav from "./CreationTopNav";
+import MusikSelect from "./MusikSelect";
 import { demoPaymentSchema } from "@/lib/validation/musikpro-demo";
 
-export const displayName = "Page de Paiement";
+export const displayName = "Vos informations";
 export const screenSize = "mobile";
 
-import Icon from "./Icon";
+const t = (text: string) => text;
+
+const phonePrefixes = [
+  { value: "CI", label: "Côte d’Ivoire", display: "🇨🇮 +225" },
+  { value: "SN", label: "Sénégal", display: "🇸🇳 +221" },
+  { value: "ML", label: "Mali", display: "🇲🇱 +223" },
+  { value: "BF", label: "Burkina Faso", display: "🇧🇫 +226" },
+  { value: "NE", label: "Niger", display: "🇳🇪 +227" },
+  { value: "GH", label: "Ghana", display: "🇬🇭 +233" },
+  { value: "NG", label: "Nigeria", display: "🇳🇬 +234" },
+  { value: "FR", label: "France", display: "🇫🇷 +33" },
+] as const;
 
 export default function PaymentScreen() {
   const demo = useDemo();
+
+  const continueToPacks = () => {
+    const parsed = demoPaymentSchema.safeParse({
+      name: demo.fields["payment.name"],
+      email: demo.fields["payment.email"],
+      phone: demo.fields["payment.phone"],
+    });
+    if (!parsed.success) {
+      demo.notify("Vérifie tes informations et saisis les 10 chiffres de ton téléphone.");
+      return;
+    }
+    demo.go("/dashboard/create/pack");
+  };
+
   return (
-    <div className="bg-surface flex flex-col h-full">
-      {/* Top Nav */}
-      <div className="bg-background border-b border-border px-4 py-3 flex items-center">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/credits")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-foreground"
-        >
-          <Icon i="arrow-left" size={18} /> {t("Retour")}
-        </button>
-      </div>
+    <div className="checkout-information-screen bg-surface flex flex-col">
+      <CreationTopNav backHref="/dashboard/create/confirm" label="Informations" />
 
-      {/* Content */}
-      <div className="flex-1 px-4 py-6 overflow-y-auto space-y-6">
-        {/* Title */}
-        <div>
-          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">
-            {t("Finalisez votre paiement")}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {t("Remplissez vos informations pour générer votre chanson")}
-          </p>
-        </div>
+      <div className="checkout-information-content">
+        <header className="checkout-information-heading">
+          <span className="checkout-information-kicker">
+            <Icon i="user-round-check" size={16} />
+            Dernière vérification
+          </span>
+          <h1>{t("Vos informations")}</h1>
+          <p>{t("Vérifie tes coordonnées avant de choisir ton pack de chansons.")}</p>
+        </header>
 
-        {/* Form Section - Highlighted Box */}
-        <div className="bg-card border-2 border-primary/20 rounded-xl p-5 space-y-4">
-          <h3 className="text-sm font-bold text-foreground mb-4">
-            {t("Vos informations")}
-          </h3>
-
-          {/* Name Field */}
-          <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-2 block">
-              {t("Nom complet")}
-            </label>
-            <div className="border border-border rounded-lg px-3 py-3 bg-background flex items-center gap-2">
-              <Icon
-                i="user"
-                size={16}
-                className="text-muted-foreground flex-shrink-0"
-              />
-              <DemoField
-                name="payment.name"
-                label="Nom complet"
-                type="text"
-                placeholder="Jean Dupont"
-                maxLength={254}
-              />
+        <section className="checkout-information-card" aria-labelledby="checkout-contact-title">
+          <div className="checkout-card-heading">
+            <span className="checkout-card-icon" aria-hidden="true">
+              <Icon i="contact-round" size={21} />
+            </span>
+            <div>
+              <h2 id="checkout-contact-title">{t("Personne concernée")}</h2>
+              <p>{t("Ces informations serviront au suivi de ta création.")}</p>
             </div>
           </div>
 
-          {/* Email Field */}
-          <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-2 block">
-              {t("Email")}
-            </label>
-            <div className="border border-border rounded-lg px-3 py-3 bg-background flex items-center gap-2">
-              <Icon
-                i="mail"
-                size={16}
-                className="text-muted-foreground flex-shrink-0"
-              />
-              <DemoField
-                name="payment.email"
-                label="Email"
-                type="email"
-                placeholder="jean@example.com"
-                maxLength={254}
-              />
-            </div>
-          </div>
-
-          {/* Phone Field */}
-          <div>
-            <label className="text-xs font-bold text-muted-foreground uppercase mb-2 block">
-              {t("Numéro de téléphone")}
-            </label>
-            <div className="flex gap-2 items-center">
-              {/* Country Code with Flag - Clickable */}
-              <button
-                type="button"
-                data-demo-ready="true"
-                onClick={() =>
-                  demo.notify(
-                    "Action de démonstration : aucune opération réelle effectuée.",
-                  )
-                }
-                className="border border-border rounded-lg px-2 py-2 bg-background flex items-center gap-1.5 flex-shrink-0"
-              >
-                <span className="text-base">🇨🇮</span>
-                <p className="text-xs font-semibold text-foreground">
-                  {t("+225")}
-                </p>
-                <Icon
-                  i="chevron-down"
-                  size={14}
-                  className="text-muted-foreground"
+          <div className="checkout-fields">
+            <label className="checkout-field">
+              <span>{t("Nom complet")}</span>
+              <span className="checkout-input-shell">
+                <Icon i="user" size={19} />
+                <DemoField
+                  name="payment.name"
+                  label="Nom complet"
+                  type="text"
+                  placeholder="Ex. Ballo Issa"
+                  maxLength={100}
+                  className="checkout-input"
                 />
-              </button>
-              {/* Phone Number Input - Masked 2-2-2-2-2 */}
-              <div className="flex-1 border border-border rounded-lg px-3 py-2 bg-background">
+              </span>
+            </label>
+
+            <label className="checkout-field">
+              <span>{t("Adresse e-mail")}</span>
+              <span className="checkout-input-shell">
+                <Icon i="mail" size={19} />
+                <DemoField
+                  name="payment.email"
+                  label="Adresse e-mail"
+                  type="email"
+                  placeholder="nom@exemple.com"
+                  maxLength={254}
+                  className="checkout-input"
+                />
+              </span>
+            </label>
+
+            <div className="checkout-field checkout-phone-field">
+              <span id="checkout-phone-label">{t("Numéro de téléphone")}</span>
+              <span className="checkout-input-shell checkout-phone-shell">
+                <MusikSelect
+                  className="checkout-prefix-select"
+                  menuClassName="checkout-prefix-menu"
+                  ariaLabel="Indicatif téléphonique"
+                  portal
+                  portalWidth={126}
+                  showOptionLabels={false}
+                  showSelectionMark={false}
+                  value={demo.choices.phoneCountry ?? "CI"}
+                  onChange={(value) => demo.choose("phoneCountry", value)}
+                  options={phonePrefixes}
+                />
+                <span className="checkout-phone-divider" aria-hidden="true" />
                 <DemoField
                   name="payment.phone"
                   label="Numéro de téléphone"
                   type="tel"
-                  placeholder="XX XX XX XX XX"
+                  placeholder="0708807015"
                   maxLength={10}
-                  className="text-sm font-mono tracking-wide"
+                  className="checkout-input checkout-phone-input"
                 />
-              </div>
+              </span>
+              <small>{t("10 chiffres requis, sans espaces.")}</small>
             </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              {t("10 chiffres requis")}
-            </p>
           </div>
-        </div>
+        </section>
 
-        {/* Pricing Info - Highlighted Box */}
-        <div className="bg-card border-2 border-primary/20 rounded-xl p-5 space-y-3">
-          <h3 className="text-sm font-bold text-foreground mb-4">
-            {t("Résumé de commande")}
-          </h3>
-
-          <div className="flex justify-between items-center pb-3 border-b border-border">
-            <span className="text-sm font-medium text-foreground">
-              {demo.pack.name}
-            </span>
-            <span className="text-sm font-semibold text-foreground">
-              {demo.pack.songs === null
-                ? "Chansons illimitées"
-                : `${demo.pack.songs} chansons`}{" "}
-              · pack de démonstration
-            </span>
+        <aside className="checkout-privacy-note">
+          <span aria-hidden="true">
+            <Icon i="shield-check" size={19} />
+          </span>
+          <div>
+            <strong>{t("Tes informations restent protégées")}</strong>
+            <p>{t("Elles servent uniquement à préparer la commande et à t’informer du suivi de la chanson.")}</p>
           </div>
-
-          <div className="flex justify-between items-center pt-2">
-            <span className="text-base font-bold text-foreground">
-              {t("Total")}
-            </span>
-            <span className="text-2xl font-bold text-primary">
-              {formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 pt-3 border-t border-border">
-            <Icon
-              i="shield-check"
-              size={16}
-              className="text-success flex-shrink-0"
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("Paiement 100% sécurisé")}
-            </p>
-          </div>
-        </div>
-
-        {/* Payment Method Info */}
-        <div className="bg-card border border-border rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <Icon
-              i="info"
-              size={16}
-              className="text-primary flex-shrink-0 mt-0.5"
-            />
-            <p className="text-xs text-muted-foreground">
-              {t(
-                "Vous recevrez un lien de paiement mobile money par SMS pour finaliser votre achat.",
-              )}
-            </p>
-          </div>
-        </div>
+        </aside>
       </div>
 
-      {/* CTA */}
-      <div className="px-4 pb-8 border-t border-border bg-background space-y-3">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() =>
-            (() => {
-              const parsed = demoPaymentSchema.safeParse({
-                name: demo.fields["payment.name"],
-                email: demo.fields["payment.email"],
-                phone: demo.fields["payment.phone"],
-              });
-              if (!parsed.success) {
-                demo.notify(
-                  "Vérifie les informations et saisis 10 chiffres pour le téléphone.",
-                );
-                return;
-              }
-              demo.go("/dashboard/payment-preview/chariow");
-            })()
-          }
-          className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2"
-          style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
-        >
-          {t("Confirmer le paiement")} <Icon i="check" size={18} />
-        </button>
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/credits")}
-          className="w-full py-3 bg-secondary text-primary font-semibold text-base rounded-xl border border-primary/30"
-        >
-          {t("Annuler")}
+      <div className="creation-mobile-cta checkout-information-cta">
+        <button type="button" data-demo-ready="true" onClick={continueToPacks}>
+          {t("Continuer vers les packs")}
+          <Icon i="arrow-right" size={19} />
         </button>
       </div>
     </div>

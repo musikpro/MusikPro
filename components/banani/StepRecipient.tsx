@@ -19,6 +19,8 @@ const recipientRelations = [
   "Mon copain",
   "Ma mère",
   "Mon père",
+  "Mon oncle",
+  "Ma tante",
   "Mes enfants",
   "Mon frère",
   "Ma sœur",
@@ -83,7 +85,7 @@ export default function StepRecipient() {
         <p className="text-sm text-muted-foreground">Aide MusikPro à personnaliser les paroles et la prononciation.</p>
       </div>
 
-      <div className="px-4">
+      <div className="recipient-form-shell px-4">
         <section className="story-recipient-card recipient-page-card" aria-labelledby="recipient-form-title">
           <div className="story-recipient-heading">
             <span className="story-recipient-heading-icon">
@@ -112,19 +114,18 @@ export default function StepRecipient() {
                 }}
               />
             </label>
-            <label className="story-recipient-field is-pronunciation">
-              <span>Prononciation suggérée</span>
+            <div className="story-recipient-field is-pronunciation">
+              <span id="recipient-pronunciation-label">Prononciation suggérée</span>
               <input
                 type="text"
                 value={demo.fields.recipientPronunciation}
-                maxLength={160}
                 placeholder="Aï-cha"
-                onChange={(event) => {
-                  demo.field("recipientPronunciation", event.target.value);
-                  setError("");
-                }}
+                aria-labelledby="recipient-pronunciation-label"
+                aria-readonly="true"
+                readOnly
+                tabIndex={-1}
               />
-            </label>
+            </div>
           </div>
 
           <div className="story-relation-field">
