@@ -2940,8 +2940,8 @@
   padding-left: 6px;
 }
 .pack-currency-select .musik-select-menu {
-  width: max-content;
-  min-width: 128px;
+  width: 100%;
+  min-width: 100%;
   max-height: none;
   overflow-y: visible;
   padding: 3px;
@@ -2949,8 +2949,8 @@
 .pack-currency-select .musik-select-option {
   min-height: 32px;
   gap: 4px;
-  padding: 4px 7px;
-  font-size: 12px;
+  padding: 4px 5px;
+  font-size: 10px;
   justify-content: flex-end;
   text-align: right;
   white-space: nowrap;
