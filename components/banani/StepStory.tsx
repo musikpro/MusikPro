@@ -44,6 +44,7 @@ export default function StepStory() {
   const demo = useDemo();
   const [storyError, setStoryError] = useState("");
   const [recipientError, setRecipientError] = useState("");
+  const [recipientOpen, setRecipientOpen] = useState(false);
   const storyWordCount = demo.fields.story.trim().split(/\s+/).filter(Boolean).length;
   useEffect(() => {
     if (!storyError) return;
@@ -114,6 +115,88 @@ export default function StepStory() {
         )}
       </div>
 
+      <div className="story-recipient-section px-4 mb-4">
+        <div className={`story-recipient-card ${recipientOpen ? "is-open" : ""}`}>
+          <button
+            type="button"
+            className="story-recipient-toggle"
+            aria-expanded={recipientOpen}
+            aria-controls="story-recipient-fields"
+            onClick={() => setRecipientOpen((open) => !open)}
+          >
+            <span className="story-recipient-heading-icon">
+              <Icon i="user-round" size={16} />
+            </span>
+            <span className="story-recipient-heading-copy">
+              <h2>À qui est destinée la chanson ?</h2>
+              <p>
+                {recipientOpen
+                  ? "Renseigne son nom et votre lien."
+                  : "Appuie pour ajouter son nom et préserver sa prononciation."}
+              </p>
+            </span>
+            <span className="story-recipient-chevron">
+              <Icon i="chevron-down" size={17} />
+            </span>
+          </button>
+
+          {recipientOpen && (
+            <div id="story-recipient-fields" className="story-recipient-fields">
+              <div className="story-name-row">
+                <label className="story-recipient-field">
+                  <span>Nom de la personne</span>
+                  <input
+                    type="text"
+                    value={demo.fields.recipientName}
+                    maxLength={100}
+                    autoComplete="name"
+                    placeholder="Ex. Aïcha"
+                    onChange={(event) => {
+                      const name = event.target.value;
+                      demo.field("recipientName", name);
+                      demo.field("recipientPronunciation", suggestPronunciation(name));
+                      setRecipientError("");
+                    }}
+                  />
+                </label>
+                <label className="story-recipient-field is-pronunciation">
+                  <span>Prononciation suggérée</span>
+                  <input
+                    type="text"
+                    value={demo.fields.recipientPronunciation}
+                    maxLength={160}
+                    placeholder="Aï-cha"
+                    onChange={(event) => demo.field("recipientPronunciation", event.target.value)}
+                  />
+                </label>
+              </div>
+
+              <div className="story-relation-field">
+                <span>Lien avec cette personne</span>
+                <MusikSelect
+                  className="story-relation-select"
+                  icon="heart-handshake"
+                  ariaLabel="Lien avec cette personne"
+                  placeholder="Sélectionner une relation"
+                  value={demo.choices.recipientRelation}
+                  onChange={(value) => {
+                    demo.choose("recipientRelation", value);
+                    setRecipientError("");
+                  }}
+                  options={recipientRelations.map((relation) => ({ value: relation, label: relation }))}
+                />
+              </div>
+              {recipientError && (
+                <p className="story-field-error" role="alert">
+                  <Icon i="circle-alert" size={15} />
+                  {recipientError}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* Voice hint */}
       <div className="px-4 mb-4">
         <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-start gap-3">
@@ -129,7 +212,7 @@ export default function StepStory() {
       </div>
 
       {/* Tip */}
-      <div className="px-4 mb-4">
+      <div className="px-4 mb-6">
         <div className="bg-secondary/60 rounded-xl px-4 py-3">
           <p className="text-sm text-foreground leading-relaxed">
             💡 <span className="font-semibold">{t("Astuce :")}</span>{" "}
@@ -137,74 +220,6 @@ export default function StepStory() {
               "Plus tu donnes de détails, plus ta chanson sera personnalisée ! Mentionne les prénoms, souvenirs, traits de caractère...",
             )}
           </p>
-        </div>
-      </div>
-
-      <div className="story-recipient-section px-4 mb-6">
-        <div className="story-recipient-card">
-          <div className="story-recipient-heading">
-            <span className="story-recipient-heading-icon">
-              <Icon i="user-round" size={16} />
-            </span>
-            <div>
-              <h2>À qui est destinée la chanson ?</h2>
-              <p>Ajoute le nom exact pour préserver sa prononciation.</p>
-            </div>
-          </div>
-
-          <div className="story-name-row">
-            <label className="story-recipient-field">
-              <span>Nom de la personne</span>
-              <input
-                type="text"
-                value={demo.fields.recipientName}
-                maxLength={100}
-                autoComplete="name"
-                placeholder="Ex. Aïcha"
-                onChange={(event) => {
-                  const name = event.target.value;
-                  demo.field("recipientName", name);
-                  demo.field("recipientPronunciation", suggestPronunciation(name));
-                  setRecipientError("");
-                }}
-              />
-            </label>
-            <label className="story-recipient-field is-pronunciation">
-              <span>Prononciation suggérée</span>
-              <input
-                type="text"
-                value={demo.fields.recipientPronunciation}
-                maxLength={160}
-                placeholder="Aï-cha"
-                onChange={(event) => demo.field("recipientPronunciation", event.target.value)}
-              />
-            </label>
-          </div>
-
-          <div className="story-relation-field">
-            <span>Lien avec cette personne</span>
-            <MusikSelect
-              className="story-relation-select"
-              icon="heart-handshake"
-              ariaLabel="Lien avec cette personne"
-              placeholder="Sélectionner une relation"
-              value={demo.choices.recipientRelation}
-              onChange={(value) => {
-                demo.choose("recipientRelation", value);
-                setRecipientError("");
-              }}
-              options={recipientRelations.map((relation) => ({
-                value: relation,
-                label: relation,
-              }))}
-            />
-          </div>
-          {recipientError && (
-            <p className="story-field-error" role="alert">
-              <Icon i="circle-alert" size={15} />
-              {recipientError}
-            </p>
-          )}
         </div>
       </div>
 
@@ -226,6 +241,7 @@ export default function StepStory() {
                 relation: demo.choices.recipientRelation,
               });
               if (!recipient.success) {
+                setRecipientOpen(true);
                 setRecipientError(recipient.error.issues[0].message);
                 return;
               }

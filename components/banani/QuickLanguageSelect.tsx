@@ -10,6 +10,7 @@ export default function QuickLanguageSelect({ compact = false }: { compact?: boo
     <MusikSelect
       className={`quick-language-select ${compact ? "is-compact" : ""}`}
       ariaLabel="Langue de l’interface"
+      showOptionLabels={false}
       value={demo.choices.appLanguage}
       onChange={(value) => demo.choose("appLanguage", value)}
       options={[

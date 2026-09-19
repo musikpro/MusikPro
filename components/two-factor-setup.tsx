@@ -1,10 +1,7 @@
 "use client";
 import { FormEvent, useState } from "react";
 import { authClient } from "@/lib/auth/client";
-import {
-  twoFactorCodeSchema,
-  twoFactorEnableSchema,
-} from "@/lib/validation/auth";
+import { twoFactorCodeSchema, twoFactorEnableSchema } from "@/lib/validation/auth";
 
 export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
   const [uri, setUri] = useState("");
@@ -35,9 +32,7 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
     }
     setUri(d.totpURI);
     setCodes(d.backupCodes);
-    setMessage(
-      "Scannez/ajoutez le secret dans votre application d’authentification, puis validez le code.",
-    );
+    setMessage("Scannez/ajoutez le secret dans votre application d’authentification, puis validez le code.");
   }
   async function verify(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -61,27 +56,24 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
   }
   if (enabled)
     return (
-      <div className="card">
+      <div className="card security-2fa-card is-enabled">
         <h2>Authentification à deux facteurs</h2>
         <p className="success">2FA activé sur votre compte.</p>
       </div>
     );
   return (
-    <div className="card">
+    <div className="card security-2fa-card">
       <h2>Activer le 2FA (TOTP)</h2>
-      <form onSubmit={enable}>
+      <form onSubmit={enable} className="security-2fa-form">
         <label className="field">
           Mot de passe actuel
           <input type="password" name="password" required />
         </label>
-        <button className="btn">Commencer l’activation</button>
+        <button className="btn security-primary-button">Commencer l’activation</button>
       </form>
       {uri && (
         <>
-          <p className="muted">
-            URI TOTP (à ouvrir/importer dans votre application
-            d’authentification) :
-          </p>
+          <p className="muted">URI TOTP (à ouvrir/importer dans votre application d’authentification) :</p>
           <code style={{ wordBreak: "break-all" }}>{uri}</code>
           {codes.length > 0 && (
             <div className="notice">
@@ -89,17 +81,12 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
               <p>{codes.join(" · ")}</p>
             </div>
           )}
-          <form onSubmit={verify}>
+          <form onSubmit={verify} className="security-2fa-form">
             <label className="field">
               Code à 6 chiffres
-              <input
-                name="code"
-                inputMode="numeric"
-                pattern="[0-9]{6}"
-                required
-              />
+              <input name="code" inputMode="numeric" pattern="[0-9]{6}" required />
             </label>
-            <button className="btn">Valider le 2FA</button>
+            <button className="btn security-primary-button">Valider le 2FA</button>
           </form>
         </>
       )}

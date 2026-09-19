@@ -10,9 +10,7 @@ export const demoOccasions = [
 ];
 
 export function demoOccasionEmoji(label: string) {
-  return (
-    demoOccasions.find((occasion) => occasion.label === label)?.emoji ?? ""
-  );
+  return demoOccasions.find((occasion) => occasion.label === label)?.emoji ?? "";
 }
 
 const t = (text: string) => text;
@@ -226,10 +224,10 @@ export const demoSongPacks = [
 ];
 
 export const demoCurrencies = [
-  { code: "XOF", label: "FCFA" },
-  { code: "EUR", label: "EUR (€)" },
-  { code: "USD", label: "USD ($)" },
-  { code: "NGN", label: "NGN (₦)" },
+  { code: "XOF", label: "Franc CFA (XOF)", symbol: "FCFA" },
+  { code: "EUR", label: "Euro (€)", symbol: "€" },
+  { code: "USD", label: "Dollar ($)", symbol: "$" },
+  { code: "NGN", label: "Naira (₦)", symbol: "₦" },
 ] as const;
 
 export function formatDemoPackPrice(valueInFcfa: number, currency: string) {

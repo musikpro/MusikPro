@@ -1,5 +1,6 @@
 "use client";
 const t = (text: string) => text;
+import Image from "next/image";
 import { demoCurrencies, demoSongPacks, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
@@ -75,12 +76,13 @@ export default function CreditsMobile() {
             className="pack-currency-select"
             icon="coins"
             ariaLabel="Devise"
+            showOptionDisplays={false}
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
             options={demoCurrencies.map((currency) => ({
               value: currency.code,
               label: currency.label,
-              display: currency.code,
+              display: currency.symbol,
             }))}
           />
         </div>
@@ -175,25 +177,21 @@ export default function CreditsMobile() {
         <div className="pack-payment-methods" aria-label="Moyens de paiement acceptés">
           <p>Moyens de paiement acceptés</p>
           <div className="pack-payment-logos">
-            <span className="payment-logo payment-logo-orange" title="Orange Money">
-              <b>orange</b>
-              <small>Money</small>
+            <span className="payment-logo" title="Orange Money">
+              <Image src="/banani/payment-logos/orange-money.png" alt="Orange Money" width={132} height={36} />
             </span>
-            <span className="payment-logo payment-logo-mtn" title="MTN MoMo">
-              <b>MTN</b>
-              <small>MoMo</small>
+            <span className="payment-logo" title="MTN MoMo">
+              <Image src="/banani/payment-logos/mtn-momo.png" alt="MTN MoMo" width={96} height={45} />
             </span>
-            <span className="payment-logo payment-logo-moov" title="Moov Money">
-              <b>moov</b>
-              <small>Money</small>
+            <span className="payment-logo" title="Moov Money">
+              <Image src="/banani/payment-logos/moov-money.png" alt="Moov Money" width={54} height={54} />
             </span>
-            <span className="payment-logo payment-logo-wave" title="Wave">
-              <b>W</b>
-              <small>Wave</small>
+            <span className="payment-logo" title="Wave">
+              <Image src="/banani/payment-logos/wave.png" alt="Wave" width={96} height={42} />
             </span>
-            <span className="payment-logo payment-logo-card" title="Carte bancaire">
-              <Icon i="credit-card" size={18} />
-              <small>Carte</small>
+            <span className="payment-logo payment-logo-card" title="Carte bancaire Visa ou Mastercard">
+              <Image src="/banani/payment-logos/visa.svg" alt="Visa" width={44} height={15} />
+              <Image src="/banani/payment-logos/mastercard.svg" alt="Mastercard" width={31} height={24} />
             </span>
           </div>
         </div>

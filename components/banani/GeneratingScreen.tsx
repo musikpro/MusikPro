@@ -18,9 +18,7 @@ export default function GeneratingScreen() {
           <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
             <Icon i="music-2" size={12} className="text-primary-foreground" />
           </div>
-          <span className="font-headings font-bold text-base text-foreground">
-            {t("MusikPro")}
-          </span>
+          <span className="font-headings font-bold text-base text-foreground">{t("MusikPro")}</span>
         </div>
         <button
           type="button"
@@ -40,53 +38,40 @@ export default function GeneratingScreen() {
         </div>
 
         <div>
-          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">
-            {t("Paiement confirmé !")}
-          </h1>
+          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Paiement confirmé !")}</h1>
           <p className="text-base text-muted-foreground leading-relaxed">
-            {t(
-              "Vous serez redirigé vers la page de génération de votre musique",
-            )}
+            {t("Vous serez redirigé vers la page de génération de votre musique")}
           </p>
         </div>
 
         {/* Redirect message */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full">
           <div className="flex items-start gap-2">
-            <Icon
-              i="info"
-              size={16}
-              className="text-blue-600 flex-shrink-0 mt-0.5"
-            />
+            <Icon i="info" size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <p className="text-sm text-blue-800">
-              {t(
-                "Veuillez patienter quelques secondes pendant que nous vous redirigeons vers la page de création…",
-              )}
+              {t("Veuillez patienter quelques secondes pendant que nous vous redirigeons vers la page de création…")}
             </p>
           </div>
         </div>
 
         {/* Loading indicator */}
         <div className="flex items-center gap-2">
-          <div
-            className="w-2 h-2 bg-primary rounded-full animate-bounce"
-            style={{ animationDelay: "0s" }}
-          />
-          <div
-            className="w-2 h-2 bg-primary rounded-full animate-bounce"
-            style={{ animationDelay: "0.2s" }}
-          />
-          <div
-            className="w-2 h-2 bg-primary rounded-full animate-bounce"
-            style={{ animationDelay: "0.4s" }}
-          />
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0s" }} />
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: "0.4s" }} />
         </div>
       </div>
 
       <div className="px-4 pb-8 text-center">
-        <p className="text-xs text-muted-foreground">
-          {t("Redirection automatique en cours…")}
-        </p>
+        <p className="text-xs text-muted-foreground">{t("Ta chanson est prête à être générée.")}</p>
+        <button
+          type="button"
+          data-demo-ready
+          onClick={() => demo.generateSong()}
+          className="payment-confirmed-generate"
+        >
+          <Icon i="music-2" size={17} /> {t("Générer ma chanson")}
+        </button>
       </div>
     </div>
   );

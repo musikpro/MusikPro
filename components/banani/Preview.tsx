@@ -11,13 +11,7 @@ export default function Preview({ children }: { children: ReactNode }) {
   return (
     <div
       className="banani-copy musik-modern"
-      data-theme={
-        demo.choices.theme === "Sombre"
-          ? "dark"
-          : demo.choices.theme === "Auto"
-            ? "auto"
-            : "light"
-      }
+      data-theme={demo.choices.theme === "Sombre" ? "dark" : demo.choices.theme === "Auto" ? "auto" : "light"}
       onClickCapture={(event) => {
         const target = event.target as HTMLElement;
         const control = target.closest("button,a");
@@ -28,9 +22,7 @@ export default function Preview({ children }: { children: ReactNode }) {
           control.tagName !== "BUTTON"
         ) {
           event.preventDefault();
-          demo.notify(
-            "Mode démonstration — cette action sera disponible avec les fonctionnalités MusikPro.",
-          );
+          demo.notify("Mode démonstration — cette action sera disponible avec les fonctionnalités MusikPro.");
         }
       }}
     >
@@ -76,9 +68,7 @@ export default function Preview({ children }: { children: ReactNode }) {
                   href={`/dashboard${suffix}`}
                   prefetch={false}
                   data-demo-ready
-                  aria-current={
-                    pathname === `/dashboard${suffix}` ? "page" : undefined
-                  }
+                  aria-current={pathname === `/dashboard${suffix}` ? "page" : undefined}
                 >
                   {label}
                 </Link>
@@ -96,21 +86,6 @@ export default function Preview({ children }: { children: ReactNode }) {
               onClick={() => demo.go("/dashboard/create/lyrics")}
             >
               Voir les paroles de démonstration
-            </button>
-          </div>
-        )}
-        {pathname === "/dashboard/payment-preview/confirmed" && (
-          <div className="p-4">
-            <p className="text-sm text-muted-foreground">
-              Simulation uniquement — aucun paiement effectué.
-            </p>
-            <button
-              data-demo-ready
-              type="button"
-              className="w-full bg-primary text-white rounded-xl p-4 font-semibold mt-3"
-              onClick={() => demo.go("/dashboard/create")}
-            >
-              Continuer la démonstration
             </button>
           </div>
         )}

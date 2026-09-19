@@ -25,32 +25,20 @@ export default function PaymentRedirectScreen() {
 
         {/* Title */}
         <div>
-          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">
-            {t("Redirection en cours…")}
-          </h1>
+          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Redirection en cours…")}</h1>
           <p className="text-sm text-muted-foreground">
-            {t(
-              "Vous serez redirigé vers Chariow pour finaliser votre paiement",
-            )}
+            {t("Vous serez redirigé vers Chariow pour finaliser votre paiement")}
           </p>
         </div>
 
         {/* Info Section */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full space-y-2">
           <div className="flex items-start gap-2">
-            <Icon
-              i="info"
-              size={16}
-              className="text-blue-600 flex-shrink-0 mt-0.5"
-            />
+            <Icon i="info" size={16} className="text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-left">
-              <p className="text-xs font-semibold text-blue-900 mb-1">
-                {t("Plateforme sécurisée")}
-              </p>
+              <p className="text-xs font-semibold text-blue-900 mb-1">{t("Plateforme sécurisée")}</p>
               <p className="text-xs text-blue-800">
-                {t(
-                  "Chariow est notre partenaire de paiement de confiance. Vos informations sont protégées.",
-                )}
+                {t("Chariow est notre partenaire de paiement de confiance. Vos informations sont protégées.")}
               </p>
             </div>
           </div>
@@ -63,9 +51,7 @@ export default function PaymentRedirectScreen() {
               1
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t("Effectuez votre paiement")}
-              </p>
+              <p className="text-sm font-semibold text-foreground">{t("Effectuez votre paiement")}</p>
               <p className="text-xs text-muted-foreground">
                 Montant : {formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}
               </p>
@@ -76,9 +62,7 @@ export default function PaymentRedirectScreen() {
               2
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t("Revenez à Musika")}
-              </p>
+              <p className="text-sm font-semibold text-foreground">{t("Revenez à MusikPro")}</p>
               <p className="text-xs text-muted-foreground">
                 {t("Vous serez automatiquement redirigé après le paiement")}
               </p>
@@ -89,12 +73,8 @@ export default function PaymentRedirectScreen() {
               3
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">
-                {t("Génération instantanée")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("Votre chanson sera générée automatiquement")}
-              </p>
+              <p className="text-sm font-semibold text-foreground">{t("Génération instantanée")}</p>
+              <p className="text-xs text-muted-foreground">{t("Votre chanson sera générée automatiquement")}</p>
             </div>
           </div>
         </div>
@@ -103,9 +83,7 @@ export default function PaymentRedirectScreen() {
       {/* Footer */}
       <div className="px-4 pb-6 space-y-3 border-t border-border">
         <p className="text-xs text-center text-muted-foreground">
-          {t(
-            "Si vous n'êtes pas redirigé automatiquement, cliquez sur le bouton ci-dessous",
-          )}
+          {t("Si vous n'êtes pas redirigé automatiquement, cliquez sur le bouton ci-dessous")}
         </p>
         <button
           type="button"

@@ -17,6 +17,8 @@ export default function MusikSelect({
   placeholder = "Sélectionner",
   icon,
   className = "",
+  showOptionLabels = true,
+  showOptionDisplays = true,
 }: {
   value: string;
   options: readonly MusikSelectOption[];
@@ -25,6 +27,8 @@ export default function MusikSelect({
   placeholder?: string;
   icon?: string;
   className?: string;
+  showOptionLabels?: boolean;
+  showOptionDisplays?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(() =>
@@ -124,13 +128,16 @@ export default function MusikSelect({
               key={option.value}
               type="button"
               role="option"
+              aria-label={option.label}
               aria-selected={option.value === value}
               className={`musik-select-option ${index === highlighted ? "is-highlighted" : ""}`}
               onPointerMove={() => setHighlighted(index)}
               onClick={() => choose(option.value)}
             >
-              {option.display && <span className="musik-select-option-display">{option.display}</span>}
-              <span>{option.label}</span>
+              {showOptionDisplays && option.display && (
+                <span className="musik-select-option-display">{option.display}</span>
+              )}
+              {showOptionLabels && <span>{option.label}</span>}
               {option.value === value && <Icon i="check" size={15} />}
             </button>
           ))}
