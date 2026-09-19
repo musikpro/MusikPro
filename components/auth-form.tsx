@@ -63,7 +63,7 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
         name: validated.data.name,
         email,
         password,
-        callbackURL: "/dashboard",
+        callbackURL: "/auth/continue",
         fetchOptions,
       });
       if (r.error) {
@@ -75,7 +75,7 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
       const r = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "/dashboard",
+        callbackURL: "/auth/continue",
         fetchOptions,
       });
       if (r.error) {
@@ -88,7 +88,7 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
         return;
       }
     }
-    router.push("/dashboard");
+    router.push("/auth/continue");
     router.refresh();
   }
   async function googleSignIn() {
@@ -96,7 +96,7 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
     setError("");
     const r = await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: "/auth/continue",
     });
     if (r?.error) {
       setError(r.error.message || "Connexion Google impossible");

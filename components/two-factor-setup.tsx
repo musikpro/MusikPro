@@ -1,9 +1,11 @@
 "use client";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import { twoFactorCodeSchema, twoFactorEnableSchema } from "@/lib/validation/auth";
 
 export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
+  const router = useRouter();
   const [uri, setUri] = useState("");
   const [codes, setCodes] = useState<string[]>([]);
   const [message, setMessage] = useState("");
@@ -51,8 +53,10 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
       setMessage(r.error.message || "Code invalide");
       return;
     }
-    setMessage("2FA activé. Rechargez la page.");
+    setMessage("2FA activé. Redirection vers votre espace…");
     setUri("");
+    router.push("/auth/continue");
+    router.refresh();
   }
   if (enabled)
     return (

@@ -29,7 +29,7 @@ export function TwoFactorChallenge() {
       setBusy(false);
       return;
     }
-    router.push("/dashboard");
+    router.push("/auth/continue");
     router.refresh();
   }
 
