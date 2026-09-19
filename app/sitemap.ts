@@ -5,6 +5,8 @@ import { absoluteUrl } from "@/lib/seo/site";
 // Les routes privées (/dashboard, /admin, /setup, /api, auth) ne doivent jamais entrer dans le sitemap.
 const publicRoutes = [
   { path: "/", changeFrequency: "weekly" as const, priority: 1 },
+  { path: "/privacy", changeFrequency: "yearly" as const, priority: 0.3 },
+  { path: "/terms", changeFrequency: "yearly" as const, priority: 0.3 },
 ];
 
 export default function sitemap(): MetadataRoute.Sitemap {
