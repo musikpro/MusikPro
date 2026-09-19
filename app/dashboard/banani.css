@@ -3475,7 +3475,7 @@
 }
 .banani-copy .checkout-input::placeholder {
   color: var(--color-muted-foreground);
-  opacity: 0.2;
+  opacity: 0.34;
   font-weight: 500;
 }
 .checkout-input-shell:has([aria-invalid="true"]) {
