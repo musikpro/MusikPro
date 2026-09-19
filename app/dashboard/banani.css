@@ -1114,9 +1114,8 @@
 .banani-copy .demo-search-field:focus-within {
   border-color: var(--color-primary);
   box-shadow:
-    0 0 0 4px color-mix(in srgb, var(--color-primary) 18%, transparent),
-    0 10px 24px color-mix(in srgb, var(--color-primary) 14%, transparent);
-  transform: translateY(-1px);
+    0 0 0 3px color-mix(in srgb, var(--color-primary) 13%, transparent),
+    0 9px 22px color-mix(in srgb, var(--color-primary) 11%, transparent);
 }
 .banani-copy .demo-search-icon {
   width: 36px;
@@ -1150,6 +1149,12 @@
   font-size: 13px;
   font-weight: 550;
   line-height: 1.35;
+}
+.banani-copy .demo-search-field input:focus,
+.banani-copy .demo-search-field input:focus-visible {
+  border-radius: 0;
+  outline: 0;
+  box-shadow: none;
 }
 .banani-copy .demo-search-field input::-webkit-search-cancel-button {
   appearance: none;
@@ -2929,6 +2934,11 @@
 .pack-currency-select {
   width: 88px;
 }
+.pack-currency-select .musik-select-trigger {
+  gap: 3px;
+  padding-right: 6px;
+  padding-left: 6px;
+}
 .pack-currency-select .musik-select-menu {
   width: max-content;
   min-width: 128px;
@@ -2941,6 +2951,8 @@
   gap: 4px;
   padding: 4px 7px;
   font-size: 12px;
+  justify-content: flex-end;
+  text-align: right;
   white-space: nowrap;
 }
 .pack-payment-logos {

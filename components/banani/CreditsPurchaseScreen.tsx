@@ -77,6 +77,7 @@ export default function CreditsMobile() {
             icon="coins"
             ariaLabel="Devise"
             showOptionDisplays={false}
+            showSelectionMark={false}
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
             options={demoCurrencies.map((currency) => ({
