@@ -4,7 +4,7 @@
     "id": "QMj5OQRWpKXU",
     "name": "MusikPro",
     "source": "banani-mcp",
-    "observedAt": "2026-09-19T07:45:29.735Z"
+    "observedAt": "2026-09-19T13:45:52.453Z"
   },
   "screens": [
     {
@@ -1139,10 +1139,10 @@
     },
     {
       "id": "QMj5OQRWpKXU/screens/TwoFactorAuth.jsx",
-      "name": "Vérification Double Facteur (2FA)",
+      "name": "Vérification Double Facteur (2FA) — Propriétaire SaaS",
       "route": "/two-factor",
-      "auth": "public",
-      "purpose": "Vérification d’un code à six chiffres et choix d’une méthode 2FA",
+      "auth": "admin",
+      "purpose": "Vérifier le second facteur du propriétaire du SaaS après sa connexion et avant l’accès au tableau de bord administrateur",
       "states": [
         "default"
       ],
@@ -1151,10 +1151,9 @@
         "Retour",
         "Vérification en deux étapes",
         "Un code de vérification a été envoyé par email à",
-        "jean@example.com",
+        "Adresse e-mail du propriétaire masquée ou contextualisée",
         "Entrez le code à 6 chiffres",
         "Le code expire dans",
-        "04:32",
         "Vérifier",
         "Ne pas recevoir le code ?",
         "Renvoyer le code",
@@ -1163,16 +1162,21 @@
         "Google Authenticator"
       ],
       "interactions": [
-        "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
+        "Saisie d’un code à six chiffres et action Vérifier visibles dans le design",
+        "Renvoi du code et changement de méthode visibles ; contrats serveur et disponibilité réelle à confirmer",
+        "Règle confirmée par l’utilisateur : présenter cette étape uniquement aux comptes propriétaire/admin avant /admin"
       ],
       "dataNeeds": [
-        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
+        "Challenge 2FA Better Auth en cours",
+        "Rôle propriétaire/admin vérifié côté serveur",
+        "Adresse e-mail du compte présentée sans exposer inutilement sa valeur complète"
       ],
       "integrations": [
-        "Google Authenticator — option visible; enrôlement et validation NON VÉRIFIÉS dans Banani",
-        "E-mail transactionnel — intention visible; fournisseur et livraison NON VÉRIFIÉS dans Banani"
+        "Better Auth TOTP déjà présent dans le projet",
+        "Google Authenticator visible dans Banani et déjà compatible avec le flux TOTP existant",
+        "Code par e-mail visible dans Banani mais envoi, expiration et renvoi réels NON VÉRIFIÉS"
       ],
-      "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS."
+      "notes": "Écran mobile réellement sélectionné et observé via Banani MCP. L’utilisateur confirme qu’il est réservé au propriétaire du SaaS et qu’il doit précéder l’accès au tableau de bord /admin. La variante desktop doit être adaptée avec le même design system orange/ivoire. Les états erreur, expiration, renvoi, chargement, succès, offline et la méthode e-mail restent NON VÉRIFIÉS tant que leur contrat backend n’est pas démontré."
     },
     {
       "id": "QMj5OQRWpKXU/screens/LoginPageSingle.jsx",
@@ -2542,10 +2546,9 @@
         "QMj5OQRWpKXU/screens/ForgotPassword.jsx",
         "QMj5OQRWpKXU/screens/LoginPageMobile.jsx",
         "QMj5OQRWpKXU/screens/SignupPageMobile.jsx",
-        "QMj5OQRWpKXU/screens/TwoFactorAuth.jsx",
         "QMj5OQRWpKXU/screens/LoginPageSingle.jsx"
       ],
-      "notes": "Enchaînement exact entre écrans NON VÉRIFIÉ; correspondance proposée avec les routes Better Auth existantes."
+      "notes": "Authentification et récupération des comptes clients. Le challenge 2FA propriétaire est documenté dans le flow owner-two-factor-entry."
     },
     {
       "id": "creation-payment-preview",
@@ -2591,6 +2594,16 @@
         "QMj5OQRWpKXU/screens/AdminAnalytics.jsx"
       ],
       "notes": "Navigation commune observée via AdminSidebar et Menu Admin Mobile. L’ordre des tâches, les droits par rôle et les transitions après mutation restent NON VÉRIFIÉS."
+    },
+    {
+      "id": "owner-two-factor-entry",
+      "name": "Connexion propriétaire → vérification 2FA → tableau de bord administrateur",
+      "screens": [
+        "QMj5OQRWpKXU/screens/LoginPageSingle.jsx",
+        "QMj5OQRWpKXU/screens/TwoFactorAuth.jsx",
+        "QMj5OQRWpKXU/screens/AdminDashboard.jsx"
+      ],
+      "notes": "Flow confirmé par l’utilisateur pour les comptes propriétaire/admin uniquement. La vérification du rôle, du challenge 2FA et de la destination /admin doit rester côté serveur. Le design desktop du challenge doit être dérivé du mobile observé."
     }
   ],
   "dependencies": [
@@ -2649,6 +2662,8 @@
     "Les fournisseurs IA, données de concours, transactions, revenus, utilisateurs et métriques sont des exemples visuels, pas des intégrations réelles.",
     "Les applications iOS/Android, téléchargements, notes et statuts live/bêta ne prouvent aucune publication ; Phase 21 mobile reste optionnelle.",
     "Le branding bleu/Inter affiché comme contenu administrable diverge du thème global orange/DM Sans ; comportement de prévisualisation et application du branding À CONFIRMER.",
-    "Variantes responsive des pages admin autres que le dashboard et le menu mobile NON VÉRIFIÉES ; elles devront être conçues mobile-first."
+    "Variantes responsive des pages admin autres que le dashboard et le menu mobile NON VÉRIFIÉES ; elles devront être conçues mobile-first.",
+    "La variante desktop de Vérification Double Facteur n’a pas été fournie par Banani ; adaptation responsive à créer avec le design system MusikPro.",
+    "Le design montre un code envoyé par e-mail et Google Authenticator. Seul le TOTP Better Auth est démontré dans le code actuel ; l’e-mail 2FA, son expiration et son renvoi restent À CONFIRMER."
   ]
 }

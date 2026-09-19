@@ -6,7 +6,7 @@ vi.mock("resend", () => ({
     emails = { send };
   },
 }));
-import { sendAuthEmail } from "@/lib/email";
+import { sendAuthEmail, sendTwoFactorEmail } from "@/lib/email";
 
 const input = {
   to: "test@example.invalid",
@@ -47,5 +47,12 @@ describe("transactional authentication email", () => {
       "Transactional email is not configured in production",
     );
     expect(send).not.toHaveBeenCalled();
+  });
+  it("sends a two-factor code without logging it", async () => {
+    vi.stubEnv("RESEND_API_KEY", "test-only-placeholder");
+    vi.stubEnv("EMAIL_FROM", "MusikPro <test@example.invalid>");
+    send.mockResolvedValue({ data: { id: "test-id" }, error: null });
+    await expect(sendTwoFactorEmail({ to: input.to, code: "123456" })).resolves.toBeUndefined();
+    expect(send).toHaveBeenCalledWith(expect.objectContaining({ to: input.to }));
   });
 });

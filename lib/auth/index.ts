@@ -4,7 +4,8 @@ import { admin, captcha, organization, twoFactor } from "better-auth/plugins";
 import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
-import { sendAuthEmail } from "@/lib/email";
+import { sendAuthEmail, sendTwoFactorEmail } from "@/lib/email";
+import { ownerTwoFactor } from "@/lib/auth/owner-two-factor";
 import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
 
 assertServerOnlyEnv();
@@ -66,7 +67,20 @@ export const auth = betterAuth({
   plugins: [
     organization({ teams: { enabled: true } }),
     admin({ defaultRole: "user", adminRoles: ["admin"] }),
-    twoFactor({ issuer: process.env.APP_NAME ?? "Africa SaaS Kit" }),
+    ownerTwoFactor(),
+    twoFactor({
+      issuer: process.env.APP_NAME ?? "Africa SaaS Kit",
+      twoFactorCookieMaxAge: 600,
+      otpOptions: {
+        digits: 6,
+        period: 5,
+        allowedAttempts: 5,
+        storeOTP: "hashed",
+        sendOTP: async ({ user, otp }) => {
+          await sendTwoFactorEmail({ to: user.email, code: otp });
+        },
+      },
+    }),
     ...(process.env.TURNSTILE_SECRET_KEY
       ? [
           captcha({

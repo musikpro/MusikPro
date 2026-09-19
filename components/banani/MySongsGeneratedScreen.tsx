@@ -283,26 +283,30 @@ export default function MySongsGenerated() {
 
             {/* Card Footer Actions */}
             <div className="border-t border-border mx-4 mb-3" />
-            <div className="px-4 pb-3 flex items-center gap-2">
+            <div className="song-card-actions px-4 pb-3">
               <button
                 type="button"
                 data-demo-ready="true"
                 onClick={() => demo.go("/dashboard/create/lyrics/edit")}
-                className="song-edit-lyrics-button flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs font-semibold"
+                className="song-edit-lyrics-button flex min-w-0 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold"
               >
                 <span className="song-edit-lyrics-icon">
                   <Icon i="pencil" size={14} />
                 </span>
-                {t("Modifier paroles")}
+                <span className="song-card-action-label">
+                  {t("Modifier paroles")}
+                </span>
               </button>
               <button
                 type="button"
                 data-demo-ready="true"
                 onClick={() => demo.go("/dashboard/create")}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-input border border-border rounded-lg text-xs font-semibold text-foreground"
+                className="song-regenerate-button flex min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-input px-2.5 py-2 text-xs font-semibold text-foreground"
               >
-                <Icon i="refresh-cw" size={12} />
-                {t("Regénérer")}
+                <span className="song-card-action-icon">
+                  <Icon i="refresh-cw" size={12} />
+                </span>
+                <span className="song-card-action-label">{t("Régénérer")}</span>
               </button>
               <button
                 type="button"

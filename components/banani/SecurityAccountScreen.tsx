@@ -11,10 +11,12 @@ export default function SecurityAccountScreen({
   emailVerified,
   twoFactorEnabled,
   required,
+  isOwner,
 }: {
   emailVerified: boolean;
   twoFactorEnabled: boolean;
   required: boolean;
+  isOwner: boolean;
 }) {
   const demo = useDemo();
   return (
@@ -55,18 +57,18 @@ export default function SecurityAccountScreen({
               <strong>{emailVerified ? "Vérifiée" : "À vérifier"}</strong>
             </div>
           </article>
-          <article className={twoFactorEnabled ? "is-secure" : "is-warning"}>
-            <span>
-              <Icon i="smartphone" size={19} />
-            </span>
-            <div>
-              <small>Double facteur</small>
-              <strong>{twoFactorEnabled ? "Activé" : "À activer"}</strong>
-            </div>
-          </article>
+          {isOwner && (
+            <article className={twoFactorEnabled ? "is-secure" : "is-warning"}>
+              <span><Icon i="smartphone" size={19} /></span>
+              <div>
+                <small>Double facteur propriétaire</small>
+                <strong>{twoFactorEnabled ? "Activé" : "À activer"}</strong>
+              </div>
+            </article>
+          )}
         </div>
 
-        <section className="security-panel">
+        {isOwner && <section className="security-panel">
           <div className="security-panel-heading">
             <span>
               <Icon i="key-round" size={20} />
@@ -77,7 +79,7 @@ export default function SecurityAccountScreen({
             </div>
           </div>
           <TwoFactorSetup enabled={twoFactorEnabled} />
-        </section>
+        </section>}
 
         <section className="security-tips">
           <h2>

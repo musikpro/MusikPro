@@ -613,6 +613,101 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:0;overfl
 .auth-flow-2fa .auth-methods {
   margin-top: 18px;
 }
+.owner-2fa-page {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(253, 232, 216, 0.72), transparent 26rem),
+    var(--auth-bg);
+}
+.owner-2fa-page .auth-flow {
+  max-width: 470px;
+  padding-top: 26px;
+}
+.owner-2fa-page .auth-hero-icon {
+  width: 74px;
+  height: 74px;
+  margin-bottom: 16px;
+  border: 1px solid rgba(242, 101, 34, 0.18);
+  box-shadow: 0 12px 30px rgba(242, 101, 34, 0.13);
+}
+.owner-2fa-eyebrow {
+  margin: 0 0 8px;
+  color: var(--auth-primary);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+.owner-2fa-page h1 {
+  margin: 0 0 12px;
+  font-size: clamp(27px, 8vw, 38px);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
+}
+.owner-2fa-page .auth-flow-copy {
+  margin-bottom: 22px;
+  color: #6f6863;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.owner-2fa-page .auth-flow-copy strong {
+  color: var(--auth-fg);
+}
+.owner-2fa-page .auth-code-card {
+  border: 1px solid #f0d2bf;
+  border-radius: 22px;
+  box-shadow: 0 18px 45px rgba(75, 48, 32, 0.08);
+}
+.owner-2fa-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.owner-2fa-timer.is-expired {
+  color: #a53421;
+}
+.owner-2fa-resend {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 10px;
+  padding: 8px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--auth-primary);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.owner-2fa-security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 18px 0 0;
+  color: var(--auth-muted);
+  font-size: 11px;
+}
+.owner-2fa-loading {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+.owner-2fa-skeleton-copy {
+  width: 74%;
+  height: 18px;
+  margin: 0 auto;
+}
+.owner-2fa-skeleton-card {
+  width: 100%;
+  height: 254px;
+  border-radius: 22px;
+}
+.owner-2fa-invalid {
+  margin-top: 26px;
+}
 @media (min-width: 768px) {
   .auth-page:not(.auth-page-surface) {
     display: flex;
@@ -648,6 +743,13 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:0;overfl
   }
   .auth-topbar {
     padding: 0 max(24px, calc((100vw - 1000px) / 2));
+  }
+  .owner-2fa-page .auth-flow {
+    padding-top: 46px;
+    padding-bottom: 70px;
+  }
+  .owner-2fa-page .auth-code-card {
+    padding: 28px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

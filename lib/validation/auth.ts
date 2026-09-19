@@ -10,3 +10,8 @@ export const forgotPasswordSchema = z.object({ email: emailSchema });
 export const resetPasswordSchema = z.object({ password: passwordSchema, token: z.string().min(1).max(4096) });
 export const twoFactorCodeSchema = z.object({ code: totpCodeSchema });
 export const twoFactorEnableSchema = z.object({ password: passwordSchema });
+export const ownerTwoFactorContextSchema = z.object({
+  email: z.string().min(3).max(320),
+  expiresAt: z.string().datetime(),
+  methods: z.array(z.enum(["otp", "totp"])).min(1),
+});

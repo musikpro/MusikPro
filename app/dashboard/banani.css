@@ -1536,7 +1536,7 @@
   color: var(--color-primary);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
-.song-edit-lyrics-button {
+.banani-copy .song-edit-lyrics-button {
   min-height: 46px;
   border: 1px solid color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
   background: linear-gradient(135deg, var(--color-secondary), var(--color-card));
@@ -1544,14 +1544,66 @@
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 10%, transparent);
   white-space: nowrap;
 }
+.song-card-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) 36px;
+  align-items: stretch;
+  gap: 8px;
+}
+.banani-copy .song-regenerate-button {
+  min-height: 46px;
+}
+.song-card-action-label {
+  min-width: 0;
+  line-height: 1.2;
+  text-align: center;
+}
+.song-card-action-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+}
 .song-edit-lyrics-icon {
   width: 25px;
   height: 25px;
   display: grid;
+  flex: none;
   place-items: center;
   border-radius: 8px;
   background: var(--color-primary);
   color: var(--color-primary-foreground);
+}
+@media (max-width: 399px) {
+  .banani-copy .song-edit-lyrics-button,
+  .banani-copy .song-regenerate-button {
+    min-height: 64px;
+    flex-direction: column;
+    gap: 4px;
+    padding-inline: 8px;
+  }
+  .song-card-action-label {
+    white-space: nowrap;
+  }
+  .song-edit-lyrics-icon {
+    width: 23px;
+    height: 23px;
+  }
+}
+@media (max-width: 359px) {
+  .song-card-actions {
+    grid-template-columns: minmax(0, 1fr) 36px;
+  }
+  .song-edit-lyrics-button {
+    grid-column: 1 / -1;
+  }
+  .banani-copy .song-edit-lyrics-button,
+  .banani-copy .song-regenerate-button {
+    min-height: 46px;
+    flex-direction: row;
+  }
+  .song-card-action-label {
+    white-space: nowrap;
+  }
 }
 @media (max-width: 767px) {
   .workspace-layout[data-section="creation"] .banani-screen > div {
