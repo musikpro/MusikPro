@@ -21,6 +21,9 @@ const requireEmailVerification =
 export const auth = betterAuth({
   appName: process.env.APP_NAME ?? "Africa SaaS Kit",
   baseURL: process.env.BETTER_AUTH_URL ?? process.env.NEXT_PUBLIC_APP_URL,
+  onAPIError: {
+    errorURL: "/login",
+  },
   secret: requireEnv("BETTER_AUTH_SECRET"),
   database: drizzleAdapter(db, {
     provider: "pg",

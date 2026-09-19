@@ -12,13 +12,15 @@ export function AuthForm({
   mode,
   googleEnabled = false,
   showDemoLink = false,
+  initialError = "",
 }: {
   mode: "login" | "register";
   googleEnabled?: boolean;
   showDemoLink?: boolean;
+  initialError?: string;
 }) {
   const router = useRouter();
-  const [error, setError] = useState("");
+  const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -113,6 +115,7 @@ export function AuthForm({
     const r = await authClient.signIn.social({
       provider: "google",
       callbackURL: "/auth/continue",
+      errorCallbackURL: "/login",
     });
     if (r?.error) {
       setError(r.error.message || "Connexion Google impossible");
