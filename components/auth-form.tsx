@@ -6,7 +6,13 @@ import { authClient } from "@/lib/auth/client";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { loginSchema, registerSchema } from "@/lib/validation/auth";
 
-export function AuthForm({ mode }: { mode: "login" | "register" }) {
+export function AuthForm({
+  mode,
+  googleEnabled = false,
+}: {
+  mode: "login" | "register";
+  googleEnabled?: boolean;
+}) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -92,7 +98,6 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       setBusy(false);
     }
   }
-  const googleEnabled = process.env.NEXT_PUBLIC_GOOGLE_AUTH_ENABLED === "true";
   return (
     <form className="form" onSubmit={submit}>
       <h1>{mode === "login" ? "Connexion" : "Créer un compte"}</h1>
