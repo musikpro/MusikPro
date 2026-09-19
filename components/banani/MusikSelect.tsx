@@ -20,6 +20,7 @@ export default function MusikSelect({
   className = "",
   showOptionLabels = true,
   showOptionDisplays = true,
+  showSelectionMark = true,
   portal = false,
   portalWidth,
   menuClassName = "",
@@ -33,6 +34,7 @@ export default function MusikSelect({
   className?: string;
   showOptionLabels?: boolean;
   showOptionDisplays?: boolean;
+  showSelectionMark?: boolean;
   portal?: boolean;
   portalWidth?: number;
   menuClassName?: string;
@@ -136,7 +138,7 @@ export default function MusikSelect({
             <span className="musik-select-option-display">{option.display}</span>
           )}
           {showOptionLabels && <span>{option.label}</span>}
-          {option.value === value && <Icon i="check" size={15} />}
+          {showSelectionMark && option.value === value && <Icon i="check" size={15} />}
         </button>
       ))}
     </div>

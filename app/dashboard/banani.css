@@ -3045,9 +3045,31 @@
   min-height: 42px;
   justify-content: center;
   padding: 6px;
+  border: 0;
+  border-radius: 0;
+  outline: 0;
+  appearance: none;
+  background: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+.quick-language-menu .musik-select-option:hover,
+.quick-language-menu .musik-select-option.is-highlighted,
+.quick-language-menu .musik-select-option[aria-selected="true"] {
+  background: transparent;
+  color: inherit;
+}
+.quick-language-menu .musik-select-option:hover .musik-select-option-display,
+.quick-language-menu .musik-select-option.is-highlighted .musik-select-option-display {
+  opacity: 0.78;
+  transform: scale(1.06);
 }
 .quick-language-menu .musik-select-option-display {
   font-size: 20px;
+  line-height: 1;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
 }
 .quick-language-menu .musik-select-option > svg {
   position: absolute;

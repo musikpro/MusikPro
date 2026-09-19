@@ -11,6 +11,7 @@ export default function QuickLanguageSelect({ compact = false }: { compact?: boo
       className={`quick-language-select ${compact ? "is-compact" : ""}`}
       ariaLabel="Langue de l’interface"
       showOptionLabels={false}
+      showSelectionMark={false}
       portal
       portalWidth={58}
       menuClassName="quick-language-menu"
