@@ -181,8 +181,8 @@ export default function UserDashboardMobile() {
         </div>
       </div>
 
-      {/* Tendances */}
-      <div className="px-4 mb-6">
+      {/* Les contenus éditoriaux d'exemple sont réservés au mode démo. */}
+      {demo.isDemo && <div className="px-4 mb-6">
         <div className="flex items-center justify-between mb-3">
           <h2 className="font-headings font-bold text-lg text-foreground">{t("Tendances")}</h2>
           <a
@@ -218,15 +218,14 @@ export default function UserDashboardMobile() {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
 
       {/* Download App Section */}
       <div className="px-4 mb-6">
         <StoreDownloadCard />
       </div>
 
-      {/* Témoignages */}
-      <div className="px-4 mb-6">
+      {demo.isDemo && <div className="px-4 mb-6">
         <h2 className="font-headings font-bold text-lg text-foreground mb-3">{t("Témoignages")}</h2>
         <div className="flex flex-col gap-3">
           {testimonials.map((testimonial, idx) => (
@@ -258,7 +257,7 @@ export default function UserDashboardMobile() {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
 
       <MobileBottomNav activeTab={t("Accueil")} />
     </div>

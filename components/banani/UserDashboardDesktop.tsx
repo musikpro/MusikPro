@@ -133,8 +133,8 @@ export default function UserDashboardDesktop() {
               <Icon i="chevron-right" size={20} className="text-primary-foreground/70" />
             </button>
 
-            {/* Concours Banner */}
-            <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-5 flex items-center gap-4">
+            {/* Les contenus éditoriaux d'exemple sont réservés au mode démo. */}
+            {demo.isDemo && <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-5 flex items-center gap-4">
               <span className="text-4xl">🏆</span>
               <div className="flex-1 min-w-0">
                 <p className="font-bold text-base text-foreground">{t("Concours — Voix d'Afrique")}</p>
@@ -155,7 +155,7 @@ export default function UserDashboardDesktop() {
               >
                 {t("Participer")}
               </button>
-            </div>
+            </div>}
 
             {/* Mes chansons */}
             <div>
@@ -186,8 +186,7 @@ export default function UserDashboardDesktop() {
               </div>
             </div>
 
-            {/* Testimonials Section */}
-            <div>
+            {demo.isDemo && <div>
               <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Témoignages")}</h2>
               <div className="grid grid-cols-3 gap-4">
                 {testimonials.map((testimonial, idx) => (
@@ -219,7 +218,7 @@ export default function UserDashboardDesktop() {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
           </div>
 
           {/* Right Column */}
@@ -245,8 +244,7 @@ export default function UserDashboardDesktop() {
 
             <StoreDownloadCard compact />
 
-            {/* Tendances */}
-            <div>
+            {demo.isDemo && <div>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-headings font-bold text-lg text-foreground">{t("Tendances")}</h2>
                 <a
@@ -282,10 +280,9 @@ export default function UserDashboardDesktop() {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
 
-            {/* Recent Activity */}
-            <div>
+            {demo.isDemo && <div>
               <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Activité récente")}</h2>
               <div className="bg-card border border-border rounded-xl overflow-hidden">
                 {[
@@ -317,7 +314,7 @@ export default function UserDashboardDesktop() {
                   </div>
                 ))}
               </div>
-            </div>
+            </div>}
           </div>
         </div>
       </div>
