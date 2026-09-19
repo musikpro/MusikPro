@@ -10,52 +10,28 @@ import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import Image from "./Image";
 
-const libraryTrends = [
-  {
-    id: 1,
-    title: "Mama Africa",
-    plays: "12k",
-    style: "Afrobeat",
-    img: "vibrant African music concert stage with warm orange lights, celebration atmosphere",
-    duration: "3:42",
-    artist: "Communauté Musika",
-    likes: 1204,
-  },
-  {
-    id: 2,
-    title: "Gloire à Toi",
-    plays: "15k",
-    style: "Gospel",
-    img: "joyful gospel choir in colorful African church, warm sunlight, celebration",
-    duration: "4:15",
-    artist: "Communauté Musika",
-    likes: 892,
-  },
-  {
-    id: 3,
-    title: "Mon Rêve",
-    plays: "8.5k",
-    style: "Amapiano",
-    img: "modern African music production studio with neon lights and African instruments",
-    duration: "3:28",
-    artist: "Communauté Musika",
-    likes: 654,
-  },
-  {
-    id: 4,
-    title: "Danse avec Moi",
-    plays: "11k",
-    style: "Zouglou",
-    img: "energetic African street dance scene with colorful clothing and joyful atmosphere",
-    duration: "3:56",
-    artist: "Communauté Musika",
-    likes: 743,
-  },
-];
-
 export default function SongPlayerScreen() {
   const demo = useDemo();
   const currentSong = demo.currentSong;
+
+  if (!currentSong) {
+    return (
+      <div className="bg-background flex min-h-full flex-col">
+        <MobileTopBar credits={demo.balance} />
+        <div className="flex flex-1 items-center justify-center px-4 py-12">
+          <div className="w-full max-w-md rounded-3xl border border-border bg-card px-6 py-10 text-center">
+            <Icon i="music-2" size={38} className="mx-auto mb-3 text-primary" />
+            <h1 className="font-headings text-xl font-bold text-foreground">Aucune chanson sélectionnée</h1>
+            <p className="mt-2 text-sm text-muted-foreground">Tes chansons réelles pourront être écoutées ici.</p>
+            <button type="button" onClick={() => demo.go("/dashboard/songs")} className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground">
+              Voir mes chansons
+            </button>
+          </div>
+        </div>
+        <MobileBottomNav activeTab={t("Mes chansons")} />
+      </div>
+    );
+  }
 
   return (
     <div className="bg-background flex flex-col h-full">
@@ -216,7 +192,7 @@ export default function SongPlayerScreen() {
           {t("Suivant")}
         </p>
         <div className="space-y-2">
-          {libraryTrends.slice(1, 3).map((song) => (
+          {demo.library.filter((song) => song.title !== currentSong.title).slice(0, 2).map((song) => (
             <div
               key={song.id}
               className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/30"
@@ -235,6 +211,11 @@ export default function SongPlayerScreen() {
               </span>
             </div>
           ))}
+          {demo.library.filter((song) => song.title !== currentSong.title).length === 0 && (
+            <div className="rounded-xl border border-border bg-card px-4 py-5 text-center">
+              <p className="text-sm font-semibold text-foreground">Aucune autre chanson</p>
+            </div>
+          )}
         </div>
       </div>
 

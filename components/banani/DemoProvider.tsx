@@ -15,11 +15,11 @@ import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 
 type DemoProfile = { name: string; email: string; location: string };
 
-function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
+function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile, initialBalance: number) {
   const router = useRouter();
   const browserPathname = usePathname();
   const isDemo = mode === "demo";
-  const defaults = getWorkspaceDefaults(isDemo);
+  const defaults = getWorkspaceDefaults(isDemo, initialBalance);
   const pathname = normalizeDashboardPath(browserPathname);
   const href = (route: string) => dashboardHref(route, isDemo);
   const [message, setMessage] = useState("");
@@ -38,7 +38,7 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     story: "",
     recipientName: "",
     recipientPronunciation: "",
-    lyrics: demoLyrics,
+    lyrics: isDemo ? demoLyrics : "",
     detail: "",
     "profile.name": initialProfile.name,
     "profile.email": initialProfile.email,
@@ -83,12 +83,12 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     "Qualité audio": true,
     "Assistant de téléchargement": true,
   });
-  const [selectedTitle, setSelectedTitle] = useState("Mama Africa");
+  const [selectedTitle, setSelectedTitle] = useState(isDemo ? "Mama Africa" : "");
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [packIndex, setPackIndex] = useState(1);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const library = [
+  const library = isDemo ? [
     ...demoLibrarySongs,
     ...demoDiscoverSongs
       .filter((s) => !demoLibrarySongs.some((l) => l.title === s.title))
@@ -106,12 +106,13 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
         id: i + 100,
         plays: String(s.plays),
         duration: "1:32",
-        artist: isDemo ? "Création de démonstration" : "Communauté MusikPro",
+        artist: "Création de démonstration",
         likes: 0,
       })),
-  ];
+  ] : [];
+  const songPacks = isDemo ? demoSongPacks : [];
   const favoriteSongs = favorites.map((title, i) => {
-    const original = demoFavoriteSongs.find((s) => s.title === title);
+    const original = isDemo ? demoFavoriteSongs.find((s) => s.title === title) : undefined;
     const own = songs.find((s) => s.title === title);
     const publicSong = library.find((s) => s.title === title);
     return {
@@ -124,7 +125,7 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     };
   });
   const owned = songs.find((s) => s.title === selectedTitle);
-  const currentSong = owned
+  const currentSong = selectedTitle ? (owned
     ? {
         id: owned.id,
         title: owned.title,
@@ -142,7 +143,7 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
         duration: "1:32",
         artist: profile.name,
         likes: 0,
-      });
+      })) : null;
   const go = (route: string) => {
     notify("");
     router.push(href(route));
@@ -178,10 +179,15 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     go("/dashboard/songs/player");
   };
   const nextSong = (direction: number) => {
+    if (!library.length) return;
     const index = library.findIndex((s) => s.title === selectedTitle);
     setSelectedTitle(library[(index + direction + library.length) % library.length].title);
   };
   const generateSong = () => {
+    if (!isDemo) {
+      notify("La génération musicale réelle doit être connectée avant d’ajouter une chanson.");
+      return;
+    }
     const title = `Ma chanson — ${choices.occasion}`;
     setSongs((prev) =>
       prev.some((s) => s.title === title)
@@ -228,6 +234,8 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     profile,
     setProfile,
     songs,
+    library,
+    songPacks,
     favorites,
     favoriteSongs,
     versionFavorites,
@@ -246,7 +254,7 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     setPlaying,
     packIndex,
     setPackIndex,
-    pack: demoSongPacks[packIndex],
+    pack: songPacks[packIndex] ?? null,
     paymentConfirmed,
     setPaymentConfirmed,
     generateSong,
@@ -267,12 +275,14 @@ export function DemoProvider({
   children,
   mode,
   initialProfile,
+  initialBalance = 0,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
   initialProfile: DemoProfile;
+  initialBalance?: number;
 }) {
-  const state = useDemoState(mode, initialProfile);
+  const state = useDemoState(mode, initialProfile, initialBalance);
   const [offline, setOffline] = useState(false);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);

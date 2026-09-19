@@ -20,7 +20,7 @@
 - **Fonts and typography:** DM Sans, graisses, tailles, interlignages et hiérarchie proviennent des mêmes composants et tokens dans les deux modes.
 - **Spacing and layout rhythm:** mêmes grilles, espacements, rayons, ombres et largeur de rail. Aucun débordement horizontal sur les sept viewports requis.
 - **Colors and visual tokens:** mêmes variables `--color-*`, gradients, bordures et états sémantiques. Seuls le nombre de crédits et les textes d’état changent.
-- **Image quality and asset fidelity:** mêmes images de tendances et avatars. L’emoji du concours a été remplacé par l’icône fonctionnelle `Trophy` de la bibliothèque commune.
+- **Image quality and asset fidelity:** les images éditoriales et portraits fictifs restent réservés au mode démo. Le compte réel utilise les initiales de la personne et des états vides dans les mêmes cartes.
 - **Copy and content:** les libellés de navigation et de cartes sont identiques ; le nom, le solde, les chansons et les activités restent propres au compte.
 
 ## Full-view comparison evidence
@@ -35,6 +35,7 @@ La carte « Votre solde / Chansons disponibles » a été comparée isolément :
 
 - Navigation réelle et démo sur Accueil, Découvrir, Mes chansons, Favoris, Packs, Profil, Paramètres et le parcours de création.
 - Affichage des états vide et rempli.
+- Isolation des fixtures : aucune chanson, tendance, collection, transaction, parole, notification, concours ou photo de profil fictive n’est injectée dans un compte réel.
 - Absence de scroll horizontal global aux largeurs 320, 360, 390, 430, 768, 1024 et 1440 px.
 - Console : aucun défaut applicatif observé. Chrome signale seulement l’attribut `bis_skin_checked` injecté par une extension locale.
 
@@ -50,6 +51,9 @@ La carte « Votre solde / Chansons disponibles » a été comparée isolément :
 - [x] Composant de solde partagé.
 - [x] Sections communes aux deux modes.
 - [x] Activité réelle alimentée par les chansons du compte, avec état vide.
+- [x] Solde réel alimenté par Neon, sans valeur de démonstration.
+- [x] Catalogues fictifs retirés du tableau de bord propriétaire.
+- [x] Packs, historique, bibliothèque, tendances, témoignages, concours et paroles de démonstration isolés sous `/demo`.
 - [x] Navigation technique retirée du mode démo.
 - [x] Responsive et absence de débordement vérifiés.
 

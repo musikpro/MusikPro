@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { demoCurrencies, demoSongPacks, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
+import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
@@ -57,8 +57,16 @@ export default function CreationPackScreen() {
           </div>
 
           <div className="creation-pack-list" role="radiogroup" aria-label="Packs de chansons disponibles">
-            {demoSongPacks.map((pack) => {
-              const selected = demo.pack.id === pack.id;
+            {demo.songPacks.length === 0 && (
+              <div className="creation-pack-card is-empty">
+                <span className="creation-pack-card-main">
+                  <strong>{t("Aucun pack disponible")}</strong>
+                  <small>{t("Les packs réels publiés apparaîtront ici.")}</small>
+                </span>
+              </div>
+            )}
+            {demo.songPacks.map((pack) => {
+              const selected = demo.pack?.id === pack.id;
               return (
                 <button
                   type="button"
@@ -66,7 +74,7 @@ export default function CreationPackScreen() {
                   aria-checked={selected}
                   data-demo-ready="true"
                   key={pack.id}
-                  onClick={() => demo.setPackIndex(demoSongPacks.findIndex((item) => item.id === pack.id))}
+                  onClick={() => demo.setPackIndex(demo.songPacks.findIndex((item) => item.id === pack.id))}
                   className={`creation-pack-card${selected ? " is-selected" : ""}`}
                 >
                   <span className="creation-pack-card-main">
@@ -121,10 +129,15 @@ export default function CreationPackScreen() {
 
       <div className="creation-mobile-cta creation-pack-cta">
         <div className="creation-pack-total">
-          <span>{demo.pack.name}</span>
-          <strong>{formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}</strong>
+          <span>{demo.pack?.name ?? t("Aucun pack sélectionné")}</span>
+          <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency) : "—"}</strong>
         </div>
-        <button type="button" data-demo-ready="true" onClick={() => demo.go("/dashboard/payment-preview/chariow")}>
+        <button
+          type="button"
+          data-demo-ready="true"
+          disabled={!demo.pack}
+          onClick={() => demo.pack && demo.go("/dashboard/payment-preview/chariow")}
+        >
           {t("Aller au paiement")}
           <Icon i="arrow-right" size={19} />
         </button>

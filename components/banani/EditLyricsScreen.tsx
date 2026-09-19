@@ -60,7 +60,7 @@ export default function EditLyricsScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() => demo.field("lyrics", demoLyrics)}
+            onClick={() => demo.field("lyrics", demo.isDemo ? demoLyrics : "")}
             className="flex-1 py-2 bg-secondary border border-primary/30 text-primary font-semibold text-xs rounded-lg flex items-center justify-center gap-1"
           >
             <Icon i="undo-2" size={14} />

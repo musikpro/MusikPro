@@ -69,6 +69,8 @@ const testimonials = [
 
 export default function UserDashboardDesktop() {
   const demo = useDemo();
+  const visibleTrends = demo.isDemo ? trendingCards : [];
+  const visibleTestimonials = demo.isDemo ? testimonials : [];
   const recentSongs = demo.songs.slice(0, 2).map((song) => ({
     title: song.title,
     style: song.style,
@@ -110,7 +112,7 @@ export default function UserDashboardDesktop() {
               className="relative"
             >
               <Icon i="bell" size={20} className="text-muted-foreground" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
+              {demo.isDemo && <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />}
             </button>
             <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-9 h-9 rounded-full" />
           </div>
@@ -144,17 +146,24 @@ export default function UserDashboardDesktop() {
                 <Icon i="trophy" size={25} />
               </span>
               <div className="flex-1 min-w-0">
-                <p className="font-bold text-base text-foreground">{t("Concours — Voix d'Afrique")}</p>
-                <p className="text-sm text-muted-foreground">{t("Se termine le 31 juillet · 50 000 FCFA")}</p>
+                <p className="font-bold text-base text-foreground">
+                  {demo.isDemo ? t("Concours — Voix d'Afrique") : t("Aucun concours en cours")}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {demo.isDemo
+                    ? t("Se termine le 31 juillet · 50 000 FCFA")
+                    : t("Les prochains concours publiés apparaîtront ici.")}
+                </p>
               </div>
               <button
                 type="button"
                 data-demo-ready
                 onClick={() => demo.notify("Cette fonctionnalité sera bientôt disponible.")}
-                aria-label="Participer au concours"
-                className="text-sm font-bold text-primary bg-secondary px-5 py-2.5 rounded-lg flex-shrink-0"
+                aria-label={demo.isDemo ? "Participer au concours" : "Aucun concours disponible"}
+                disabled={!demo.isDemo}
+                className="text-sm font-bold text-primary bg-secondary px-5 py-2.5 rounded-lg flex-shrink-0 disabled:cursor-not-allowed disabled:opacity-55"
               >
-                {t("Participer")}
+                {demo.isDemo ? t("Participer") : t("Indisponible")}
               </button>
             </div>
 
@@ -190,7 +199,14 @@ export default function UserDashboardDesktop() {
             <div>
               <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Témoignages")}</h2>
               <div className="grid grid-cols-3 gap-4">
-                {testimonials.map((testimonial, idx) => (
+                {visibleTestimonials.length === 0 && (
+                  <div className="col-span-3 rounded-xl border border-border bg-card px-6 py-8 text-center">
+                    <Icon i="message-square" size={26} className="mx-auto mb-2 text-primary" />
+                    <p className="font-semibold text-foreground">Aucun témoignage publié</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Les témoignages réels apparaîtront ici.</p>
+                  </div>
+                )}
+                {visibleTestimonials.map((testimonial, idx) => (
                   <div key={idx} className="bg-card border border-border rounded-xl p-4">
                     {/* Rating */}
                     <div className="flex gap-0.5 mb-3">
@@ -243,7 +259,14 @@ export default function UserDashboardDesktop() {
                 </a>
               </div>
               <div className="flex flex-col gap-3">
-                {trendingCards.map((tc) => (
+                {visibleTrends.length === 0 && (
+                  <div className="rounded-xl border border-border bg-card px-5 py-7 text-center">
+                    <Icon i="headphones" size={24} className="mx-auto mb-2 text-primary" />
+                    <p className="text-sm font-semibold text-foreground">Aucune tendance disponible</p>
+                    <p className="mt-1 text-xs text-muted-foreground">Les chansons publiées apparaîtront ici.</p>
+                  </div>
+                )}
+                {visibleTrends.map((tc) => (
                   <div key={tc.title} className="rounded-xl overflow-hidden relative h-28">
                     <Image ar="16:9" prompt={tc.img} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">

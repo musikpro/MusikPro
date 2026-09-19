@@ -1,7 +1,7 @@
 "use client";
 const t = (text: string) => text;
 import Image from "next/image";
-import { demoCurrencies, demoSongPacks, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
+import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Packs - Acheter des Chansons";
@@ -35,6 +35,7 @@ const transactionHistory = [
 
 export default function CreditsMobile() {
   const demo = useDemo();
+  const visibleHistory = demo.isDemo ? transactionHistory : [];
   return (
     <div className="bg-background flex flex-col">
       <MobileTopBar credits={demo.balance} />
@@ -104,14 +105,21 @@ export default function CreditsMobile() {
           />
         </div>
         <div className="pack-grid">
-          {demoSongPacks.map((pack) => {
-            const isSelected = demo.pack.id === pack.id;
+          {demo.songPacks.length === 0 && (
+            <div className="col-span-2 rounded-xl border border-border bg-card px-5 py-8 text-center">
+              <Icon i="package-open" size={26} className="mx-auto mb-2 text-primary" />
+              <p className="font-semibold text-foreground">Aucun pack disponible</p>
+              <p className="mt-1 text-sm text-muted-foreground">Les packs publiés par MusikPro apparaîtront ici.</p>
+            </div>
+          )}
+          {demo.songPacks.map((pack) => {
+            const isSelected = demo.pack?.id === pack.id;
             return (
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.setPackIndex(demoSongPacks.findIndex((p) => p.id === pack.id))}
-                aria-pressed={demo.pack.id === pack.id}
+                onClick={() => demo.setPackIndex(demo.songPacks.findIndex((p) => p.id === pack.id))}
+                aria-pressed={demo.pack?.id === pack.id}
                 key={pack.id}
                 className={`demo-choice-card pack-choice-card relative rounded-xl border transition-all ${
                   isSelected ? "bg-secondary border-primary shadow-md" : "bg-card border-border"
@@ -144,7 +152,7 @@ export default function CreditsMobile() {
                     {formatDemoPackPrice(pack.priceValue, demo.choices.currency)}
                   </span>
                   <span className="pack-grid-card-status">
-                    {demo.pack.id === pack.id ? (
+                    {demo.pack?.id === pack.id ? (
                       <>
                         <Icon i="check" size={15} /> <span>Sélectionné</span>
                       </>
@@ -179,8 +187,9 @@ export default function CreditsMobile() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/payment-preview")}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2"
+          onClick={() => demo.pack && demo.go("/dashboard/payment-preview")}
+          disabled={!demo.pack}
+          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-55"
         >
           <Icon i="zap" size={16} />
           {t("Acheter des chansons")}
@@ -212,7 +221,14 @@ export default function CreditsMobile() {
       <div className="pack-history-section px-4 pt-5 pb-6">
         <h2 className="font-bold text-base text-foreground mb-3">{t("Historique")}</h2>
         <div className="flex flex-col gap-0 bg-card border border-border rounded-xl overflow-hidden">
-          {transactionHistory.map((tx, i) => (
+          {visibleHistory.length === 0 && (
+            <div className="px-5 py-7 text-center">
+              <Icon i="receipt-text" size={24} className="mx-auto mb-2 text-primary" />
+              <p className="font-semibold text-foreground">Aucune opération</p>
+              <p className="mt-1 text-sm text-muted-foreground">Les achats et utilisations réels apparaîtront ici.</p>
+            </div>
+          )}
+          {visibleHistory.map((tx, i) => (
             <div key={i} className={`flex items-center justify-between p-3 ${i > 0 ? "border-t border-border" : ""}`}>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">{tx.action}</p>

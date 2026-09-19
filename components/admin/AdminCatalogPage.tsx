@@ -31,6 +31,8 @@ export default function AdminCatalogPage({
   items,
   action,
   sourceNote,
+  emptyTitle = "Aucun résultat",
+  emptyDescription = "Modifie la recherche ou le statut sélectionné.",
 }: {
   eyebrow: string;
   title: string;
@@ -39,6 +41,8 @@ export default function AdminCatalogPage({
   items: AdminCatalogItem[];
   action?: { href: string; label: string };
   sourceNote?: string;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | AdminCatalogItem["status"]>("all");
@@ -115,8 +119,8 @@ export default function AdminCatalogPage({
       ) : (
         <div className="admin-empty-state admin-catalog-empty">
           <Icon i="search-x" size={24} />
-          <strong>Aucun résultat</strong>
-          <p>Modifie la recherche ou le statut sélectionné.</p>
+          <strong>{emptyTitle}</strong>
+          <p>{emptyDescription}</p>
         </div>
       )}
     </AdminPage>

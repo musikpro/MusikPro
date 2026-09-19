@@ -87,6 +87,10 @@ export default function ReviewLyricsScreen() {
           type="button"
           data-demo-ready="true"
           onClick={() => {
+            if (!demo.isDemo) {
+              demo.notify("La génération de paroles doit être connectée avant d’ajouter du contenu réel.");
+              return;
+            }
             const extendedLyrics = `${demo.fields.lyrics}\nUn nouveau refrain accompagne notre histoire.`;
             const parsed = demoLyricsSchema.safeParse(extendedLyrics);
             if (!parsed.success) {

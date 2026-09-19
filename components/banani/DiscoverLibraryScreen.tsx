@@ -14,49 +14,10 @@ import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import Image from "./Image";
 
-const libraryTrends = [
-  {
-    title: "Mama Africa",
-    plays: "12k",
-    style: "Afrobeat",
-    img: "vibrant African music concert stage with warm orange lights, celebration atmosphere",
-  },
-  {
-    title: "Gloire à Toi",
-    plays: "15k",
-    style: "Gospel",
-    img: "joyful gospel choir in colorful African church, warm sunlight, celebration",
-  },
-  {
-    title: "Mon Rêve",
-    plays: "8.5k",
-    style: "Amapiano",
-    img: "modern African music production studio with neon lights and African instruments",
-  },
-  {
-    title: "Danse avec Moi",
-    plays: "11k",
-    style: "Zouglou",
-    img: "energetic African street dance scene with colorful clothing and joyful atmosphere",
-  },
-  {
-    title: "Cœur Sincère",
-    plays: "6.3k",
-    style: "R&B",
-    img: "intimate African musician performing with acoustic guitar under warm stage lighting",
-  },
-  {
-    title: "Unité Africaine",
-    plays: "9.7k",
-    style: "Reggae",
-    img: "peaceful African landscape sunset with silhouettes of musicians playing reggae",
-  },
-];
-
 export default function DiscoverLibraryScreen() {
   const demo = useDemo();
   const [search, setSearch] = useState("");
-  const results = libraryTrends.filter((song) =>
+  const results = demo.library.filter((song) =>
     matchesSongSearch(search, song.title, song.style),
   );
   return (
@@ -94,9 +55,17 @@ export default function DiscoverLibraryScreen() {
       <div className="flex-1 px-4 pb-6 overflow-y-auto">
         <div className="grid grid-cols-2 gap-3">
           {results.length === 0 && (
-            <p role="status" className="text-sm text-muted-foreground">
-              Aucune chanson trouvée.
-            </p>
+            <div role="status" className="col-span-2 rounded-xl border border-border bg-card px-5 py-8 text-center">
+              <Icon i="library" size={26} className="mx-auto mb-2 text-primary" />
+              <p className="font-semibold text-foreground">
+                {search ? "Aucune chanson trouvée" : "Bibliothèque vide"}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {search
+                  ? "Essaie une autre recherche."
+                  : "Les chansons réellement publiées apparaîtront ici."}
+              </p>
+            </div>
           )}
           {results.map((song) => (
             <div

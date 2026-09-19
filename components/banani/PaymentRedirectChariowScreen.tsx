@@ -10,6 +10,20 @@ import Icon from "./Icon";
 
 export default function PaymentRedirectScreen() {
   const demo = useDemo();
+  if (!demo.pack) {
+    return (
+      <div className="bg-surface flex min-h-full items-center justify-center px-4 py-12">
+        <div className="w-full max-w-md rounded-3xl border border-border bg-card px-6 py-10 text-center">
+          <Icon i="package-open" size={36} className="mx-auto mb-3 text-primary" />
+          <h1 className="font-headings text-xl font-bold text-foreground">Aucun pack sélectionné</h1>
+          <p className="mt-2 text-sm text-muted-foreground">Choisis un pack réel avant de continuer vers le paiement.</p>
+          <button type="button" onClick={() => demo.go("/dashboard/create/pack")} className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground">
+            Voir les packs
+          </button>
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="bg-surface flex flex-col h-full justify-between">
       {/* Content - Centered */}

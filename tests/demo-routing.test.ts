@@ -41,8 +41,8 @@ describe("demo routing", () => {
   });
 
   it("starts a real account with an empty personal workspace", () => {
-    expect(getWorkspaceDefaults(false)).toEqual({
-      balance: 0,
+    expect(getWorkspaceDefaults(false, 7)).toEqual({
+      balance: 7,
       songs: [],
       favorites: [],
       versionFavorites: [],

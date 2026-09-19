@@ -183,12 +183,12 @@ export default function AdminDashboard({ data }: { data: AdminDashboardData }) {
           </div>
           <ul className="admin-coverage-list">
             <li>
-              <span className="is-ready">
-                <Icon i="circle-check" size={16} />
+              <span className={data.plans > 0 ? "is-ready" : "is-waiting"}>
+                <Icon i={data.plans > 0 ? "circle-check" : "clock-3"} size={16} />
               </span>
               <div>
                 <strong>Packs et soldes</strong>
-                <small>Données disponibles</small>
+                <small>{data.plans > 0 ? "Données disponibles" : "Aucun pack réel enregistré"}</small>
               </div>
             </li>
             <li>

@@ -56,7 +56,7 @@ export default function MobileTopBar({ credits = 0 }) {
             className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center relative"
           >
             <Icon i="bell" size={18} className="text-foreground" />
-            <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full"></div>
+            {demo.isDemo && <div className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />}
           </button>
         </div>
       </div>

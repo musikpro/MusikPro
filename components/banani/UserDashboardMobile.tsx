@@ -71,6 +71,8 @@ const testimonials = [
 
 export default function UserDashboardMobile() {
   const demo = useDemo();
+  const visibleTrends = demo.isDemo ? trendingSongs : [];
+  const visibleTestimonials = demo.isDemo ? testimonials : [];
   const [launching, setLaunching] = useState(false);
   const openCreator = () => {
     if (launching) return;
@@ -133,8 +135,12 @@ export default function UserDashboardMobile() {
             <Icon i="trophy" size={23} />
           </span>
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-foreground">{t("Concours — Voix d'Afrique")}</p>
-            <p className="text-xs text-muted-foreground">{t("Se termine le 31 juillet · 50 000 FCFA")}</p>
+            <p className="font-bold text-sm text-foreground">
+              {demo.isDemo ? t("Concours — Voix d'Afrique") : t("Aucun concours en cours")}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {demo.isDemo ? t("Se termine le 31 juillet · 50 000 FCFA") : t("Les prochains concours apparaîtront ici.")}
+            </p>
           </div>
           <button
             type="button"
@@ -198,7 +204,14 @@ export default function UserDashboardMobile() {
           </a>
         </div>
         <div className="grid grid-cols-2 gap-2.5">
-          {trendingSongs.map((t2) => (
+          {visibleTrends.length === 0 && (
+            <div className="col-span-2 rounded-xl border border-border bg-card px-5 py-7 text-center">
+              <Icon i="headphones" size={24} className="mx-auto mb-2 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Aucune tendance disponible</p>
+              <p className="mt-1 text-xs text-muted-foreground">Les chansons publiées apparaîtront ici.</p>
+            </div>
+          )}
+          {visibleTrends.map((t2) => (
             <div key={t2.title} className="rounded-xl overflow-hidden relative">
               <Image ar="1:1" prompt={t2.img} className="w-full" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
@@ -229,7 +242,14 @@ export default function UserDashboardMobile() {
       <div className="px-4 mb-6">
         <h2 className="font-headings font-bold text-lg text-foreground mb-3">{t("Témoignages")}</h2>
         <div className="flex flex-col gap-3">
-          {testimonials.map((testimonial, idx) => (
+          {visibleTestimonials.length === 0 && (
+            <div className="rounded-xl border border-border bg-card px-5 py-7 text-center">
+              <Icon i="message-square" size={24} className="mx-auto mb-2 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Aucun témoignage publié</p>
+              <p className="mt-1 text-xs text-muted-foreground">Les témoignages réels apparaîtront ici.</p>
+            </div>
+          )}
+          {visibleTestimonials.map((testimonial, idx) => (
             <div key={idx} className="bg-card border border-border rounded-xl p-4">
               {/* Rating */}
               <div className="flex gap-0.5 mb-2">
