@@ -1,7 +1,7 @@
 {
   "project": "MusikPro",
   "source": "banani-mcp",
-  "importedAt": "2026-09-18T09:48:01.278Z",
+  "importedAt": "2026-09-19T01:56:45.177Z",
   "screens": [
     {
       "id": "QMj5OQRWpKXU/screens/ContactSupportScreen.jsx",
@@ -1014,6 +1014,189 @@
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
       "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/ForgotPassword.jsx",
+      "name": "Mot de passe oublié",
+      "route": "/forgot-password",
+      "auth": "public",
+      "purpose": "Demander un lien de réinitialisation de mot de passe",
+      "states": [
+        "default"
+      ],
+      "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Retour à la connexion",
+        "Mot de passe oublié ?",
+        "Entrez votre adresse email ci-dessous. Nous vous enverrons un lien pour réinitialiser votre mot de passe.",
+        "Adresse email",
+        "votre@email.com",
+        "Envoyer le lien de réinitialisation",
+        "Vérifiez aussi votre dossier spam si vous ne recevez pas l'email.",
+        "ou",
+        "Autres options",
+        "Via Google Authenticator",
+        "Contacter le support"
+      ],
+      "interactions": [
+        "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
+      ],
+      "dataNeeds": [
+        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
+      ],
+      "integrations": [
+        "Google Authenticator — option visible; enrôlement et validation NON VÉRIFIÉS dans Banani",
+        "E-mail transactionnel — intention visible; fournisseur et livraison NON VÉRIFIÉS dans Banani"
+      ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/LoginPageMobile.jsx",
+      "name": "Page de connexion (Mobile)",
+      "route": "/login",
+      "auth": "public",
+      "purpose": "Connexion au compte MusikPro — variante mobile",
+      "states": [
+        "default"
+      ],
+      "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Connexion",
+        "Connectez-vous à votre compte Musika",
+        "S'inscrire avec Google",
+        "OU",
+        "Email",
+        "Votre adresse email...",
+        "Mot de passe",
+        "••••••••",
+        "Se souvenir de moi",
+        "Mot de passe oublié ?",
+        "Se connecter",
+        "Pas de compte ? ",
+        "Créer un compte"
+      ],
+      "interactions": [
+        "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
+      ],
+      "dataNeeds": [
+        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
+      ],
+      "integrations": [
+        "Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"
+      ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/SignupPageMobile.jsx",
+      "name": "Créer un compte (Mobile)",
+      "route": "/register",
+      "auth": "public",
+      "purpose": "Création d’un compte MusikPro — variante mobile",
+      "states": [
+        "default"
+      ],
+      "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Créer un compte",
+        "Rejoignez Musika et créez votre première chanson",
+        "S'inscrire avec Google",
+        "OU",
+        "Adresse email",
+        "votre@email.com",
+        "Mot de passe",
+        "••••••••",
+        "Minimum 8 caractères avec majuscules et chiffres",
+        "Continuer",
+        "En créant un compte, vous acceptez nos ",
+        "conditions d'utilisation",
+        "et notre ",
+        "politique de confidentialité",
+        "Vous avez déjà un compte ? ",
+        "Se connecter"
+      ],
+      "interactions": [
+        "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
+      ],
+      "dataNeeds": [
+        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
+      ],
+      "integrations": [
+        "Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"
+      ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/TwoFactorAuth.jsx",
+      "name": "Vérification Double Facteur (2FA)",
+      "route": "/two-factor",
+      "auth": "public",
+      "purpose": "Vérification d’un code à six chiffres et choix d’une méthode 2FA",
+      "states": [
+        "default"
+      ],
+      "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Retour",
+        "Vérification en deux étapes",
+        "Un code de vérification a été envoyé par email à",
+        "jean@example.com",
+        "Entrez le code à 6 chiffres",
+        "Le code expire dans",
+        "04:32",
+        "Vérifier",
+        "Ne pas recevoir le code ?",
+        "Renvoyer le code",
+        "Autres méthodes de vérification",
+        "Envoyer par email",
+        "Google Authenticator"
+      ],
+      "interactions": [
+        "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
+      ],
+      "dataNeeds": [
+        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
+      ],
+      "integrations": [
+        "Google Authenticator — option visible; enrôlement et validation NON VÉRIFIÉS dans Banani",
+        "E-mail transactionnel — intention visible; fournisseur et livraison NON VÉRIFIÉS dans Banani"
+      ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/LoginPageSingle.jsx",
+      "name": "Page de connexion",
+      "route": "/login",
+      "auth": "public",
+      "purpose": "Connexion au compte MusikPro — variante bureau",
+      "states": [
+        "default"
+      ],
+      "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
+      "viewport": "desktop",
+      "keyElements": [
+        "Connexion",
+        "Connectez-vous à votre compte Musika",
+        "S'inscrire avec Google",
+        "OU",
+        "Email",
+        "Votre adresse email...",
+        "Mot de passe",
+        "••••••••",
+        "Se souvenir de moi",
+        "Mot de passe oublié ?",
+        "Se connecter",
+        "Pas de compte ? ",
+        "Créer un compte"
+      ],
+      "interactions": [
+        "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
+      ],
+      "dataNeeds": [
+        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
+      ],
+      "integrations": [
+        "Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"
+      ]
     }
   ]
 }
