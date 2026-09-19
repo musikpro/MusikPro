@@ -1,7 +1,7 @@
 "use client";
 const t = (text: string) => text;
 
-export const displayName = "Étape 4 — Génération des paroles (Animation)";
+export const displayName = "Étape 6 — Génération des paroles (Animation)";
 export const screenSize = "mobile";
 
 import Icon from "./Icon";
@@ -10,7 +10,7 @@ import CreationTopNav from "./CreationTopNav";
 export default function StepGeneratingLyrics() {
   return (
     <div className="bg-surface flex flex-col min-h-full relative overflow-hidden">
-      <CreationTopNav backHref="/dashboard/create/parameters" current={5} />
+      <CreationTopNav backHref="/dashboard/create/parameters" current={6} total={8} />
       {/* Animated Background Elements */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <div className="absolute w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse"></div>
@@ -32,21 +32,13 @@ export default function StepGeneratingLyrics() {
                 animation: "pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
               }}
             ></div>
-            <Icon
-              i="music-2"
-              size={40}
-              className="text-primary relative z-10"
-            />
+            <Icon i="music-2" size={40} className="text-primary relative z-10" />
           </div>
         </div>
 
         {/* Main Title */}
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-2">
-          {t("Génération en cours...")}
-        </h1>
-        <p className="text-sm text-muted-foreground mb-8">
-          {t("MusikPro crée tes paroles uniques")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Génération en cours...")}</h1>
+        <p className="text-sm text-muted-foreground mb-8">{t("MusikPro crée tes paroles uniques")}</p>
 
         {/* Progress Bars - Animated Lyrics Being Generated */}
         <div className="w-full space-y-4 mb-10">
@@ -119,14 +111,12 @@ export default function StepGeneratingLyrics() {
         {/* Status */}
         <div className="flex items-center gap-2 text-xs text-muted-foreground mb-6">
           <div className="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
-          {t("Étape 5 sur 7 — Génération")}
+          {t("Étape 6 sur 8 — Génération")}
         </div>
 
         {/* Tip */}
         <div className="bg-secondary/30 rounded-lg px-3 py-2 w-full">
-          <p className="text-xs text-foreground">
-            💡 {t("Les paroles seront personnalisées pour ton moment spécial")}
-          </p>
+          <p className="text-xs text-foreground">💡 {t("Les paroles seront personnalisées pour ton moment spécial")}</p>
         </div>
       </div>
 

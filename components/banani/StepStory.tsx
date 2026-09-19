@@ -1,85 +1,58 @@
 "use client";
-import { useEffect, useState } from "react";
-const t = (text: string) => text;
-import { useDemo } from "./DemoProvider";
 
-import DemoField from "./DemoField";
+import { useEffect, useState } from "react";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
-import { demoRecipientSchema, demoStorySchema } from "@/lib/validation/musikpro-demo";
+import { demoStorySchema } from "@/lib/validation/musikpro-demo";
+import CreationTopNav from "./CreationTopNav";
+import DemoField from "./DemoField";
+import { useDemo } from "./DemoProvider";
+import Icon from "./Icon";
+import StepProgressBar from "./StepProgressBar";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
 export const screenSize = "mobile";
 
-import StepProgressBar from "./StepProgressBar";
-import Icon from "./Icon";
-import CreationTopNav from "./CreationTopNav";
-import MusikSelect from "./MusikSelect";
-
-const recipientRelations = [
-  "Ma femme",
-  "Mon mari",
-  "Ma copine",
-  "Mon copain",
-  "Ma mère",
-  "Mon père",
-  "Mes enfants",
-  "Mon frère",
-  "Ma sœur",
-  "Un ami",
-  "Une amie",
-  "Pour moi",
-  "Une personne qui compte",
-] as const;
-
-function suggestPronunciation(name: string) {
-  const vowels = "aeiouyàâäéèêëïîôöùûüÿœ";
-  return name
-    .trim()
-    .split(/\s+/)
-    .map((word) => word.replace(new RegExp(`([${vowels}]+)(?=[^${vowels}]+[${vowels}])`, "gi"), "$1-"))
-    .join(" ");
-}
-
 export default function StepStory() {
   const demo = useDemo();
   const [storyError, setStoryError] = useState("");
-  const [recipientError, setRecipientError] = useState("");
-  const [recipientOpen, setRecipientOpen] = useState(false);
   const storyWordCount = demo.fields.story.trim().split(/\s+/).filter(Boolean).length;
+
   useEffect(() => {
     if (!storyError) return;
     const timer = window.setTimeout(() => setStoryError(""), 4200);
     return () => window.clearTimeout(timer);
   }, [storyError]);
-  useEffect(() => {
-    if (!recipientError) return;
-    const timer = window.setTimeout(() => setRecipientError(""), 4200);
-    return () => window.clearTimeout(timer);
-  }, [recipientError]);
+
+  const continueToRecipient = () => {
+    const parsed = demoStorySchema.safeParse(demo.fields.story);
+    if (!parsed.success) {
+      setStoryError(parsed.error.issues[0].message);
+      return;
+    }
+    setStoryError("");
+    demo.field("story", parsed.data);
+    demo.go("/dashboard/create/recipient");
+  };
 
   return (
     <div className="bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create" current={2} />
+      <CreationTopNav backHref="/dashboard/create" current={2} total={8} />
 
-      {/* Progress */}
       <div className="px-4 pt-4 pb-2">
-        <StepProgressBar current={2} total={7} />
+        <StepProgressBar current={2} total={8} />
       </div>
 
-      {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
           {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
         </span>
       </div>
 
-      {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Raconte ton histoire")}</h1>
-        <p className="text-sm text-muted-foreground">{t("Décris ce que tu veux dans ta chanson")}</p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">Raconte ton histoire</h1>
+        <p className="text-sm text-muted-foreground">Décris ce que tu veux dans ta chanson</p>
       </div>
 
-      {/* Text area */}
       <div className="px-4 mb-4">
         <div className="bg-card border border-border rounded-xl p-4 relative" style={{ minHeight: 160 }}>
           <DemoField
@@ -115,149 +88,38 @@ export default function StepStory() {
         )}
       </div>
 
-      <div className="story-recipient-section px-4 mb-4">
-        <div className={`story-recipient-card ${recipientOpen ? "is-open" : ""}`}>
-          <button
-            type="button"
-            className="story-recipient-toggle"
-            aria-expanded={recipientOpen}
-            aria-controls="story-recipient-fields"
-            onClick={() => setRecipientOpen((open) => !open)}
-          >
-            <span className="story-recipient-heading-icon">
-              <Icon i="user-round" size={16} />
-            </span>
-            <span className="story-recipient-heading-copy">
-              <h2>À qui est destinée la chanson ?</h2>
-              <p>
-                {recipientOpen
-                  ? "Renseigne son nom et votre lien."
-                  : "Appuie pour ajouter son nom et préserver sa prononciation."}
-              </p>
-            </span>
-            <span className="story-recipient-chevron">
-              <Icon i="chevron-down" size={17} />
-            </span>
-          </button>
-
-          {recipientOpen && (
-            <div id="story-recipient-fields" className="story-recipient-fields">
-              <div className="story-name-row">
-                <label className="story-recipient-field">
-                  <span>Nom de la personne</span>
-                  <input
-                    type="text"
-                    value={demo.fields.recipientName}
-                    maxLength={100}
-                    autoComplete="name"
-                    placeholder="Ex. Aïcha"
-                    onChange={(event) => {
-                      const name = event.target.value;
-                      demo.field("recipientName", name);
-                      demo.field("recipientPronunciation", suggestPronunciation(name));
-                      setRecipientError("");
-                    }}
-                  />
-                </label>
-                <label className="story-recipient-field is-pronunciation">
-                  <span>Prononciation suggérée</span>
-                  <input
-                    type="text"
-                    value={demo.fields.recipientPronunciation}
-                    maxLength={160}
-                    placeholder="Aï-cha"
-                    onChange={(event) => demo.field("recipientPronunciation", event.target.value)}
-                  />
-                </label>
-              </div>
-
-              <div className="story-relation-field">
-                <span>Lien avec cette personne</span>
-                <MusikSelect
-                  className="story-relation-select"
-                  icon="heart-handshake"
-                  ariaLabel="Lien avec cette personne"
-                  placeholder="Sélectionner une relation"
-                  value={demo.choices.recipientRelation}
-                  onChange={(value) => {
-                    demo.choose("recipientRelation", value);
-                    setRecipientError("");
-                  }}
-                  options={recipientRelations.map((relation) => ({ value: relation, label: relation }))}
-                />
-              </div>
-              {recipientError && (
-                <p className="story-field-error" role="alert">
-                  <Icon i="circle-alert" size={15} />
-                  {recipientError}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Voice hint */}
       <div className="px-4 mb-4">
         <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-start gap-3">
-          <span className="text-lg">🎙️</span>
+          <Icon i="mic" size={19} className="text-primary flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm font-semibold text-foreground">{t("Tu peux aussi parler !")}</p>
+            <p className="text-sm font-semibold text-foreground">Tu peux aussi parler !</p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {t("Appuie sur le micro et parle librement. L'IA transcrit et améliore automatiquement ton texte.")}
+              Appuie sur le micro et parle librement. L’IA transcrit et améliore automatiquement ton texte.
             </p>
-            <p className="text-xs text-primary font-medium mt-1">{t("Durée recommandée : 30 à 60 secondes")}</p>
+            <p className="text-xs text-primary font-medium mt-1">Durée recommandée : 30 à 60 secondes</p>
           </div>
         </div>
       </div>
 
-      {/* Tip */}
       <div className="px-4 mb-6">
         <div className="bg-secondary/60 rounded-xl px-4 py-3">
           <p className="text-sm text-foreground leading-relaxed">
-            💡 <span className="font-semibold">{t("Astuce :")}</span>{" "}
-            {t(
-              "Plus tu donnes de détails, plus ta chanson sera personnalisée ! Mentionne les prénoms, souvenirs, traits de caractère...",
-            )}
+            <Icon i="lightbulb" size={16} className="inline-block text-primary mr-1" />
+            <span className="font-semibold">Astuce :</span> Plus tu donnes de détails, plus ta chanson sera
+            personnalisée. Mentionne les souvenirs et les traits de caractère importants.
           </p>
         </div>
       </div>
 
-      {/* CTA */}
       <div className="creation-mobile-cta px-4 pb-8">
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            (() => {
-              const parsed = demoStorySchema.safeParse(demo.fields.story);
-              if (!parsed.success) {
-                setStoryError(parsed.error.issues[0].message);
-                return;
-              }
-              const recipient = demoRecipientSchema.safeParse({
-                name: demo.fields.recipientName,
-                pronunciation: demo.fields.recipientPronunciation,
-                relation: demo.choices.recipientRelation,
-              });
-              if (!recipient.success) {
-                setRecipientOpen(true);
-                setRecipientError(recipient.error.issues[0].message);
-                return;
-              }
-              setStoryError("");
-              setRecipientError("");
-              demo.field("story", parsed.data);
-              demo.field("recipientName", recipient.data.name);
-              demo.field("recipientPronunciation", recipient.data.pronunciation);
-              demo.choose("recipientRelation", recipient.data.relation);
-              demo.go("/dashboard/create/style");
-            })()
-          }
+          onClick={continueToRecipient}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
         >
-          {t("Continuer")} <Icon i="chevron-right" size={18} />
+          Continuer <Icon i="chevron-right" size={18} />
         </button>
       </div>
     </div>

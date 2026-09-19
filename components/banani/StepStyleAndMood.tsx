@@ -4,7 +4,7 @@ import SelectionMark from "./SelectionMark";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
-export const displayName = "Étape 3 — Choisis le style et l'ambiance";
+export const displayName = "Étape 4 — Choisis le style et l'ambiance";
 export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
@@ -15,11 +15,11 @@ export default function StepStyleAndMood() {
   const demo = useDemo();
   return (
     <div className="bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/story" current={3} />
+      <CreationTopNav backHref="/dashboard/create/recipient" current={4} total={8} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
-        <StepProgressBar current={3} total={7} />
+        <StepProgressBar current={4} total={8} />
       </div>
 
       {/* Occasion tag */}
@@ -31,21 +31,15 @@ export default function StepStyleAndMood() {
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("Choisis le style et l'ambiance")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Sélectionne le genre musical et l'émotion")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Choisis le style et l'ambiance")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Sélectionne le genre musical et l'émotion")}</p>
       </div>
 
       {/* Content */}
       <div className="overflow-y-auto flex-1 px-4 pb-4">
         {/* Genre/Style Section */}
         <div className="mb-6">
-          <h2 className="text-sm font-bold text-foreground mb-3">
-            {t("Genre musical")}
-          </h2>
+          <h2 className="text-sm font-bold text-foreground mb-3">{t("Genre musical")}</h2>
           <div className="flex flex-col gap-2">
             {[
               { name: "Afrobeat", desc: t("Rythmes énergiques et dansants"), icon: "drum", tone: "orange" },
@@ -67,9 +61,7 @@ export default function StepStyleAndMood() {
                   <Icon i={genre.icon} size={20} />
                 </span>
                 <div className="flex-1">
-                  <p className="font-semibold text-sm text-foreground">
-                    {genre.name}
-                  </p>
+                  <p className="font-semibold text-sm text-foreground">{genre.name}</p>
                   <p className="text-xs text-muted-foreground">{genre.desc}</p>
                 </div>
               </button>
@@ -79,9 +71,7 @@ export default function StepStyleAndMood() {
 
         {/* Mood/Ambiance Section */}
         <div className="mb-6">
-          <h2 className="text-sm font-bold text-foreground mb-3">
-            {t("Ambiance")}
-          </h2>
+          <h2 className="text-sm font-bold text-foreground mb-3">{t("Ambiance")}</h2>
           <div className="grid grid-cols-3 gap-2">
             {[
               { emoji: "🚀", label: "Énergique", desc: t("Upbeat") },
@@ -101,9 +91,7 @@ export default function StepStyleAndMood() {
               >
                 <SelectionMark selected={demo.choices.mood === mood.label} />
                 <span className="text-2xl">{mood.emoji}</span>
-                <p className="font-semibold text-xs text-foreground text-center">
-                  {mood.label}
-                </p>
+                <p className="font-semibold text-xs text-foreground text-center">{mood.label}</p>
                 <p className="text-xs text-muted-foreground">{mood.desc}</p>
               </button>
             ))}
@@ -114,9 +102,7 @@ export default function StepStyleAndMood() {
         <div className="bg-secondary/60 rounded-xl px-4 py-3 mb-6">
           <p className="text-sm text-foreground leading-relaxed">
             💡 <span className="font-semibold">{t("Conseil :")}</span>{" "}
-            {t(
-              "Combine un genre avec une ambiance pour plus de personnalisation !",
-            )}
+            {t("Combine un genre avec une ambiance pour plus de personnalisation !")}
           </p>
         </div>
       </div>

@@ -3,7 +3,7 @@ const t = (text: string) => text;
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
-export const displayName = "Étape 7 — Générer ma chanson";
+export const displayName = "Étape 8 — Générer ma chanson";
 export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
@@ -14,11 +14,11 @@ export default function FinalConfirmationScreen() {
   const demo = useDemo();
   return (
     <div className="bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/lyrics" current={7} />
+      <CreationTopNav backHref="/dashboard/create/lyrics" current={8} total={8} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
-        <StepProgressBar current={7} total={7} />
+        <StepProgressBar current={8} total={8} />
       </div>
 
       {/* Occasion tag */}

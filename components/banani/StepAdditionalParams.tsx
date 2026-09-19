@@ -7,7 +7,7 @@ import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
 import { demoDetailSchema } from "@/lib/validation/musikpro-demo";
 
-export const displayName = "Étape 4 — Paramètres additionnels";
+export const displayName = "Étape 5 — Paramètres additionnels";
 export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
@@ -18,38 +18,31 @@ export default function StepAdditionalParams() {
   const demo = useDemo();
   return (
     <div className="bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/style" current={4} />
+      <CreationTopNav backHref="/dashboard/create/style" current={5} total={8} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
-        <StepProgressBar current={4} total={7} />
+        <StepProgressBar current={5} total={8} />
       </div>
 
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion} •
-          🚀 {demo.choices.mood}
+          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion} • 🚀 {demo.choices.mood}
         </span>
       </div>
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("Paramètres additionnels")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Affine ta chanson avec plus d'options")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Paramètres additionnels")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Affine ta chanson avec plus d'options")}</p>
       </div>
 
       {/* Content */}
       <div className="overflow-y-auto flex-1 px-4 pb-4">
         {/* Language Section */}
         <div className="mb-6">
-          <label className="block text-sm font-bold text-foreground mb-3">
-            {t("Langue des paroles")}
-          </label>
+          <label className="block text-sm font-bold text-foreground mb-3">{t("Langue des paroles")}</label>
           <div className="flex flex-col gap-2">
             {[
               { name: "Français", flag: "🇫🇷" },
@@ -65,9 +58,7 @@ export default function StepAdditionalParams() {
               >
                 <SelectionMark selected={demo.choices.language === lang.name} />
                 <span className="text-lg">{lang.flag}</span>
-                <p className="text-sm font-semibold text-foreground">
-                  {lang.name}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{lang.name}</p>
                 <div className="ml-auto w-5 h-5 border-2 border-border rounded-full"></div>
               </button>
             ))}
@@ -76,9 +67,7 @@ export default function StepAdditionalParams() {
 
         {/* Voice/Singer Section */}
         <div className="mb-6">
-          <label className="block text-sm font-bold text-foreground mb-3">
-            {t("Voix du chanteur")}
-          </label>
+          <label className="block text-sm font-bold text-foreground mb-3">{t("Voix du chanteur")}</label>
           <div className="flex flex-col gap-2">
             {[
               { emoji: "👩🎤", text: t("Femme") },
@@ -95,9 +84,7 @@ export default function StepAdditionalParams() {
               >
                 <SelectionMark selected={demo.choices.voice === voice.text} />
                 <span className="text-lg">{voice.emoji}</span>
-                <p className="text-sm font-semibold text-foreground">
-                  {voice.text}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{voice.text}</p>
                 <div className="ml-auto w-5 h-5 border-2 border-border rounded-full"></div>
               </button>
             ))}
@@ -106,9 +93,7 @@ export default function StepAdditionalParams() {
 
         {/* Special Event Section */}
         <div className="mb-6">
-          <label className="block text-sm font-bold text-foreground mb-3">
-            {t("Détail spécial (optionnel)")}
-          </label>
+          <label className="block text-sm font-bold text-foreground mb-3">{t("Détail spécial (optionnel)")}</label>
           <div className="bg-card border-2 border-border rounded-xl p-4 flex items-start justify-between gap-2">
             <DemoField
               name="detail"
@@ -121,11 +106,7 @@ export default function StepAdditionalParams() {
             <button
               type="button"
               data-demo-ready="true"
-              onClick={() =>
-                demo.notify(
-                  "Transcription vocale non disponible dans la démonstration.",
-                )
-              }
+              onClick={() => demo.notify("Transcription vocale non disponible dans la démonstration.")}
               aria-label="Microphone de démonstration"
               className="w-10 h-10 bg-secondary border border-primary/30 rounded-lg flex items-center justify-center flex-shrink-0"
             >
@@ -167,9 +148,7 @@ export default function StepAdditionalParams() {
         >
           {t("Générer les paroles")} <Icon i="arrow-right" size={18} />
         </button>
-        <p className="text-xs text-muted-foreground text-center mt-2">
-          {t("Une chanson de votre pack")}
-        </p>
+        <p className="text-xs text-muted-foreground text-center mt-2">{t("Une chanson de votre pack")}</p>
       </div>
     </div>
   );

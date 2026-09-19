@@ -3,7 +3,7 @@ import { useState } from "react";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
-export const displayName = "Étape 5 — Révision des paroles";
+export const displayName = "Étape 7 — Révision des paroles";
 export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
@@ -16,11 +16,11 @@ export default function ReviewLyricsScreen() {
   const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
   return (
     <div className="bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/parameters" current={5} />
+      <CreationTopNav backHref="/dashboard/create/parameters" current={7} total={8} />
 
       {/* Progress */}
       <div className="px-4 pt-4 pb-2">
-        <StepProgressBar current={5} total={7} />
+        <StepProgressBar current={7} total={8} />
       </div>
 
       {/* Occasion tag */}
