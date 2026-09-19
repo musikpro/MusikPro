@@ -11,6 +11,10 @@ export function maskEmail(email: string) {
   return `${visible}${"•".repeat(Math.max(3, local.length - visible.length))}@${domain}`;
 }
 
+export function shouldBootstrapOwnerTwoFactor(user: { role?: string | null; twoFactorEnabled?: boolean | null }) {
+  return hasAppRole(user.role, "admin") && user.twoFactorEnabled !== true;
+}
+
 export function ownerTwoFactor(): BetterAuthPlugin {
   return {
     id: "owner-two-factor",
@@ -69,6 +73,34 @@ export function ownerTwoFactor(): BetterAuthPlugin {
                 message: "Le double facteur est réservé aux propriétaires.",
               });
             }
+          }),
+        },
+      ],
+      after: [
+        {
+          matcher: (ctx) => ctx.path === "/sign-in/email" || ctx.path === "/sign-in/username",
+          handler: createAuthMiddleware(async (ctx) => {
+            const current = ctx.context.newSession;
+            if (!current) return;
+            const owner = current.user as typeof current.user & {
+              role?: string | null;
+              twoFactorEnabled?: boolean | null;
+            };
+            if (!shouldBootstrapOwnerTwoFactor(owner)) return;
+
+            const updated = await ctx.context.internalAdapter.updateUser(owner.id, {
+              twoFactorEnabled: true,
+            });
+            if (!updated) {
+              throw APIError.from("INTERNAL_SERVER_ERROR", {
+                code: "OWNER_TWO_FACTOR_BOOTSTRAP_FAILED",
+                message: "Impossible de préparer la vérification du propriétaire.",
+              });
+            }
+            ctx.context.setNewSession({
+              session: current.session,
+              user: { ...current.user, ...updated, twoFactorEnabled: true },
+            });
           }),
         },
       ],
