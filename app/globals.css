@@ -169,9 +169,11 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:320px;ov
   border-radius: 14px;
   background: linear-gradient(180deg, #fff 0%, #fffaf6 100%);
   color: var(--auth-fg);
-  font-size: 15px;
+  padding-inline: 10px;
+  font-size: clamp(13.5px, 4.15vw, 15px);
   font-weight: 800;
   letter-spacing: -0.01em;
+  white-space: nowrap;
   box-shadow: 0 6px 18px rgba(62, 43, 30, 0.1), 0 0 0 3px rgba(242, 101, 34, 0.04);
   cursor: pointer;
   transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
