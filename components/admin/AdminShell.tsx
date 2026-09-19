@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { getNameInitials } from "@/lib/profile/name-initials";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import Icon from "@/components/banani/Icon";
 
@@ -129,16 +130,11 @@ function Brand() {
 }
 
 function Account({ user }: { user: AdminShellProps["user"] }) {
-  const initials = user.name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
+  const initials = getNameInitials(user.name);
   return (
     <div className="admin-account">
       <span className="admin-account-avatar" aria-hidden="true">
-        {initials || "MP"}
+        {initials}
       </span>
       <span>
         <strong>{user.name}</strong>

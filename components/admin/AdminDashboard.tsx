@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { getNameInitials } from "@/lib/profile/name-initials";
 import Icon from "@/components/banani/Icon";
 
 export type AdminDashboardData = {
@@ -276,7 +277,7 @@ export default function AdminDashboard({ data }: { data: AdminDashboardData }) {
               {data.recentUsers.map((entry) => (
                 <div className="admin-record" key={entry.id}>
                   <span className="admin-user-initial" aria-hidden="true">
-                    {entry.name.slice(0, 1).toUpperCase()}
+                    {getNameInitials(entry.name)}
                   </span>
                   <div>
                     <strong>{entry.name}</strong>

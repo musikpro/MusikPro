@@ -1,6 +1,7 @@
 "use client";
 import assets from "./assets.json";
 import { useDemo } from "./DemoProvider";
+import { getNameInitials } from "@/lib/profile/name-initials";
 export default function UserAvatar({
   gender,
   ageGroup,
@@ -16,17 +17,12 @@ export default function UserAvatar({
 }) {
   const demo = useDemo();
   if (!demo.isDemo) {
-    const initials = demo.profile.name
-      .split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("") || "MP";
+    const initials = getNameInitials(demo.profile.name);
     return (
       <span
         aria-label={`Profil de ${demo.profile.name}`}
-        className={`${className} inline-flex aspect-square items-center justify-center bg-secondary font-bold text-primary`}
-        style={{ borderRadius: "50%" }}
+        role="img"
+        className={`${className} musik-user-avatar inline-flex aspect-square items-center justify-center`}
       >
         {initials}
       </span>
