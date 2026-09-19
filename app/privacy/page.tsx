@@ -50,7 +50,7 @@ export default function PrivacyPage() {
           title: "Connexion avec Google",
           content: (
             <p>
-              Si vous choisissez « Continuer avec Google », MusikPro reçoit les
+              Si vous choisissez « Connectez-vous avec Google », MusikPro reçoit les
               informations de profil de base que Google vous présente avant votre
               consentement, comme votre nom, votre adresse e-mail et votre identifiant
               de compte. MusikPro n’accède pas à votre mot de passe Google.

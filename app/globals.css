@@ -160,23 +160,40 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:320px;ov
 .auth-google {
   display: flex;
   width: 100%;
-  min-height: 48px;
+  min-height: 54px;
   align-items: center;
   justify-content: center;
   gap: 12px;
   margin-bottom: 24px;
-  border: 1px solid var(--auth-border);
-  border-radius: 12px;
-  background: #fff;
+  border: 1.5px solid #d9d1c9;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fff 0%, #fffaf6 100%);
   color: var(--auth-fg);
-  font-size: 14px;
-  font-weight: 700;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  box-shadow: 0 6px 18px rgba(62, 43, 30, 0.1), 0 0 0 3px rgba(242, 101, 34, 0.04);
   cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+.auth-google svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
 }
 .auth-google:hover {
-  border-color: #d4ccc3;
-  box-shadow: 0 5px 16px rgba(48, 35, 24, 0.08);
+  transform: translateY(-1px);
+  border-color: rgba(242, 101, 34, 0.55);
+  background: #fff;
+  box-shadow: 0 9px 24px rgba(62, 43, 30, 0.13), 0 0 0 4px rgba(242, 101, 34, 0.07);
+}
+.auth-google:active {
+  transform: translateY(0);
+  box-shadow: 0 3px 10px rgba(62, 43, 30, 0.1);
+}
+.auth-google:focus-visible {
+  outline: 3px solid rgba(242, 101, 34, 0.3);
+  outline-offset: 3px;
 }
 .auth-divider {
   display: flex;

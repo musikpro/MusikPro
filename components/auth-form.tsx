@@ -138,7 +138,7 @@ export function AuthForm({ mode, googleEnabled = false }: { mode: "login" | "reg
               <>
                 <button className="auth-google" type="button" disabled={busy} onClick={googleSignIn}>
                   <GoogleLogo />
-                  {isLogin ? "Continuer avec Google" : "S’inscrire avec Google"}
+                  {isLogin ? "Connectez-vous avec Google" : "Créez votre compte avec Google"}
                 </button>
                 <div className="auth-divider">
                   <span>OU</span>
