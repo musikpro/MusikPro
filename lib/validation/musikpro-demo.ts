@@ -3,6 +3,18 @@ import { z } from "zod";
 const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
 export const DEMO_LYRICS_MAX_WORDS = 5000;
 export const DEMO_LYRICS_MAX_CHARACTERS = 60000;
+export const DEMO_PHONE_RULES = {
+  CI: { digits: 10, placeholder: "0708807015" },
+  SN: { digits: 9, placeholder: "771234567" },
+  ML: { digits: 8, placeholder: "70123456" },
+  BF: { digits: 8, placeholder: "70123456" },
+  NE: { digits: 8, placeholder: "90123456" },
+  GH: { digits: 9, placeholder: "241234567" },
+  NG: { digits: 10, placeholder: "8012345678" },
+  FR: { digits: 9, placeholder: "612345678" },
+} as const;
+
+export type DemoPhoneCountry = keyof typeof DEMO_PHONE_RULES;
 export const demoStorySchema = z
   .string()
   .trim()
@@ -55,8 +67,20 @@ export const demoSupportSchema = z.object({
     .max(25)
     .regex(/^[+\d\s-]*$/),
 });
-export const demoPaymentSchema = z.object({
-  name: z.string().trim().min(2).max(100),
-  email: z.email().max(254),
-  phone: z.string().regex(/^\d{10}$/, "Saisis 10 chiffres pour cette maquette."),
-});
+export const demoPaymentSchema = z
+  .object({
+    name: z.string().trim().min(2, "Indique ton nom complet.").max(100),
+    email: z.email("Saisis une adresse e-mail valide.").max(254),
+    phoneCountry: z.enum(Object.keys(DEMO_PHONE_RULES) as [DemoPhoneCountry, ...DemoPhoneCountry[]]),
+    phone: z.string().regex(/^\d*$/, "Utilise uniquement des chiffres."),
+  })
+  .superRefine(({ phoneCountry, phone }, context) => {
+    const requiredDigits = DEMO_PHONE_RULES[phoneCountry].digits;
+    if (phone.length !== requiredDigits) {
+      context.addIssue({
+        code: "custom",
+        path: ["phone"],
+        message: `Saisis exactement ${requiredDigits} chiffres pour cet indicatif.`,
+      });
+    }
+  });

@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useState } from "react";
 const t = (text: string) => text;
 import SelectionMark from "./SelectionMark";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
@@ -13,9 +14,18 @@ export const screenSize = "mobile";
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
+import VoiceMicrophoneButton from "./VoiceMicrophoneButton";
+import { InlineNotice } from "@/components/ui/inline-notice";
 
 export default function StepAdditionalParams() {
   const demo = useDemo();
+  const [detailError, setDetailError] = useState("");
+
+  useEffect(() => {
+    if (!detailError) return;
+    const timer = window.setTimeout(() => setDetailError(""), 4200);
+    return () => window.clearTimeout(timer);
+  }, [detailError]);
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create/style" current={5} total={8} />
@@ -94,25 +104,29 @@ export default function StepAdditionalParams() {
         {/* Special Event Section */}
         <div className="mb-6">
           <label className="block text-sm font-bold text-foreground mb-3">{t("Détail spécial (optionnel)")}</label>
-          <div className="bg-card border-2 border-border rounded-xl p-4 flex items-start justify-between gap-2">
+          <div className="additional-detail-shell bg-card border-2 border-border rounded-xl p-4 relative">
             <DemoField
               name="detail"
               label="Détail spécial"
               multiline
               rows={3}
               maxLength={3000}
+              ariaInvalid={Boolean(detailError)}
+              describedBy={detailError ? "detail-special-error" : undefined}
+              onValueChange={() => setDetailError("")}
               placeholder="Y a-t-il un événement ou moment spécial que tu aimerais ajouter ?"
             />
-            <button
-              type="button"
-              data-demo-ready="true"
+            <VoiceMicrophoneButton
               onClick={() => demo.notify("Transcription vocale non disponible dans la démonstration.")}
-              aria-label="Microphone de démonstration"
-              className="w-10 h-10 bg-secondary border border-primary/30 rounded-lg flex items-center justify-center flex-shrink-0"
-            >
-              <Icon i="mic" size={18} className="text-primary" />
-            </button>
+              label="Ajouter le détail spécial avec le microphone"
+              className="absolute top-3 right-3"
+            />
           </div>
+          {detailError && (
+            <InlineNotice id="detail-special-error" tone="error" className="field-notice">
+              {detailError}
+            </InlineNotice>
+          )}
           <p className="text-xs text-muted-foreground mt-2">
             {t("Maximum 50 mots · L'IA transcrit automatiquement le vocal")}
           </p>
@@ -136,7 +150,7 @@ export default function StepAdditionalParams() {
             (() => {
               const parsed = demoDetailSchema.safeParse(demo.fields.detail);
               if (!parsed.success) {
-                demo.notify(parsed.error.issues[0].message);
+                setDetailError(parsed.error.issues[0].message);
                 return;
               }
               demo.field("detail", parsed.data);

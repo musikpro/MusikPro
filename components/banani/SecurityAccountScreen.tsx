@@ -5,6 +5,7 @@ import Icon from "./Icon";
 import MobileBottomNav from "./MobileBottomNav";
 import MobileTopBar from "./MobileTopBar";
 import { useDemo } from "./DemoProvider";
+import { InlineNotice } from "@/components/ui/inline-notice";
 
 export default function SecurityAccountScreen({
   emailVerified,
@@ -39,10 +40,9 @@ export default function SecurityAccountScreen({
         </section>
 
         {required && (
-          <div className="security-required" role="alert">
-            <Icon i="circle-alert" size={17} />
+          <InlineNotice tone="error" className="security-required">
             Le double facteur doit être activé avant d’accéder à l’administration.
-          </div>
+          </InlineNotice>
         )}
 
         <div className="security-status-grid">

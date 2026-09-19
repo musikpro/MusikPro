@@ -9,6 +9,7 @@ import {
   demoSongPacks,
   demoLyrics,
 } from "@/lib/demo/musikpro-data";
+import { InlineNotice } from "@/components/ui/inline-notice";
 
 function useDemoState() {
   const router = useRouter();
@@ -32,8 +33,8 @@ function useDemoState() {
     "support.message": "",
     "support.email": "kofi.mensah@example.com",
     "support.phone": "",
-    "payment.name": "Jean Dupont",
-    "payment.email": "jean@example.com",
+    "payment.name": "",
+    "payment.email": "",
     "payment.phone": "",
   });
   const [choices, setChoices] = useState<Record<string, string>>({
@@ -257,16 +258,17 @@ export function DemoProvider({ children }: { children: ReactNode }) {
   return (
     <Context.Provider value={state}>
       {offline && (
-        <p role="status" className="demo-offline">
+        <InlineNotice tone="warning" className="demo-offline">
           Hors ligne — les données de cette démonstration restent locales.
-        </p>
+        </InlineNotice>
       )}
       {children}
       {state.message && (
-        <button type="button" className="demo-notice" role="status" onClick={() => state.notify("")}>
-          {state.message}
-          <span className="sr-only"> Fermer le message</span>
-        </button>
+        <div className="demo-notice">
+          <InlineNotice tone="info" onDismiss={() => state.notify("")}>
+            {state.message}
+          </InlineNotice>
+        </div>
       )}
     </Context.Provider>
   );

@@ -1,11 +1,14 @@
 "use client";
 
+import { useEffect, useState } from "react";
+
 import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 import MusikSelect from "./MusikSelect";
-import { demoPaymentSchema } from "@/lib/validation/musikpro-demo";
+import { DEMO_PHONE_RULES, demoPaymentSchema, type DemoPhoneCountry } from "@/lib/validation/musikpro-demo";
+import { InlineNotice } from "@/components/ui/inline-notice";
 
 export const displayName = "Vos informations";
 export const screenSize = "mobile";
@@ -25,17 +28,44 @@ const phonePrefixes = [
 
 export default function PaymentScreen() {
   const demo = useDemo();
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "email" | "phone", string>>>({});
+  const selectedCountry = (demo.choices.phoneCountry || "CI") as DemoPhoneCountry;
+  const phoneRule = DEMO_PHONE_RULES[selectedCountry] ?? DEMO_PHONE_RULES.CI;
+
+  useEffect(() => {
+    if (Object.keys(fieldErrors).length === 0) return;
+    const timer = window.setTimeout(() => setFieldErrors({}), 4200);
+    return () => window.clearTimeout(timer);
+  }, [fieldErrors]);
+
+  const clearFieldError = (field: "name" | "email" | "phone") => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  };
 
   const continueToPacks = () => {
     const parsed = demoPaymentSchema.safeParse({
       name: demo.fields["payment.name"],
       email: demo.fields["payment.email"],
       phone: demo.fields["payment.phone"],
+      phoneCountry: selectedCountry,
     });
     if (!parsed.success) {
-      demo.notify("Vérifie tes informations et saisis les 10 chiffres de ton téléphone.");
+      const nextErrors: Partial<Record<"name" | "email" | "phone", string>> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if ((field === "name" || field === "email" || field === "phone") && !nextErrors[field]) {
+          nextErrors[field] = issue.message;
+        }
+      }
+      setFieldErrors(nextErrors);
       return;
     }
+    setFieldErrors({});
     demo.go("/dashboard/create/pack");
   };
 
@@ -65,8 +95,8 @@ export default function PaymentScreen() {
           </div>
 
           <div className="checkout-fields">
-            <label className="checkout-field">
-              <span>{t("Nom complet")}</span>
+            <div className="checkout-field">
+              <label htmlFor="demo-payment.name">{t("Nom complet")}</label>
               <span className="checkout-input-shell">
                 <Icon i="user" size={19} />
                 <DemoField
@@ -76,12 +106,20 @@ export default function PaymentScreen() {
                   placeholder="Ex. Ballo Issa"
                   maxLength={100}
                   className="checkout-input"
+                  ariaInvalid={Boolean(fieldErrors.name)}
+                  describedBy={fieldErrors.name ? "payment-name-error" : undefined}
+                  onValueChange={() => clearFieldError("name")}
                 />
               </span>
-            </label>
+              {fieldErrors.name && (
+                <InlineNotice id="payment-name-error" tone="error" className="field-notice">
+                  {fieldErrors.name}
+                </InlineNotice>
+              )}
+            </div>
 
-            <label className="checkout-field">
-              <span>{t("Adresse e-mail")}</span>
+            <div className="checkout-field">
+              <label htmlFor="demo-payment.email">{t("Adresse e-mail")}</label>
               <span className="checkout-input-shell">
                 <Icon i="mail" size={19} />
                 <DemoField
@@ -91,12 +129,22 @@ export default function PaymentScreen() {
                   placeholder="nom@exemple.com"
                   maxLength={254}
                   className="checkout-input"
+                  ariaInvalid={Boolean(fieldErrors.email)}
+                  describedBy={fieldErrors.email ? "payment-email-error" : undefined}
+                  onValueChange={() => clearFieldError("email")}
                 />
               </span>
-            </label>
+              {fieldErrors.email && (
+                <InlineNotice id="payment-email-error" tone="error" className="field-notice">
+                  {fieldErrors.email}
+                </InlineNotice>
+              )}
+            </div>
 
             <div className="checkout-field checkout-phone-field">
-              <span id="checkout-phone-label">{t("Numéro de téléphone")}</span>
+              <label htmlFor="demo-payment.phone" id="checkout-phone-label">
+                {t("Numéro de téléphone")}
+              </label>
               <span className="checkout-input-shell checkout-phone-shell">
                 <MusikSelect
                   className="checkout-prefix-select"
@@ -106,8 +154,16 @@ export default function PaymentScreen() {
                   portalWidth={126}
                   showOptionLabels={false}
                   showSelectionMark={false}
-                  value={demo.choices.phoneCountry ?? "CI"}
-                  onChange={(value) => demo.choose("phoneCountry", value)}
+                  value={selectedCountry}
+                  onChange={(value) => {
+                    const country = value as DemoPhoneCountry;
+                    demo.choose("phoneCountry", country);
+                    demo.field(
+                      "payment.phone",
+                      demo.fields["payment.phone"].slice(0, DEMO_PHONE_RULES[country].digits),
+                    );
+                    clearFieldError("phone");
+                  }}
                   options={phonePrefixes}
                 />
                 <span className="checkout-phone-divider" aria-hidden="true" />
@@ -115,12 +171,23 @@ export default function PaymentScreen() {
                   name="payment.phone"
                   label="Numéro de téléphone"
                   type="tel"
-                  placeholder="0708807015"
-                  maxLength={10}
+                  placeholder={phoneRule.placeholder}
+                  maxLength={phoneRule.digits}
                   className="checkout-input checkout-phone-input"
+                  ariaInvalid={Boolean(fieldErrors.phone)}
+                  describedBy={fieldErrors.phone ? "payment-phone-help payment-phone-error" : "payment-phone-help"}
+                  transformValue={(value) => value.replace(/\D/g, "").slice(0, phoneRule.digits)}
+                  onValueChange={() => clearFieldError("phone")}
                 />
               </span>
-              <small>{t("10 chiffres requis, sans espaces.")}</small>
+              <small id="payment-phone-help">
+                {phoneRule.digits} chiffres requis pour cet indicatif, sans espaces.
+              </small>
+              {fieldErrors.phone && (
+                <InlineNotice id="payment-phone-error" tone="error" className="field-notice">
+                  {fieldErrors.phone}
+                </InlineNotice>
+              )}
             </div>
           </div>
         </section>

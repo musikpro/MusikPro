@@ -8,6 +8,7 @@ import { useDemo } from "./DemoProvider";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
 import StepProgressBar from "./StepProgressBar";
+import { InlineNotice } from "@/components/ui/inline-notice";
 
 export const displayName = "Étape 3 — Destinataire de la chanson";
 export const screenSize = "mobile";
@@ -41,13 +42,22 @@ function suggestPronunciation(name: string) {
 
 export default function StepRecipient() {
   const demo = useDemo();
-  const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "pronunciation" | "relation", string>>>({});
 
   useEffect(() => {
-    if (!error) return;
-    const timer = window.setTimeout(() => setError(""), 4200);
+    if (Object.keys(fieldErrors).length === 0) return;
+    const timer = window.setTimeout(() => setFieldErrors({}), 4200);
     return () => window.clearTimeout(timer);
-  }, [error]);
+  }, [fieldErrors]);
+
+  const clearFieldError = (field: "name" | "pronunciation" | "relation") => {
+    setFieldErrors((current) => {
+      if (!current[field]) return current;
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  };
 
   const continueToStyle = () => {
     const parsed = demoRecipientSchema.safeParse({
@@ -56,10 +66,17 @@ export default function StepRecipient() {
       relation: demo.choices.recipientRelation,
     });
     if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
+      const nextErrors: Partial<Record<"name" | "pronunciation" | "relation", string>> = {};
+      for (const issue of parsed.error.issues) {
+        const field = issue.path[0];
+        if ((field === "name" || field === "pronunciation" || field === "relation") && !nextErrors[field]) {
+          nextErrors[field] = issue.message;
+        }
+      }
+      setFieldErrors(nextErrors);
       return;
     }
-    setError("");
+    setFieldErrors({});
     demo.field("recipientName", parsed.data.name);
     demo.field("recipientPronunciation", parsed.data.pronunciation);
     demo.choose("recipientRelation", parsed.data.relation);
@@ -98,22 +115,31 @@ export default function StepRecipient() {
           </div>
 
           <div className="story-name-row">
-            <label className="story-recipient-field">
-              <span>Nom de la personne</span>
+            <div className="story-recipient-field">
+              <label htmlFor="recipient-name">Nom de la personne</label>
               <input
+                id="recipient-name"
                 type="text"
                 value={demo.fields.recipientName}
                 maxLength={100}
                 autoComplete="name"
                 placeholder="Ex. Aïcha"
+                aria-invalid={Boolean(fieldErrors.name)}
+                aria-describedby={fieldErrors.name ? "recipient-name-error" : undefined}
                 onChange={(event) => {
                   const name = event.target.value;
                   demo.field("recipientName", name);
                   demo.field("recipientPronunciation", suggestPronunciation(name));
-                  setError("");
+                  clearFieldError("name");
+                  clearFieldError("pronunciation");
                 }}
               />
-            </label>
+              {fieldErrors.name && (
+                <InlineNotice id="recipient-name-error" tone="error" className="field-notice">
+                  {fieldErrors.name}
+                </InlineNotice>
+              )}
+            </div>
             <div className="story-recipient-field is-pronunciation">
               <span id="recipient-pronunciation-label">Prononciation suggérée</span>
               <input
@@ -122,9 +148,16 @@ export default function StepRecipient() {
                 placeholder="Aï-cha"
                 aria-labelledby="recipient-pronunciation-label"
                 aria-readonly="true"
+                aria-invalid={Boolean(fieldErrors.pronunciation)}
+                aria-describedby={fieldErrors.pronunciation ? "recipient-pronunciation-error" : undefined}
                 readOnly
                 tabIndex={-1}
               />
+              {fieldErrors.pronunciation && (
+                <InlineNotice id="recipient-pronunciation-error" tone="error" className="field-notice">
+                  {fieldErrors.pronunciation}
+                </InlineNotice>
+              )}
             </div>
           </div>
 
@@ -136,20 +169,20 @@ export default function StepRecipient() {
               ariaLabel="Lien avec cette personne"
               placeholder="Sélectionner une relation"
               value={demo.choices.recipientRelation}
+              ariaInvalid={Boolean(fieldErrors.relation)}
+              describedBy={fieldErrors.relation ? "recipient-relation-error" : undefined}
               onChange={(value) => {
                 demo.choose("recipientRelation", value);
-                setError("");
+                clearFieldError("relation");
               }}
               options={recipientRelations.map((relation) => ({ value: relation, label: relation }))}
             />
+            {fieldErrors.relation && (
+              <InlineNotice id="recipient-relation-error" tone="error" className="field-notice">
+                {fieldErrors.relation}
+              </InlineNotice>
+            )}
           </div>
-
-          {error && (
-            <p className="story-field-error" role="alert">
-              <Icon i="circle-alert" size={15} />
-              {error}
-            </p>
-          )}
         </section>
       </div>
 

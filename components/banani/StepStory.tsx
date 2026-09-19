@@ -8,6 +8,8 @@ import DemoField from "./DemoField";
 import { useDemo } from "./DemoProvider";
 import Icon from "./Icon";
 import StepProgressBar from "./StepProgressBar";
+import VoiceMicrophoneButton from "./VoiceMicrophoneButton";
+import { InlineNotice } from "@/components/ui/inline-notice";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
 export const screenSize = "mobile";
@@ -63,28 +65,25 @@ export default function StepStory() {
             maxLength={2000}
             maxWords={250}
             className="text-base leading-relaxed"
+            ariaInvalid={Boolean(storyError)}
+            describedBy={storyError ? "story-field-error" : undefined}
+            onValueChange={() => setStoryError("")}
             placeholder="Ex. : Je veux rendre hommage à ma femme Aïcha. Sa force, sa douceur et son sourire illuminent notre famille depuis toutes ces années..."
           />
-          <button
-            type="button"
-            data-demo-ready="true"
+          <VoiceMicrophoneButton
             onClick={() => demo.notify("Transcription vocale non disponible dans la démonstration.")}
-            aria-label="Raconter mon histoire avec le microphone"
-            title="Raconter mon histoire avec le microphone"
-            className="story-mic-button absolute top-3 right-3 flex items-center justify-center"
-          >
-            <Icon i="mic" size={20} />
-          </button>
+            label="Raconter mon histoire avec le microphone"
+            className="absolute top-3 right-3"
+          />
         </div>
         <div className="story-field-meta">
           <span>Minimum 10 caractères</span>
           <span>{storyWordCount} / 250 mots</span>
         </div>
         {storyError && (
-          <p className="story-field-error" role="alert">
-            <Icon i="circle-alert" size={15} />
+          <InlineNotice id="story-field-error" tone="error" className="field-notice">
             {storyError}
-          </p>
+          </InlineNotice>
         )}
       </div>
 

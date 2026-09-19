@@ -24,6 +24,8 @@ export default function MusikSelect({
   portal = false,
   portalWidth,
   menuClassName = "",
+  ariaInvalid = false,
+  describedBy,
 }: {
   value: string;
   options: readonly MusikSelectOption[];
@@ -38,6 +40,8 @@ export default function MusikSelect({
   portal?: boolean;
   portalWidth?: number;
   menuClassName?: string;
+  ariaInvalid?: boolean;
+  describedBy?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(() =>
@@ -159,6 +163,8 @@ export default function MusikSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={menuId}
+        aria-invalid={ariaInvalid || undefined}
+        aria-describedby={describedBy}
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={(event) => {
           if (event.key === "ArrowDown") {

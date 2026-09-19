@@ -681,3 +681,66 @@ html{-webkit-text-size-adjust:100%;text-size-adjust:100%}body{min-width:0;overfl
     height: 48px;
   }
 }
+
+/* Shared feedback language for field errors, confirmations and transient notices. */
+.site-notice,
+.auth-alert {
+  margin: 12px 0;
+  padding: 11px 12px;
+  border: 1px solid #d9dee8;
+  border-radius: 12px;
+  background: #f5f7fa;
+  color: #344054;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+  box-shadow: 0 7px 18px rgb(16 24 40 / 7%);
+}
+.site-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+}
+.site-notice-icon {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+.site-notice-message {
+  min-width: 0;
+  flex: 1;
+}
+.site-notice-dismiss {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  margin: -5px -5px -5px 0;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: currentColor;
+  cursor: pointer;
+}
+.site-notice-error,
+.auth-alert-error {
+  border-color: #f1c8c0;
+  background: #fff0ee;
+  color: #a53421;
+}
+.site-notice-success,
+.auth-alert-success {
+  border-color: #bfe1ca;
+  background: #edf8f0;
+  color: #176a36;
+}
+.site-notice-info {
+  border-color: #f2c5a9;
+  background: #fff6ef;
+  color: #934619;
+}
+.site-notice-warning {
+  border-color: #ead399;
+  background: #fff8e8;
+  color: #805b13;
+}

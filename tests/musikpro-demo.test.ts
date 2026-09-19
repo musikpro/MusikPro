@@ -61,14 +61,18 @@ describe("frontières des saisies de démonstration MusikPro", () => {
     expect(demoSupportSchema.safeParse({ ...message, email: "invalide" }).success).toBe(false);
     expect(demoSupportSchema.safeParse({ ...message, phone: "<script>" }).success).toBe(false);
   });
-  it("valide dix chiffres pour la maquette de paiement sans accepter un numéro partiel", () => {
+  it("valide la longueur du téléphone selon le pays sans accepter un numéro partiel", () => {
     const payment = {
       name: "Jean Dupont",
       email: "demo@example.com",
       phone: "0102030405",
+      phoneCountry: "CI",
     };
     expect(demoPaymentSchema.safeParse(payment).success).toBe(true);
     expect(demoPaymentSchema.safeParse({ ...payment, phone: "0102" }).success).toBe(false);
+    expect(demoPaymentSchema.safeParse({ ...payment, phoneCountry: "BF", phone: "70123456" }).success).toBe(true);
+    expect(demoPaymentSchema.safeParse({ ...payment, phoneCountry: "SN", phone: "771234567" }).success).toBe(true);
+    expect(demoPaymentSchema.safeParse({ ...payment, phoneCountry: "BF", phone: "0708807015" }).success).toBe(false);
   });
   it("refuse un profil incomplet et retire les propriétés hors contrat", () => {
     expect(
