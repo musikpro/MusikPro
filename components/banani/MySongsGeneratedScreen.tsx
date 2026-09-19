@@ -36,7 +36,7 @@ export default function MySongsGenerated() {
     .sort((a, b) => (selectedTab === "Récentes" ? b.id - a.id : 0));
   return (
     <div className="bg-background flex flex-col font-body">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Header */}
       <div className="px-4 pt-4 pb-4">
@@ -115,7 +115,9 @@ export default function MySongsGenerated() {
       <div className="workspace-song-grid px-4 flex flex-col gap-4 pb-28">
         {generatedSongs.length === 0 && (
           <p role="status" className="text-sm text-muted-foreground">
-            Aucune chanson pour cette recherche.
+            {demo.songs.length === 0
+              ? "Aucune chanson créée. Commence ta première création depuis le bouton Créer."
+              : "Aucune chanson pour cette recherche."}
           </p>
         )}
         {generatedSongs.map((song) => (

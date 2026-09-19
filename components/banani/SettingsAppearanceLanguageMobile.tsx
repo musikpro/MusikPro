@@ -16,7 +16,7 @@ export default function SettingsMobile() {
   const demo = useDemo();
   return (
     <div className="bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Header */}
       <div className="px-4 pt-4 pb-4 flex items-center justify-between border-b border-border">

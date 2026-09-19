@@ -34,7 +34,7 @@ export default function UserMenuMobile() {
   const demo = useDemo();
   return (
     <div className="bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Header with Close Button */}
       <div className="px-4 pt-4 pb-4 flex items-center justify-between border-b border-border">
@@ -90,7 +90,11 @@ export default function UserMenuMobile() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">{item.label}</p>
-                <p className="text-xs text-muted-foreground">{item.sub}</p>
+                <p className="text-xs text-muted-foreground">
+                  {item.label === t("Packs")
+                    ? `${demo.balance} chanson${demo.balance > 1 ? "s" : ""} disponible${demo.balance > 1 ? "s" : ""}`
+                    : item.sub}
+                </p>
               </div>
               <Icon i="chevron-right" size={16} className="text-muted-foreground flex-shrink-0" />
             </button>

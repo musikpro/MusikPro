@@ -318,6 +318,7 @@
         "components/banani/DemoProvider.tsx",
         "lib/demo/musikpro-data.ts",
         "lib/demo/routing.ts",
+        "lib/demo/workspace-defaults.ts",
         "lib/demo/navigation.ts",
         "lib/validation/musikpro-demo.ts",
         "design/banani/selected-implementation-plan.md",

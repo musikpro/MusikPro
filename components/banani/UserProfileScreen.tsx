@@ -14,7 +14,7 @@ export default function UserProfileScreen() {
   const demo = useDemo();
   return (
     <div className="profile-screen bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Profile Header */}
       <div className="profile-hero px-4 pt-6 pb-6 text-center">

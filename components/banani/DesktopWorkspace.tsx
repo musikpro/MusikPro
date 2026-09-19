@@ -95,12 +95,14 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                 </div>
               </div>
               <div className="workspace-credit-balance">
-                <strong className="workspace-credit-number">3</strong>
+                <strong className="workspace-credit-number">{demo.balance}</strong>
                 <span>chansons restantes</span>
               </div>
               <p className="workspace-credit-demo">
                 <Icon i="check" size={14} />
-                {demo.isDemo ? "Prêt pour 3 nouvelles créations · démonstration" : "Prêt pour 3 nouvelles créations"}
+                {demo.balance > 0
+                  ? `Prêt pour ${demo.balance} nouvelle${demo.balance > 1 ? "s" : ""} création${demo.balance > 1 ? "s" : ""}${demo.isDemo ? " · démonstration" : ""}`
+                  : "Choisissez un pack pour créer votre première chanson"}
               </p>
               <Link href={demo.href("/dashboard/credits")} className="workspace-primary-link">
                 Voir les packs
@@ -136,6 +138,7 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                   Dernières créations
                 </h2>
                 <div className="workspace-recent-list">
+                  {demo.songs.length === 0 && <p className="workspace-hint">Aucune création pour le moment.</p>}
                   {demo.songs.slice(0, 3).map((song) => (
                     <button key={song.title} type="button" data-demo-ready onClick={() => demo.openSong(song.title)}>
                       <span className="workspace-song-icon">

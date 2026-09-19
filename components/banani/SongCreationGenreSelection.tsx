@@ -111,7 +111,7 @@ export default function SongCreationGenre() {
             <Icon i="zap" size={16} className="text-primary" />
             <span className="text-sm font-bold text-foreground">{t("Packs")}</span>
           </div>
-          <p className="text-2xl font-headings font-bold text-primary mb-2">3</p>
+          <p className="text-2xl font-headings font-bold text-primary mb-2">{demo.balance}</p>
           <p className="text-xs text-muted-foreground mb-3">{t("chansons restantes")}</p>
           <button
             type="button"

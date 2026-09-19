@@ -2,7 +2,6 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  demoGeneratedSongs,
   demoLibrarySongs,
   demoDiscoverSongs,
   demoFavoriteSongs,
@@ -12,6 +11,7 @@ import {
 import { InlineNotice } from "@/components/ui/inline-notice";
 import { authClient } from "@/lib/auth/client";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
+import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 
 type DemoProfile = { name: string; email: string; location: string };
 
@@ -19,6 +19,7 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
   const router = useRouter();
   const browserPathname = usePathname();
   const isDemo = mode === "demo";
+  const defaults = getWorkspaceDefaults(isDemo);
   const pathname = normalizeDashboardPath(browserPathname);
   const href = (route: string) => dashboardHref(route, isDemo);
   const [message, setMessage] = useState("");
@@ -64,11 +65,10 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
     recipientRelation: "",
   });
   const [profile, setProfile] = useState(initialProfile);
-  const [songs, setSongs] = useState(demoGeneratedSongs);
-  const [favorites, setFavorites] = useState<string[]>(demoFavoriteSongs.map((s) => s.title));
-  const [versionFavorites, setVersionFavorites] = useState<string[]>(
-    demoGeneratedSongs.flatMap((s) => s.versions.flatMap((v, i) => (v.liked ? [`${s.title}|${i}`] : []))),
-  );
+  const balance = defaults.balance;
+  const [songs, setSongs] = useState(() => defaults.songs);
+  const [favorites, setFavorites] = useState<string[]>(() => defaults.favorites);
+  const [versionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
   const [readNotifications, setReadNotifications] = useState<number[]>([]);
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     "Génération terminée": true,
@@ -216,6 +216,7 @@ function useDemoState(mode: "demo" | "real", initialProfile: DemoProfile) {
   };
   return {
     isDemo,
+    balance,
     pathname,
     href,
     message,

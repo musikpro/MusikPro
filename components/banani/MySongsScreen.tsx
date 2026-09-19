@@ -10,54 +10,19 @@ import MobileBottomNav from "./MobileBottomNav";
 import SongCard from "./SongCard";
 import Icon from "./Icon";
 
-const mySongs = [
-  {
-    title: "Pour toi Mariam",
-    style: "Afrobeat",
-    occasion: "Anniversaire",
-    versions: 2,
-    plays: 1240,
-    likes: 87,
-  },
-  {
-    title: "Mon amour pour toi",
-    style: "Amapiano",
-    occasion: "Amour",
-    versions: 2,
-    plays: 530,
-    likes: 42,
-  },
-  {
-    title: "Rêve d'Afrique",
-    style: "Gospel",
-    occasion: "Motivation",
-    versions: 1,
-    plays: 890,
-    likes: 156,
-  },
-  {
-    title: "Danse la Nuit",
-    style: "Zouglou",
-    occasion: "Fête",
-    versions: 3,
-    plays: 2100,
-    likes: 234,
-  },
-  {
-    title: "Gratitude",
-    style: "R&B",
-    occasion: "Gratitude",
-    versions: 1,
-    plays: 420,
-    likes: 89,
-  },
-];
-
 export default function MySongsScreen() {
   const demo = useDemo();
+  const mySongs = demo.songs.map((song) => ({
+    title: song.title,
+    style: song.style,
+    occasion: song.occasion,
+    versions: song.versions.length,
+    plays: song.versions.reduce((total, version) => total + version.plays, 0),
+    likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
+  }));
   return (
     <div className="bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Header */}
       <div className="px-4 pt-4 pb-4">
@@ -88,6 +53,11 @@ export default function MySongsScreen() {
 
       {/* My Songs List */}
       <div className="flex-1 px-4 pb-6 overflow-y-auto space-y-3">
+        {mySongs.length === 0 && (
+          <p role="status" className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground">
+            Aucune chanson créée pour le moment.
+          </p>
+        )}
         {mySongs.map((song) => (
           <SongCard key={song.title} {...song} />
         ))}

@@ -59,7 +59,7 @@ export default function SongPlayerScreen() {
 
   return (
     <div className="bg-background flex flex-col h-full">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Main Player Content */}
       <div className="workspace-player-body flex-1 flex flex-col">

@@ -14,7 +14,7 @@ const items = [
   { icon: "compass", label: t("Découvrir"), active: false },
   { icon: "plus", label: t("Créer"), active: false, isCenter: true },
   { icon: "music", label: t("Mes chansons"), active: false },
-  { icon: "zap", label: t("Packs"), badge: "3", active: false },
+  { icon: "zap", label: t("Packs"), badge: true, active: false },
 ];
 
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
@@ -78,7 +78,7 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
             <Icon i={item.icon} size={22} className={isActive ? "text-primary" : "text-muted-foreground"} />
             {item.badge && (
               <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {item.badge}
+                {demo.balance}
               </div>
             )}
             <span className={`text-xs font-body ${isActive ? "text-primary font-semibold" : "text-muted-foreground"}`}>

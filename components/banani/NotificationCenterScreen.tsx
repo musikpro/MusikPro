@@ -63,6 +63,7 @@ const getIcon = (type: string) => {
 
 export default function NotificationCenterScreen() {
   const demo = useDemo();
+  const visibleNotifications = demo.isDemo ? notifications : [];
   return (
     <div className="bg-background flex flex-col">
       {/* Top Nav */}
@@ -82,7 +83,7 @@ export default function NotificationCenterScreen() {
           type="button"
           data-demo-ready="true"
           onClick={() =>
-            demo.setReadNotifications(notifications.map((n) => n.id))
+            demo.setReadNotifications(visibleNotifications.map((n) => n.id))
           }
           className="text-sm font-semibold text-primary"
         >
@@ -92,7 +93,14 @@ export default function NotificationCenterScreen() {
 
       {/* Content */}
       <div className="flex-1 px-4 py-4 overflow-y-auto space-y-2">
-        {notifications.map((notif) => (
+        {visibleNotifications.length === 0 && (
+          <div className="rounded-xl border border-border bg-card px-5 py-8 text-center">
+            <Icon i="bell" size={26} className="mx-auto mb-2 text-primary" />
+            <p className="font-semibold text-foreground">Aucune notification</p>
+            <p className="mt-1 text-sm text-muted-foreground">Tes prochaines notifications apparaîtront ici.</p>
+          </div>
+        )}
+        {visibleNotifications.map((notif) => (
           <button
             type="button"
             data-demo-ready="true"

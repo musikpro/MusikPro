@@ -9,7 +9,7 @@ import MobileMenuDrawer from "./MobileMenuDrawer";
 export const displayName = "Mobile Top Bar";
 export const shortDescription = "Top bar for mobile with logo, credits and notifications";
 
-export default function MobileTopBar({ credits = 3 }) {
+export default function MobileTopBar({ credits = 0 }) {
   const demo = useDemo();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);

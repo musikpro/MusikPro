@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { proxy } from "@/proxy";
+import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 
 describe("demo routing", () => {
   it("keeps demo navigation inside the public demo namespace", () => {
@@ -37,5 +38,20 @@ describe("demo routing", () => {
       }),
     );
     expect(response.headers.get("location")).toBe("https://musikpro.net/login");
+  });
+
+  it("starts a real account with an empty personal workspace", () => {
+    expect(getWorkspaceDefaults(false)).toEqual({
+      balance: 0,
+      songs: [],
+      favorites: [],
+      versionFavorites: [],
+    });
+  });
+
+  it("keeps fixture content exclusive to demo mode", () => {
+    const defaults = getWorkspaceDefaults(true);
+    expect(defaults.balance).toBe(3);
+    expect(defaults.songs.length).toBeGreaterThan(0);
   });
 });

@@ -37,7 +37,7 @@ export default function CreditsMobile() {
   const demo = useDemo();
   return (
     <div className="bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Header */}
       <div className="px-4 pt-4 pb-4 flex items-center justify-between border-b border-border">
@@ -66,13 +66,19 @@ export default function CreditsMobile() {
             <span>{t("Votre solde")}</span>
           </div>
           <div className="song-balance-total">
-            <strong>3</strong>
+            <strong>{demo.balance}</strong>
             <span>{t("chansons disponibles")}</span>
           </div>
           <div className="song-balance-message">
             <Icon i="check" size={16} />
             <span>
-              {t("Vous pouvez créer")} <strong>3 {t("nouvelles chansons")}</strong>
+              {demo.balance > 0 ? (
+                <>
+                  {t("Vous pouvez créer")} <strong>{demo.balance} {t("nouvelles chansons")}</strong>
+                </>
+              ) : (
+                t("Choisissez un pack pour commencer à créer")
+              )}
             </span>
           </div>
         </div>

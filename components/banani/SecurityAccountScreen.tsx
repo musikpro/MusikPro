@@ -21,7 +21,7 @@ export default function SecurityAccountScreen({
   const demo = useDemo();
   return (
     <div className="security-screen bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
       <div className="security-top-nav">
         <button type="button" onClick={() => demo.go("/dashboard/profile")}>
           <Icon i="arrow-left" size={18} /> Retour au profil

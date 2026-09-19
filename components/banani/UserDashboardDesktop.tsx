@@ -88,7 +88,11 @@ export default function UserDashboardDesktop() {
             <h1 className="font-headings font-bold text-xl text-foreground">
               {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
             </h1>
-            <p className="text-xs text-muted-foreground">{t("Il te reste 3 chansons")}</p>
+            <p className="text-xs text-muted-foreground">
+              {demo.balance > 0
+                ? `Il te reste ${demo.balance} chanson${demo.balance > 1 ? "s" : ""}`
+                : "Aucune chanson disponible"}
+            </p>
           </div>
           <div className="flex items-center gap-4">
             <QuickLanguageSelect />
@@ -169,6 +173,13 @@ export default function UserDashboardDesktop() {
                 </a>
               </div>
               <div className="grid grid-cols-2 gap-3">
+                {recentSongs.length === 0 && (
+                  <div className="col-span-2 rounded-xl border border-border bg-card px-6 py-8 text-center">
+                    <Icon i="music-2" size={28} className="mx-auto mb-2 text-primary" />
+                    <p className="font-semibold text-foreground">Aucune chanson créée</p>
+                    <p className="mt-1 text-sm text-muted-foreground">Ta première chanson apparaîtra ici.</p>
+                  </div>
+                )}
                 {recentSongs.map((s) => (
                   <SongCard key={s.title} {...s} />
                 ))}
@@ -219,7 +230,7 @@ export default function UserDashboardDesktop() {
                 <Icon i="zap" size={20} className="text-primary" />
                 <span className="text-lg font-bold text-foreground">{t("Packs")}</span>
               </div>
-              <p className="text-5xl font-headings font-bold text-primary mb-2">3</p>
+              <p className="text-5xl font-headings font-bold text-primary mb-2">{demo.balance}</p>
               <p className="text-sm text-muted-foreground mb-6">{t("chansons restantes")}</p>
               <button
                 type="button"

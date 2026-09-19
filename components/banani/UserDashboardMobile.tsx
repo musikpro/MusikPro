@@ -87,7 +87,7 @@ export default function UserDashboardMobile() {
   }));
   return (
     <div className="bg-background flex flex-col">
-      <MobileTopBar credits={3} />
+      <MobileTopBar credits={demo.balance} />
 
       {/* Greeting */}
       <div className="dashboard-greeting px-4 pt-4 pb-3">
@@ -95,7 +95,11 @@ export default function UserDashboardMobile() {
           <h1 className="font-headings font-bold text-2xl text-foreground">
             {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
           </h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{t("Il te reste 3 chansons")}</p>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {demo.balance > 0
+              ? `Il te reste ${demo.balance} chanson${demo.balance > 1 ? "s" : ""}`
+              : "Aucune chanson disponible"}
+          </p>
         </div>
         <QuickLanguageSelect compact />
       </div>
@@ -164,6 +168,13 @@ export default function UserDashboardMobile() {
           </a>
         </div>
         <div className="flex flex-col gap-3">
+          {recentSongs.length === 0 && (
+            <div className="rounded-xl border border-border bg-card px-5 py-6 text-center">
+              <Icon i="music-2" size={26} className="mx-auto mb-2 text-primary" />
+              <p className="font-semibold text-foreground">Aucune chanson créée</p>
+              <p className="mt-1 text-sm text-muted-foreground">Ta première chanson apparaîtra ici.</p>
+            </div>
+          )}
           {recentSongs.map((s) => (
             <SongCard key={s.title} {...s} />
           ))}
