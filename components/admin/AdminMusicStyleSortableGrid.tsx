@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { deleteMusicStyle, reorderMusicStyles, toggleMusicStyle } from "@/app/admin/music-styles/actions";
 import Icon from "@/components/banani/Icon";
 import AdminDeleteMusicStyleButton from "./AdminDeleteMusicStyleButton";
@@ -50,6 +50,14 @@ export default function AdminMusicStyleSortableGrid({ styles }: { styles: Sortab
     previous: SortableMusicStyle[];
   } | null>(null);
   const pointerTargetId = useRef<string | null>(null);
+  const pointerListenersCleanup = useRef<(() => void) | null>(null);
+
+  useEffect(
+    () => () => {
+      pointerListenersCleanup.current?.();
+    },
+    [],
+  );
 
   const updateTarget = (id: string | null) => {
     pointerTargetId.current = id;
@@ -135,12 +143,75 @@ export default function AdminMusicStyleSortableGrid({ styles }: { styles: Sortab
                   const card = event.currentTarget.closest<HTMLElement>("[data-style-id]");
                   const rect = card?.getBoundingClientRect();
                   if (!rect) return;
-                  event.currentTarget.setPointerCapture(event.pointerId);
-                  pointerDrag.current = {
+                  pointerListenersCleanup.current?.();
+                  const drag = {
                     id: style.id,
                     pointerId: event.pointerId,
                     previous: itemsRef.current,
                   };
+                  pointerDrag.current = drag;
+
+                  const cleanup = () => {
+                    window.removeEventListener("pointermove", handlePointerMove, true);
+                    window.removeEventListener("pointerup", finishDrag, true);
+                    window.removeEventListener("pointercancel", cancelDrag, true);
+                    window.removeEventListener("blur", cancelDrag, true);
+                    document.removeEventListener("visibilitychange", handleVisibilityChange, true);
+                    pointerListenersCleanup.current = null;
+                  };
+
+                  const cancelDrag = () => {
+                    cleanup();
+                    itemsRef.current = drag.previous;
+                    setItems(drag.previous);
+                    resetDrag();
+                  };
+
+                  const handleVisibilityChange = () => {
+                    if (document.visibilityState === "hidden") cancelDrag();
+                  };
+
+                  const handlePointerMove = (pointerEvent: PointerEvent) => {
+                    if (pointerDrag.current?.pointerId !== pointerEvent.pointerId) return;
+                    pointerEvent.preventDefault();
+                    setDragPreview((current) =>
+                      current ? { ...current, x: pointerEvent.clientX, y: pointerEvent.clientY } : current,
+                    );
+                    const target = document
+                      .elementFromPoint(pointerEvent.clientX, pointerEvent.clientY)
+                      ?.closest<HTMLElement>("[data-style-id]");
+                    const nextTargetId = target?.dataset.styleId;
+                    if (nextTargetId && nextTargetId !== drag.id && nextTargetId !== pointerTargetId.current) {
+                      updateTarget(nextTargetId);
+                      moveWhileDragging(drag.id, nextTargetId);
+                    }
+                  };
+
+                  const finishDrag = (pointerEvent: PointerEvent) => {
+                    if (pointerDrag.current?.pointerId !== pointerEvent.pointerId) return;
+                    pointerEvent.preventDefault();
+                    const releaseTarget = document
+                      .elementFromPoint(pointerEvent.clientX, pointerEvent.clientY)
+                      ?.closest<HTMLElement>("[data-style-id]")?.dataset.styleId;
+                    const next =
+                      releaseTarget && releaseTarget !== drag.id
+                        ? moveItem(itemsRef.current, drag.id, releaseTarget)
+                        : itemsRef.current;
+                    const changed = next.some((item, itemIndex) => item.id !== drag.previous[itemIndex]?.id);
+                    cleanup();
+                    itemsRef.current = next;
+                    setItems(next);
+                    resetDrag();
+                    if (changed) persist(next, drag.previous);
+                  };
+
+                  window.addEventListener("pointermove", handlePointerMove, { capture: true, passive: false });
+                  window.addEventListener("pointerup", finishDrag, { capture: true, passive: false });
+                  window.addEventListener("pointercancel", cancelDrag, true);
+                  window.addEventListener("blur", cancelDrag, true);
+                  document.addEventListener("visibilitychange", handleVisibilityChange, true);
+                  pointerListenersCleanup.current = cleanup;
+
                   setDraggedId(style.id);
                   setDragPreview({
                     style,
@@ -150,44 +221,6 @@ export default function AdminMusicStyleSortableGrid({ styles }: { styles: Sortab
                     offsetY: event.clientY - rect.top,
                     width: rect.width,
                   });
-                }}
-                onPointerMove={(event) => {
-                  if (pointerDrag.current?.pointerId !== event.pointerId) return;
-                  event.preventDefault();
-                  setDragPreview((current) => (current ? { ...current, x: event.clientX, y: event.clientY } : current));
-                  const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>("[data-style-id]");
-                  const nextTargetId = target?.dataset.styleId;
-                  if (nextTargetId && nextTargetId !== style.id && nextTargetId !== pointerTargetId.current) {
-                    updateTarget(nextTargetId);
-                    moveWhileDragging(style.id, nextTargetId);
-                  }
-                }}
-                onPointerUp={(event) => {
-                  const drag = pointerDrag.current;
-                  if (drag?.pointerId === event.pointerId) {
-                    const releaseTarget = document
-                      .elementFromPoint(event.clientX, event.clientY)
-                      ?.closest<HTMLElement>("[data-style-id]")?.dataset.styleId;
-                    const next =
-                      releaseTarget && releaseTarget !== drag.id
-                        ? moveItem(itemsRef.current, drag.id, releaseTarget)
-                        : itemsRef.current;
-                    itemsRef.current = next;
-                    setItems(next);
-                    const changed = next.some((item, itemIndex) => item.id !== drag.previous[itemIndex]?.id);
-                    resetDrag();
-                    if (changed) persist(next, drag.previous);
-                    return;
-                  }
-                  resetDrag();
-                }}
-                onPointerCancel={() => {
-                  const previous = pointerDrag.current?.previous;
-                  if (previous) {
-                    itemsRef.current = previous;
-                    setItems(previous);
-                  }
-                  resetDrag();
                 }}
                 onKeyDown={(event) => {
                   if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
