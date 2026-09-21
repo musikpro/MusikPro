@@ -7,9 +7,9 @@ import { requireAdmin } from "@/lib/auth/session";
 export default async function AdminAIProvidersPage() {
   await requireAdmin();
   const [lyricsProvider] = await getServiceDb()
-    .select({ enabled: aiProviderConfigs.enabled, model: aiProviderConfigs.defaultModel })
+    .select({ enabled: aiProviderConfigs.enabled, model: aiProviderConfigs.defaultModel, provider: aiProviderConfigs.provider })
     .from(aiProviderConfigs)
-    .where(eq(aiProviderConfigs.provider, "openai"))
+    .where(eq(aiProviderConfigs.isDefaultForLyrics, true))
     .limit(1);
 
   return (
@@ -24,7 +24,7 @@ export default async function AdminAIProvidersPage() {
           id: "lyrics",
           title: "Génération des paroles",
           subtitle: "Création, révision et rallongement des paroles",
-          meta: lyricsProvider ? `OpenAI · ${lyricsProvider.model}` : "OpenAI à configurer",
+          meta: lyricsProvider ? `${lyricsProvider.provider === "anthropic" ? "Claude" : "OpenAI"} · ${lyricsProvider.model}` : "OpenAI ou Claude à configurer",
           status: lyricsProvider?.enabled ? "active" : "inactive",
           icon: "file-music",
           href: "/admin/ai-providers/lyrics",

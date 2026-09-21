@@ -1,56 +1,17 @@
-import { eq } from "drizzle-orm";
-import AdminAiProviderForm from "@/components/admin/AdminAiProviderForm";
-import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import { inArray } from "drizzle-orm";
+import AdminCatalogPage from "@/components/admin/AdminCatalogPage";
 import { getServiceDb } from "@/db";
 import { aiProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 
-export default async function AdminLyricsProviderPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function AdminLyricsProviderPage() {
   await requireAdmin();
-  const [stored] = await getServiceDb()
-    .select()
-    .from(aiProviderConfigs)
-    .where(eq(aiProviderConfigs.provider, "openai"))
-    .limit(1);
-  const query = await searchParams;
-  const notice = query.saved
-    ? "Configuration enregistrée."
-    : query.removed
-      ? "Clé supprimée et fournisseur désactivé."
-      : query.test === "ok"
-        ? "Connexion OpenAI validée avec le modèle configuré."
-        : query.test === "failed"
-          ? "Échec de connexion : vérifie la clé et l’identifiant du modèle."
-          : query.test === "missing"
-            ? "Aucune clé OpenAI n’est disponible."
-            : undefined;
-  const noticeTone = query.test === "failed" || query.test === "missing" ? "error" : query.removed ? "info" : "success";
-  return (
-    <AdminPage>
-      <AdminBackLink href="/admin/ai-providers" label="Toutes les capacités IA" />
-      <AdminPageHeader
-        eyebrow="Fournisseur de paroles"
-        title="Génération des paroles"
-        description="Réglages exclusivement utilisés pour créer, réviser et rallonger les paroles."
-      />
-      <AdminAiProviderForm
-        settings={{
-          enabled: stored?.enabled ?? Boolean(process.env.OPENAI_API_KEY),
-          apiKeyLast4: stored?.apiKeyLast4 ?? (process.env.OPENAI_API_KEY ? "env" : null),
-          defaultModel: stored?.defaultModel ?? process.env.OPENAI_DEFAULT_MODEL ?? "gpt-5.6-terra",
-          maxOutputTokens: stored?.maxOutputTokens ?? (Number(process.env.OPENAI_MAX_OUTPUT_TOKENS) || 4000),
-          requestsPerMinute: stored?.requestsPerMinute ?? 10,
-          lyricsGenerationEnabled: stored?.lyricsGenerationEnabled ?? true,
-          lyricsRewriteEnabled: stored?.lyricsRewriteEnabled ?? true,
-        }}
-        notice={notice}
-        noticeTone={noticeTone}
-        encryptionReady={Boolean(process.env.APP_SECRETS_ENCRYPTION_KEY)}
-      />
-    </AdminPage>
-  );
+  const rows = await getServiceDb().select().from(aiProviderConfigs).where(inArray(aiProviderConfigs.provider, ["openai", "anthropic"]));
+  const byProvider = new Map(rows.map((row) => [row.provider, row]));
+  const openai = byProvider.get("openai");
+  const anthropic = byProvider.get("anthropic");
+  return <AdminCatalogPage eyebrow="Génération des paroles" title="Choisir une entreprise IA" description="Configure OpenAI ou Claude, puis sélectionne le fournisseur utilisé par MusikPro." searchLabel="Rechercher un fournisseur" sourceNote="Un seul fournisseur est utilisé pour les paroles à la fois. Les clés sont chiffrées et restent exclusivement côté serveur." items={[
+    { id: "openai", title: "OpenAI / ChatGPT", subtitle: "Génération, révision et rallongement via OpenAI", meta: openai ? `${openai.defaultModel}${openai.isDefaultForLyrics ? " · Utilisé actuellement" : ""}` : "À configurer", status: openai?.enabled ? "active" : "inactive", icon: "bot", href: "/admin/ai-providers/lyrics/openai" },
+    { id: "anthropic", title: "Claude / Anthropic", subtitle: "Génération, révision et rallongement via Claude", meta: anthropic ? `${anthropic.defaultModel}${anthropic.isDefaultForLyrics ? " · Utilisé actuellement" : ""}` : "À configurer", status: anthropic?.enabled ? "active" : "inactive", icon: "brain", href: "/admin/ai-providers/lyrics/anthropic" },
+  ]} />;
 }

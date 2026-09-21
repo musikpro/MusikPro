@@ -64,6 +64,13 @@
       "when": 1790010194851,
       "tag": "0008_light_whirlwind",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790022000000,
+      "tag": "0009_claude_lyrics_provider",
+      "breakpoints": true
     }
   ]
 }

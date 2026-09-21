@@ -438,21 +438,25 @@
         "Les comptes réels restent sans chansons fictives; la démo applique les collections au catalogue de démonstration existant."
       ]
     },
-    "openai-lyrics-generation": {
-      "description": "Fournisseur OpenAI administrable et chiffré pour générer, réviser et rallonger les paroles depuis le parcours client.",
+    "multi-provider-lyrics-generation": {
+      "description": "Fournisseurs OpenAI et Anthropic administrables, chiffrés et sélectionnables pour générer, réviser et rallonger les paroles.",
       "optional": true,
-      "env": ["APP_SECRETS_ENCRYPTION_KEY", "OPENAI_API_KEY", "OPENAI_DEFAULT_MODEL", "OPENAI_MAX_OUTPUT_TOKENS"],
+      "env": ["APP_SECRETS_ENCRYPTION_KEY", "OPENAI_API_KEY", "OPENAI_DEFAULT_MODEL", "OPENAI_MAX_OUTPUT_TOKENS", "ANTHROPIC_API_KEY", "ANTHROPIC_DEFAULT_MODEL", "ANTHROPIC_MAX_OUTPUT_TOKENS"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0008_light_whirlwind.sql",
+        "db/migrations/0009_claude_lyrics_provider.sql",
         "lib/ai/secrets.ts",
         "lib/ai/provider.ts",
         "lib/ai/lyrics.ts",
+        "lib/ai/anthropic.ts",
         "lib/validation/ai.ts",
         "app/api/ai/generate/route.ts",
         "app/admin/ai-providers/page.tsx",
         "app/admin/ai-providers/loading.tsx",
         "app/admin/ai-providers/lyrics/page.tsx",
+        "app/admin/ai-providers/lyrics/openai/page.tsx",
+        "app/admin/ai-providers/lyrics/anthropic/page.tsx",
         "app/admin/ai-providers/audio/page.tsx",
         "app/admin/ai-providers/pronunciation/page.tsx",
         "app/admin/ai-providers/moderation/page.tsx",
@@ -468,7 +472,8 @@
       "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local.",
       "notes": [
         "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
-        "OPENAI_API_KEY peut servir de clé serveur de secours si aucune clé chiffrée n’est enregistrée."
+        "OPENAI_API_KEY et ANTHROPIC_API_KEY peuvent servir de clés serveur de secours si aucune clé chiffrée n’est enregistrée.",
+        "Un seul fournisseur est sélectionné pour les paroles; aucun fallback silencieux n’est effectué."
       ]
     }
   },

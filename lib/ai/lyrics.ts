@@ -1,8 +1,9 @@
 import "server-only";
 import type { AiLyricsTask } from "@/lib/validation/ai";
-import { createOpenAiClient, getOpenAiProvider } from "./provider";
+import { createOpenAiClient, getLyricsProvider } from "./provider";
+import { runAnthropicLyricsTask } from "./anthropic";
 
-function promptFor(task: AiLyricsTask) {
+export function promptFor(task: AiLyricsTask) {
   const input = task.input;
   const context = [
     `Occasion: ${input.occasion}`,
@@ -26,7 +27,7 @@ function promptFor(task: AiLyricsTask) {
 }
 
 export async function runLyricsTask(task: AiLyricsTask) {
-  const provider = await getOpenAiProvider();
+  const provider = await getLyricsProvider();
   if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");
   const isRewrite = task.task !== "lyrics.generate";
   if (
@@ -35,10 +36,20 @@ export async function runLyricsTask(task: AiLyricsTask) {
   ) {
     throw new Error("AI_CAPABILITY_DISABLED");
   }
+  const instructions =
+    "Tu es le parolier de MusikPro. Respecte fidèlement toutes les informations fournies. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown.";
+  if (provider.provider === "anthropic") {
+    return runAnthropicLyricsTask(
+      provider.apiKey,
+      provider.model,
+      provider.maxOutputTokens,
+      instructions,
+      promptFor(task),
+    );
+  }
   const response = await createOpenAiClient(provider.apiKey).responses.create({
     model: provider.model,
-    instructions:
-      "Tu es le parolier de MusikPro. Respecte fidèlement toutes les informations fournies. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown.",
+    instructions,
     input: promptFor(task),
     max_output_tokens: provider.maxOutputTokens,
   });

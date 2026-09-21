@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { runLyricsTask } from "@/lib/ai/lyrics";
-import { getOpenAiProvider } from "@/lib/ai/provider";
+import { getLyricsProvider } from "@/lib/ai/provider";
 import { aiLyricsTaskSchema } from "@/lib/validation/ai";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
-import { classifyOpenAiError } from "@/lib/ai/errors";
+import { classifyAnthropicError, classifyOpenAiError } from "@/lib/ai/errors";
 import { createLogger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   if (typeFailure) return typeFailure;
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return NextResponse.json({ error: "Authentification requise." }, { status: 401 });
-  const provider = await getOpenAiProvider();
+  const provider = await getLyricsProvider();
   const limit = await rateLimit(`ai:lyrics:${session.user.id}:${clientIp(request)}`, provider.requestsPerMinute);
   if (limit.backend === "unavailable")
     return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
@@ -41,8 +41,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le fournisseur de paroles n’est pas encore configuré." }, { status: 503 });
     if (code === "AI_CAPABILITY_DISABLED")
       return NextResponse.json({ error: "Cette fonction de paroles est désactivée." }, { status: 403 });
-    const failure = classifyOpenAiError(error);
-    logger.error("OpenAI lyrics request failed", {
+    const failure = provider.provider === "anthropic" ? classifyAnthropicError(error) : classifyOpenAiError(error);
+    logger.error("AI lyrics request failed", {
+      provider: provider.provider,
       code: failure.code,
       providerStatus: failure.providerStatus,
       providerRequestId: failure.providerRequestId,

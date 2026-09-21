@@ -33,6 +33,7 @@ describe("AI lyrics validation", () => {
         requestsPerMinute: "10",
         lyricsGenerationEnabled: "true",
         lyricsRewriteEnabled: "true",
+        isDefaultForLyrics: "true",
       }).success,
     ).toBe(true);
   });

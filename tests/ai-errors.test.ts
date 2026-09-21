@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { classifyOpenAiError } from "@/lib/ai/errors";
+import { classifyAnthropicError, classifyOpenAiError } from "@/lib/ai/errors";
 
 describe("OpenAI public error classification", () => {
   it("explains exhausted API credits without exposing provider details", () => {
@@ -15,5 +15,9 @@ describe("OpenAI public error classification", () => {
       status: 429,
       code: "OPENAI_RATE_LIMITED",
     });
+  });
+
+  it("maps Claude authentication failures without leaking the upstream body", () => {
+    expect(classifyAnthropicError({ status: 401, message: "secret upstream detail" })).toMatchObject({ status: 503, code: "CLAUDE_AUTHENTICATION_FAILED" });
   });
 });

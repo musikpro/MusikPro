@@ -108,6 +108,7 @@
     "db:runtime:test": "node scripts/neon-runtime-setup.mjs --test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.127.0",
     "@fontsource/dm-sans": "^5.3.0",
     "@neondatabase/serverless": "1.1.0",
     "@prisma/client": "6.16.2",

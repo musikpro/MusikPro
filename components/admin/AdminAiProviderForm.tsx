@@ -1,7 +1,7 @@
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import AdminToast from "@/components/admin/AdminToast";
-import { removeOpenAiKey, saveOpenAiSettings, testOpenAiConnection } from "@/app/admin/ai-providers/actions";
+import { removeAnthropicKey, removeOpenAiKey, saveAnthropicSettings, saveOpenAiSettings, testAnthropicConnection, testOpenAiConnection } from "@/app/admin/ai-providers/actions";
 
 type Settings = {
   enabled: boolean;
@@ -11,6 +11,7 @@ type Settings = {
   requestsPerMinute: number;
   lyricsGenerationEnabled: boolean;
   lyricsRewriteEnabled: boolean;
+  isDefaultForLyrics: boolean;
 };
 
 function FieldInfo({ text }: { text: string }) {
@@ -38,17 +39,24 @@ export default function AdminAiProviderForm({
   notice,
   noticeTone,
   encryptionReady,
+  provider = "openai",
 }: {
   settings: Settings;
   notice?: string;
   noticeTone?: "success" | "error" | "info";
   encryptionReady: boolean;
+  provider?: "openai" | "anthropic";
 }) {
+  const isAnthropic = provider === "anthropic";
+  const saveAction = isAnthropic ? saveAnthropicSettings : saveOpenAiSettings;
+  const testAction = isAnthropic ? testAnthropicConnection : testOpenAiConnection;
+  const removeAction = isAnthropic ? removeAnthropicKey : removeOpenAiKey;
+  const providerName = isAnthropic ? "Claude / Anthropic" : "OpenAI";
   return (
     <section className="admin-panel admin-editor-card">
       <div>
         <span className="admin-eyebrow">Génération des paroles</span>
-        <h2>OpenAI</h2>
+        <h2>{providerName}</h2>
         <p>Configure la clé et le modèle utilisés par la génération, la révision et le rallongement.</p>
         <span className={`admin-status ${settings.enabled ? "is-success" : "is-pending"}`}>
           {settings.enabled ? "Actif" : "Inactif"}
@@ -70,16 +78,16 @@ export default function AdminAiProviderForm({
               <li>
                 Ajoute-le dans <code>.env.local</code> sous le nom <code>APP_SECRETS_ENCRYPTION_KEY</code>.
               </li>
-              <li>Redémarre MusikPro, puis colle la clé ChatGPT/OpenAI dans le premier champ ci-dessous.</li>
+              <li>Redémarre MusikPro, puis colle la clé {providerName} dans le premier champ ci-dessous.</li>
             </ol>
             <small>Ne colle jamais ces deux clés dans le chat, GitHub ou une variable NEXT_PUBLIC_*.</small>
           </div>
         </div>
       ) : null}
-      <form action={saveOpenAiSettings} className="admin-editor-grid">
+      <form action={saveAction} className="admin-editor-grid">
         <label className="admin-editor-field is-wide">
-          <FieldLabel help="Colle ici la clé secrète créée dans OpenAI Platform > API keys. Le champ masque les caractères pendant la saisie. Après enregistrement, seule la fin de la clé sera affichée.">
-            Clé API ChatGPT / OpenAI
+          <FieldLabel help={`Colle ici la clé secrète créée dans ${isAnthropic ? "Claude Platform" : "OpenAI Platform"}. Le champ masque les caractères pendant la saisie. Après enregistrement, seule la fin de la clé sera affichée.`}>
+            Clé API {providerName}
           </FieldLabel>
           <input
             name="apiKey"
@@ -91,7 +99,7 @@ export default function AdminAiProviderForm({
             placeholder={
               settings.apiKeyLast4
                 ? `Clé enregistrée ••••${settings.apiKeyLast4} — laisser vide pour conserver`
-                : "sk-proj-…"
+                : isAnthropic ? "sk-ant-…" : "sk-proj-…"
             }
           />
           <small>
@@ -101,13 +109,13 @@ export default function AdminAiProviderForm({
           </small>
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="Activé autorise MusikPro à appeler OpenAI. Désactivé conserve les réglages mais bloque toutes les nouvelles générations de paroles.">
+          <FieldLabel help={`Activé autorise MusikPro à appeler ${providerName}. Désactivé conserve les réglages mais bloque les appels à ce fournisseur.`}>
             État du fournisseur
           </FieldLabel>
           <AdminSelect
             name="enabled"
             defaultValue={String(settings.enabled)}
-            ariaLabel="État OpenAI"
+            ariaLabel={`État ${providerName}`}
             options={[
               { value: "true", label: "Activé" },
               { value: "false", label: "Désactivé" },
@@ -115,7 +123,13 @@ export default function AdminAiProviderForm({
           />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="Identifiant exact du modèle OpenAI utilisé pour écrire les paroles. Tu peux le modifier sans changer le code de MusikPro.">
+          <FieldLabel help="Choisis ce fournisseur pour les nouvelles générations, révisions et extensions de paroles. Un seul fournisseur est utilisé à la fois.">
+            Fournisseur utilisé pour les paroles
+          </FieldLabel>
+          <AdminSelect name="isDefaultForLyrics" defaultValue={String(settings.isDefaultForLyrics)} ariaLabel={`Utiliser ${providerName} pour les paroles`} options={[{ value: "true", label: "Utiliser ce fournisseur" }, { value: "false", label: "Ne pas utiliser" }]} />
+        </label>
+        <label className="admin-editor-field">
+          <FieldLabel help={`Identifiant exact du modèle ${providerName} utilisé pour écrire les paroles. Tu peux le modifier sans changer le code de MusikPro.`}>
             Identifiant du modèle
           </FieldLabel>
           <input name="defaultModel" required minLength={1} maxLength={100} defaultValue={settings.defaultModel} />
@@ -161,7 +175,7 @@ export default function AdminAiProviderForm({
           />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="Autorise OpenAI à réviser, reformuler ou rallonger des paroles déjà générées sans affecter la génération initiale.">
+          <FieldLabel help={`Autorise ${providerName} à réviser, reformuler ou rallonger des paroles déjà générées sans affecter la génération initiale.`}>
             Révision et rallongement
           </FieldLabel>
           <AdminSelect
@@ -182,14 +196,14 @@ export default function AdminAiProviderForm({
         </div>
       </form>
       <div className="admin-editor-actions">
-        <form action={testOpenAiConnection}>
+        <form action={testAction}>
           <button type="submit">
             <Icon i="activity" size={17} />
             Tester la connexion
           </button>
         </form>
         {settings.apiKeyLast4 ? (
-          <form action={removeOpenAiKey}>
+          <form action={removeAction}>
             <button type="submit" className="is-danger">
               <Icon i="trash-2" size={17} />
               Supprimer la clé

@@ -330,7 +330,7 @@
     },
     {
       "id": "openai",
-      "label": "OpenAI — génération de paroles (optionnel)",
+      "label": "IA texte — OpenAI et Anthropic (optionnel)",
       "variables": [
         {
           "name": "APP_SECRETS_ENCRYPTION_KEY",
@@ -362,6 +362,30 @@
           "required": "optional",
           "vercel": ["Production", "Preview"],
           "source": "Limite serveur par défaut pour une réponse de paroles.",
+          "example": "4000"
+        },
+        {
+          "name": "ANTHROPIC_API_KEY",
+          "sensitive": true,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Claude Platform > Settings > API keys. Clé serveur de secours si aucune clé chiffrée n’est enregistrée.",
+          "example": "sk-ant-..."
+        },
+        {
+          "name": "ANTHROPIC_DEFAULT_MODEL",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Identifiant du modèle Claude utilisé par défaut.",
+          "example": "claude-sonnet-5"
+        },
+        {
+          "name": "ANTHROPIC_MAX_OUTPUT_TOKENS",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Limite serveur par défaut pour une réponse Claude.",
           "example": "4000"
         }
       ]

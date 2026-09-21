@@ -262,6 +262,7 @@ export const paymentAttempts = pgTable(
 export const aiProviderConfigs = pgTable("ai_provider_configs", {
   id: text("id").primaryKey(),
   provider: text("provider").notNull().unique().default("openai"),
+  isDefaultForLyrics: boolean("is_default_for_lyrics").notNull().default(false),
   enabled: boolean("enabled").notNull().default(false),
   apiKeyCiphertext: text("api_key_ciphertext"),
   apiKeyIv: text("api_key_iv"),

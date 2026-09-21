@@ -8,6 +8,11 @@ export const openAiSettingsSchema = z.object({
   requestsPerMinute: z.coerce.number().int().min(1).max(120),
   lyricsGenerationEnabled: z.enum(["true", "false"]),
   lyricsRewriteEnabled: z.enum(["true", "false"]),
+  isDefaultForLyrics: z.enum(["true", "false"]),
+});
+
+export const anthropicSettingsSchema = openAiSettingsSchema.extend({
+  defaultModel: z.string().trim().min(3).max(150),
 });
 
 const lyricsContextSchema = z.object({
