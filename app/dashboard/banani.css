@@ -2009,6 +2009,14 @@
   border-radius: inherit;
   animation: story-mic-pulse 1.8s ease-out infinite;
 }
+.story-mic-button.is-listening {
+  background: #b42318;
+  box-shadow: 0 0 0 5px rgb(180 35 24 / 14%), 0 8px 22px rgb(180 35 24 / 32%);
+}
+.story-mic-button.is-listening::before {
+  border-color: rgb(180 35 24 / 58%);
+  animation-duration: 1s;
+}
 @keyframes story-mic-pulse {
   0% {
     opacity: 0.72;
@@ -2018,6 +2026,12 @@
   100% {
     opacity: 0;
     transform: scale(1.2);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .story-mic-button::before {
+    animation: none;
+    opacity: 0;
   }
 }
 .genre-choice-icon {

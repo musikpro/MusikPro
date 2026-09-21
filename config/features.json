@@ -475,6 +475,26 @@
         "OPENAI_API_KEY et ANTHROPIC_API_KEY peuvent servir de clés serveur de secours si aucune clé chiffrée n’est enregistrée.",
         "Un seul fournisseur est sélectionné pour les paroles; aucun fallback silencieux n’est effectué."
       ]
+    },
+    "browser-voice-transcription": {
+      "description": "Transcription vocale via l’API Web Speech du navigateur pour les champs histoire et détail spécial du parcours de création.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "components/banani/VoiceMicrophoneButton.tsx",
+        "components/banani/StepStory.tsx",
+        "components/banani/StepAdditionalParams.tsx",
+        "app/dashboard/banani.css",
+        "lib/security/headers.ts"
+      ],
+      "routes": [],
+      "dependsOn": [],
+      "removalComplexity": "low",
+      "disableBehavior": "Retirer les boutons microphone; la saisie manuelle des deux champs reste disponible.",
+      "notes": [
+        "La permission microphone est demandée par le navigateur uniquement après une action explicite de l’utilisateur.",
+        "La transcription dépend du support SpeechRecognition/webkitSpeechRecognition; MusikPro ne stocke aucun enregistrement audio, mais le navigateur peut utiliser son propre service de reconnaissance."
+      ]
     }
   },
   "removalProtocol": [

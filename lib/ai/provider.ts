@@ -40,7 +40,7 @@ export async function getAnthropicProvider() {
     config: stored,
     apiKey,
     enabled: stored ? stored.enabled : Boolean(apiKey),
-    model: stored?.defaultModel || process.env.ANTHROPIC_DEFAULT_MODEL || "claude-sonnet-5",
+    model: stored?.defaultModel || process.env.ANTHROPIC_DEFAULT_MODEL || "claude-haiku-4-5-20251001",
     maxOutputTokens: stored?.maxOutputTokens || Number(process.env.ANTHROPIC_MAX_OUTPUT_TOKENS) || 4000,
     requestsPerMinute: stored?.requestsPerMinute || 10,
   };

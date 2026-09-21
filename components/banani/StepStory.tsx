@@ -70,7 +70,13 @@ export default function StepStory() {
             placeholder="Ex. : Je veux rendre hommage à ma femme Aïcha. Sa force, sa douceur et son sourire illuminent notre famille depuis toutes ces années..."
           />
           <VoiceMicrophoneButton
-            onClick={() => demo.notify("Transcription vocale non disponible dans la démonstration.")}
+            value={demo.fields.story}
+            onTranscript={(value) => {
+              demo.field("story", value.slice(0, 2000));
+              setStoryError("");
+            }}
+            onMessage={demo.notify}
+            language={demo.choices.language === "Anglais" ? "en-US" : "fr-FR"}
             label="Raconter mon histoire avec le microphone"
             className="absolute top-3 right-3"
           />

@@ -113,7 +113,13 @@ export default function StepAdditionalParams() {
               placeholder="Y a-t-il un événement ou moment spécial que tu aimerais ajouter ?"
             />
             <VoiceMicrophoneButton
-              onClick={() => demo.notify("Transcription vocale non disponible dans la démonstration.")}
+              value={demo.fields.detail}
+              onTranscript={(value) => {
+                demo.field("detail", value.slice(0, 3000));
+                setDetailError("");
+              }}
+              onMessage={demo.notify}
+              language={demo.choices.language === "Anglais" ? "en-US" : "fr-FR"}
               label="Ajouter le détail spécial avec le microphone"
               className="absolute top-3 right-3"
             />

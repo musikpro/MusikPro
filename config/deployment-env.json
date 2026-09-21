@@ -378,7 +378,7 @@
           "required": "optional",
           "vercel": ["Production", "Preview"],
           "source": "Identifiant du modèle Claude utilisé par défaut.",
-          "example": "claude-sonnet-5"
+          "example": "claude-haiku-4-5-20251001"
         },
         {
           "name": "ANTHROPIC_MAX_OUTPUT_TOKENS",
