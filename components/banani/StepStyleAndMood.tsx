@@ -1,6 +1,5 @@
 "use client";
 const t = (text: string) => text;
-import SelectionMark from "./SelectionMark";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import { useDemo } from "./DemoProvider";
@@ -61,7 +60,6 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
                 key={genre.name}
                 className="creation-genre-card demo-choice-card bg-card border-2 border-border rounded-lg p-2 text-center flex flex-col items-center gap-2"
               >
-                <SelectionMark selected={demo.choices.genre === genre.name} />
                 <span className={`genre-choice-icon genre-choice-icon-${genre.tone}`}>
                   <Icon i={genre.icon} size={20} />
                 </span>
@@ -94,7 +92,6 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
                 key={mood.label}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg py-3 px-2 flex flex-col items-center gap-1"
               >
-                <SelectionMark selected={demo.choices.mood === mood.label} />
                 <span className="text-2xl">{mood.emoji}</span>
                 <p className="font-semibold text-xs text-foreground text-center">{mood.label}</p>
                 <p className="text-xs text-muted-foreground">{mood.desc}</p>

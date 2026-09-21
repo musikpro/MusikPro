@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 const t = (text: string) => text;
-import SelectionMark from "./SelectionMark";
 import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
@@ -68,10 +67,8 @@ export default function StepAdditionalParams() {
                 key={lang.name}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
               >
-                <SelectionMark selected={demo.choices.language === lang.name} />
                 <span className="text-lg">{lang.flag}</span>
                 <p className="text-sm font-semibold text-foreground">{lang.name}</p>
-                <div className="ml-auto w-5 h-5 border-2 border-border rounded-full"></div>
               </button>
             ))}
           </div>
@@ -94,10 +91,8 @@ export default function StepAdditionalParams() {
                 key={voice.text}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
               >
-                <SelectionMark selected={demo.choices.voice === voice.text} />
                 <span className="text-lg">{voice.emoji}</span>
                 <p className="text-sm font-semibold text-foreground">{voice.text}</p>
-                <div className="ml-auto w-5 h-5 border-2 border-border rounded-full"></div>
               </button>
             ))}
           </div>

@@ -95,9 +95,6 @@ export default function CreationPackScreen() {
                     <small>{pack.songs === 1 ? "chanson" : "chansons"}</small>
                     <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>
                   </span>
-                  <span className="creation-pack-radio" aria-hidden="true">
-                    {selected && <Icon i="check" size={15} />}
-                  </span>
                 </button>
               );
             })}

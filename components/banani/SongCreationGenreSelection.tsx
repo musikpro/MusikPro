@@ -1,6 +1,5 @@
 "use client";
 const t = (text: string) => text;
-import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import { demoDestination } from "@/lib/demo/navigation";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
@@ -219,7 +218,6 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
                       : "0 2px 8px rgba(0,0,0,0.06)",
                 }}
               >
-                <SelectionMark selected={demo.choices.genre === genre.name} />
                 <div
                   className={`w-16 h-16 genre-choice-icon genre-choice-icon-${genre.tone} rounded-2xl flex items-center justify-center mb-3`}
                 >

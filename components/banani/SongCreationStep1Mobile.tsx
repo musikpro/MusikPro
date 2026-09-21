@@ -1,6 +1,5 @@
 "use client";
 const t = (text: string) => text;
-import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 1 — Choisir une occasion";
@@ -44,9 +43,6 @@ export default function SongCreationStep1Mobile() {
               key={occasion.id}
               className="demo-choice-card bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center"
             >
-              <SelectionMark
-                selected={demo.choices.occasion === occasion.label}
-              />
               <span className="text-3xl">{occasion.emoji}</span>
               <p className="text-sm font-semibold text-foreground">
                 {occasion.label}

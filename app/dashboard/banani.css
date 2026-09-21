@@ -3910,19 +3910,6 @@
   margin-top: 7px;
   font-size: 11px;
 }
-.creation-pack-radio {
-  width: 22px;
-  height: 22px;
-  display: grid;
-  place-items: center;
-  border: 1.5px solid var(--color-border);
-  border-radius: 50%;
-  color: white;
-}
-.creation-pack-card.is-selected .creation-pack-radio {
-  border-color: var(--color-primary);
-  background: var(--color-primary);
-}
 .creation-pack-payment-methods {
   padding: 13px;
   border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
@@ -4302,13 +4289,7 @@
   justify-items: start;
 }
 .creation-pack-card-value b {
-  padding-right: 29px;
   font-size: 10px;
-}
-.creation-pack-radio {
-  position: absolute;
-  right: 12px;
-  bottom: 13px;
 }
 @media (min-width: 600px) {
   .creation-pack-card {
@@ -4320,10 +4301,6 @@
   }
   .creation-pack-card-value b {
     font-size: 11px;
-  }
-  .creation-pack-radio {
-    right: 16px;
-    bottom: 16px;
   }
 }
 @media (max-width: 359px) {
@@ -4339,10 +4316,6 @@
   }
   .creation-pack-card-main > small {
     font-size: 9px;
-  }
-  .creation-pack-radio {
-    right: 9px;
-    bottom: 11px;
   }
 }
 
