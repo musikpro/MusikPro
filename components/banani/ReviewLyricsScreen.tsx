@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 const t = (text: string) => text;
 import { useDemo } from "./DemoProvider";
 
@@ -12,6 +13,13 @@ import { DEMO_LYRICS_MAX_WORDS } from "@/lib/validation/musikpro-demo";
 
 export default function ReviewLyricsScreen() {
   const demo = useDemo();
+  const hasLyrics = Boolean(demo.fields.lyrics.trim());
+  useEffect(() => {
+    if (!hasLyrics) demo.go("/dashboard/create/parameters");
+  }, [demo, hasLyrics]);
+  if (!hasLyrics) {
+    return <p className="p-6 text-center text-sm text-muted-foreground">Redirection vers la génération des paroles…</p>;
+  }
   const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
   return (
     <div className="bg-surface flex flex-col">

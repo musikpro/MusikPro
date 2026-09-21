@@ -311,6 +311,7 @@ function useDemoState(
       return true;
     } catch (error) {
       notify(error instanceof Error ? error.message : "La génération des paroles a échoué.");
+      go("/dashboard/create/parameters");
       return false;
     } finally {
       setLyricsPending(false);

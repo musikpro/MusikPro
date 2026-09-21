@@ -5,8 +5,11 @@ import { getOpenAiProvider } from "@/lib/ai/provider";
 import { aiLyricsTaskSchema } from "@/lib/validation/ai";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
+import { classifyOpenAiError } from "@/lib/ai/errors";
+import { createLogger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
+const logger = createLogger("ai-lyrics");
 
 export async function POST(request: Request) {
   const originFailure = rejectCrossSiteMutation(request);
@@ -38,9 +41,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le fournisseur de paroles n’est pas encore configuré." }, { status: 503 });
     if (code === "AI_CAPABILITY_DISABLED")
       return NextResponse.json({ error: "Cette fonction de paroles est désactivée." }, { status: 403 });
-    return NextResponse.json(
-      { error: "La génération des paroles a échoué. Vérifie la connexion OpenAI dans l’espace propriétaire." },
-      { status: 502 },
-    );
+    const failure = classifyOpenAiError(error);
+    logger.error("OpenAI lyrics request failed", {
+      code: failure.code,
+      providerStatus: failure.providerStatus,
+      providerRequestId: failure.providerRequestId,
+    });
+    return NextResponse.json({ error: failure.message, code: failure.code }, { status: failure.status });
   }
 }

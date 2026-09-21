@@ -30,7 +30,7 @@ export async function apiFetch<T = unknown>(input: RequestInfo | URL, options: A
         try {
           const json = await response.json() as { error?: string; code?: string };
           if (typeof json.code === "string") code = json.code;
-          if (typeof json.error === "string" && response.status < 500) message = json.error;
+          if (typeof json.error === "string") message = json.error;
         } catch {}
         throw new ApiClientError(response.status, message, code);
       }
