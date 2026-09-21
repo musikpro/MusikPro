@@ -14,7 +14,7 @@ const groups = [
     ["heart", "Favoris", "/favorites"],
   ],
   [
-    ["zap", "Packs", "/credits"],
+    ["coins", "Crédits", "/credits"],
     ["receipt", "Paiements", "/payment-preview"],
     ["bell", "Notifications", "/notifications"],
   ],

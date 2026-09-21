@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { demoRecipientSchema } from "@/lib/validation/musikpro-demo";
 import CreationTopNav from "./CreationTopNav";
 import { useDemo } from "./DemoProvider";
@@ -93,7 +92,7 @@ export default function StepRecipient() {
 
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
         </span>
       </div>
 

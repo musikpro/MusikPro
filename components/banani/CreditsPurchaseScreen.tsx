@@ -4,37 +4,39 @@ import Image from "next/image";
 import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
-export const displayName = "Packs - Acheter des Chansons";
+export const displayName = "Crédits & tarifs";
 export const screenSize = "mobile";
 
 import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
+import { CREDITS_PER_GENERATION, getGenerationCount, getVersionCount } from "@/lib/credit-plans/catalog";
 
 const transactionHistory = [
   {
     date: "20 juillet 2025",
     action: "Création chanson",
-    songs: -1,
+    credits: -2,
     type: "usage",
   },
   {
     date: "19 juillet 2025",
-    action: "Achat pack Populaire",
-    songs: +5,
+    action: "Achat de crédits Populaire",
+    credits: +20,
     type: "purchase",
   },
   {
     date: "15 juillet 2025",
     action: "Création chanson",
-    songs: -1,
+    credits: -2,
     type: "usage",
   },
 ];
 
 export default function CreditsMobile() {
   const demo = useDemo();
+  const availableGenerations = getGenerationCount(demo.balance);
   const visibleHistory = demo.isDemo ? transactionHistory : [];
   return (
     <div className="bg-background flex flex-col">
@@ -43,8 +45,8 @@ export default function CreditsMobile() {
       {/* Header */}
       <div className="px-4 pt-4 pb-4 flex items-center justify-between border-b border-border">
         <div>
-          <h1 className="font-headings font-bold text-lg text-foreground">{t("Packs de chansons")}</h1>
-          <p className="text-xs text-muted-foreground">{t("Gère tes chansons")}</p>
+          <h1 className="font-headings font-bold text-lg text-foreground">{t("Crédits & tarifs")}</h1>
+          <p className="text-xs text-muted-foreground">{t("Gère tes crédits de génération")}</p>
         </div>
         <button
           type="button"
@@ -68,17 +70,18 @@ export default function CreditsMobile() {
           </div>
           <div className="song-balance-total">
             <strong>{demo.balance}</strong>
-            <span>{t("chansons disponibles")}</span>
+            <span>{t("crédits disponibles")}</span>
           </div>
           <div className="song-balance-message">
             <Icon i="check" size={16} />
             <span>
               {demo.balance > 0 ? (
                 <>
-                  {t("Vous pouvez créer")} <strong>{demo.balance} {t("nouvelles chansons")}</strong>
+                  <strong>{availableGenerations} génération{availableGenerations > 1 ? "s" : ""}</strong>{" "}
+                  {availableGenerations > 1 ? t("disponibles") : t("disponible")} {t("au tarif de 2 crédits chacune")}
                 </>
               ) : (
-                t("Choisissez un pack pour commencer à créer")
+                t("Choisissez une offre de crédits pour commencer à créer")
               )}
             </span>
           </div>
@@ -88,7 +91,15 @@ export default function CreditsMobile() {
       {/* Credit Packs */}
       <div className="px-4 py-4">
         <div className="pack-purchase-heading">
-          <h2 className="font-bold text-base text-foreground">{t("Acheter des chansons")}</h2>
+          <div className="pack-purchase-title">
+            <h2 className="font-bold text-base text-foreground">{t("Acheter des crédits")}</h2>
+            <p className="pack-generation-cost-note">
+              <Icon i="coins" size={15} />
+              <span>
+                À chaque génération, <strong>2 crédits</strong> sont débités de ton solde. Tu reçois deux versions de ta chanson.
+              </span>
+            </p>
+          </div>
           <MusikSelect
             className="pack-currency-select"
             icon="coins"
@@ -108,8 +119,8 @@ export default function CreditsMobile() {
           {demo.songPacks.length === 0 && (
             <div className="col-span-2 rounded-xl border border-border bg-card px-5 py-8 text-center">
               <Icon i="package-open" size={26} className="mx-auto mb-2 text-primary" />
-              <p className="font-semibold text-foreground">Aucun pack disponible</p>
-              <p className="mt-1 text-sm text-muted-foreground">Les packs publiés par MusikPro apparaîtront ici.</p>
+              <p className="font-semibold text-foreground">Aucune offre de crédits disponible</p>
+              <p className="mt-1 text-sm text-muted-foreground">Les offres publiées par MusikPro apparaîtront ici.</p>
             </div>
           )}
           {demo.songPacks.map((pack) => {
@@ -135,10 +146,14 @@ export default function CreditsMobile() {
                     <p className="text-xs text-muted-foreground">{pack.description}</p>
                   </div>
                   <div className={`pack-grid-song-count ${isSelected ? "text-primary" : "text-foreground"}`}>
-                    <strong>{pack.songs ?? "∞"}</strong>
-                    <span>{pack.songs === 1 ? t("chanson") : t("chansons")}</span>
+                    <strong>{pack.credits}</strong>
+                    <span>{t("crédits")}</span>
                   </div>
                 </div>
+
+                <p className="pack-grid-credit-rule">
+                  {getGenerationCount(pack.credits, pack.generationCost)} générations · jusqu’à {getVersionCount(pack.credits, pack.generationCost)} versions
+                </p>
 
                 {pack.bonus && (
                   <span className="pack-grid-bonus">
@@ -153,9 +168,7 @@ export default function CreditsMobile() {
                   </span>
                   <span className="pack-grid-card-status">
                     {demo.pack?.id === pack.id ? (
-                      <>
-                        <Icon i="check" size={15} /> <span>Sélectionné</span>
-                      </>
+                      <span>Sélectionné</span>
                     ) : (
                       <Icon i="arrow-right" size={14} />
                     )}
@@ -173,9 +186,9 @@ export default function CreditsMobile() {
           <div className="flex items-start gap-2">
             <Icon i="info" size={16} className="text-primary mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-foreground mb-1">{t("Comment choisir un pack ?")}</p>
+              <p className="text-sm font-semibold text-foreground mb-1">{t("Comment fonctionnent les crédits ?")}</p>
               <p className="text-xs text-muted-foreground">
-                {t("Choisissez votre pack selon le nombre de chansons que vous souhaitez créer.")}
+                {t(`Chaque génération consomme ${CREDITS_PER_GENERATION} crédits et produit deux versions musicales.`)}
               </p>
             </div>
           </div>
@@ -192,7 +205,7 @@ export default function CreditsMobile() {
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-55"
         >
           <Icon i="zap" size={16} />
-          {t("Acheter des chansons")}
+          {t("Acheter des crédits")}
         </button>
         <div className="pack-payment-methods" aria-label="Moyens de paiement acceptés">
           <p>Moyens de paiement acceptés</p>
@@ -236,7 +249,7 @@ export default function CreditsMobile() {
               </div>
               <span className={`text-sm font-bold ${tx.type === "purchase" ? "text-success" : "text-coral"}`}>
                 {tx.type === "purchase" ? "+" : "-"}
-                {Math.abs(tx.songs)} chanson{Math.abs(tx.songs) > 1 ? "s" : ""}
+                {Math.abs(tx.credits)} crédit{Math.abs(tx.credits) > 1 ? "s" : ""}
               </span>
             </div>
           ))}

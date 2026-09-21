@@ -98,8 +98,8 @@ export default function UserDashboardDesktop() {
             </h1>
             <p className="text-xs text-muted-foreground">
               {demo.balance > 0
-                ? `Il te reste ${demo.balance} chanson${demo.balance > 1 ? "s" : ""}`
-                : "Aucune chanson disponible"}
+                ? `Il te reste ${demo.balance} crédit${demo.balance > 1 ? "s" : ""}`
+                : "Aucun crédit disponible"}
             </p>
           </div>
           <div className="flex items-center gap-4">

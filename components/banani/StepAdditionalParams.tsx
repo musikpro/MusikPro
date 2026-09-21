@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 const t = (text: string) => text;
-import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
@@ -38,7 +37,7 @@ export default function StepAdditionalParams() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
           {demo.choices.mood ? ` • 🚀 ${demo.choices.mood}` : ""}
         </span>
       </div>
@@ -143,25 +142,26 @@ export default function StepAdditionalParams() {
         <button
           type="button"
           data-demo-ready="true"
-          disabled={!hasRequiredOptions}
-          onClick={() =>
-            (() => {
-              const parsed = demoDetailSchema.safeParse(demo.fields.detail);
-              if (!parsed.success) {
-                setDetailError(parsed.error.issues[0].message);
-                return;
-              }
-              demo.field("detail", parsed.data);
-              demo.go("/dashboard/create/lyrics/generating");
-            })()
-          }
+          disabled={!hasRequiredOptions || demo.lyricsPending}
+          onClick={async () => {
+            const parsed = demoDetailSchema.safeParse(demo.fields.detail);
+            if (!parsed.success) {
+              setDetailError(parsed.error.issues[0].message);
+              return;
+            }
+            demo.field("detail", parsed.data);
+            demo.go("/dashboard/create/lyrics/generating");
+            await demo.generateLyrics("lyrics.generate");
+          }}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
         >
-          {t("Générer les paroles")} <Icon i="arrow-right" size={18} />
+          {demo.lyricsPending ? t("Génération…") : t("Générer les paroles")} <Icon i="arrow-right" size={18} />
         </button>
         <p className="text-xs text-muted-foreground text-center mt-2">
-          {hasRequiredOptions ? t("Une chanson de votre pack") : t("Choisis une langue et une voix pour continuer")}
+          {hasRequiredOptions
+            ? t("Cette génération utilisera 2 crédits")
+            : t("Choisis une langue et une voix pour continuer")}
         </p>
       </div>
     </div>

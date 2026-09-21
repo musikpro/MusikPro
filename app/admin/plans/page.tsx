@@ -1,111 +1,62 @@
-import { desc } from "drizzle-orm";
-import { getServiceDb } from "@/db";
-import { plans } from "@/db/schema";
+import Link from "next/link";
+import AdminCreditPlanSortableGrid from "@/components/admin/AdminCreditPlanSortableGrid";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
-import AdminSelect from "@/components/admin/AdminSelect";
+import { getServiceDb } from "@/db";
+import { plans } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { createPlan, togglePlan } from "./actions";
+import { creditPlanFeaturesSchema, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 
 export default async function AdminPlansPage() {
   await requireAdmin();
-  const db = getServiceDb();
-  const rows = await db.select().from(plans).orderBy(desc(plans.createdAt));
+  const rows = await getServiceDb().select().from(plans);
+  const catalog = rows.flatMap<CreditPlanOption>((plan) => {
+    const features = creditPlanFeaturesSchema.safeParse(plan.features);
+    if (!features.success) return [];
+    return [{
+      id: plan.id,
+      code: plan.code,
+      name: plan.name,
+      credits: features.data.credits,
+      generationCost: features.data.generationCost,
+      priceValue: plan.amount,
+      currency: "XOF",
+      description: plan.description || "Crédits de génération MusikPro",
+      popular: features.data.popular,
+      bonus: features.data.bonus,
+      sortOrder: features.data.sortOrder,
+      active: plan.active,
+    }];
+  }).sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "fr"));
+  const activeCount = catalog.filter((plan) => plan.active).length;
+
   return (
     <AdminPage>
       <AdminPageHeader
         eyebrow="Monétisation"
-        title="Packs & tarifs"
-        description={`${rows.length} pack${rows.length > 1 ? "s" : ""} configuré${rows.length > 1 ? "s" : ""} dans Neon.`}
+        title="Crédits & tarifs"
+        description={`${activeCount} offre${activeCount > 1 ? "s" : ""} active${activeCount > 1 ? "s" : ""} sur ${catalog.length}. L’ordre affiché ici est repris dans les espaces client réel et démo.`}
+        action={{ href: "/admin/plans/new", label: "Nouvelle offre" }}
       />
-      <section className="admin-plan-grid">
-        {rows.map((plan) => (
-          <article className={`admin-plan-card ${plan.active ? "is-active" : ""}`} key={plan.id}>
-            <div className="admin-plan-card-head">
-              <span className="admin-catalog-icon">
-                <Icon i="package" size={20} />
-              </span>
-              <span className={`admin-status ${plan.active ? "is-success" : "is-pending"}`}>
-                {plan.active ? "Actif" : "Désactivé"}
-              </span>
-            </div>
-            <h2>{plan.name}</h2>
-            <p>{plan.description || "Aucune description"}</p>
-            <strong>
-              {plan.amount.toLocaleString("fr-FR")} {plan.currency}
-            </strong>
-            <small>
-              {plan.interval === "year" ? "par an" : "par mois"} · code {plan.code}
-            </small>
-            <form action={togglePlan}>
-              <input type="hidden" name="id" value={plan.id} />
-              <input type="hidden" name="active" value={String(plan.active)} />
-              <button className="admin-secondary-action" type="submit">
-                <Icon i={plan.active ? "pause" : "play"} size={16} />
-                {plan.active ? "Désactiver" : "Activer"}
-              </button>
-            </form>
-          </article>
-        ))}
-      </section>
-      <section className="admin-panel admin-plan-create">
-        <div className="admin-panel-heading">
-          <div>
-            <span className="admin-panel-icon">
-              <Icon i="plus" size={18} />
-            </span>
-            <div>
-              <h2>Nouveau pack</h2>
-              <p>Créer une offre persistée dans Neon</p>
-            </div>
-          </div>
+      <div className="admin-source-notice is-connected">
+        <Icon i="database-zap" size={18} />
+        <div>
+          <strong>Catalogue connecté à Neon</strong>
+          <p>Les prix de référence sont enregistrés en FCFA et convertis automatiquement lorsque le client change de devise.</p>
         </div>
-        <form action={createPlan} className="admin-editor-grid">
-          <label className="admin-editor-field">
-            <span>Nom</span>
-            <input name="name" required minLength={2} maxLength={80} placeholder="Ex. Populaire" />
-          </label>
-          <label className="admin-editor-field">
-            <span>Code</span>
-            <input name="code" required pattern="[a-z0-9_-]{2,40}" placeholder="populaire" />
-          </label>
-          <label className="admin-editor-field">
-            <span>Montant</span>
-            <input name="amount" type="number" min="1" step="1" required />
-          </label>
-          <div className="admin-editor-field">
-            <span>Devise</span>
-            <AdminSelect
-              name="currency"
-              defaultValue="XOF"
-              ariaLabel="Devise"
-              options={["XOF", "XAF", "NGN", "GHS", "KES", "USD", "EUR"].map((value) => ({ value, label: value }))}
-            />
-          </div>
-          <div className="admin-editor-field">
-            <span>Période</span>
-            <AdminSelect
-              name="interval"
-              defaultValue="month"
-              ariaLabel="Période"
-              options={[
-                { value: "month", label: "Mensuel" },
-                { value: "year", label: "Annuel" },
-              ]}
-            />
-          </div>
-          <label className="admin-editor-field">
-            <span>Description</span>
-            <input name="description" maxLength={500} placeholder="À qui s’adresse ce pack ?" />
-          </label>
-          <div className="admin-editor-actions is-wide">
-            <button type="submit">
-              <Icon i="plus" size={17} />
-              Créer le pack
-            </button>
-          </div>
-        </form>
-      </section>
+      </div>
+      {catalog.length ? (
+        <AdminCreditPlanSortableGrid plans={catalog} />
+      ) : (
+        <div className="admin-empty-state admin-catalog-empty">
+          <Icon i="coins" size={24} />
+          <strong>Aucune offre de crédits enregistrée</strong>
+          <p>Ajoute une offre pour la rendre disponible dans les espaces client réel et démo.</p>
+          <Link className="admin-primary-action" href="/admin/plans/new">
+            <Icon i="plus" size={16} /> Ajouter une offre
+          </Link>
+        </div>
+      )}
     </AdminPage>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 const t = (text: string) => text;
-import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import { useDemo } from "./DemoProvider";
 
@@ -35,7 +34,7 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
         </span>
       </div>
 

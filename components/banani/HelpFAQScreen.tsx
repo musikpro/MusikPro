@@ -16,7 +16,7 @@ const faqs = [
   {
     question: "Combien de chansons puis-je créer ?",
     answer:
-      "Le nombre de chansons dépend de votre plan d'abonnement. Le plan Populaire vous permet de créer 5 chansons par mois.",
+      "Chaque génération musicale consomme 2 crédits et produit deux versions. Votre solde indique combien de générations restent disponibles.",
   },
   {
     question: "Puis-je télécharger mes chansons ?",
@@ -24,9 +24,9 @@ const faqs = [
       'Oui, vous pouvez télécharger vos chansons générées au format MP3 directement depuis votre bibliothèque "Mes chansons".',
   },
   {
-    question: "Comment fonctionnent les packs de chansons ?",
+    question: "Comment fonctionnent les crédits ?",
     answer:
-      "Choisissez un pack de chansons : Découverte inclut 2 chansons et Populaire inclut 5 chansons. Le récapitulatif affiche le nombre de chansons incluses avant de continuer.",
+      "Choisissez une offre de crédits selon vos besoins. L’offre Découverte contient 5 crédits, soit 2 générations et jusqu’à 4 versions musicales.",
   },
   {
     question: "Puis-je partager mes chansons ?",

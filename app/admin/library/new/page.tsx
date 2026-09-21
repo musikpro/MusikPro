@@ -1,21 +1,26 @@
-import AdminDraftForm from "@/components/admin/AdminDraftForm";
+import { asc } from "drizzle-orm";
+import AdminLibraryCollectionForm from "@/components/admin/AdminLibraryCollectionForm";
+import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import { getServiceDb } from "@/db";
+import { musicStyles } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { createLibraryCollection } from "../actions";
 
 export default async function AdminNewCollectionPage() {
   await requireAdmin();
+  const styles = await getServiceDb()
+    .select({ name: musicStyles.name })
+    .from(musicStyles)
+    .orderBy(asc(musicStyles.sortOrder));
   return (
-    <AdminDraftForm
-      eyebrow="Bibliothèque"
-      title="Nouvelle collection"
-      description="Prépare une collection cohérente pour la découverte musicale."
-      backHref="/admin/library"
-      note="La table Collection et son action serveur doivent être ajoutées avant de permettre l’enregistrement."
-      fields={[
-        { label: "Nom de la collection", placeholder: "Ex. Afrobeat Essentials" },
-        { label: "Accès", type: "select", options: ["Public", "Privé"] },
-        { label: "Description", type: "textarea", placeholder: "Décris la collection en quelques mots" },
-      ]}
-      choices={["Afrobeat", "Gospel", "Amapiano", "R&B", "Reggae", "Afro-Pop", "Folklore"]}
-    />
+    <AdminPage>
+      <AdminBackLink href="/admin/library" />
+      <AdminPageHeader
+        eyebrow="Bibliothèque"
+        title="Nouvelle collection"
+        description="Compose une sélection éditoriale qui apparaîtra dans Découvrir."
+      />
+      <AdminLibraryCollectionForm action={createLibraryCollection} styleNames={styles.map((style) => style.name)} />
+    </AdminPage>
   );
 }

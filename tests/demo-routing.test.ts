@@ -51,7 +51,7 @@ describe("demo routing", () => {
 
   it("keeps fixture content exclusive to demo mode", () => {
     const defaults = getWorkspaceDefaults(true);
-    expect(defaults.balance).toBe(3);
+    expect(defaults.balance).toBe(5);
     expect(defaults.songs.length).toBeGreaterThan(0);
   });
 });

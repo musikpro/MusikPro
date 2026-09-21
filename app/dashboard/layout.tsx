@@ -6,6 +6,9 @@ import { DemoProvider } from "@/components/banani/DemoProvider";
 import { eq } from "drizzle-orm";
 import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
+import { getActiveCreditPlans } from "@/lib/credit-plans/server";
+import { getActiveOccasions } from "@/lib/occasions/server";
+import { getPublishedLibraryCollections } from "@/lib/library-collections/server";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
 import "@fontsource/dm-sans/600.css";
@@ -18,6 +21,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Authoritative server-side guard for every current and future /dashboard page.
   const session = await requireUser();
   const demo = await isDemoRequest();
+  const creditPlans = await getActiveCreditPlans({ demo });
+  const occasionOptions = await getActiveOccasions({ demo });
+  const libraryCollectionOptions = await getPublishedLibraryCollections();
   const balance = demo
     ? 0
     : Number(
@@ -32,6 +38,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <DemoProvider
       mode={demo ? "demo" : "real"}
       initialBalance={balance}
+      initialCreditPlans={creditPlans}
+      initialOccasions={occasionOptions}
+      initialLibraryCollections={libraryCollectionOptions}
       persistenceId={demo ? "demo" : session.user.id}
       initialProfile={{
         name: session.user.name,

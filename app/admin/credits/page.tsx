@@ -22,14 +22,14 @@ export default async function AdminCreditsPage() {
     <AdminPage>
       <AdminPageHeader
         eyebrow="Soldes clients"
-        title="Soldes chansons"
-        description="Consulte et ajuste le nombre de chansons disponibles pour un utilisateur."
+        title="Soldes crédits"
+        description="Consulte et ajuste le solde de crédits disponible pour un utilisateur."
       />
       <section className="admin-metric-row">
         <AdminMetric
-          icon="music-2"
+          icon="coins"
           value={Number(total?.value ?? 0).toLocaleString("fr-FR")}
-          label="Chansons disponibles"
+          label="Crédits disponibles"
           note="Total des soldes"
         />
         <AdminMetric
@@ -86,7 +86,7 @@ export default async function AdminCreditsPage() {
               <thead>
                 <tr>
                   <th>Utilisateur</th>
-                  <th>Chansons</th>
+                  <th>Crédits</th>
                   <th>Dernière mise à jour</th>
                 </tr>
               </thead>
@@ -97,7 +97,7 @@ export default async function AdminCreditsPage() {
                       <strong>{row.name ?? "Utilisateur"}</strong>
                       <small>{row.email ?? row.credit.userId}</small>
                     </td>
-                    <td data-label="Chansons">
+                    <td data-label="Crédits">
                       <strong>{row.credit.balance}</strong>
                     </td>
                     <td data-label="Dernière mise à jour">{row.credit.updatedAt.toLocaleString("fr-FR")}</td>
@@ -108,7 +108,7 @@ export default async function AdminCreditsPage() {
           </div>
         ) : (
           <div className="admin-empty-state">
-            <Icon i="music-2" size={22} />
+            <Icon i="coins" size={22} />
             <strong>Aucun solde enregistré</strong>
             <p>Les soldes clients apparaîtront ici.</p>
           </div>

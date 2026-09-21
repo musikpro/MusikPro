@@ -150,6 +150,47 @@ export const musicStyles = pgTable(
   }),
 );
 
+export const occasions = pgTable(
+  "occasions",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    description: text("description").notNull().default(""),
+    emoji: text("emoji").notNull().default("🎉"),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(100),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    activeOrderIndex: index("occasions_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
+
+export const libraryCollections = pgTable(
+  "library_collections",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    description: text("description").notNull().default(""),
+    access: text("access").notNull().default("public"),
+    active: boolean("active").notNull().default(true),
+    styles: jsonb("styles").notNull().default([]),
+    sortOrder: integer("sort_order").notNull().default(100),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    publicationOrderIndex: index("library_collections_publication_order_idx").on(
+      table.active,
+      table.access,
+      table.sortOrder,
+    ),
+  }),
+);
+
 export * from "./auth.generated";
 
 export const paymentProviderConfigs = pgTable("payment_provider_configs", {
@@ -217,3 +258,19 @@ export const paymentAttempts = pgTable(
     providerCreatedIndex: index("payment_attempts_provider_created_idx").on(table.provider, table.createdAt),
   }),
 );
+
+export const aiProviderConfigs = pgTable("ai_provider_configs", {
+  id: text("id").primaryKey(),
+  provider: text("provider").notNull().unique().default("openai"),
+  enabled: boolean("enabled").notNull().default(false),
+  apiKeyCiphertext: text("api_key_ciphertext"),
+  apiKeyIv: text("api_key_iv"),
+  apiKeyAuthTag: text("api_key_auth_tag"),
+  apiKeyLast4: text("api_key_last4"),
+  defaultModel: text("default_model").notNull().default("gpt-5.6-terra"),
+  maxOutputTokens: integer("max_output_tokens").notNull().default(4000),
+  requestsPerMinute: integer("requests_per_minute").notNull().default(10),
+  lyricsGenerationEnabled: boolean("lyrics_generation_enabled").notNull().default(true),
+  lyricsRewriteEnabled: boolean("lyrics_rewrite_enabled").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});

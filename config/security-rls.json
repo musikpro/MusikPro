@@ -10,6 +10,8 @@
   "exempt": {
     "plans": "global catalog, server-managed; public reads are filtered by active flag",
     "music_styles": "global music catalog, server-managed; client reads are filtered by active flag",
+    "occasions": "global occasion catalog, server-managed; client reads are filtered by active flag",
+    "library_collections": "global editorial catalog, server-managed; client reads are restricted to active public collections",
     "payment_fulfillments": "server-only idempotency ledger; never client queried",
     "webhook_events": "server-only provider event ledger",
     "security_events": "server-only security telemetry",
@@ -17,6 +19,7 @@
     "payment_country_routes": "server/admin-only global routing configuration",
     "plan_provider_mappings": "server/admin-only global mapping configuration",
     "payment_attempts": "server-only payment routing telemetry",
+    "ai_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
     "user": "Better Auth framework-owned table; enforce authorization through Better Auth",
     "session": "Better Auth framework-owned table; framework/session server access only",
     "account": "Better Auth framework-owned credential table; server access only",

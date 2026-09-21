@@ -6,33 +6,25 @@
       "auth": "better-auth-framework",
       "validation": "framework-owned",
       "rateLimit": "better-auth-database",
-      "markers": [
-        "toNextJsHandler(auth)"
-      ]
+      "markers": ["toNextJsHandler(auth)"]
     },
     "app/api/cron/reconcile-payments/route.ts": {
       "auth": "cron-secret",
       "validation": "no-user-body",
       "rateLimit": "scheduler-exempt",
-      "markers": [
-        "verifyCronRequest(request)"
-      ]
+      "markers": ["verifyCronRequest(request)"]
     },
     "app/api/health/route.ts": {
       "auth": "public-health",
       "validation": "no-input",
       "rateLimit": "read-only-exempt",
-      "markers": [
-        "Cache-Control"
-      ]
+      "markers": ["Cache-Control"]
     },
     "app/api/readyz/route.ts": {
       "auth": "public-readiness",
       "validation": "no-input",
       "rateLimit": "read-only-exempt",
-      "markers": [
-        "getReadinessReport"
-      ]
+      "markers": ["getReadinessReport"]
     },
     "app/api/payments/checkout/route.ts": {
       "auth": "session",
@@ -65,10 +57,7 @@
       "auth": "provider-signature",
       "validation": "provider-webhook-verifier",
       "rateLimit": "signed-provider-retry-exempt",
-      "markers": [
-        "verifyWebhook",
-        "replayRequest"
-      ]
+      "markers": ["verifyWebhook", "replayRequest"]
     },
     "app/api/clients/route.ts": {
       "auth": "session",
@@ -93,6 +82,19 @@
         "clientIdSchema.safeParse",
         "rateLimit(",
         "rejectCrossSiteMutation"
+      ]
+    },
+    "app/api/ai/generate/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "aiLyricsTaskSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
       ]
     }
   }

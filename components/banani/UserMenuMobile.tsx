@@ -20,7 +20,7 @@ const menuItems = [
     sub: t("Chansons hors ligne"),
   },
   { icon: "bell", label: t("Notifications"), sub: t("Gérer les alertes") },
-  { icon: "zap", label: t("Packs"), sub: t("Il te reste 3 chansons") },
+  { icon: "coins", label: t("Crédits"), sub: t("Solde de génération") },
   {
     icon: "help-circle",
     label: t("Aide & FAQ"),
@@ -91,8 +91,8 @@ export default function UserMenuMobile() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-foreground">{item.label}</p>
                 <p className="text-xs text-muted-foreground">
-                  {item.label === t("Packs")
-                    ? `${demo.balance} chanson${demo.balance > 1 ? "s" : ""} disponible${demo.balance > 1 ? "s" : ""}`
+                  {item.label === t("Crédits")
+                    ? `${demo.balance} crédit${demo.balance > 1 ? "s" : ""} disponible${demo.balance > 1 ? "s" : ""}`
                     : item.sub}
                 </p>
               </div>

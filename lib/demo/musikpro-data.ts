@@ -1,20 +1,3 @@
-export const demoOccasions = [
-  { emoji: "🎂", label: "Anniversaire", id: "birthday" },
-  { emoji: "💕", label: "Amour", id: "love" },
-  { emoji: "🎓", label: "Graduation", id: "graduation" },
-  { emoji: "🎉", label: "Fête", id: "party" },
-  { emoji: "💔", label: "Séparation", id: "breakup" },
-  { emoji: "🙏", label: "Gratitude", id: "gratitude" },
-  { emoji: "🌙", label: "Sérénité", id: "serenity" },
-  { emoji: "🔥", label: "Motivation", id: "motivation" },
-];
-
-export function demoOccasionEmoji(label: string) {
-  return demoOccasions.find((occasion) => occasion.label === label)?.emoji ?? "";
-}
-
-const t = (text: string) => text;
-
 export const demoGeneratedSongs = [
   {
     id: 1,
@@ -180,62 +163,7 @@ export const demoNotifications = [
   },
 ];
 
-export const demoSongPacks = [
-  {
-    id: 1,
-    name: t("Découverte"),
-    songs: 2,
-    price: "1 000 FCFA",
-    priceValue: 1000,
-    description: t("Parfait pour commencer"),
-    popular: false,
-    bonus: null,
-  },
-  {
-    id: 2,
-    name: t("Populaire"),
-    songs: 5,
-    price: "2 000 FCFA",
-    priceValue: 2000,
-    description: t("Meilleur rapport qualité-prix"),
-    popular: true,
-    bonus: null,
-  },
-  {
-    id: 3,
-    name: t("Maxi"),
-    songs: 12,
-    price: "5 000 FCFA",
-    priceValue: 5000,
-    description: t("Pour les gros créateurs"),
-    popular: false,
-    bonus: null,
-  },
-  {
-    id: 4,
-    name: t("Illimité (1 mois)"),
-    songs: null,
-    price: "10 000 FCFA",
-    priceValue: 10000,
-    description: t("Créer autant que tu veux"),
-    popular: false,
-    bonus: t("Accès complet"),
-  },
-];
-
-export const demoCurrencies = [
-  { code: "XOF", label: "FCFA (XOF)", symbol: "FCFA" },
-  { code: "EUR", label: "Euro (€)", symbol: "€" },
-  { code: "USD", label: "Dollar ($)", symbol: "$" },
-  { code: "NGN", label: "Naira (₦)", symbol: "₦" },
-] as const;
-
-export function formatDemoPackPrice(valueInFcfa: number, currency: string) {
-  if (currency === "EUR") return `${(valueInFcfa / 655.957).toFixed(2).replace(".", ",")} €`;
-  if (currency === "USD") return `$${(valueInFcfa / 600).toFixed(2)}`;
-  if (currency === "NGN") return `₦${Math.round(valueInFcfa * 2.7).toLocaleString("en-NG")}`;
-  return `${valueInFcfa.toLocaleString("fr-FR")} FCFA`;
-}
+export { creditCurrencies as demoCurrencies, formatCreditPrice as formatDemoPackPrice } from "@/lib/credit-plans/currency";
 
 export const demoLyrics =
   "Une histoire de beauté et d'amour\nCélébrons ce jour merveilleux ensemble\nAu rythme de l'Afrique, dansons sans fin\nCette chanson est pour toi, mon ami\n\nDans les rues de notre quartier\nOù les rires résonnent à chaque coin\nTu es né pour briller et rayonner\nEt nous dansons sous les étoiles";

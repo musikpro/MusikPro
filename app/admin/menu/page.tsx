@@ -8,7 +8,7 @@ const links = [
   ["/admin/users", "Utilisateurs", "users"],
   ["/admin/generations", "Générations", "music-2"],
   ["/admin/library", "Bibliothèque", "library"],
-  ["/admin/plans", "Packs & tarifs", "package"],
+  ["/admin/plans", "Crédits & tarifs", "coins"],
   ["/admin/music-styles", "Styles musicaux", "sliders-horizontal"],
   ["/admin/occasions", "Occasions", "calendar-heart"],
   ["/admin/languages", "Langues", "languages"],

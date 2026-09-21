@@ -14,7 +14,7 @@ const items = [
   { icon: "compass", label: t("Découvrir"), active: false },
   { icon: "plus", label: t("Créer"), active: false, isCenter: true },
   { icon: "music", label: t("Mes chansons"), active: false },
-  { icon: "zap", label: t("Packs"), badge: true, active: false },
+  { icon: "coins", label: t("Crédits"), badge: true, active: false },
 ];
 
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
@@ -22,7 +22,7 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
   const [launching, setLaunching] = useState(false);
   const pathname = demo.pathname;
   const currentTab = pathname.startsWith("/dashboard/credits")
-    ? "Packs"
+    ? "Crédits"
     : pathname.startsWith("/dashboard/discover")
       ? "Découvrir"
       : pathname.startsWith("/dashboard/songs")

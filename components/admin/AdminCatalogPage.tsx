@@ -91,6 +91,11 @@ export default function AdminCatalogPage({
         <section className="admin-catalog-grid">
           {filtered.map((item) => (
             <article className="admin-catalog-card" key={item.id}>
+              {item.href ? (
+                <Link className="admin-catalog-card-hit" href={item.href} aria-label={`Ouvrir ${item.title}`}>
+                  <span className="sr-only">Ouvrir {item.title}</span>
+                </Link>
+              ) : null}
               <div className="admin-catalog-card-head">
                 <span className="admin-catalog-icon" style={item.accent ? { color: item.accent } : undefined}>
                   <Icon i={item.icon ?? "music-2"} size={21} />
@@ -104,9 +109,9 @@ export default function AdminCatalogPage({
               <footer>
                 <span>{item.meta ?? "Configuration à connecter"}</span>
                 {item.href ? (
-                  <Link href={item.href} aria-label={`Ouvrir ${item.title}`}>
+                  <span className="admin-catalog-open" aria-hidden="true">
                     <Icon i="arrow-up-right" size={17} />
-                  </Link>
+                  </span>
                 ) : (
                   <span className="admin-catalog-locked" title="Source métier à connecter">
                     <Icon i="lock-keyhole" size={15} />

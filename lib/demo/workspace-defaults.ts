@@ -2,7 +2,7 @@ import { demoFavoriteSongs, demoGeneratedSongs } from "@/lib/demo/musikpro-data"
 
 export function getWorkspaceDefaults(isDemo: boolean, realBalance = 0) {
   return {
-    balance: isDemo ? 3 : realBalance,
+    balance: isDemo ? 5 : realBalance,
     songs: isDemo ? demoGeneratedSongs : [],
     favorites: isDemo ? demoFavoriteSongs.map((song) => song.title) : [],
     versionFavorites: isDemo

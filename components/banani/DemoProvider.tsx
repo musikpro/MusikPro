@@ -1,18 +1,16 @@
 "use client";
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  demoLibrarySongs,
-  demoDiscoverSongs,
-  demoFavoriteSongs,
-  demoSongPacks,
-  demoLyrics,
-} from "@/lib/demo/musikpro-data";
+import { demoLibrarySongs, demoDiscoverSongs, demoFavoriteSongs, demoLyrics } from "@/lib/demo/musikpro-data";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import { authClient } from "@/lib/auth/client";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 import { demoCreationChoicesSchema } from "@/lib/validation/musikpro-demo";
+import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
+import type { OccasionOption } from "@/lib/occasions/catalog";
+import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
+import { apiFetch } from "@/lib/api/client";
 
 type DemoProfile = { name: string; email: string; location: string };
 
@@ -20,6 +18,9 @@ function useDemoState(
   mode: "demo" | "real",
   initialProfile: DemoProfile,
   initialBalance: number,
+  initialCreditPlans: CreditPlanOption[],
+  initialOccasions: OccasionOption[],
+  initialLibraryCollections: LibraryCollectionOption[],
   persistenceId: string,
 ) {
   const router = useRouter();
@@ -59,7 +60,7 @@ function useDemoState(
     "payment.phone": "",
   });
   const [choices, setChoices] = useState<Record<string, string>>({
-    occasion: "Anniversaire",
+    occasion: "",
     genre: "",
     mood: "",
     language: "",
@@ -94,7 +95,7 @@ function useDemoState(
     };
   }, [creationDraftKey]);
   const [profile, setProfile] = useState(initialProfile);
-  const balance = defaults.balance;
+  const [balance, setBalance] = useState(defaults.balance);
   const [songs, setSongs] = useState(() => defaults.songs);
   const [favorites, setFavorites] = useState<string[]>(() => defaults.favorites);
   const [versionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
@@ -115,31 +116,37 @@ function useDemoState(
   const [selectedTitle, setSelectedTitle] = useState(isDemo ? "Mama Africa" : "");
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [playing, setPlaying] = useState(true);
-  const [packIndex, setPackIndex] = useState(1);
+  const [packIndex, setPackIndex] = useState(-1);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const library = isDemo ? [
-    ...demoLibrarySongs,
-    ...demoDiscoverSongs
-      .filter((s) => !demoLibrarySongs.some((l) => l.title === s.title))
-      .map((s, i) => ({
-        ...s,
-        id: i + 50,
-        duration: "3:42",
-        artist: "Communauté MusikPro",
-        likes: 0,
-      })),
-    ...demoFavoriteSongs
-      .filter((s) => !demoDiscoverSongs.some((l) => l.title === s.title))
-      .map((s, i) => ({
-        ...s,
-        id: i + 100,
-        plays: String(s.plays),
-        duration: "1:32",
-        artist: "Création de démonstration",
-        likes: 0,
-      })),
-  ] : [];
-  const songPacks = isDemo ? demoSongPacks : [];
+  const [lyricsPending, setLyricsPending] = useState(false);
+  const library = isDemo
+    ? [
+        ...demoLibrarySongs,
+        ...demoDiscoverSongs
+          .filter((s) => !demoLibrarySongs.some((l) => l.title === s.title))
+          .map((s, i) => ({
+            ...s,
+            id: i + 50,
+            duration: "3:42",
+            artist: "Communauté MusikPro",
+            likes: 0,
+          })),
+        ...demoFavoriteSongs
+          .filter((s) => !demoDiscoverSongs.some((l) => l.title === s.title))
+          .map((s, i) => ({
+            ...s,
+            id: i + 100,
+            plays: String(s.plays),
+            duration: "1:32",
+            artist: "Création de démonstration",
+            likes: 0,
+          })),
+      ]
+    : [];
+  const songPacks = initialCreditPlans;
+  const occasions = initialOccasions;
+  const libraryCollections = initialLibraryCollections;
+  const occasionEmoji = (name: string) => occasions.find((occasion) => occasion.name === name)?.emoji ?? "";
   const favoriteSongs = favorites.map((title, i) => {
     const original = isDemo ? demoFavoriteSongs.find((s) => s.title === title) : undefined;
     const own = songs.find((s) => s.title === title);
@@ -154,25 +161,27 @@ function useDemoState(
     };
   });
   const owned = songs.find((s) => s.title === selectedTitle);
-  const currentSong = selectedTitle ? (owned
-    ? {
-        id: owned.id,
-        title: owned.title,
-        style: owned.style,
-        img: "",
-        duration: owned.versions[selectedVersion]?.duration ?? "1m 32s",
-        artist: profile.name,
-        likes: owned.versions[selectedVersion]?.plays ?? 0,
-      }
-    : (library.find((s) => s.title === selectedTitle) ?? {
-        id: -1,
-        title: selectedTitle,
-        style: isDemo ? "Création de démonstration" : "Création MusikPro",
-        img: "",
-        duration: "1:32",
-        artist: profile.name,
-        likes: 0,
-      })) : null;
+  const currentSong = selectedTitle
+    ? owned
+      ? {
+          id: owned.id,
+          title: owned.title,
+          style: owned.style,
+          img: "",
+          duration: owned.versions[selectedVersion]?.duration ?? "1m 32s",
+          artist: profile.name,
+          likes: owned.versions[selectedVersion]?.plays ?? 0,
+        }
+      : (library.find((s) => s.title === selectedTitle) ?? {
+          id: -1,
+          title: selectedTitle,
+          style: isDemo ? "Création de démonstration" : "Création MusikPro",
+          img: "",
+          duration: "1:32",
+          artist: profile.name,
+          likes: 0,
+        })
+    : null;
   const go = (route: string) => {
     notify("");
     router.push(href(route));
@@ -230,6 +239,11 @@ function useDemoState(
       notify("La génération musicale réelle doit être connectée avant d’ajouter une chanson.");
       return;
     }
+    if (balance < CREDITS_PER_GENERATION) {
+      router.push(href("/dashboard/credits"));
+      notify(`Il faut ${CREDITS_PER_GENERATION} crédits pour lancer une génération musicale.`);
+      return;
+    }
     const title = `Ma chanson — ${choices.occasion}`;
     setSongs((prev) =>
       prev.some((s) => s.title === title)
@@ -259,8 +273,48 @@ function useDemoState(
             ...prev,
           ],
     );
+    setBalance((current) => Math.max(0, current - CREDITS_PER_GENERATION));
     setSelectedTitle(title);
     go("/dashboard/songs");
+  };
+  const generateLyrics = async (task: "lyrics.generate" | "lyrics.extend" = "lyrics.generate") => {
+    if (isDemo) {
+      field("lyrics", task === "lyrics.extend" ? `${fields.lyrics}\n\n${demoLyrics}` : demoLyrics);
+      go("/dashboard/create/lyrics");
+      return true;
+    }
+    setLyricsPending(true);
+    try {
+      const result = await apiFetch<{ lyrics: string }>("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task,
+          input: {
+            occasion: choices.occasion,
+            story: fields.story,
+            recipientName: fields.recipientName,
+            recipientRelation: choices.recipientRelation,
+            recipientPronunciation: fields.recipientPronunciation,
+            genre: choices.genre,
+            mood: choices.mood,
+            language: choices.language,
+            voice: choices.voice,
+            additionalDetails: fields.detail,
+            ...(task === "lyrics.extend" ? { lyrics: fields.lyrics } : {}),
+          },
+        }),
+        timeoutMs: 60_000,
+      });
+      field("lyrics", result.lyrics);
+      go("/dashboard/create/lyrics");
+      return true;
+    } catch (error) {
+      notify(error instanceof Error ? error.message : "La génération des paroles a échoué.");
+      return false;
+    } finally {
+      setLyricsPending(false);
+    }
   };
   return {
     isDemo,
@@ -278,6 +332,9 @@ function useDemoState(
     songs,
     library,
     songPacks,
+    occasions,
+    libraryCollections,
+    occasionEmoji,
     favorites,
     favoriteSongs,
     versionFavorites,
@@ -300,6 +357,8 @@ function useDemoState(
     paymentConfirmed,
     setPaymentConfirmed,
     generateSong,
+    generateLyrics,
+    lyricsPending,
     removeSong: (title: string) => {
       setSongs((prev) => prev.filter((s) => s.title !== title));
       setFavorites((prev) => prev.filter((v) => v !== title));
@@ -318,15 +377,29 @@ export function DemoProvider({
   mode,
   initialProfile,
   initialBalance = 0,
+  initialCreditPlans,
+  initialOccasions,
+  initialLibraryCollections,
   persistenceId,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
   initialProfile: DemoProfile;
   initialBalance?: number;
+  initialCreditPlans: CreditPlanOption[];
+  initialOccasions: OccasionOption[];
+  initialLibraryCollections: LibraryCollectionOption[];
   persistenceId: string;
 }) {
-  const state = useDemoState(mode, initialProfile, initialBalance, persistenceId);
+  const state = useDemoState(
+    mode,
+    initialProfile,
+    initialBalance,
+    initialCreditPlans,
+    initialOccasions,
+    initialLibraryCollections,
+    persistenceId,
+  );
   const [offline, setOffline] = useState(false);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);

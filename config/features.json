@@ -67,6 +67,31 @@
       "dependsOn": ["database", "auth"],
       "disableBehavior": "paymentsEnabled=false + providers=[]; garder le code inerte si aucun paiement n’est requis."
     },
+    "credit-catalog": {
+      "description": "Catalogue d’offres de crédits partagé entre l’administration, les comptes clients réels et la démonstration.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "lib/credit-plans/catalog.ts",
+        "lib/credit-plans/currency.ts",
+        "lib/credit-plans/server.ts",
+        "app/admin/plans/page.tsx",
+        "app/admin/plans/new/page.tsx",
+        "app/admin/plans/[id]/page.tsx",
+        "app/admin/plans/actions.ts",
+        "components/admin/AdminCreditPlanForm.tsx",
+        "components/admin/AdminCreditPlanSortableGrid.tsx",
+        "components/admin/AdminSortableGrid.tsx",
+        "db/migrations/0005_credit_catalog.sql"
+      ],
+      "routes": [],
+      "removalComplexity": "with-care",
+      "dependsOn": ["database", "auth"],
+      "notes": [
+        "Chaque génération consomme 2 crédits et produit deux versions musicales.",
+        "Les comptes réels lisent uniquement les offres actives de Neon; la démo utilise le même catalogue avec un secours local identique si Neon est vide ou indisponible."
+      ]
+    },
     "payment-reconciliation-cron": {
       "description": "Rattrapage des paiements asynchrones ou tardifs",
       "optional": true,
@@ -359,6 +384,91 @@
       "notes": [
         "Les mutations sont réservées aux administrateurs et validées par Zod.",
         "Le mode démonstration conserve ses données locales; les comptes réels lisent uniquement les styles actifs depuis Neon."
+      ]
+    },
+    "occasion-catalog": {
+      "description": "Catalogue Neon des occasions piloté par le propriétaire et partagé avec les parcours client réel et démo.",
+      "optional": false,
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0006_tired_franklin_richards.sql",
+        "lib/occasions/catalog.ts",
+        "lib/occasions/server.ts",
+        "app/admin/occasions/actions.ts",
+        "app/admin/occasions/page.tsx",
+        "app/admin/occasions/new/page.tsx",
+        "app/admin/occasions/[id]/page.tsx",
+        "components/admin/AdminOccasionForm.tsx",
+        "components/admin/AdminOccasionSortableGrid.tsx",
+        "components/admin/AdminSortableGrid.tsx",
+        "components/banani/SongCreationStep1Mobile.tsx"
+      ],
+      "routes": [],
+      "dependsOn": ["database", "auth"],
+      "removalComplexity": "medium",
+      "notes": [
+        "Les mutations sont réservées aux administrateurs et validées par Zod.",
+        "Les comptes réels et la démonstration lisent le même catalogue actif et ordonné depuis Neon."
+      ]
+    },
+    "library-collection-catalog": {
+      "description": "Collections éditoriales Neon pilotées par le propriétaire et affichées dans la page Découvrir des espaces client réel et démo.",
+      "optional": false,
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0007_jittery_adam_warlock.sql",
+        "lib/library-collections/catalog.ts",
+        "lib/library-collections/server.ts",
+        "app/admin/library/actions.ts",
+        "app/admin/library/page.tsx",
+        "app/admin/library/new/page.tsx",
+        "app/admin/library/[id]/page.tsx",
+        "components/admin/AdminLibraryCollectionForm.tsx",
+        "components/admin/AdminLibraryCollectionGrid.tsx",
+        "components/admin/AdminSortableGrid.tsx",
+        "components/banani/DiscoverLibraryScreen.tsx"
+      ],
+      "routes": [],
+      "dependsOn": ["database", "auth", "music-style-catalog"],
+      "removalComplexity": "medium",
+      "notes": [
+        "Seules les collections publiques et publiées sont visibles par les clients.",
+        "Les comptes réels restent sans chansons fictives; la démo applique les collections au catalogue de démonstration existant."
+      ]
+    },
+    "openai-lyrics-generation": {
+      "description": "Fournisseur OpenAI administrable et chiffré pour générer, réviser et rallonger les paroles depuis le parcours client.",
+      "optional": true,
+      "env": ["APP_SECRETS_ENCRYPTION_KEY", "OPENAI_API_KEY", "OPENAI_DEFAULT_MODEL", "OPENAI_MAX_OUTPUT_TOKENS"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0008_light_whirlwind.sql",
+        "lib/ai/secrets.ts",
+        "lib/ai/provider.ts",
+        "lib/ai/lyrics.ts",
+        "lib/validation/ai.ts",
+        "app/api/ai/generate/route.ts",
+        "app/admin/ai-providers/page.tsx",
+        "app/admin/ai-providers/loading.tsx",
+        "app/admin/ai-providers/lyrics/page.tsx",
+        "app/admin/ai-providers/audio/page.tsx",
+        "app/admin/ai-providers/pronunciation/page.tsx",
+        "app/admin/ai-providers/moderation/page.tsx",
+        "app/admin/ai-providers/actions.ts",
+        "components/admin/AdminAiProviderForm.tsx",
+        "components/admin/AdminToast.tsx",
+        "components/admin/AdminAiCapabilityPlaceholder.tsx",
+        "components/banani/DemoProvider.tsx"
+      ],
+      "routes": ["/api/ai/generate"],
+      "dependsOn": ["database", "auth", "api-client", "upstash"],
+      "removalComplexity": "medium",
+      "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local.",
+      "notes": [
+        "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
+        "OPENAI_API_KEY peut servir de clé serveur de secours si aucune clé chiffrée n’est enregistrée."
       ]
     }
   },

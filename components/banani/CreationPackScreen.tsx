@@ -6,8 +6,9 @@ import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
 import { useDemo } from "./DemoProvider";
+import { CREDITS_PER_GENERATION, getGenerationCount, getVersionCount } from "@/lib/credit-plans/catalog";
 
-export const displayName = "Choix du pack de chansons";
+export const displayName = "Choix de l’offre de crédits";
 export const screenSize = "mobile";
 
 const t = (text: string) => text;
@@ -17,17 +18,17 @@ export default function CreationPackScreen() {
 
   return (
     <div className="creation-pack-screen bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/payment-preview" label="Choix du pack" />
+      <CreationTopNav backHref="/dashboard/payment-preview" label="Choix des crédits" />
 
       <div className="creation-pack-content">
         <header className="creation-pack-heading">
           <div>
             <span className="creation-pack-kicker">
               <Icon i="music-2" size={16} />
-              Une chanson, deux versions
+              {CREDITS_PER_GENERATION} crédits · une génération · deux versions
             </span>
-            <h1>{t("Choisis ton pack")}</h1>
-            <p>{t("Sélectionne le nombre de chansons que tu souhaites créer.")}</p>
+            <h1>{t("Choisis tes crédits")}</h1>
+            <p>{t("Sélectionne l’offre adaptée au nombre de générations souhaité.")}</p>
           </div>
           <MusikSelect
             className="pack-currency-select"
@@ -51,17 +52,17 @@ export default function CreationPackScreen() {
               <Icon i="package-open" size={21} />
             </span>
             <div>
-              <h2 id="creation-pack-panel-title">{t("Packs disponibles")}</h2>
-              <p>{t("Choisis le pack adapté au nombre de chansons que tu veux créer.")}</p>
+              <h2 id="creation-pack-panel-title">{t("Offres de crédits")}</h2>
+              <p>{t("Chaque génération musicale consomme 2 crédits et produit deux versions.")}</p>
             </div>
           </div>
 
-          <div className="creation-pack-list" role="radiogroup" aria-label="Packs de chansons disponibles">
+          <div className="creation-pack-list" role="radiogroup" aria-label="Offres de crédits disponibles">
             {demo.songPacks.length === 0 && (
               <div className="creation-pack-card is-empty">
                 <span className="creation-pack-card-main">
-                  <strong>{t("Aucun pack disponible")}</strong>
-                  <small>{t("Les packs réels publiés apparaîtront ici.")}</small>
+                  <strong>{t("Aucune offre disponible")}</strong>
+                  <small>{t("Les offres de crédits publiées apparaîtront ici.")}</small>
                 </span>
               </div>
             )}
@@ -91,8 +92,9 @@ export default function CreationPackScreen() {
                     )}
                   </span>
                   <span className="creation-pack-card-value">
-                    <strong>{pack.songs ?? "∞"}</strong>
-                    <small>{pack.songs === 1 ? "chanson" : "chansons"}</small>
+                    <strong>{pack.credits}</strong>
+                    <small>crédits</small>
+                    <small>{getGenerationCount(pack.credits, pack.generationCost)} générations · {getVersionCount(pack.credits, pack.generationCost)} versions</small>
                     <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>
                   </span>
                 </button>
@@ -126,7 +128,7 @@ export default function CreationPackScreen() {
 
       <div className="creation-mobile-cta creation-pack-cta">
         <div className="creation-pack-total">
-          <span>{demo.pack?.name ?? t("Aucun pack sélectionné")}</span>
+          <span>{demo.pack?.name ?? t("Aucune offre sélectionnée")}</span>
           <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency) : "—"}</strong>
         </div>
         <button

@@ -22,7 +22,7 @@ const secondaryNav = [
   { icon: "download", label: t("Téléchargements"), active: false },
   { icon: "heart", label: t("Favoris"), active: false },
   { icon: "trophy", label: t("Concours"), active: false },
-  { icon: "zap", label: t("Packs"), active: false },
+  { icon: "coins", label: t("Crédits"), active: false },
   { icon: "credit-card", label: t("Paiement"), active: false },
 ];
 
@@ -51,17 +51,17 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
         <div className="bg-secondary border border-primary/20 rounded-xl p-4 mb-6">
           <div className="flex items-center gap-2 mb-3">
             <Icon i="zap" size={16} className="text-primary" />
-            <span className="text-sm font-bold text-foreground">{t("Packs")}</span>
+            <span className="text-sm font-bold text-foreground">{t("Crédits")}</span>
           </div>
           <p className="text-2xl font-headings font-bold text-primary mb-2">{demo.balance}</p>
-          <p className="text-xs text-muted-foreground mb-3">{t("chansons restantes")}</p>
+          <p className="text-xs text-muted-foreground mb-3">{t("crédits restants")}</p>
           <button
             type="button"
             data-demo-ready="true"
             onClick={() => demo.go("/dashboard/credits")}
             className="w-full bg-primary text-primary-foreground text-xs font-semibold py-2 rounded-lg"
           >
-            {t("Acheter des chansons")}
+            {t("Acheter des crédits")}
           </button>
         </div>
 

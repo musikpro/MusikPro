@@ -42,4 +42,5 @@ export async function setCredits(formData: FormData) {
   });
   revalidatePath("/admin/credits");
   revalidatePath("/dashboard");
+  revalidatePath("/dashboard/credits");
 }

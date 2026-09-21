@@ -35,7 +35,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
   {
     title: "Configuration",
     items: [
-      { href: "/admin/plans", icon: "package", label: "Packs & tarifs" },
+      { href: "/admin/plans", icon: "coins", label: "Crédits & tarifs" },
       { href: "/admin/music-styles", icon: "sliders-horizontal", label: "Styles musicaux" },
       { href: "/admin/occasions", icon: "calendar-heart", label: "Occasions" },
       { href: "/admin/languages", icon: "languages", label: "Langues" },
@@ -47,7 +47,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
     items: [
       { href: "/admin/payments", icon: "credit-card", label: "Paiements" },
       { href: "/admin/subscriptions", icon: "refresh-cw", label: "Abonnements" },
-      { href: "/admin/credits", icon: "music", label: "Soldes chansons" },
+      { href: "/admin/credits", icon: "coins", label: "Soldes crédits" },
       { href: "/admin/analytics", icon: "chart-no-axes-column-increasing", label: "Analytics" },
       { href: "/admin/funnel", icon: "funnel", label: "Entonnoir" },
     ],

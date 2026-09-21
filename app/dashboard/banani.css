@@ -247,6 +247,123 @@
   font-size: 12px;
 }
 
+.library-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.library-section-heading h2 {
+  color: var(--color-foreground);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.library-section-heading p {
+  margin-top: 2px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+}
+
+.library-section-heading > span {
+  display: grid;
+  min-width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 10px;
+  color: var(--color-primary);
+  background: var(--color-secondary);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.library-collection-list {
+  display: grid;
+  grid-auto-columns: minmax(190px, 76%);
+  grid-auto-flow: column;
+  gap: 10px;
+  overflow-x: auto;
+  padding: 2px 2px 8px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: none;
+}
+
+.library-collection-list::-webkit-scrollbar {
+  display: none;
+}
+
+.library-collection-list button {
+  display: grid;
+  min-width: 0;
+  min-height: 118px;
+  grid-template-columns: auto 1fr auto;
+  align-content: start;
+  align-items: center;
+  gap: 4px 9px;
+  padding: 13px;
+  border: 1px solid var(--color-border);
+  border-radius: 17px;
+  color: var(--color-foreground);
+  background: var(--color-card);
+  text-align: left;
+  scroll-snap-align: start;
+  box-shadow: var(--musik-shadow);
+}
+
+.library-collection-list button[aria-pressed="true"] {
+  border-color: var(--color-primary);
+  background: var(--color-secondary);
+  box-shadow:
+    inset 0 0 0 1px var(--color-primary),
+    var(--musik-shadow-raised);
+}
+
+.library-collection-list button > span {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  grid-row: 1 / span 2;
+  place-items: center;
+  border-radius: 11px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, white);
+}
+
+.library-collection-list strong {
+  overflow: hidden;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.library-collection-list small {
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.library-collection-list p {
+  display: -webkit-box;
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  overflow: hidden;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  line-height: 1.4;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+@media (min-width: 768px) {
+  .library-collection-list {
+    grid-auto-flow: initial;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    overflow: visible;
+  }
+}
+
 .creation-mobile-cta button:disabled,
 .banani-genre-screen button:disabled {
   cursor: not-allowed;
@@ -1932,16 +2049,46 @@
   background: #fff4d9;
   color: #a96700;
 }
-.genre-choice-icon-coral { background: #fff0eb; color: #d95536; }
-.genre-choice-icon-red { background: #ffebeb; color: #c83b3b; }
-.genre-choice-icon-pink { background: #ffebf7; color: #c43d8b; }
-.genre-choice-icon-indigo { background: #eceeff; color: #4d5bc4; }
-.genre-choice-icon-blue { background: #eaf3ff; color: #2769be; }
-.genre-choice-icon-cyan { background: #e6f8fc; color: #157c96; }
-.genre-choice-icon-teal { background: #e6f7f4; color: #147e71; }
-.genre-choice-icon-lime { background: #f0f8df; color: #59831b; }
-.genre-choice-icon-yellow { background: #fff9d9; color: #967215; }
-.genre-choice-icon-slate { background: #edf1f4; color: #526372; }
+.genre-choice-icon-coral {
+  background: #fff0eb;
+  color: #d95536;
+}
+.genre-choice-icon-red {
+  background: #ffebeb;
+  color: #c83b3b;
+}
+.genre-choice-icon-pink {
+  background: #ffebf7;
+  color: #c43d8b;
+}
+.genre-choice-icon-indigo {
+  background: #eceeff;
+  color: #4d5bc4;
+}
+.genre-choice-icon-blue {
+  background: #eaf3ff;
+  color: #2769be;
+}
+.genre-choice-icon-cyan {
+  background: #e6f8fc;
+  color: #157c96;
+}
+.genre-choice-icon-teal {
+  background: #e6f7f4;
+  color: #147e71;
+}
+.genre-choice-icon-lime {
+  background: #f0f8df;
+  color: #59831b;
+}
+.genre-choice-icon-yellow {
+  background: #fff9d9;
+  color: #967215;
+}
+.genre-choice-icon-slate {
+  background: #edf1f4;
+  color: #526372;
+}
 .creation-genre-card {
   min-width: 0;
   min-height: 132px;
@@ -3264,28 +3411,42 @@
 
 /* Compact currency list and official payment marks. */
 .pack-currency-select {
-  width: 88px;
+  width: 108px;
 }
 .pack-currency-select .musik-select-trigger {
   gap: 3px;
-  padding-right: 6px;
-  padding-left: 6px;
+  padding-right: 5px;
+  padding-left: 5px;
 }
 .pack-currency-select .musik-select-menu {
-  width: 100%;
-  min-width: 100%;
+  right: 0;
+  left: auto;
+  width: max-content;
+  min-width: 148px;
+  max-width: calc(100vw - 24px);
   max-height: none;
+  box-sizing: border-box;
+  overflow-x: hidden;
   overflow-y: visible;
-  padding: 3px;
+  padding: 5px;
 }
 .pack-currency-select .musik-select-option {
-  min-height: 32px;
-  gap: 4px;
-  padding: 4px 5px;
-  font-size: 10px;
+  min-height: 38px;
+  gap: 5px;
   justify-content: flex-end;
+  box-sizing: border-box;
+  padding: 7px 5px;
+  font-size: 11px;
+  line-height: 1.25;
   text-align: right;
   white-space: nowrap;
+}
+.pack-currency-select .musik-select-option > span {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
 }
 .pack-payment-logos {
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -3985,6 +4146,31 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
+.pack-purchase-title {
+  min-width: 0;
+}
+.pack-generation-cost-note {
+  max-width: 590px;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 7px 0 0;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.45;
+}
+.pack-generation-cost-note svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+  color: var(--color-primary);
+}
+.pack-generation-cost-note strong {
+  color: var(--color-primary);
+  font-weight: 850;
+}
+.pack-grid > * {
+  min-width: 0;
+}
 .pack-grid .pack-choice-card {
   min-width: 0;
   min-height: 184px;
@@ -4065,7 +4251,15 @@
   font-size: 9px;
   font-weight: 700;
 }
+.pack-grid-credit-rule {
+  margin-top: 8px;
+  color: var(--color-muted-foreground);
+  font-size: 9px;
+  font-weight: 650;
+  line-height: 1.4;
+}
 .pack-grid-bonus {
+  max-width: 100%;
   width: fit-content;
   display: inline-flex;
   align-items: center;
@@ -4077,6 +4271,7 @@
   color: #16844b;
   font-size: 8px;
   font-weight: 750;
+  white-space: normal;
 }
 .pack-grid-card-footer {
   display: flex;

@@ -39,13 +39,13 @@ export default function MobileTopBar({ credits = 0 }) {
           <button
             type="button"
             data-demo-ready
-            aria-label="Voir mes chansons disponibles"
+            aria-label="Voir mes crédits disponibles"
             onClick={() => demo.go("/dashboard/credits")}
             className="flex items-center gap-1 bg-secondary px-3 py-1.5 rounded-xl"
           >
             <Icon i="crown" size={14} className="text-primary" />
             <span className="text-sm font-semibold text-primary">
-              {credits} {t("chansons")}
+              {credits} {t("crédits")}
             </span>
           </button>
           <button

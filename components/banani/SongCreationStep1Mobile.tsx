@@ -7,7 +7,6 @@ export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
-import { demoOccasions } from "@/lib/demo/musikpro-data";
 import CreationTopNav from "./CreationTopNav";
 
 export default function SongCreationStep1Mobile() {
@@ -23,30 +22,24 @@ export default function SongCreationStep1Mobile() {
 
       {/* Title */}
       <div className="px-4 pt-6 pb-4">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-2">
-          {t("Quelle est l'occasion ?")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Choisis le thème de ta chanson")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Quelle est l'occasion ?")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Choisis le thème de ta chanson")}</p>
       </div>
 
       {/* Occasions Grid */}
       <div className="flex-1 px-4 pb-4 overflow-y-auto">
         <div className="grid grid-cols-2 gap-3">
-          {demoOccasions.map((occasion) => (
+          {demo.occasions.map((occasion) => (
             <button
               type="button"
               data-demo-ready="true"
-              onClick={() => demo.choose("occasion", occasion.label)}
-              aria-pressed={demo.choices.occasion === occasion.label}
+              onClick={() => demo.choose("occasion", occasion.name)}
+              aria-pressed={demo.choices.occasion === occasion.name}
               key={occasion.id}
               className="demo-choice-card bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center"
             >
               <span className="text-3xl">{occasion.emoji}</span>
-              <p className="text-sm font-semibold text-foreground">
-                {occasion.label}
-              </p>
+              <p className="text-sm font-semibold text-foreground">{occasion.name}</p>
             </button>
           ))}
         </div>
@@ -58,6 +51,7 @@ export default function SongCreationStep1Mobile() {
           type="button"
           data-demo-ready="true"
           onClick={() => demo.go("/dashboard/create/story")}
+          disabled={!demo.choices.occasion}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
         >

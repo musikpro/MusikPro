@@ -12,7 +12,7 @@ const drawerItems = [
   { icon: "user", label: "Mon Profil" },
   { icon: "music-2", label: "Mes chansons" },
   { icon: "heart", label: "Mes Favoris" },
-  { icon: "zap", label: "Packs" },
+  { icon: "coins", label: "Crédits" },
   { icon: "bell", label: "Notifications" },
   { icon: "settings", label: "Paramètres" },
   { icon: "help-circle", label: "Aide & FAQ" },

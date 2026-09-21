@@ -8,7 +8,7 @@ export const screenSize = "mobile";
 import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
-import { DEMO_LYRICS_MAX_WORDS, demoLyricsSchema } from "@/lib/validation/musikpro-demo";
+import { DEMO_LYRICS_MAX_WORDS } from "@/lib/validation/musikpro-demo";
 
 export default function ReviewLyricsScreen() {
   const demo = useDemo();
@@ -86,23 +86,14 @@ export default function ReviewLyricsScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => {
-            if (!demo.isDemo) {
-              demo.notify("La génération de paroles doit être connectée avant d’ajouter du contenu réel.");
-              return;
-            }
-            const extendedLyrics = `${demo.fields.lyrics}\nUn nouveau refrain accompagne notre histoire.`;
-            const parsed = demoLyricsSchema.safeParse(extendedLyrics);
-            if (!parsed.success) {
-              demo.notify(parsed.error.issues[0].message);
-              return;
-            }
-            demo.field("lyrics", parsed.data);
-          }}
+          disabled={demo.lyricsPending}
+          onClick={() => void demo.generateLyrics("lyrics.extend")}
           className="w-full py-3 bg-background border border-border rounded-lg flex items-center justify-center gap-2 mb-6"
         >
           <Icon i="plus" size={16} className="text-muted-foreground" />
-          <span className="font-semibold text-sm text-foreground">{t("Rallonger les paroles")}</span>
+          <span className="font-semibold text-sm text-foreground">
+            {demo.lyricsPending ? t("Rallongement…") : t("Rallonger les paroles")}
+          </span>
         </button>
 
         {/* Info */}

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { demoOccasionEmoji } from "@/lib/demo/musikpro-data";
 import { demoStorySchema } from "@/lib/validation/musikpro-demo";
 import CreationTopNav from "./CreationTopNav";
 import DemoField from "./DemoField";
@@ -46,7 +45,7 @@ export default function StepStory() {
 
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demoOccasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
         </span>
       </div>
 

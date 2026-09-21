@@ -66,7 +66,7 @@ export default function ContactSupportScreen() {
               ariaLabel="Catégorie"
               value={demo.fields["support.category"]}
               onChange={(value) => demo.field("support.category", value)}
-              options={["Problème technique", "Compte", "Packs"].map((label) => ({ value: label, label }))}
+              options={["Problème technique", "Compte", "Crédits"].map((label) => ({ value: label, label }))}
             />
           </div>
 

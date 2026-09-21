@@ -329,6 +329,44 @@
       ]
     },
     {
+      "id": "openai",
+      "label": "OpenAI — génération de paroles (optionnel)",
+      "variables": [
+        {
+          "name": "APP_SECRETS_ENCRYPTION_KEY",
+          "sensitive": true,
+          "required": "openai-admin-key",
+          "vercel": ["Production", "Preview"],
+          "source": "Secret serveur de 32 octets encodé en base64 ou 64 caractères hexadécimaux, distinct par environnement.",
+          "example": "openssl rand -base64 32"
+        },
+        {
+          "name": "OPENAI_API_KEY",
+          "sensitive": true,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "OpenAI Platform > API keys. Clé serveur de secours si aucune clé chiffrée n’est enregistrée.",
+          "example": "sk-proj-..."
+        },
+        {
+          "name": "OPENAI_DEFAULT_MODEL",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Identifiant du modèle OpenAI utilisé par défaut.",
+          "example": "gpt-5.6-terra"
+        },
+        {
+          "name": "OPENAI_MAX_OUTPUT_TOKENS",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Limite serveur par défaut pour une réponse de paroles.",
+          "example": "4000"
+        }
+      ]
+    },
+    {
       "id": "branding",
       "label": "SEO / branding public",
       "variables": [

@@ -80,7 +80,7 @@ export default function PaymentScreen() {
             Dernière vérification
           </span>
           <h1>{t("Vos informations")}</h1>
-          <p>{t("Vérifie tes coordonnées avant de choisir ton pack de chansons.")}</p>
+          <p>{t("Vérifie tes coordonnées avant de choisir ton offre de crédits.")}</p>
         </header>
 
         <section className="checkout-information-card" aria-labelledby="checkout-contact-title">
@@ -205,7 +205,7 @@ export default function PaymentScreen() {
 
       <div className="creation-mobile-cta checkout-information-cta">
         <button type="button" data-demo-ready="true" onClick={continueToPacks}>
-          {t("Continuer vers les packs")}
+          {t("Continuer vers les crédits")}
           <Icon i="arrow-right" size={19} />
         </button>
       </div>
