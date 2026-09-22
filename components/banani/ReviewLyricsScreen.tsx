@@ -35,7 +35,7 @@ export default function ReviewLyricsScreen() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          🎂 {t("Anniversaire")} • 🎵 {t("Afrobeat")}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion} • 🎵 {demo.choices.genre}
         </span>
       </div>
 
