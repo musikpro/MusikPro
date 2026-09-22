@@ -223,7 +223,11 @@
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": [],
-      "disableBehavior": "upstashEnabled=false et variables absentes; le SaaS continue directement avec Neon."
+      "disableBehavior": "upstashEnabled=false et variables absentes; le SaaS continue directement avec Neon.",
+      "notes": [
+        "Sans Upstash, le rate limiting utilise atomiquement la table serveur Better Auth rateLimit dans Neon.",
+        "Si Upstash et Neon sont tous deux indisponibles en production, les routes sensibles échouent de manière fermée."
+      ]
     },
     "premium-icons": {
       "description": "Qualité visuelle permanente : icônes SVG premium cohérentes + blocage Sparkle/Sparklet et glyphes UI génériques",

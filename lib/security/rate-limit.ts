@@ -1,6 +1,51 @@
-type LimitResult = { success: boolean; remaining: number; reset: number; backend: "upstash" | "memory" | "unavailable" };
+import "server-only";
+import { createHash } from "node:crypto";
+import { sql } from "drizzle-orm";
+import { getServiceDb } from "@/db";
+
+type LimitResult = {
+  success: boolean;
+  remaining: number;
+  reset: number;
+  backend: "upstash" | "database" | "memory" | "unavailable";
+};
 
 const memory = new Map<string, { count: number; reset: number }>();
+
+async function databaseRateLimit(key: string, limit: number, windowSeconds: number): Promise<LimitResult | null> {
+  if (!process.env.DATABASE_SERVICE_URL) return null;
+  const now = Date.now();
+  const nextReset = now + windowSeconds * 1000;
+  const digest = createHash("sha256").update(key).digest("hex");
+  try {
+    const result = await getServiceDb().execute(sql`
+      INSERT INTO "rateLimit" ("id", "key", "count", "last_request")
+      VALUES (${`app:${digest}`}, ${`app:${digest}`}, 1, ${nextReset})
+      ON CONFLICT ("key") DO UPDATE SET
+        "count" = CASE
+          WHEN "rateLimit"."last_request" <= ${now} THEN 1
+          ELSE "rateLimit"."count" + 1
+        END,
+        "last_request" = CASE
+          WHEN "rateLimit"."last_request" <= ${now} THEN ${nextReset}
+          ELSE "rateLimit"."last_request"
+        END
+      RETURNING "count", "last_request" AS "lastRequest"
+    `);
+    const row = result.rows[0] as { count?: number; lastRequest?: number } | undefined;
+    if (!row) return null;
+    const count = Number(row.count ?? 1);
+    const reset = Number(row.lastRequest ?? nextReset);
+    return {
+      success: count <= limit,
+      remaining: Math.max(0, limit - count),
+      reset: Math.floor(reset / 1000),
+      backend: "database",
+    };
+  } catch {
+    return null;
+  }
+}
 
 export async function rateLimit(key: string, limit: number, windowSeconds = 60): Promise<LimitResult> {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -26,6 +71,9 @@ export async function rateLimit(key: string, limit: number, windowSeconds = 60):
       // Production fails closed below; development can still use the in-memory fallback.
     }
   }
+
+  const databaseResult = await databaseRateLimit(key, limit, windowSeconds);
+  if (databaseResult) return databaseResult;
 
   if (process.env.NODE_ENV === "production") {
     return { success: false, remaining: 0, reset: Math.floor(Date.now() / 1000) + windowSeconds, backend: "unavailable" };
