@@ -6,7 +6,7 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { authClient } from "@/lib/auth/client";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
-import { demoCreationChoicesSchema } from "@/lib/validation/musikpro-demo";
+import { demoCreationChoicesSchema, demoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import type { OccasionOption } from "@/lib/occasions/catalog";
 import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
@@ -77,6 +77,49 @@ function useDemoState(
   });
   const [creationDraftReady, setCreationDraftReady] = useState(false);
   const creationDraftKey = `musikpro:creation-draft:v1:${persistenceId}`;
+  const paymentInfoKey = `musikpro:payment-info:v1:${persistenceId}`;
+  const persistPaymentInfo = (nextFields: Record<string, string>, phoneCountry: string) => {
+    try {
+      window.localStorage.setItem(
+        paymentInfoKey,
+        JSON.stringify({
+          name: nextFields["payment.name"] ?? "",
+          email: nextFields["payment.email"] ?? "",
+          phone: nextFields["payment.phone"] ?? "",
+          phoneCountry,
+        }),
+      );
+    } catch {
+      // A blocked or full browser storage must not interrupt the checkout flow.
+    }
+  };
+  useEffect(() => {
+    let active = true;
+    try {
+      const saved = window.localStorage.getItem(paymentInfoKey);
+      if (saved) {
+        const parsed = demoPaymentDraftSchema.safeParse(JSON.parse(saved));
+        if (parsed.success) {
+          const restored = parsed.data;
+          window.queueMicrotask(() => {
+            if (!active) return;
+            setFields((current) => ({
+              ...current,
+              "payment.name": restored.name,
+              "payment.email": restored.email,
+              "payment.phone": restored.phone,
+            }));
+            setChoices((current) => ({ ...current, phoneCountry: restored.phoneCountry }));
+          });
+        }
+      }
+    } catch {
+      window.localStorage.removeItem(paymentInfoKey);
+    }
+    return () => {
+      active = false;
+    };
+  }, [paymentInfoKey]);
   useEffect(() => {
     let active = true;
     let restoredChoices: Record<string, string> | null = null;
@@ -215,7 +258,13 @@ function useDemoState(
     router.replace("/login");
     router.refresh();
   };
-  const field = (key: string, value: string) => setFields((prev) => ({ ...prev, [key]: value }));
+  const field = (key: string, value: string) => {
+    setFields((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key.startsWith("payment.")) persistPaymentInfo(next, choices.phoneCountry);
+      return next;
+    });
+  };
   const choose = (key: string, value: string) => {
     const nextChoices = { ...choices, [key]: value };
     setChoices(nextChoices);
@@ -224,6 +273,7 @@ function useDemoState(
       document.documentElement.lang =
         initialInterfaceLanguages.find((language) => language.nativeName === value)?.code ?? "fr";
     }
+    if (key === "phoneCountry") persistPaymentInfo(fields, value);
     if (!creationDraftReady || !["occasion", "genre", "mood", "language", "voice", "recipientRelation"].includes(key)) {
       return;
     }

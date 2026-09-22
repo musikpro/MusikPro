@@ -78,6 +78,12 @@ export const demoSupportSchema = z.object({
     .max(25)
     .regex(/^[+\d\s-]*$/),
 });
+export const demoPaymentDraftSchema = z.object({
+  name: z.string().trim().max(100).catch(""),
+  email: z.string().trim().max(254).catch(""),
+  phone: z.string().trim().max(25).regex(/^\d*$/).catch(""),
+  phoneCountry: z.enum(Object.keys(DEMO_PHONE_RULES) as [DemoPhoneCountry, ...DemoPhoneCountry[]]).catch("CI"),
+});
 export const demoPaymentSchema = z
   .object({
     name: z.string().trim().min(2, "Indique ton nom complet.").max(100),

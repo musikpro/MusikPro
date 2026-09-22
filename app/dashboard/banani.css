@@ -1027,7 +1027,7 @@
       transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .workspace-account>span {
+  .workspace-account>span:not(.musik-user-avatar) {
     min-width: 0;
     flex: 1;
   }
@@ -3202,7 +3202,7 @@
   text-align: left;
 }
 
-.mobile-menu-profile>span {
+.mobile-menu-profile>span:not(.musik-user-avatar) {
   min-width: 0;
   flex: 1;
 }
@@ -3474,6 +3474,15 @@
   letter-spacing: 0.045em;
   line-height: 1;
   text-shadow: 0 1px 2px rgb(121 41 7 / 22%);
+}
+
+/* Le badge initiales est rendu par un <span>. Toute règle générique d'un
+   conteneur parent du type `> span { flex: 1 }` l'étirerait en ellipse, alors
+   que la variante photo (<img>) resterait ronde. Ce garde-fou, plus spécifique,
+   maintient le badge parfaitement circulaire quel que soit le parent. */
+span.musik-user-avatar {
+  flex: 0 0 auto;
+  aspect-ratio: 1 / 1;
 }
 
 .profile-avatar img,
