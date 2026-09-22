@@ -1,4 +1,5 @@
 "use client";
+import { useEffect, useRef } from "react";
 const t = (text: string) => text;
 
 export const displayName = "Étape 6 — Génération des paroles (Animation)";
@@ -6,8 +7,18 @@ export const screenSize = "mobile";
 
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
+import { useDemo } from "./DemoProvider";
 
 export default function StepGeneratingLyrics() {
+  const demo = useDemo();
+  const generationStarted = useRef(false);
+
+  useEffect(() => {
+    if (generationStarted.current) return;
+    generationStarted.current = true;
+    void demo.generateLyrics("lyrics.generate");
+  }, [demo]);
+
   return (
     <div className="bg-surface flex flex-col min-h-full relative overflow-hidden">
       <CreationTopNav backHref="/dashboard/create/parameters" current={6} total={8} />

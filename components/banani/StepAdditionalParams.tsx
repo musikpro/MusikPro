@@ -151,7 +151,7 @@ export default function StepAdditionalParams() {
           type="button"
           data-demo-ready="true"
           disabled={!hasRequiredOptions || demo.lyricsPending}
-          onClick={async () => {
+          onClick={() => {
             if (!demo.choices.occasion || !demo.choices.genre) {
               demo.notify("Choisis d’abord l’occasion et le style de la chanson.");
               demo.go("/dashboard/create");
@@ -169,7 +169,6 @@ export default function StepAdditionalParams() {
             }
             demo.field("detail", parsed.data);
             demo.go("/dashboard/create/lyrics/generating");
-            await demo.generateLyrics("lyrics.generate");
           }}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
