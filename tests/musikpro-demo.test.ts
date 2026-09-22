@@ -43,8 +43,8 @@ describe("frontières des saisies de démonstration MusikPro", () => {
     ).toBe(false);
   });
   it("borne les paroles et les détails en mots, y compris les sauts de ligne", () => {
-    expect(demoLyricsSchema.safeParse(Array(5000).fill("mot").join("\n")).success).toBe(true);
-    expect(demoLyricsSchema.safeParse(Array(5001).fill("mot").join(" ")).success).toBe(false);
+    expect(demoLyricsSchema.safeParse(Array(900).fill("mot").join("\n")).success).toBe(true);
+    expect(demoLyricsSchema.safeParse(Array(901).fill("mot").join(" ")).success).toBe(false);
     expect(demoDetailSchema.safeParse(Array(51).fill("mot").join("\n")).success).toBe(false);
     expect(demoDetailSchema.safeParse("").success).toBe(true);
   });

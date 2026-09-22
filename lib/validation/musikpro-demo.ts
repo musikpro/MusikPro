@@ -1,8 +1,9 @@
 import { z } from "zod";
+import { LYRICS_MAX_WORDS } from "@/lib/ai/lyrics-policy";
 
 const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
-export const DEMO_LYRICS_MAX_WORDS = 5000;
-export const DEMO_LYRICS_MAX_CHARACTERS = 60000;
+export const DEMO_LYRICS_MAX_WORDS = LYRICS_MAX_WORDS;
+export const DEMO_LYRICS_MAX_CHARACTERS = 18000;
 export const demoCreationChoicesSchema = z.object({
   occasion: z.string().max(80),
   genre: z.string().max(80),

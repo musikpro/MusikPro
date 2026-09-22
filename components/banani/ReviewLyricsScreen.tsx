@@ -10,6 +10,7 @@ import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 import { DEMO_LYRICS_MAX_WORDS } from "@/lib/validation/musikpro-demo";
+import { estimateLyricsDurationSeconds, formatLyricsDuration } from "@/lib/ai/lyrics-policy";
 
 export default function ReviewLyricsScreen() {
   const demo = useDemo();
@@ -21,6 +22,7 @@ export default function ReviewLyricsScreen() {
     return <p className="p-6 text-center text-sm text-muted-foreground">Redirection vers la génération des paroles…</p>;
   }
   const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
+  const estimatedDuration = formatLyricsDuration(estimateLyricsDurationSeconds(lyricsWordCount));
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create/parameters" current={7} total={8} />
@@ -76,7 +78,7 @@ export default function ReviewLyricsScreen() {
             </div>
             <div>
               <p>{t("Durée estimée")}</p>
-              <strong>{t("~1:50")}</strong>
+              <strong>{estimatedDuration}</strong>
             </div>
           </div>
           <button
