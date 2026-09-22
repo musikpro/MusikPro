@@ -2,6 +2,7 @@ import { getPaymentProvider } from "@/lib/payments";
 import { processPaymentWebhook } from "@/lib/billing/webhook";
 import { writeAuditLog } from "@/lib/security/audit";
 import { providerEnvironmentConfigured } from "@/lib/payments/configured";
+import { chariowIsConfigured } from "@/lib/payments/chariow-config";
 import type { PaymentProviderId } from "@/lib/payments/types";
 import { createLogger } from "@/lib/observability/logger";
 import { requestId, withRequestId } from "@/lib/observability/request-id";
@@ -66,7 +67,10 @@ export async function POST(
     });
 
   const { provider: providerId } = await params;
-  if (!providerEnvironmentConfigured(providerId as PaymentProviderId)) {
+  const configured = providerId === "chariow"
+    ? await chariowIsConfigured()
+    : providerEnvironmentConfigured(providerId as PaymentProviderId);
+  if (!configured) {
     return new Response("Not found", {
       status: 404,
       headers: withRequestId(undefined, rid),

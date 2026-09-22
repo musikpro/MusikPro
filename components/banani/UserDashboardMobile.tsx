@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useDemo } from "./DemoProvider";
 
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 export const displayName = "Dashboard Utilisateur Mobile";
 export const screenSize = "mobile";
@@ -95,12 +95,12 @@ export default function UserDashboardMobile() {
       <div className="dashboard-greeting px-4 pt-4 pb-3">
         <div>
           <h1 className="font-headings font-bold text-2xl text-foreground">
-            {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
+            {`${t("Bonjour")} ${demo.profile.name.split(" ")[0]} 👋`}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {demo.balance > 0
               ? `Il te reste ${demo.balance} crédit${demo.balance > 1 ? "s" : ""}`
-              : "Aucun crédit disponible"}
+              : t("Aucun crédit disponible")}
           </p>
         </div>
         <QuickLanguageSelect compact />
@@ -139,7 +139,9 @@ export default function UserDashboardMobile() {
               {demo.isDemo ? t("Concours — Voix d'Afrique") : t("Aucun concours en cours")}
             </p>
             <p className="text-xs text-muted-foreground">
-              {demo.isDemo ? t("Se termine le 31 juillet · 50 000 FCFA") : t("Les prochains concours apparaîtront ici.")}
+              {demo.isDemo
+                ? t("Se termine le 31 juillet · 50 000 FCFA")
+                : t("Les prochains concours apparaîtront ici.")}
             </p>
           </div>
           <button
@@ -179,8 +181,8 @@ export default function UserDashboardMobile() {
           {recentSongs.length === 0 && (
             <div className="rounded-xl border border-border bg-card px-5 py-6 text-center">
               <Icon i="music-2" size={26} className="mx-auto mb-2 text-primary" />
-              <p className="font-semibold text-foreground">Aucune chanson créée</p>
-              <p className="mt-1 text-sm text-muted-foreground">Ta première chanson apparaîtra ici.</p>
+              <p className="font-semibold text-foreground">{t("Aucune chanson créée")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("Ta première chanson apparaîtra ici.")}</p>
             </div>
           )}
           {recentSongs.map((s) => (

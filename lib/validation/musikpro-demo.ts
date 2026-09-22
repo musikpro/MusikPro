@@ -4,6 +4,8 @@ import { LYRICS_MAX_WORDS } from "@/lib/ai/lyrics-policy";
 const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
 export const DEMO_LYRICS_MAX_WORDS = LYRICS_MAX_WORDS;
 export const DEMO_LYRICS_MAX_CHARACTERS = 18000;
+export const DEMO_STORY_MAX_WORDS = 120;
+export const DEMO_STORY_MAX_CHARACTERS = 1200;
 export const demoCreationChoicesSchema = z.object({
   occasion: z.string().max(80),
   genre: z.string().max(80),
@@ -28,8 +30,8 @@ export const demoStorySchema = z
   .string()
   .trim()
   .min(10, "Raconte ton histoire en au moins 10 caractères.")
-  .max(2000)
-  .refine(words(250), "Maximum 250 mots.");
+  .max(DEMO_STORY_MAX_CHARACTERS)
+  .refine(words(DEMO_STORY_MAX_WORDS), `Maximum ${DEMO_STORY_MAX_WORDS} mots.`);
 export const demoRecipientSchema = z.object({
   name: z.string().trim().min(2, "Indique le nom de la personne concernée.").max(100),
   pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
@@ -67,8 +69,8 @@ export const demoProfileSchema = z.object({
   location: z.string().trim().min(2).max(150),
 });
 export const demoSupportSchema = z.object({
-  subject: z.string().trim().min(2).max(150),
-  category: z.enum(["Problème technique", "Compte", "Packs"]),
+  subject: z.string().trim().min(2).max(150).refine((value) => !/[\r\n]/.test(value), "Sujet invalide."),
+  category: z.enum(["Problème technique", "Compte", "Crédits"]),
   message: z.string().trim().min(10).max(5000),
   email: z.email().max(254),
   phone: z

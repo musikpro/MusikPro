@@ -11,6 +11,8 @@
     "plans": "global catalog, server-managed; public reads are filtered by active flag",
     "music_styles": "global music catalog, server-managed; client reads are filtered by active flag",
     "occasions": "global occasion catalog, server-managed; client reads are filtered by active flag",
+    "languages": "global language catalog, server-managed; client reads are filtered independently by interface and lyrics activation flags",
+    "localization_settings": "global server-managed localization configuration; contains no user data and is never queried directly by clients",
     "library_collections": "global editorial catalog, server-managed; client reads are restricted to active public collections",
     "payment_fulfillments": "server-only idempotency ledger; never client queried",
     "webhook_events": "server-only provider event ledger",

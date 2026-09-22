@@ -123,6 +123,20 @@
       "removalComplexity": "conditional",
       "dependsOn": ["auth"]
     },
+    "support-email": {
+      "description": "Formulaire de support authentifié envoyé à l’équipe MusikPro via Resend",
+      "optional": false,
+      "env": ["RESEND_API_KEY", "EMAIL_FROM", "SUPPORT_EMAIL"],
+      "files": [
+        "components/banani/ContactSupportScreen.tsx",
+        "app/api/support/route.ts",
+        "lib/email/index.ts",
+        "lib/validation/musikpro-demo.ts"
+      ],
+      "routes": ["/api/support"],
+      "removalComplexity": "with-care",
+      "dependsOn": ["auth", "email", "upstash"]
+    },
     "google": {
       "description": "Google OAuth + Search Console",
       "optional": true,
@@ -416,6 +430,39 @@
         "Les comptes réels et la démonstration lisent le même catalogue actif et ordonné depuis Neon."
       ]
     },
+    "language-catalog": {
+      "description": "Catalogue Neon partagé des langues de l’interface et des langues de génération des paroles, administrable par le propriétaire.",
+      "optional": false,
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0010_language_catalog.sql",
+        "db/migrations/0011_localization_settings.sql",
+        "lib/languages/catalog.ts",
+        "lib/languages/server.ts",
+        "lib/languages/detection.ts",
+        "lib/languages/country-language.ts",
+        "app/admin/languages/actions.ts",
+        "app/admin/languages/page.tsx",
+        "app/admin/languages/loading.tsx",
+        "app/admin/languages/new/page.tsx",
+        "app/admin/languages/[id]/page.tsx",
+        "components/admin/AdminLanguageForm.tsx",
+        "components/banani/QuickLanguageSelect.tsx",
+        "components/banani/StepAdditionalParams.tsx",
+        "components/banani/DemoProvider.tsx",
+        "app/dashboard/layout.tsx"
+      ],
+      "routes": [],
+      "dependsOn": ["database", "auth"],
+      "removalComplexity": "medium",
+      "disableBehavior": "Conserver au minimum le français pour l’interface et les paroles afin que le parcours client reste utilisable.",
+      "notes": [
+        "Une langue peut être active pour l’interface, les paroles, ou les deux indépendamment.",
+        "Les quatre langues initiales sont le français, l’anglais, l’espagnol et le portugais.",
+        "La détection Country.is est pilotée depuis Neon, mise en cache sept jours dans Upstash et n’écrase jamais un choix manuel du client."
+      ]
+    },
     "library-collection-catalog": {
       "description": "Collections éditoriales Neon pilotées par le propriétaire et affichées dans la page Découvrir des espaces client réel et démo.",
       "optional": false,
@@ -445,7 +492,15 @@
     "multi-provider-lyrics-generation": {
       "description": "Fournisseurs OpenAI et Anthropic administrables, chiffrés et sélectionnables pour générer, réviser et rallonger les paroles.",
       "optional": true,
-      "env": ["APP_SECRETS_ENCRYPTION_KEY", "OPENAI_API_KEY", "OPENAI_DEFAULT_MODEL", "OPENAI_MAX_OUTPUT_TOKENS", "ANTHROPIC_API_KEY", "ANTHROPIC_DEFAULT_MODEL", "ANTHROPIC_MAX_OUTPUT_TOKENS"],
+      "env": [
+        "APP_SECRETS_ENCRYPTION_KEY",
+        "OPENAI_API_KEY",
+        "OPENAI_DEFAULT_MODEL",
+        "OPENAI_MAX_OUTPUT_TOKENS",
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_DEFAULT_MODEL",
+        "ANTHROPIC_MAX_OUTPUT_TOKENS"
+      ],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0008_light_whirlwind.sql",

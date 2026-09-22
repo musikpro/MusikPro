@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";

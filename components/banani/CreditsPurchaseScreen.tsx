@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import Image from "next/image";
 import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
@@ -77,7 +77,9 @@ export default function CreditsMobile() {
             <span>
               {demo.balance > 0 ? (
                 <>
-                  <strong>{availableGenerations} génération{availableGenerations > 1 ? "s" : ""}</strong>{" "}
+                  <strong>
+                    {availableGenerations} génération{availableGenerations > 1 ? "s" : ""}
+                  </strong>{" "}
                   {availableGenerations > 1 ? t("disponibles") : t("disponible")} {t("au tarif de 2 crédits chacune")}
                 </>
               ) : (
@@ -96,7 +98,8 @@ export default function CreditsMobile() {
             <p className="pack-generation-cost-note">
               <Icon i="coins" size={15} />
               <span>
-                À chaque génération, <strong>2 crédits</strong> sont débités de ton solde. Tu reçois deux versions de ta chanson.
+                À chaque génération, <strong>2 crédits</strong> sont débités de ton solde. Tu reçois deux versions de ta
+                chanson.
               </span>
             </p>
           </div>
@@ -152,7 +155,8 @@ export default function CreditsMobile() {
                 </div>
 
                 <p className="pack-grid-credit-rule">
-                  {getGenerationCount(pack.credits, pack.generationCost)} générations · jusqu’à {getVersionCount(pack.credits, pack.generationCost)} versions
+                  {getGenerationCount(pack.credits, pack.generationCost)} générations · jusqu’à{" "}
+                  {getVersionCount(pack.credits, pack.generationCost)} versions
                 </p>
 
                 {pack.bonus && (
@@ -167,11 +171,7 @@ export default function CreditsMobile() {
                     {formatDemoPackPrice(pack.priceValue, demo.choices.currency)}
                   </span>
                   <span className="pack-grid-card-status">
-                    {demo.pack?.id === pack.id ? (
-                      <span>Sélectionné</span>
-                    ) : (
-                      <Icon i="arrow-right" size={14} />
-                    )}
+                    {demo.pack?.id === pack.id ? <span>Sélectionné</span> : <Icon i="arrow-right" size={14} />}
                   </span>
                 </div>
               </button>

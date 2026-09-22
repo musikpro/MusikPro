@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef } from "react";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 export const displayName = "Étape 6 — Génération des paroles (Animation)";
 export const screenSize = "mobile";

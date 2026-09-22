@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { demoSupportSchema } from "@/lib/validation/musikpro-demo";
+import { apiFetch } from "@/lib/api/client";
 import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
 import Icon from "./Icon";
@@ -11,6 +13,41 @@ export const screenSize = "mobile";
 
 export default function ContactSupportScreen() {
   const demo = useDemo();
+  const [submitting, setSubmitting] = useState(false);
+
+  const submitSupportRequest = async () => {
+    const parsed = demoSupportSchema.safeParse({
+      subject: demo.fields["support.subject"],
+      category: demo.fields["support.category"],
+      message: demo.fields["support.message"],
+      email: demo.fields["support.email"],
+      phone: demo.fields["support.phone"],
+    });
+    if (!parsed.success) {
+      demo.notify("Complète le sujet, un message de 10 caractères minimum et un email valide.");
+      return;
+    }
+    if (demo.isDemo) {
+      demo.notify("Formulaire valide. Aucun email n’est envoyé depuis la démonstration.");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await apiFetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(parsed.data),
+      });
+      demo.field("support.subject", "");
+      demo.field("support.message", "");
+      demo.field("support.phone", "");
+      demo.notify("Ton message a bien été envoyé au support MusikPro.");
+    } catch (error) {
+      demo.notify(error instanceof Error ? error.message : "Le message n’a pas pu être envoyé.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <div className="support-screen bg-background flex flex-col">
       <div className="support-top-nav">
@@ -143,22 +180,10 @@ export default function ContactSupportScreen() {
           type="button"
           data-demo-ready
           className="support-submit"
-          onClick={() => {
-            const parsed = demoSupportSchema.safeParse({
-              subject: demo.fields["support.subject"],
-              category: demo.fields["support.category"],
-              message: demo.fields["support.message"],
-              email: demo.fields["support.email"],
-              phone: demo.fields["support.phone"],
-            });
-            demo.notify(
-              parsed.success
-                ? "Message enregistré dans la démonstration. Aucun message envoyé."
-                : "Complète le sujet, un message de 10 caractères minimum et un email valide.",
-            );
-          }}
+          disabled={submitting}
+          onClick={() => void submitSupportRequest()}
         >
-          <Icon i="send" size={17} /> Envoyer mon message
+          <Icon i="send" size={19} /> {submitting ? "Envoi en cours…" : "Envoyer mon message"}
         </button>
         <button type="button" data-demo-ready className="support-cancel" onClick={() => demo.go("/dashboard/help")}>
           Annuler

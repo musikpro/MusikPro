@@ -13,7 +13,7 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 export const displayName = "Vos informations";
 export const screenSize = "mobile";
 
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 const phonePrefixes = [
   { value: "CI", label: "Côte d’Ivoire", display: "🇨🇮 +225" },

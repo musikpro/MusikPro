@@ -68,6 +68,31 @@ export async function sendTwoFactorEmail(input: { to: string; code: string }) {
   if (result.error || !result.data?.id) throw new Error("Two-factor email delivery failed");
 }
 
+export async function sendSupportEmail(input: {
+  requesterName: string;
+  requesterEmail: string;
+  subject: string;
+  category: string;
+  message: string;
+  phone?: string;
+}) {
+  const resend = resendClient();
+  if (!resend) throw new Error("Support email is not configured");
+  const from = process.env.EMAIL_FROM;
+  if (!from || /@example\.(com|org|net)$/i.test(from)) {
+    throw new Error("EMAIL_FROM is not configured with a verified sender");
+  }
+  const supportEmail = process.env.SUPPORT_EMAIL?.trim() || "musikpro2026@gmail.com";
+  const result = await resend.emails.send({
+    from,
+    to: supportEmail,
+    replyTo: input.requesterEmail,
+    subject: `[MusikPro Support] ${input.subject}`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#181716"><h1>Nouvelle demande de support</h1><p><strong>Catégorie :</strong> ${escapeHtml(input.category)}</p><p><strong>Client :</strong> ${escapeHtml(input.requesterName)}</p><p><strong>Email :</strong> ${escapeHtml(input.requesterEmail)}</p><p><strong>Téléphone :</strong> ${escapeHtml(input.phone || "Non renseigné")}</p><hr><p style="white-space:pre-wrap">${escapeHtml(input.message)}</p></div>`,
+  });
+  if (result.error || !result.data?.id) throw new Error("Support email delivery failed");
+}
+
 function escapeHtml(value: string) {
   return value.replace(
     /[&<>'"]/g,

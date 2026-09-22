@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import { useDemo } from "./DemoProvider";
 

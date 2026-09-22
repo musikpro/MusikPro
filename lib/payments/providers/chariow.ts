@@ -1,16 +1,16 @@
 import { chariowPayloadSchema } from "@/lib/validation/payment-providers";
-import { createHmac, timingSafeEqual } from "node:crypto";
+import { timingSafeEqual } from "node:crypto";
 import {
   parsePhoneNumberFromString,
   type CountryCode,
 } from "libphonenumber-js";
 import { HttpPaymentProvider } from "../provider-base";
 import type { CheckoutInput, CheckoutResult } from "../types";
-import { requireEnv } from "@/lib/security/env";
+import { getChariowConfiguration } from "@/lib/payments/chariow-config";
 
 const BASE = process.env.CHARIOW_API_URL || "https://api.chariow.com/v1";
-const headers = () => ({
-  Authorization: `Bearer ${requireEnv("CHARIOW_API_KEY")}`,
+const headers = async () => ({
+  Authorization: `Bearer ${(await getChariowConfiguration()).apiKey}`,
   "Content-Type": "application/json",
 });
 const safeEqual = (a: string, b: string) => {
@@ -35,12 +35,14 @@ function mapStatus(value: unknown): CheckoutResult["status"] {
 function resolvePhone(
   rawPhone: string | undefined,
   country: string | undefined,
+  localPhone?: string,
 ) {
   if (!rawPhone) throw new Error("Chariow checkout requires customer phone");
   const cc = (country || "CI").toUpperCase() as CountryCode;
-  const parsed = rawPhone.trim().startsWith("+")
-    ? parsePhoneNumberFromString(rawPhone.trim())
-    : parsePhoneNumberFromString(rawPhone.trim(), cc);
+  const preferred = localPhone?.trim() || rawPhone.trim();
+  const parsed = preferred.startsWith("+")
+    ? parsePhoneNumberFromString(preferred)
+    : parsePhoneNumberFromString(preferred, cc);
   if (parsed?.isValid()) {
     return {
       number: parsed.nationalNumber,
@@ -68,10 +70,14 @@ export class ChariowProvider extends HttpPaymentProvider {
     if (!input.customer.email)
       throw new Error("Chariow checkout requires customer email");
     const names = (input.customer.name || "Client SaaS").trim().split(/\s+/);
-    const phone = resolvePhone(input.customer.phone, input.country);
+    const phone = resolvePhone(
+      input.customer.phone,
+      input.providerContext?.phoneCountry || input.country,
+      input.providerContext?.phoneLocal,
+    );
     const body = await this.json(`${BASE}/checkout`, {
       method: "POST",
-      headers: headers(),
+      headers: await headers(),
       cache: "no-store",
       body: JSON.stringify({
         product_id: productId,
@@ -79,7 +85,6 @@ export class ChariowProvider extends HttpPaymentProvider {
         first_name: names[0] || "Client",
         last_name: names.slice(1).join(" ") || "SaaS",
         phone,
-        payment_currency: input.money.currency,
         redirect_url: input.successUrl,
         custom_metadata: {
           app_reference: input.reference,
@@ -113,7 +118,7 @@ export class ChariowProvider extends HttpPaymentProvider {
   async verifyPayment(externalId: string): Promise<CheckoutResult> {
     const body = await this.json(
       `${BASE}/sales/${encodeURIComponent(externalId)}`,
-      { headers: headers(), cache: "no-store" },
+      { headers: await headers(), cache: "no-store" },
     );
     const sale = body.data || body;
     const detail = typeof sale.amount === "object" ? sale.amount : undefined;
@@ -131,18 +136,9 @@ export class ChariowProvider extends HttpPaymentProvider {
     };
   }
   async verifyWebhook(request: Request) {
-    // Current public Chariow best-practices documentation describes HMAC-SHA256
-    // via x-chariow-signature. We still re-pull GET /sales/{id} before fulfilment.
-    const signature = request.headers.get("x-chariow-signature");
-    if (!signature) return false;
-    const raw = await request.text();
-    const expected = createHmac("sha256", requireEnv("CHARIOW_WEBHOOK_SECRET"))
-      .update(raw)
-      .digest("hex");
-    const received = signature.toLowerCase().startsWith("sha256=")
-      ? signature.slice(7)
-      : signature;
-    return safeEqual(received, expected);
+    const received = new URL(request.url).searchParams.get("secret") || "";
+    const { webhookSecret } = await getChariowConfiguration();
+    return Boolean(received && webhookSecret && safeEqual(received, webhookSecret));
   }
   async parseWebhook(request: Request) {
     const deliveryId = request.headers.get("x-pulse-delivery-id");

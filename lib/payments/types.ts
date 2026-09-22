@@ -19,7 +19,10 @@ export type CheckoutInput = {
   successUrl: string;
   cancelUrl: string;
   metadata?: Record<string, unknown>;
-  providerContext?: Record<string, unknown>;
+  providerContext?: Record<string, unknown> & {
+    phoneCountry?: string;
+    phoneLocal?: string;
+  };
 };
 
 export type CheckoutResult = {

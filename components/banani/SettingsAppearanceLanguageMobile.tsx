@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import DemoToggle from "./DemoToggle";
@@ -21,12 +21,8 @@ export default function SettingsMobile() {
       {/* Header */}
       <div className="px-4 pt-4 pb-4 flex items-center justify-between border-b border-border">
         <div>
-          <h1 className="font-headings font-bold text-lg text-foreground">
-            {t("Paramètres")}
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            {t("Personnalise ton expérience")}
-          </p>
+          <h1 className="font-headings font-bold text-lg text-foreground">{t("Paramètres")}</h1>
+          <p className="text-xs text-muted-foreground">{t("Personnalise ton expérience")}</p>
         </div>
         <button
           type="button"
@@ -43,15 +39,11 @@ export default function SettingsMobile() {
       <div className="workspace-settings-grid flex-1 px-4 py-4 flex flex-col gap-6 pb-24">
         {/* Theme / Apparence Section */}
         <div>
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("Apparence")}
-          </h2>
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("Apparence")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
             {/* Theme Options */}
             <div>
-              <p className="text-sm font-semibold text-foreground mb-2">
-                {t("Thème")}
-              </p>
+              <p className="text-sm font-semibold text-foreground mb-2">{t("Thème")}</p>
               <div className="flex gap-2">
                 <button
                   type="button"
@@ -101,12 +93,8 @@ export default function SettingsMobile() {
             {/* Font Size */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-sm font-semibold text-foreground">
-                  {t("Taille du texte")}
-                </p>
-                <span className="text-xs text-muted-foreground">
-                  {t("Normal")}
-                </span>
+                <p className="text-sm font-semibold text-foreground">{t("Taille du texte")}</p>
+                <span className="text-xs text-muted-foreground">{t("Normal")}</span>
               </div>
               <input
                 aria-label="Taille du texte"
@@ -127,36 +115,25 @@ export default function SettingsMobile() {
 
         {/* Language Section */}
         <div>
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("Langue")}
-          </h2>
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("Langue")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
             {/* Language Selection */}
-            {[
-              { code: "FR", name: t("Français"), active: true },
-              { code: "EN", name: t("English"), active: false },
-              { code: "ES", name: t("Español"), active: false },
-              { code: "PT", name: t("Português"), active: false },
-            ].map((lang) => (
+            {demo.interfaceLanguages.map((lang) => (
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("appLanguage", lang.name)}
-                aria-pressed={demo.choices.appLanguage === lang.name}
+                onClick={() => demo.choose("appLanguage", lang.nativeName)}
+                aria-pressed={demo.choices.appLanguage === lang.nativeName}
                 key={lang.code}
-                className={`demo-choice-card w-full flex items-center justify-between px-3 py-2.5 rounded-lg ${demo.choices.appLanguage === lang.name ? "bg-secondary border border-primary/15" : "bg-input border border-border"}`}
+                className={`demo-choice-card w-full flex items-center justify-between px-3 py-2.5 rounded-lg ${demo.choices.appLanguage === lang.nativeName ? "bg-secondary border border-primary/15" : "bg-input border border-border"}`}
               >
-                <SelectionMark
-                  selected={demo.choices.appLanguage === lang.name}
-                />
+                <SelectionMark selected={demo.choices.appLanguage === lang.nativeName} />
                 <span
-                  className={`text-sm font-semibold ${demo.choices.appLanguage === lang.name ? "text-primary" : "text-foreground"}`}
+                  className={`text-sm font-semibold ${demo.choices.appLanguage === lang.nativeName ? "text-primary" : "text-foreground"}`}
                 >
-                  {lang.name}
+                  {lang.flag} {lang.nativeName}
                 </span>
-                {demo.choices.appLanguage === lang.name && (
-                  <Icon i="check" size={16} className="text-primary" />
-                )}
+                {demo.choices.appLanguage === lang.nativeName && <Icon i="check" size={16} className="text-primary" />}
               </button>
             ))}
           </div>
@@ -164,19 +141,13 @@ export default function SettingsMobile() {
 
         {/* Audio Settings */}
         <div>
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("Audio")}
-          </h2>
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("Audio")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
             {/* Volume Notification */}
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">
-                  {t("Volume des notifications")}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("Sons de l'app")}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{t("Volume des notifications")}</p>
+                <p className="text-xs text-muted-foreground">{t("Sons de l'app")}</p>
               </div>
               <DemoToggle label="Volume des notifications" large />
             </div>
@@ -187,12 +158,8 @@ export default function SettingsMobile() {
             {/* Quality Streaming */}
             <div className="flex items-center justify-between">
               <div className="flex-1">
-                <p className="text-sm font-semibold text-foreground">
-                  {t("Qualité audio")}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("Haute qualité")}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{t("Qualité audio")}</p>
+                <p className="text-xs text-muted-foreground">{t("Haute qualité")}</p>
               </div>
               <DemoToggle label="Qualité audio" large />
             </div>
@@ -201,32 +168,20 @@ export default function SettingsMobile() {
 
         {/* Privacy & Data Section */}
         <div>
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("Données")}
-          </h2>
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("Données")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-3">
             {/* Cache */}
             <button
               type="button"
               data-demo-ready="true"
-              onClick={() =>
-                demo.notify(
-                  "Action de démonstration : aucune opération réelle effectuée.",
-                )
-              }
+              onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-border"
             >
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-foreground">
-                  {t("Effacer le cache")}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{t("Effacer le cache")}</p>
                 <p className="text-xs text-muted-foreground">{t("42 MB")}</p>
               </div>
-              <Icon
-                i="chevron-right"
-                size={16}
-                className="text-muted-foreground flex-shrink-0"
-              />
+              <Icon i="chevron-right" size={16} className="text-muted-foreground flex-shrink-0" />
             </button>
 
             {/* Divider */}
@@ -242,12 +197,8 @@ export default function SettingsMobile() {
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-border"
             >
               <div className="flex-1 text-left">
-                <p className="text-sm font-semibold text-foreground">
-                  {t("Assistant de téléchargement")}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {t("Télécharge auto sur WiFi")}
-                </p>
+                <p className="text-sm font-semibold text-foreground">{t("Assistant de téléchargement")}</p>
+                <p className="text-xs text-muted-foreground">{t("Télécharge auto sur WiFi")}</p>
               </div>
               <div
                 className={`w-12 h-7 ${demo.toggles["Assistant de téléchargement"] ? "bg-primary" : "bg-muted"} rounded-full relative flex-shrink-0`}
@@ -262,9 +213,7 @@ export default function SettingsMobile() {
 
         {/* About & Legal */}
         <div>
-          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">
-            {t("À propos")}
-          </h2>
+          <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("À propos")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2">
             {[
               { label: t("Version"), value: "v2.1.4" },
@@ -274,9 +223,7 @@ export default function SettingsMobile() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() =>
-                  demo.notify("Information de maquette : " + item.label)
-                }
+                onClick={() => demo.notify("Information de maquette : " + item.label)}
                 key={item.label}
                 className="w-full flex items-center justify-between px-3 py-2.5 text-left"
               >

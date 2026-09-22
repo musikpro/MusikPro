@@ -1,4 +1,4 @@
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import Icon from "./Icon";
 
 export const displayName = "Admin Stat Card";
@@ -24,14 +24,9 @@ export default function AdminStatCard({
     coral: "bg-orange-50 text-coral",
   };
   return (
-    <div
-      className="bg-card rounded-lg border border-border p-5"
-      style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}
-    >
+    <div className="bg-card rounded-lg border border-border p-5" style={{ boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
       <div className="flex items-start justify-between mb-3">
-        <div
-          className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorMap[color] || colorMap.primary}`}
-        >
+        <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${colorMap[color] || colorMap.primary}`}>
           <Icon i={icon} size={18} />
         </div>
       </div>

@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
@@ -41,9 +41,7 @@ export default function MySongsGenerated() {
       {/* Header */}
       <div className="px-4 pt-4 pb-4">
         <div className="flex items-center justify-between mb-1">
-          <h1 className="font-headings font-bold text-2xl text-foreground">
-            {t("Mes chansons")}
-          </h1>
+          <h1 className="font-headings font-bold text-2xl text-foreground">{t("Mes chansons")}</h1>
           <button
             type="button"
             data-demo-ready="true"
@@ -55,35 +53,21 @@ export default function MySongsGenerated() {
           </button>
         </div>
         <p className="text-sm text-muted-foreground">
-          {demo.songs.length} chansons ·{" "}
-          {demo.songs.reduce((n, s) => n + s.versions.length, 0)} versions
-          générées
+          {demo.songs.length} chansons · {demo.songs.reduce((n, s) => n + s.versions.length, 0)} versions générées
         </p>
       </div>
 
       {/* Filter Bar */}
       <div className="px-4 pb-4 flex gap-2">
-        <SearchField
-          value={search}
-          onChange={setSearch}
-          label="Rechercher une chanson"
-        />
+        <SearchField value={search} onChange={setSearch} label="Rechercher une chanson" />
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            demo.notify(
-              "Action de démonstration : aucune opération réelle effectuée.",
-            )
-          }
+          onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
           aria-label="Filtrer"
           className="flex items-center gap-1.5 border border-border rounded-lg px-3 py-2 bg-input"
         >
-          <Icon
-            i="sliders-horizontal"
-            size={14}
-            className="text-muted-foreground"
-          />
+          <Icon i="sliders-horizontal" size={14} className="text-muted-foreground" />
         </button>
       </div>
 
@@ -103,13 +87,9 @@ export default function MySongsGenerated() {
         ))}
       </div>
 
-      <p
-        role="status"
-        aria-live="polite"
-        className="px-4 pb-3 text-xs text-muted-foreground"
-      >
-        {generatedSongs.length} chanson{generatedSongs.length !== 1 ? "s" : ""}{" "}
-        trouvée{generatedSongs.length !== 1 ? "s" : ""}
+      <p role="status" aria-live="polite" className="px-4 pb-3 text-xs text-muted-foreground">
+        {generatedSongs.length} chanson{generatedSongs.length !== 1 ? "s" : ""} trouvée
+        {generatedSongs.length !== 1 ? "s" : ""}
       </p>
       {/* Song Cards */}
       <div className="workspace-song-grid px-4 flex flex-col gap-4 pb-28">
@@ -130,9 +110,7 @@ export default function MySongsGenerated() {
             <div className="px-4 pt-4 pb-3 flex items-start justify-between">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-headings font-bold text-base text-foreground truncate">
-                    {song.title}
-                  </h2>
+                  <h2 className="font-headings font-bold text-base text-foreground truncate">{song.title}</h2>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
                   <span
@@ -140,22 +118,14 @@ export default function MySongsGenerated() {
                   >
                     {song.style}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {song.occasion}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    · {song.date}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{song.occasion}</span>
+                  <span className="text-xs text-muted-foreground">· {song.date}</span>
                 </div>
               </div>
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() =>
-                  demo.notify(
-                    "Action de démonstration : aucune opération réelle effectuée.",
-                  )
-                }
+                onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
                 aria-label="Options"
                 className="text-muted-foreground ml-2 mt-0.5"
               >
@@ -175,110 +145,86 @@ export default function MySongsGenerated() {
                 const versionKey = `${song.title}|${vi}`;
                 const isPlaying = playingVersion === versionKey;
                 return (
-                <div
-                  key={vi}
-                  className={`song-version-row flex items-center gap-3 px-3 py-2.5 rounded-lg ${isPlaying ? "is-playing bg-secondary border border-primary" : "bg-input border border-border"}`}
-                >
-                  {/* Play Button */}
-                  <button
-                    type="button"
-                    data-demo-ready="true"
-                    onClick={() => setPlayingVersion(isPlaying ? null : versionKey)}
-                    aria-label={isPlaying ? `Mettre en pause ${song.title}, ${v.label}` : `Lire ${song.title}, ${v.label}`}
-                    aria-pressed={isPlaying}
-                    className={`song-inline-play w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isPlaying ? "bg-primary" : "bg-muted"}`}
+                  <div
+                    key={vi}
+                    className={`song-version-row flex items-center gap-3 px-3 py-2.5 rounded-lg ${isPlaying ? "is-playing bg-secondary border border-primary" : "bg-input border border-border"}`}
                   >
-                    <Icon
-                      i={isPlaying ? "pause" : "play"}
-                      size={16}
-                      className={
-                        isPlaying
-                          ? "text-primary-foreground"
-                          : "text-muted-foreground"
-                      }
-                    />
-                  </button>
-
-                  {/* Version Info + Waveform */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <span
-                        className={`text-sm font-semibold ${isPlaying ? "text-primary" : "text-foreground"}`}
-                      >
-                        {v.label}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {v.duration}
-                      </span>
-                    </div>
-                    {/* Mini waveform */}
-                    <div className={`song-inline-waveform flex items-end gap-0.5 h-4 ${isPlaying ? "is-playing" : ""}`}>
-                      {[
-                        3, 6, 4, 9, 7, 5, 10, 8, 6, 9, 5, 7, 4, 8, 6, 10, 7, 5,
-                        8, 4,
-                      ].map((h, i) => (
-                        <div
-                          key={i}
-                          className={`w-1 rounded-sm ${isPlaying ? "bg-primary/60" : "bg-muted-foreground/30"}`}
-                          style={{ height: `${h}px` }}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
-                    <span className="text-xs text-muted-foreground">
-                      {v.plays}
-                    </span>
+                    {/* Play Button */}
                     <button
                       type="button"
                       data-demo-ready="true"
-                      aria-label={`Favori ${song.title} ${v.label}`}
-                      onClick={() => demo.toggleVersion(song.title, vi)}
-                      className={
-                        demo.versionFavorites.includes(`${song.title}|${vi}`)
-                          ? "text-red-400"
-                          : "text-muted-foreground"
+                      onClick={() => setPlayingVersion(isPlaying ? null : versionKey)}
+                      aria-label={
+                        isPlaying ? `Mettre en pause ${song.title}, ${v.label}` : `Lire ${song.title}, ${v.label}`
                       }
+                      aria-pressed={isPlaying}
+                      className={`song-inline-play w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isPlaying ? "bg-primary" : "bg-muted"}`}
                     >
                       <Icon
-                        i={
-                          demo.versionFavorites.includes(`${song.title}|${vi}`)
-                            ? "heart"
-                            : "heart"
-                        }
-                        size={15}
+                        i={isPlaying ? "pause" : "play"}
+                        size={16}
+                        className={isPlaying ? "text-primary-foreground" : "text-muted-foreground"}
                       />
                     </button>
-                    <button
-                      type="button"
-                      data-demo-ready="true"
-                      onClick={() =>
-                        demo.notify(
-                          "Action de démonstration : aucune opération réelle effectuée.",
-                        )
-                      }
-                      aria-label="Partager"
-                      className="text-muted-foreground"
-                    >
-                      <Icon i="share-2" size={15} />
-                    </button>
-                    <button
-                      type="button"
-                      data-demo-ready="true"
-                      onClick={() =>
-                        demo.notify(
-                          "Action de démonstration : aucune opération réelle effectuée.",
-                        )
-                      }
-                      aria-label="Télécharger"
-                      className="song-download-button"
-                    >
-                      <Icon i="download" size={19} />
-                    </button>
+
+                    {/* Version Info + Waveform */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className={`text-sm font-semibold ${isPlaying ? "text-primary" : "text-foreground"}`}>
+                          {v.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">{v.duration}</span>
+                      </div>
+                      {/* Mini waveform */}
+                      <div
+                        className={`song-inline-waveform flex items-end gap-0.5 h-4 ${isPlaying ? "is-playing" : ""}`}
+                      >
+                        {[3, 6, 4, 9, 7, 5, 10, 8, 6, 9, 5, 7, 4, 8, 6, 10, 7, 5, 8, 4].map((h, i) => (
+                          <div
+                            key={i}
+                            className={`w-1 rounded-sm ${isPlaying ? "bg-primary/60" : "bg-muted-foreground/30"}`}
+                            style={{ height: `${h}px` }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <span className="text-xs text-muted-foreground">{v.plays}</span>
+                      <button
+                        type="button"
+                        data-demo-ready="true"
+                        aria-label={`Favori ${song.title} ${v.label}`}
+                        onClick={() => demo.toggleVersion(song.title, vi)}
+                        className={
+                          demo.versionFavorites.includes(`${song.title}|${vi}`)
+                            ? "text-red-400"
+                            : "text-muted-foreground"
+                        }
+                      >
+                        <Icon i={demo.versionFavorites.includes(`${song.title}|${vi}`) ? "heart" : "heart"} size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        data-demo-ready="true"
+                        onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
+                        aria-label="Partager"
+                        className="text-muted-foreground"
+                      >
+                        <Icon i="share-2" size={15} />
+                      </button>
+                      <button
+                        type="button"
+                        data-demo-ready="true"
+                        onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
+                        aria-label="Télécharger"
+                        className="song-download-button"
+                      >
+                        <Icon i="download" size={19} />
+                      </button>
+                    </div>
                   </div>
-                </div>
                 );
               })}
             </div>
@@ -295,9 +241,7 @@ export default function MySongsGenerated() {
                 <span className="song-edit-lyrics-icon">
                   <Icon i="pencil" size={14} />
                 </span>
-                <span className="song-card-action-label">
-                  {t("Modifier paroles")}
-                </span>
+                <span className="song-card-action-label">{t("Modifier paroles")}</span>
               </button>
               <button
                 type="button"

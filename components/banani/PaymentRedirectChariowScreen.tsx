@@ -1,7 +1,10 @@
 "use client";
-const t = (text: string) => text;
+import { useState } from "react";
+import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
+import { apiFetch } from "@/lib/api/client";
 
 export const displayName = "Redirection Paiement Chariow";
 export const screenSize = "mobile";
@@ -10,14 +13,57 @@ import Icon from "./Icon";
 
 export default function PaymentRedirectScreen() {
   const demo = useDemo();
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState("");
+  const startCheckout = async () => {
+    if (!demo.pack || pending) return;
+    if (demo.isDemo) {
+      demo.setPaymentConfirmed(true);
+      demo.go("/dashboard/payment-preview/confirmed");
+      return;
+    }
+    setPending(true);
+    setError("");
+    try {
+      const country = (demo.choices.phoneCountry || "CI").toUpperCase() as CountryCode;
+      const parsedPhone = parsePhoneNumberFromString(demo.fields["payment.phone"] || "", country);
+      if (!parsedPhone?.isValid()) throw new Error("Vérifie le pays et le numéro de téléphone avant de payer.");
+      const origin = window.location.origin;
+      const result = await apiFetch<{ checkoutUrl?: string }>("/api/payments/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: "chariow",
+          planId: demo.pack.id,
+          country,
+          phone: parsedPhone.number,
+          phoneCountry: country,
+          phoneLocal: parsedPhone.nationalNumber,
+          successUrl: `${origin}/dashboard?payment=success`,
+          cancelUrl: `${origin}/dashboard/create/pack?payment=cancelled`,
+        }),
+      });
+      if (!result.checkoutUrl) throw new Error("Chariow n’a pas retourné de page de paiement.");
+      window.location.assign(result.checkoutUrl);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Le paiement Chariow n’a pas pu démarrer.");
+      setPending(false);
+    }
+  };
   if (!demo.pack) {
     return (
       <div className="bg-surface flex min-h-full items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-3xl border border-border bg-card px-6 py-10 text-center">
           <Icon i="package-open" size={36} className="mx-auto mb-3 text-primary" />
           <h1 className="font-headings text-xl font-bold text-foreground">Aucune offre sélectionnée</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Choisis une offre de crédits avant de continuer vers le paiement.</p>
-          <button type="button" onClick={() => demo.go("/dashboard/create/pack")} className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground">
+          <p className="mt-2 text-sm text-muted-foreground">
+            Choisis une offre de crédits avant de continuer vers le paiement.
+          </p>
+          <button
+            type="button"
+            onClick={() => demo.go("/dashboard/create/pack")}
+            className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground"
+          >
             Voir les crédits
           </button>
         </div>
@@ -102,16 +148,13 @@ export default function PaymentRedirectScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            (() => {
-              demo.setPaymentConfirmed(true);
-              demo.go("/dashboard/payment-preview/confirmed");
-            })()
-          }
+          onClick={startCheckout}
+          disabled={pending}
           className="w-full py-3 bg-primary text-primary-foreground font-semibold text-sm rounded-lg flex items-center justify-center gap-2"
         >
-          <Icon i="external-link" size={16} /> {t("Simuler la confirmation")}
+          <Icon i="external-link" size={16} /> {pending ? t("Connexion à Chariow…") : demo.isDemo ? t("Simuler la confirmation") : t("Payer avec Chariow")}
         </button>
+        {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
         <button
           type="button"
           data-demo-ready="true"

@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Centre de notifications";
@@ -76,15 +76,11 @@ export default function NotificationCenterScreen() {
         >
           <Icon i="arrow-left" size={18} /> {t("Retour")}
         </button>
-        <h1 className="text-sm font-medium text-muted-foreground">
-          {t("Notifications")}
-        </h1>
+        <h1 className="text-sm font-medium text-muted-foreground">{t("Notifications")}</h1>
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            demo.setReadNotifications(visibleNotifications.map((n) => n.id))
-          }
+          onClick={() => demo.setReadNotifications(visibleNotifications.map((n) => n.id))}
           className="text-sm font-semibold text-primary"
         >
           {t("Marquer tout")}
@@ -104,9 +100,7 @@ export default function NotificationCenterScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.setReadNotifications([...demo.readNotifications, notif.id])
-            }
+            onClick={() => demo.setReadNotifications([...demo.readNotifications, notif.id])}
             key={notif.id}
             className={`w-full flex gap-3 p-3 rounded-xl border transition-colors ${
               notif.unread && !demo.readNotifications.includes(notif.id)
@@ -116,9 +110,7 @@ export default function NotificationCenterScreen() {
           >
             <div
               className={`flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center ${
-                notif.unread && !demo.readNotifications.includes(notif.id)
-                  ? "bg-primary"
-                  : "bg-muted"
+                notif.unread && !demo.readNotifications.includes(notif.id) ? "bg-primary" : "bg-muted"
               }`}
             >
               <Icon
@@ -133,16 +125,12 @@ export default function NotificationCenterScreen() {
             </div>
             <div className="flex-1 text-left min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-sm text-foreground">
-                  {notif.title}
-                </h3>
+                <h3 className="font-semibold text-sm text-foreground">{notif.title}</h3>
                 {notif.unread && !demo.readNotifications.includes(notif.id) && (
                   <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-1.5"></div>
                 )}
               </div>
-              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
-                {notif.message}
-              </p>
+              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{notif.message}</p>
               <p className="text-xs text-muted-foreground mt-1">{notif.time}</p>
             </div>
           </button>

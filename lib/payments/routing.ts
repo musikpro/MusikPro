@@ -5,16 +5,11 @@ import { providerCapabilities, providerRuntimeAllowed } from "./capabilities";
 import type { PaymentProviderId } from "./types";
 import { providerEnvironmentConfigured } from "./configured";
 import { providerIsDegraded } from "./health";
+import { chariowIsConfigured } from "./chariow-config";
 
-const defaults: Record<string, PaymentProviderId[]> = {
-  CI: ["paydunya", "fedapay", "chariow", "bictorys", "paytech", "flutterwave", "moneroo"],
-  SN: ["paydunya", "paytech", "bictorys", "fedapay", "flutterwave", "moneroo"],
-  BJ: ["fedapay", "paydunya", "paytech", "moneroo"],
-  BF: ["paydunya", "fedapay", "flutterwave", "moneroo"],
-  TG: ["paydunya", "moneroo"],
-  CM: ["flutterwave", "moneroo"],
-  NG: ["flutterwave"],
-};
+// MusikPro currently exposes one checkout provider. The registry and adapter
+// contract stay provider-agnostic so another gateway can be added later.
+const activeProviders: PaymentProviderId[] = ["chariow"];
 
 export type RankedProvider = { provider: PaymentProviderId; score: number; priority: number; successRate: number | null; recentAttempts: number; degraded: boolean; degradedWindowAttempts: number; degradedWindowSuccessRate: number | null };
 
@@ -33,17 +28,19 @@ function currencyMatches(currencies: unknown, currency?: string) {
 }
 
 export async function availableProviders(country?: string, method?: string, currency?: string): Promise<PaymentProviderId[]> {
+  const chariowReady = await chariowIsConfigured();
+  if (!chariowReady) return [];
   const cc = country?.toUpperCase();
   const allConfigs = await db.select().from(paymentProviderConfigs);
   const hasAdminConfig = allConfigs.length > 0;
   const enabled = new Set(allConfigs.filter(c => c.enabled).map(c => c.provider));
 
   if (!cc) {
-    const fallback = (process.env.PAYMENT_DEFAULT_PROVIDER || "fedapay") as PaymentProviderId;
+    const fallback = "chariow" as PaymentProviderId;
     const candidates = (!hasAdminConfig || enabled.has(fallback)) ? [fallback] : [...enabled] as PaymentProviderId[];
     return candidates.filter((p) => {
       const capability = providerCapabilities[p];
-      return Boolean(capability) && !["scaffold", "merchant-validation"].includes(capability.readiness) && providerRuntimeAllowed(p) && providerEnvironmentConfigured(p);
+      return activeProviders.includes(p) && Boolean(capability) && !["scaffold", "merchant-validation"].includes(capability.readiness) && providerRuntimeAllowed(p) && (p === "chariow" || providerEnvironmentConfigured(p));
     });
   }
 
@@ -55,11 +52,10 @@ export async function availableProviders(country?: string, method?: string, curr
     return rows
       .filter(r => methodMatches(r.methods, method) && currencyMatches(r.currencies, currency))
       .map(r => r.provider as PaymentProviderId)
-      .filter(p => (!hasAdminConfig || enabled.has(p)) && providerCapabilities[p]?.readiness !== "scaffold" && providerCapabilities[p]?.readiness !== "merchant-validation" && providerRuntimeAllowed(p) && providerEnvironmentConfigured(p));
+      .filter(p => activeProviders.includes(p) && (!hasAdminConfig || enabled.has(p)) && providerCapabilities[p]?.readiness !== "scaffold" && providerCapabilities[p]?.readiness !== "merchant-validation" && providerRuntimeAllowed(p) && (p === "chariow" || providerEnvironmentConfigured(p)));
   }
 
-  const fallback = defaults[cc] ?? [(process.env.PAYMENT_DEFAULT_PROVIDER || "fedapay") as PaymentProviderId];
-  return fallback.filter(p => (!hasAdminConfig || enabled.has(p)) && providerCapabilities[p]?.readiness !== "scaffold" && providerCapabilities[p]?.readiness !== "merchant-validation" && providerRuntimeAllowed(p) && providerEnvironmentConfigured(p));
+  return activeProviders.filter(p => (!hasAdminConfig || enabled.has(p)) && providerCapabilities[p]?.readiness !== "scaffold" && providerCapabilities[p]?.readiness !== "merchant-validation" && providerRuntimeAllowed(p));
 }
 
 export async function rankProviders(country?: string, method?: string, currency?: string): Promise<RankedProvider[]> {

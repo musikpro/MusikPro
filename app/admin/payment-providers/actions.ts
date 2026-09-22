@@ -1,7 +1,8 @@
 "use server";
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { and, eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import {
   paymentCountryRoutes,
@@ -12,6 +13,8 @@ import { requireAdmin } from "@/lib/auth/session";
 import { providerCapabilities } from "@/lib/payments/capabilities";
 import type { PaymentProviderId } from "@/lib/payments/types";
 import { writeAuditLog } from "@/lib/security/audit";
+import { encryptSecret } from "@/lib/ai/secrets";
+import type { ChariowStoredConfig } from "@/lib/payments/chariow-config";
 
 const providerIds = Object.keys(providerCapabilities) as [
   PaymentProviderId,
@@ -45,8 +48,9 @@ const routeSchema = z.object({
 });
 const mappingSchema = z.object({
   planId: z.string().min(1).max(120),
-  provider: z.enum(providerIds),
-  externalProductId: z.string().trim().max(200),
+  provider: z.literal("chariow"),
+  productName: z.string().trim().min(2).max(120),
+  externalProductId: z.string().trim().min(2).max(200),
 });
 
 export async function saveProvider(formData: FormData) {
@@ -96,6 +100,65 @@ export async function saveProvider(formData: FormData) {
       priority: parsed.priority,
       mode: parsed.mode,
     },
+  });
+  revalidatePath("/admin/payment-providers");
+}
+
+const chariowSchema = z.object({
+  enabled: z.boolean(),
+  priority: z.coerce.number().int().min(1).max(999),
+  mode: z.enum(["sandbox", "live"]),
+  apiKey: z.string().trim().max(500),
+  webhookSecret: z.string().trim().max(500),
+});
+
+export async function saveChariowProvider(formData: FormData) {
+  const session = await requireAdmin();
+  const db = getServiceDb();
+  const parsed = chariowSchema.parse({
+    enabled: formData.get("enabled") === "on",
+    priority: formData.get("priority") || 10,
+    mode: String(formData.get("mode") || "live"),
+    apiKey: String(formData.get("apiKey") || ""),
+    webhookSecret: String(formData.get("webhookSecret") || ""),
+  });
+  const [existing] = await db
+    .select()
+    .from(paymentProviderConfigs)
+    .where(eq(paymentProviderConfigs.provider, "chariow"))
+    .limit(1);
+  const previous = (existing?.config || {}) as ChariowStoredConfig;
+  const webhookSecret = parsed.webhookSecret || (!previous.webhookSecret ? randomBytes(32).toString("hex") : "");
+  const config: ChariowStoredConfig = {
+    apiKey: parsed.apiKey
+      ? { ...encryptSecret(parsed.apiKey), last4: parsed.apiKey.slice(-4) }
+      : previous.apiKey,
+    webhookSecret: webhookSecret
+      ? { ...encryptSecret(webhookSecret), last4: webhookSecret.slice(-4) }
+      : previous.webhookSecret,
+  };
+  if (parsed.enabled && !config.apiKey)
+    throw new Error("Ajoute la clé API Chariow avant d'activer la passerelle.");
+  await db
+    .insert(paymentProviderConfigs)
+    .values({
+      id: existing?.id || randomUUID(),
+      provider: "chariow",
+      enabled: parsed.enabled,
+      priority: parsed.priority,
+      mode: parsed.mode,
+      config,
+    })
+    .onConflictDoUpdate({
+      target: paymentProviderConfigs.provider,
+      set: { enabled: parsed.enabled, priority: parsed.priority, mode: parsed.mode, config, updatedAt: new Date() },
+    });
+  await writeAuditLog({
+    action: "payment.provider.config.updated",
+    actorId: session.user.id,
+    targetType: "payment_provider",
+    targetId: "chariow",
+    metadata: { enabled: parsed.enabled, priority: parsed.priority, mode: parsed.mode, apiKeyUpdated: Boolean(parsed.apiKey) },
   });
   revalidatePath("/admin/payment-providers");
 }
@@ -161,6 +224,7 @@ export async function savePlanMapping(formData: FormData) {
   const parsed = mappingSchema.parse({
     planId: String(formData.get("planId") || ""),
     provider: String(formData.get("provider") || ""),
+    productName: String(formData.get("productName") || ""),
     externalProductId: String(formData.get("externalProductId") || ""),
   });
   await db
@@ -169,12 +233,14 @@ export async function savePlanMapping(formData: FormData) {
       id: randomUUID(),
       planId: parsed.planId,
       provider: parsed.provider,
-      externalProductId: parsed.externalProductId || null,
+      externalProductId: parsed.externalProductId,
+      metadata: { productName: parsed.productName },
     })
     .onConflictDoUpdate({
       target: [planProviderMappings.planId, planProviderMappings.provider],
       set: {
-        externalProductId: parsed.externalProductId || null,
+        externalProductId: parsed.externalProductId,
+        metadata: { productName: parsed.productName },
         updatedAt: new Date(),
       },
     });
@@ -185,8 +251,35 @@ export async function savePlanMapping(formData: FormData) {
     targetId: parsed.planId,
     metadata: {
       provider: parsed.provider,
-      hasExternalProductId: Boolean(parsed.externalProductId),
+      productName: parsed.productName,
+      hasExternalProductId: true,
     },
+  });
+  revalidatePath("/admin/payment-providers");
+}
+
+const deleteMappingSchema = z.object({
+  planId: z.string().min(1).max(120),
+  provider: z.literal("chariow"),
+});
+
+export async function deletePlanMapping(formData: FormData) {
+  const session = await requireAdmin();
+  const db = getServiceDb();
+  const parsed = deleteMappingSchema.parse({
+    planId: String(formData.get("planId") || ""),
+    provider: String(formData.get("provider") || ""),
+  });
+  await db.delete(planProviderMappings).where(and(
+    eq(planProviderMappings.planId, parsed.planId),
+    eq(planProviderMappings.provider, parsed.provider),
+  ));
+  await writeAuditLog({
+    action: "payment.plan_mapping.deleted",
+    actorId: session.user.id,
+    targetType: "plan",
+    targetId: parsed.planId,
+    metadata: { provider: parsed.provider },
   });
   revalidatePath("/admin/payment-providers");
 }

@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Aide & FAQ";
@@ -54,21 +54,15 @@ export default function HelpFAQScreen() {
         >
           <Icon i="arrow-left" size={18} /> {t("Retour")}
         </button>
-        <h1 className="text-sm font-medium text-muted-foreground">
-          {t("Aide & FAQ")}
-        </h1>
+        <h1 className="text-sm font-medium text-muted-foreground">{t("Aide & FAQ")}</h1>
       </div>
 
       {/* Content */}
       <div className="workspace-help-content flex-1 px-4 py-6 overflow-y-auto space-y-4">
         {/* Header */}
         <div className="mb-6">
-          <h2 className="font-headings font-bold text-xl text-foreground mb-2">
-            {t("Questions fréquemment posées")}
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            {t("Trouvez les réponses à vos questions sur Musika.")}
-          </p>
+          <h2 className="font-headings font-bold text-xl text-foreground mb-2">{t("Questions fréquemment posées")}</h2>
+          <p className="text-sm text-muted-foreground">{t("Trouvez les réponses à vos questions sur Musika.")}</p>
         </div>
 
         {/* FAQs */}
@@ -76,9 +70,7 @@ export default function HelpFAQScreen() {
           {faqs.map((faq, index) => (
             <details key={index} className="group">
               <summary className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between cursor-pointer list-none">
-                <span className="text-sm font-medium text-foreground pr-2">
-                  {faq.question}
-                </span>
+                <span className="text-sm font-medium text-foreground pr-2">{faq.question}</span>
                 <Icon
                   i="chevron-down"
                   size={18}
@@ -95,19 +87,11 @@ export default function HelpFAQScreen() {
         {/* Contact Support */}
         <div className="bg-secondary/40 border border-secondary rounded-xl p-4 mt-6">
           <div className="flex items-start gap-3 mb-3">
-            <Icon
-              i="mail"
-              size={20}
-              className="text-primary flex-shrink-0 mt-0.5"
-            />
+            <Icon i="mail" size={20} className="text-primary flex-shrink-0 mt-0.5" />
             <div>
-              <h3 className="font-bold text-sm text-foreground">
-                {t("Vous n'avez pas trouvé votre réponse ?")}
-              </h3>
+              <h3 className="font-bold text-sm text-foreground">{t("Vous n'avez pas trouvé votre réponse ?")}</h3>
               <p className="text-xs text-muted-foreground mt-1">
-                {t(
-                  "Contactez notre équipe de support, nous sommes là pour vous aider.",
-                )}
+                {t("Contactez notre équipe de support, nous sommes là pour vous aider.")}
               </p>
             </div>
           </div>

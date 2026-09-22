@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
@@ -54,10 +54,7 @@ export default function StepAdditionalParams() {
         <div className="mb-6">
           <label className="block text-sm font-bold text-foreground mb-3">{t("Langue des paroles")}</label>
           <div className="flex flex-col gap-2">
-            {[
-              { name: "Français", flag: "🇫🇷" },
-              { name: "Anglais", flag: "🇬🇧" },
-            ].map((lang) => (
+            {demo.lyricsLanguages.map((lang) => (
               <button
                 type="button"
                 data-demo-ready="true"

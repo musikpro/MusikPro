@@ -1,5 +1,5 @@
 import { paymentSummarySchema } from "@/lib/validation/payment-providers";
-import { and, eq, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { getServiceDb } from "@/db";
 import {
@@ -7,8 +7,10 @@ import {
   payments,
   plans,
   subscriptions,
+  credits,
 } from "@/db/schema";
 import { getPaymentProvider } from "@/lib/payments";
+import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 
 function rawReference(input: unknown): string | undefined {
   const parsed = paymentSummarySchema.safeParse(input);
@@ -156,47 +158,42 @@ export async function reconcilePayment(paymentId: string) {
         .where(eq(plans.id, payment.planId))
         .limit(1);
       if (!plan) throw new Error("Payment plan not found");
-      if (!["month", "year"].includes(plan.interval))
-        throw new Error("Unsupported billing interval");
-
-      await db
-        .insert(subscriptions)
-        .values({
-          id: randomUUID(),
-          userId: payment.userId,
-          organizationId: payment.organizationId,
-          planId: plan.id,
-          provider: provider.id,
-          status: "active",
-          renewalMode: "manual",
-          currentPeriodEnd: addCalendarPeriod(
-            succeededAt,
-            plan.interval as "month" | "year",
-          ),
-          lastPaymentId: payment.id,
-        })
-        .onConflictDoUpdate({
+      const creditFeatures = creditPlanFeaturesSchema.safeParse(plan.features);
+      if (creditFeatures.success) {
+        // The fulfilment marker and balance increment live in one statement so a
+        // webhook/cron race can never grant the same credit pack twice.
+        await db.execute(sql`
+          WITH inserted_fulfilment AS (
+            INSERT INTO ${paymentFulfillments} (id, payment_id, provider, applied_at)
+            VALUES (${randomUUID()}, ${payment.id}, ${provider.id}, now())
+            ON CONFLICT (payment_id) DO NOTHING
+            RETURNING 1
+          )
+          INSERT INTO ${credits} (id, user_id, balance, updated_at)
+          SELECT ${randomUUID()}, ${payment.userId}, ${creditFeatures.data.credits}, now()
+          FROM inserted_fulfilment
+          ON CONFLICT (user_id) DO UPDATE
+          SET balance = ${credits.balance} + EXCLUDED.balance, updated_at = now()
+        `);
+      } else {
+        if (!["month", "year"].includes(plan.interval))
+          throw new Error("Unsupported billing interval");
+        await db.insert(subscriptions).values({
+          id: randomUUID(), userId: payment.userId, organizationId: payment.organizationId,
+          planId: plan.id, provider: provider.id, status: "active", renewalMode: "manual",
+          currentPeriodEnd: addCalendarPeriod(succeededAt, plan.interval as "month" | "year"), lastPaymentId: payment.id,
+        }).onConflictDoUpdate({
           target: [subscriptions.userId, subscriptions.planId],
-          set: {
-            status: "active",
-            provider: provider.id,
-            organizationId: payment.organizationId,
-            currentPeriodEnd: periodEndExpression(plan.interval, succeededAt),
-            lastPaymentId: payment.id,
-          },
+          set: { status: "active", provider: provider.id, organizationId: payment.organizationId, currentPeriodEnd: periodEndExpression(plan.interval, succeededAt), lastPaymentId: payment.id },
           setWhere: sql`${subscriptions.lastPaymentId} IS DISTINCT FROM ${payment.id}`,
         });
+        await db.insert(paymentFulfillments).values({ id: randomUUID(), paymentId: payment.id, provider: provider.id, appliedAt: new Date() }).onConflictDoNothing({ target: paymentFulfillments.paymentId });
+      }
     }
 
-    await db
-      .insert(paymentFulfillments)
-      .values({
-        id: randomUUID(),
-        paymentId: payment.id,
-        provider: provider.id,
-        appliedAt: new Date(),
-      })
-      .onConflictDoNothing({ target: paymentFulfillments.paymentId });
+    if (!payment.planId || !payment.userId) {
+      await db.insert(paymentFulfillments).values({ id: randomUUID(), paymentId: payment.id, provider: provider.id, appliedAt: new Date() }).onConflictDoNothing({ target: paymentFulfillments.paymentId });
+    }
   } else if (verified.status === "failed" && payment.status !== "paid") {
     await db
       .update(payments)

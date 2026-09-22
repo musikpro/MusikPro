@@ -11,7 +11,7 @@ import { CREDITS_PER_GENERATION, getGenerationCount, getVersionCount } from "@/l
 export const displayName = "Choix de l’offre de crédits";
 export const screenSize = "mobile";
 
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 export default function CreationPackScreen() {
   const demo = useDemo();
@@ -94,7 +94,10 @@ export default function CreationPackScreen() {
                   <span className="creation-pack-card-value">
                     <strong>{pack.credits}</strong>
                     <small>crédits</small>
-                    <small>{getGenerationCount(pack.credits, pack.generationCost)} générations · {getVersionCount(pack.credits, pack.generationCost)} versions</small>
+                    <small>
+                      {getGenerationCount(pack.credits, pack.generationCost)} générations ·{" "}
+                      {getVersionCount(pack.credits, pack.generationCost)} versions
+                    </small>
                     <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>
                   </span>
                 </button>

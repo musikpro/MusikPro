@@ -9,6 +9,9 @@ import { credits } from "@/db/schema";
 import { getActiveCreditPlans } from "@/lib/credit-plans/server";
 import { getActiveOccasions } from "@/lib/occasions/server";
 import { getPublishedLibraryCollections } from "@/lib/library-collections/server";
+import { getActiveLanguageCatalog } from "@/lib/languages/server";
+import { detectInterfaceLanguage } from "@/lib/languages/detection";
+import { headers } from "next/headers";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
 import "@fontsource/dm-sans/600.css";
@@ -24,6 +27,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const creditPlans = await getActiveCreditPlans({ demo });
   const occasionOptions = await getActiveOccasions({ demo });
   const libraryCollectionOptions = await getPublishedLibraryCollections();
+  const languageCatalog = await getActiveLanguageCatalog({ demo });
+  const detectedInterfaceLanguage = await detectInterfaceLanguage(await headers(), languageCatalog.interfaceLanguages);
   const balance = demo
     ? 0
     : Number(
@@ -41,6 +46,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
       initialLibraryCollections={libraryCollectionOptions}
+      initialInterfaceLanguages={languageCatalog.interfaceLanguages}
+      initialLyricsLanguages={languageCatalog.lyricsLanguages}
+      initialDetectedInterfaceLanguage={detectedInterfaceLanguage}
       persistenceId={demo ? "demo" : session.user.id}
       initialProfile={{
         name: session.user.name,

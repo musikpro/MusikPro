@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Mes Favoris - Chansons Aimées";
@@ -36,18 +36,12 @@ export default function MyFavoritesSongs() {
           >
             <Icon i="chevron-left" size={20} />
           </button>
-          <h1 className="font-headings font-bold text-lg text-foreground">
-            {t("Mes Favoris")}
-          </h1>
+          <h1 className="font-headings font-bold text-lg text-foreground">{t("Mes Favoris")}</h1>
         </div>
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() =>
-            demo.notify(
-              "Action de démonstration : aucune opération réelle effectuée.",
-            )
-          }
+          onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
           aria-label="Options"
           className="text-muted-foreground"
         >
@@ -57,9 +51,7 @@ export default function MyFavoritesSongs() {
 
       {/* Info */}
       <div className="px-4 pt-4 pb-2">
-        <p className="text-sm text-muted-foreground">
-          {demo.favorites.length} chansons favorites
-        </p>
+        <p className="text-sm text-muted-foreground">{demo.favorites.length} chansons favorites</p>
       </div>
 
       {/* Songs List */}
@@ -78,11 +70,7 @@ export default function MyFavoritesSongs() {
             {/* Image */}
             <div className="w-24 h-24 flex-shrink-0 relative overflow-hidden">
               {song.img ? (
-                <Image
-                  ar="1:1"
-                  prompt={song.img}
-                  className="w-full h-full object-cover"
-                />
+                <Image ar="1:1" prompt={song.img} className="w-full h-full object-cover" />
               ) : (
                 <div className="w-full h-full bg-secondary flex items-center justify-center">
                   <Icon i="music-2" size={32} className="text-primary" />
@@ -102,18 +90,14 @@ export default function MyFavoritesSongs() {
             {/* Content */}
             <div className="flex-1 p-3 flex flex-col justify-between">
               <div className="min-w-0">
-                <h2 className="font-bold text-sm text-foreground truncate">
-                  {song.title}
-                </h2>
+                <h2 className="font-bold text-sm text-foreground truncate">{song.title}</h2>
                 <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
                   <span
                     className={`text-xs font-semibold px-1.5 py-0.5 rounded-md ${styleColors[song.style] || "bg-muted text-muted-foreground"}`}
                   >
                     {song.style}
                   </span>
-                  <span className="text-xs text-muted-foreground">
-                    {song.occasion}
-                  </span>
+                  <span className="text-xs text-muted-foreground">{song.occasion}</span>
                 </div>
               </div>
               <div className="flex items-center justify-between">

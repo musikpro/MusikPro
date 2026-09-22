@@ -66,7 +66,7 @@ if (!reconcileText.includes("sameMoney(")) errors.push("Payment reconciliation m
 
 
 const chariowText = fs.readFileSync("lib/payments/providers/chariow.ts", "utf8");
-if (!chariowText.includes('startsWith("sha256=")') || !chariowText.includes('x-pulse-delivery-id')) errors.push("Chariow current Pulse signature/idempotency handling missing");
+if (!chariowText.includes('searchParams.get("secret")') || !chariowText.includes("safeEqual(received, webhookSecret)") || !chariowText.includes('x-pulse-delivery-id')) errors.push("Chariow Pulse URL-secret verification/idempotency handling missing");
 if (!schemaText.includes('numeric("amount"') || !schemaText.includes('numeric("provider_amount"')) errors.push("Money columns must support decimal currencies");
 const webhookUrlText = fs.readFileSync("lib/payments/webhook-url.ts", "utf8");
 if (!webhookUrlText.includes("PAYMENT_WEBHOOK_BASE_URL")) errors.push("Dedicated local webhook base URL support missing");

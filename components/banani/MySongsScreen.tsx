@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Mes chansons";
@@ -26,12 +26,8 @@ export default function MySongsScreen() {
 
       {/* Header */}
       <div className="px-4 pt-4 pb-4">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("Mes chansons")}
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          {t("Gérez vos créations musicales")}
-        </p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Mes chansons")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Gérez vos créations musicales")}</p>
       </div>
 
       {/* Filter/Sort */}
@@ -54,7 +50,10 @@ export default function MySongsScreen() {
       {/* My Songs List */}
       <div className="flex-1 px-4 pb-6 overflow-y-auto space-y-3">
         {mySongs.length === 0 && (
-          <p role="status" className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground">
+          <p
+            role="status"
+            className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground"
+          >
             Aucune chanson créée pour le moment.
           </p>
         )}

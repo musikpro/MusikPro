@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Lecteur de chanson";
@@ -23,7 +23,11 @@ export default function SongPlayerScreen() {
             <Icon i="music-2" size={38} className="mx-auto mb-3 text-primary" />
             <h1 className="font-headings text-xl font-bold text-foreground">Aucune chanson sélectionnée</h1>
             <p className="mt-2 text-sm text-muted-foreground">Tes chansons réelles pourront être écoutées ici.</p>
-            <button type="button" onClick={() => demo.go("/dashboard/songs")} className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground">
+            <button
+              type="button"
+              onClick={() => demo.go("/dashboard/songs")}
+              className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground"
+            >
               Voir mes chansons
             </button>
           </div>
@@ -46,23 +50,15 @@ export default function SongPlayerScreen() {
               {t("En écoute")}
             </span>
           </div>
-          <h1 className="font-headings font-bold text-2xl text-foreground text-center">
-            {currentSong.title}
-          </h1>
-          <p className="text-sm text-muted-foreground text-center mt-1">
-            {currentSong.artist}
-          </p>
+          <h1 className="font-headings font-bold text-2xl text-foreground text-center">{currentSong.title}</h1>
+          <p className="text-sm text-muted-foreground text-center mt-1">{currentSong.artist}</p>
         </div>
 
         {/* Album Art */}
         <div className="workspace-album-art px-4 pb-8 flex-1 flex items-center justify-center">
           <div className="w-56 h-56 rounded-3xl overflow-hidden shadow-2xl">
             {currentSong.img ? (
-              <Image
-                ar="1:1"
-                prompt={currentSong.img}
-                className="w-full h-full object-cover"
-              />
+              <Image ar="1:1" prompt={currentSong.img} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-secondary flex items-center justify-center">
                 <Icon i="music-2" size={64} className="text-primary" />
@@ -75,9 +71,7 @@ export default function SongPlayerScreen() {
         <div className="px-4 pb-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Icon i="music-2" size={16} className="text-primary" />
-            <span className="text-sm font-medium text-foreground">
-              {currentSong.style}
-            </span>
+            <span className="text-sm font-medium text-foreground">{currentSong.style}</span>
           </div>
           <button
             type="button"
@@ -95,10 +89,7 @@ export default function SongPlayerScreen() {
         {/* Progress Bar */}
         <div className="px-4 pb-4">
           <div className="bg-border rounded-full h-1 mb-2">
-            <div
-              className="bg-primary h-1 rounded-full"
-              style={{ width: "45%" }}
-            ></div>
+            <div className="bg-primary h-1 rounded-full" style={{ width: "45%" }}></div>
           </div>
           <div className="flex justify-between text-xs text-muted-foreground">
             <span>1:41</span>
@@ -143,11 +134,7 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.notify(
-                "Action de démonstration : aucune opération réelle effectuée.",
-              )
-            }
+            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
             aria-label="Volume de démonstration"
             className="flex items-center gap-2 text-muted-foreground"
           >
@@ -160,11 +147,7 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.notify(
-                "Action de démonstration : aucune opération réelle effectuée.",
-              )
-            }
+            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
             className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2"
           >
             <Icon i="share-2" size={16} />
@@ -173,11 +156,7 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() =>
-              demo.notify(
-                "Action de démonstration : aucune opération réelle effectuée.",
-              )
-            }
+            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
             className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2"
           >
             <Icon i="download" size={16} />
@@ -188,29 +167,23 @@ export default function SongPlayerScreen() {
 
       {/* Queue/Up Next */}
       <div className="px-4 pb-6 border-t border-border">
-        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-          {t("Suivant")}
-        </p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{t("Suivant")}</p>
         <div className="space-y-2">
-          {demo.library.filter((song) => song.title !== currentSong.title).slice(0, 2).map((song) => (
-            <div
-              key={song.id}
-              className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/30"
-            >
-              <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
-                <Icon i="music-2" size={14} className="text-primary" />
+          {demo.library
+            .filter((song) => song.title !== currentSong.title)
+            .slice(0, 2)
+            .map((song) => (
+              <div key={song.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/30">
+                <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
+                  <Icon i="music-2" size={14} className="text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm text-foreground truncate">{song.title}</p>
+                  <p className="text-xs text-muted-foreground">{song.style}</p>
+                </div>
+                <span className="text-xs text-muted-foreground flex-shrink-0">{song.duration}</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-foreground truncate">
-                  {song.title}
-                </p>
-                <p className="text-xs text-muted-foreground">{song.style}</p>
-              </div>
-              <span className="text-xs text-muted-foreground flex-shrink-0">
-                {song.duration}
-              </span>
-            </div>
-          ))}
+            ))}
           {demo.library.filter((song) => song.title !== currentSong.title).length === 0 && (
             <div className="rounded-xl border border-border bg-card px-4 py-5 text-center">
               <p className="text-sm font-semibold text-foreground">Aucune autre chanson</p>

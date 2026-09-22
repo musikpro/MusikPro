@@ -1,6 +1,6 @@
 "use client";
 import { useEffect } from "react";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 7 — Révision des paroles";
@@ -42,7 +42,9 @@ export default function ReviewLyricsScreen() {
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
         <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Révise les paroles")}</h1>
-        <p className="text-sm text-muted-foreground">{t("Tu peux les modifier avant la génération")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("Révise-les avec l’IA ou modifie-les toi-même avant la génération musicale")}
+        </p>
       </div>
 
       {/* Content */}
@@ -77,7 +79,7 @@ export default function ReviewLyricsScreen() {
               <Icon i="clock" size={15} />
             </div>
             <div>
-              <p>{t("Durée estimée")}</p>
+              <p>{t("Durée estimée de la chanson")}</p>
               <strong>{estimatedDuration}</strong>
             </div>
           </div>

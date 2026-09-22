@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useDemo } from "./DemoProvider";
 import Icon from "./Icon";
 import UserAvatar from "./UserAvatar";
+import { translate as t } from "@/lib/i18n/translate";
 
 const groups = [
   [
@@ -66,7 +67,7 @@ export default function DesktopSidebar() {
               return (
                 <Link key={href} href={demo.href(href)} prefetch={false} aria-current={active ? "page" : undefined}>
                   <Icon i={icon} size={18} />
-                  <span>{label}</span>
+                  <span>{t(label)}</span>
                 </Link>
               );
             })}
@@ -77,7 +78,7 @@ export default function DesktopSidebar() {
         <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-9 h-9 rounded-full" />
         <span>
           <strong>{demo.profile.name}</strong>
-          <small>{demo.isDemo ? "Compte de démonstration" : "Compte MusikPro"}</small>
+          <small>{demo.isDemo ? t("Compte de démonstration") : t("Compte MusikPro")}</small>
         </span>
         <Icon i="chevron-right" size={15} />
       </Link>

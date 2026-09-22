@@ -1,4 +1,4 @@
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 export const displayName = "Step Progress Bar";
 export const shortDescription = "Step indicator for song creation flow";
 

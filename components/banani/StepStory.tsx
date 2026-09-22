@@ -1,7 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { demoStorySchema } from "@/lib/validation/musikpro-demo";
+import {
+  DEMO_STORY_MAX_CHARACTERS,
+  DEMO_STORY_MAX_WORDS,
+  demoStorySchema,
+} from "@/lib/validation/musikpro-demo";
 import CreationTopNav from "./CreationTopNav";
 import DemoField from "./DemoField";
 import { useDemo } from "./DemoProvider";
@@ -61,8 +65,8 @@ export default function StepStory() {
             label="Ton histoire"
             multiline
             rows={5}
-            maxLength={2000}
-            maxWords={250}
+            maxLength={DEMO_STORY_MAX_CHARACTERS}
+            maxWords={DEMO_STORY_MAX_WORDS}
             className="text-base leading-relaxed"
             ariaInvalid={Boolean(storyError)}
             describedBy={storyError ? "story-field-error" : undefined}
@@ -72,7 +76,7 @@ export default function StepStory() {
           <VoiceMicrophoneButton
             value={demo.fields.story}
             onTranscript={(value) => {
-              demo.field("story", value.slice(0, 2000));
+              demo.field("story", value.slice(0, DEMO_STORY_MAX_CHARACTERS));
               setStoryError("");
             }}
             onMessage={demo.notify}
@@ -83,7 +87,7 @@ export default function StepStory() {
         </div>
         <div className="story-field-meta">
           <span>Minimum 10 caractères</span>
-          <span>{storyWordCount} / 250 mots</span>
+          <span>{storyWordCount} / {DEMO_STORY_MAX_WORDS} mots</span>
         </div>
         {storyError && (
           <InlineNotice id="story-field-error" tone="error" className="field-notice">

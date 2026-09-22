@@ -26,19 +26,7 @@ import {
 export const runtime = "nodejs";
 
 const schema = z.object({
-  provider: z
-    .enum([
-      "chariow",
-      "fedapay",
-      "djomy",
-      "paydunya",
-      "flutterwave",
-      "moneroo",
-      "paytech",
-      "bictorys",
-      "stripe",
-    ])
-    .optional(),
+  provider: z.literal("chariow").optional(),
   planId: z.string().min(1).max(120),
   country: z
     .string()
@@ -62,6 +50,8 @@ const schema = z.object({
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
   phone: z.string().min(6).max(30).optional(),
+  phoneCountry: z.string().regex(/^[A-Za-z]{2}$/).transform((v) => v.toUpperCase()).optional(),
+  phoneLocal: z.string().min(4).max(30).optional(),
 });
 
 export async function POST(request: Request) {
@@ -207,6 +197,8 @@ export async function POST(request: Request) {
         providerContext: {
           externalProductId: mapping?.externalProductId,
           paymentMethod: body.method,
+          phoneCountry: body.phoneCountry,
+          phoneLocal: body.phoneLocal,
           ...((mapping?.metadata as Record<string, unknown>) || {}),
         },
       });

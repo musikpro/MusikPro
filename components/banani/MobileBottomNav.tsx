@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useDemo } from "./DemoProvider";
 import { demoDestination } from "@/lib/demo/navigation";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 import Icon from "./Icon";
 

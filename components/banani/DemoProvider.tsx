@@ -10,6 +10,7 @@ import { demoCreationChoicesSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import type { OccasionOption } from "@/lib/occasions/catalog";
 import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
+import type { LanguageOption } from "@/lib/languages/catalog";
 import { apiFetch } from "@/lib/api/client";
 
 type DemoProfile = { name: string; email: string; location: string };
@@ -21,6 +22,9 @@ function useDemoState(
   initialCreditPlans: CreditPlanOption[],
   initialOccasions: OccasionOption[],
   initialLibraryCollections: LibraryCollectionOption[],
+  initialInterfaceLanguages: LanguageOption[],
+  initialLyricsLanguages: LanguageOption[],
+  initialDetectedInterfaceLanguage: LanguageOption | null,
   persistenceId: string,
 ) {
   const router = useRouter();
@@ -94,6 +98,23 @@ function useDemoState(
       active = false;
     };
   }, [creationDraftKey]);
+  useEffect(() => {
+    const savedLanguage = window.localStorage.getItem(`musikpro:interface-language:${persistenceId}`);
+    const available = initialInterfaceLanguages.some((language) => language.nativeName === savedLanguage);
+    const detectedAvailable = initialDetectedInterfaceLanguage
+      ? initialInterfaceLanguages.some((language) => language.code === initialDetectedInterfaceLanguage.code)
+      : false;
+    const selected = available
+      ? savedLanguage!
+      : detectedAvailable
+        ? initialDetectedInterfaceLanguage!.nativeName
+        : (initialInterfaceLanguages[0]?.nativeName ?? "Français");
+    window.queueMicrotask(() =>
+      setChoices((current) => ({ ...current, appLanguage: selected })),
+    );
+    document.documentElement.lang =
+      initialInterfaceLanguages.find((language) => language.nativeName === selected)?.code ?? "fr";
+  }, [initialDetectedInterfaceLanguage, initialInterfaceLanguages, persistenceId]);
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);
   const [songs, setSongs] = useState(() => defaults.songs);
@@ -146,6 +167,8 @@ function useDemoState(
   const songPacks = initialCreditPlans;
   const occasions = initialOccasions;
   const libraryCollections = initialLibraryCollections;
+  const interfaceLanguages = initialInterfaceLanguages;
+  const lyricsLanguages = initialLyricsLanguages;
   const occasionEmoji = (name: string) => occasions.find((occasion) => occasion.name === name)?.emoji ?? "";
   const favoriteSongs = favorites.map((title, i) => {
     const original = isDemo ? demoFavoriteSongs.find((s) => s.title === title) : undefined;
@@ -196,6 +219,11 @@ function useDemoState(
   const choose = (key: string, value: string) => {
     const nextChoices = { ...choices, [key]: value };
     setChoices(nextChoices);
+    if (key === "appLanguage") {
+      window.localStorage.setItem(`musikpro:interface-language:${persistenceId}`, value);
+      document.documentElement.lang =
+        initialInterfaceLanguages.find((language) => language.nativeName === value)?.code ?? "fr";
+    }
     if (!creationDraftReady || !["occasion", "genre", "mood", "language", "voice", "recipientRelation"].includes(key)) {
       return;
     }
@@ -277,9 +305,13 @@ function useDemoState(
     setSelectedTitle(title);
     go("/dashboard/songs");
   };
-  const generateLyrics = async (task: "lyrics.generate" | "lyrics.extend" = "lyrics.generate") => {
+  const generateLyrics = async (
+    task: "lyrics.generate" | "lyrics.extend" | "lyrics.rewrite" = "lyrics.generate",
+    instruction = "",
+  ) => {
     if (isDemo) {
       field("lyrics", task === "lyrics.extend" ? `${fields.lyrics}\n\n${demoLyrics}` : demoLyrics);
+      if (task === "lyrics.rewrite") notify("Les paroles de démonstration ont été révisées.");
       go("/dashboard/create/lyrics");
       return true;
     }
@@ -303,6 +335,7 @@ function useDemoState(
             voice: choices.voice,
             additionalDetails: fields.detail,
             ...(task === "lyrics.extend" ? { lyrics: fields.lyrics } : {}),
+            ...(task === "lyrics.rewrite" ? { lyrics: fields.lyrics, instruction } : {}),
           },
         }),
         timeoutMs: 115_000,
@@ -318,7 +351,7 @@ function useDemoState(
             ? error.message
             : "La génération des paroles a échoué.",
       );
-      go("/dashboard/create/parameters");
+      go(task === "lyrics.generate" ? "/dashboard/create/parameters" : "/dashboard/create/lyrics");
       return false;
     } finally {
       setLyricsPending(false);
@@ -342,6 +375,8 @@ function useDemoState(
     songPacks,
     occasions,
     libraryCollections,
+    interfaceLanguages,
+    lyricsLanguages,
     occasionEmoji,
     favorites,
     favoriteSongs,
@@ -388,6 +423,9 @@ export function DemoProvider({
   initialCreditPlans,
   initialOccasions,
   initialLibraryCollections,
+  initialInterfaceLanguages,
+  initialLyricsLanguages,
+  initialDetectedInterfaceLanguage,
   persistenceId,
 }: {
   children: ReactNode;
@@ -397,6 +435,9 @@ export function DemoProvider({
   initialCreditPlans: CreditPlanOption[];
   initialOccasions: OccasionOption[];
   initialLibraryCollections: LibraryCollectionOption[];
+  initialInterfaceLanguages: LanguageOption[];
+  initialLyricsLanguages: LanguageOption[];
+  initialDetectedInterfaceLanguage: LanguageOption | null;
   persistenceId: string;
 }) {
   const state = useDemoState(
@@ -406,6 +447,9 @@ export function DemoProvider({
     initialCreditPlans,
     initialOccasions,
     initialLibraryCollections,
+    initialInterfaceLanguages,
+    initialLyricsLanguages,
+    initialDetectedInterfaceLanguage,
     persistenceId,
   );
   const [offline, setOffline] = useState(false);

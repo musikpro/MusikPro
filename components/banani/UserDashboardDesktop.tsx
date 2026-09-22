@@ -1,7 +1,7 @@
 "use client";
 import { useDemo } from "./DemoProvider";
 import DesktopSidebar from "./DesktopSidebar";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 export const displayName = "Dashboard Utilisateur Desktop";
 export const screenSize = "desktop";
@@ -94,12 +94,12 @@ export default function UserDashboardDesktop() {
         <div className="h-16 border-b border-border px-8 flex items-center justify-between flex-shrink-0">
           <div>
             <h1 className="font-headings font-bold text-xl text-foreground">
-              {`Bonjour ${demo.profile.name.split(" ")[0]} 👋`}
+              {`${t("Bonjour")} ${demo.profile.name.split(" ")[0]} 👋`}
             </h1>
             <p className="text-xs text-muted-foreground">
               {demo.balance > 0
                 ? `Il te reste ${demo.balance} crédit${demo.balance > 1 ? "s" : ""}`
-                : "Aucun crédit disponible"}
+                : t("Aucun crédit disponible")}
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -186,8 +186,8 @@ export default function UserDashboardDesktop() {
                 {recentSongs.length === 0 && (
                   <div className="col-span-2 rounded-xl border border-border bg-card px-6 py-8 text-center">
                     <Icon i="music-2" size={28} className="mx-auto mb-2 text-primary" />
-                    <p className="font-semibold text-foreground">Aucune chanson créée</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Ta première chanson apparaîtra ici.</p>
+                    <p className="font-semibold text-foreground">{t("Aucune chanson créée")}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("Ta première chanson apparaîtra ici.")}</p>
                   </div>
                 )}
                 {recentSongs.map((s) => (
@@ -202,7 +202,7 @@ export default function UserDashboardDesktop() {
                 {visibleTestimonials.length === 0 && (
                   <div className="col-span-3 rounded-xl border border-border bg-card px-6 py-8 text-center">
                     <Icon i="message-square" size={26} className="mx-auto mb-2 text-primary" />
-                    <p className="font-semibold text-foreground">Aucun témoignage publié</p>
+                    <p className="font-semibold text-foreground">{t("Aucun témoignage publié")}</p>
                     <p className="mt-1 text-sm text-muted-foreground">Les témoignages réels apparaîtront ici.</p>
                   </div>
                 )}
@@ -262,7 +262,7 @@ export default function UserDashboardDesktop() {
                 {visibleTrends.length === 0 && (
                   <div className="rounded-xl border border-border bg-card px-5 py-7 text-center">
                     <Icon i="headphones" size={24} className="mx-auto mb-2 text-primary" />
-                    <p className="text-sm font-semibold text-foreground">Aucune tendance disponible</p>
+                    <p className="text-sm font-semibold text-foreground">{t("Aucune tendance disponible")}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Les chansons publiées apparaîtront ici.</p>
                   </div>
                 )}
@@ -295,7 +295,7 @@ export default function UserDashboardDesktop() {
                 {recentActivity.length === 0 && (
                   <div className="px-4 py-5 text-center">
                     <Icon i="clock" size={20} className="mx-auto mb-2 text-primary" />
-                    <p className="text-sm font-semibold text-foreground">Aucune activité récente</p>
+                    <p className="text-sm font-semibold text-foreground">{t("Aucune activité récente")}</p>
                   </div>
                 )}
                 {recentActivity.map((act, i) => (

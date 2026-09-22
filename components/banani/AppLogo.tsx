@@ -1,4 +1,4 @@
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import Icon from "./Icon";
 
 export const displayName = "App Logo";
@@ -17,15 +17,9 @@ export default function AppLogo({ size = "md", dark = false }) {
         className="bg-primary rounded-lg flex items-center justify-center flex-shrink-0"
         style={{ width: s.icon, height: s.icon }}
       >
-        <Icon
-          i="music-2"
-          size={s.icon * 0.55}
-          className="text-primary-foreground"
-        />
+        <Icon i="music-2" size={s.icon * 0.55} className="text-primary-foreground" />
       </div>
-      <span
-        className={`font-headings font-bold ${s.text} ${dark ? "text-foreground" : "text-foreground"}`}
-      >
+      <span className={`font-headings font-bold ${s.text} ${dark ? "text-foreground" : "text-foreground"}`}>
         {t("MusikPro")}
       </span>
     </div>

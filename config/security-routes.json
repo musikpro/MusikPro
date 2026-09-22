@@ -96,6 +96,19 @@
         "rejectOversizedRequest",
         "requireContentType"
       ]
+    },
+    "app/api/support/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "demoSupportSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
     }
   }
 }

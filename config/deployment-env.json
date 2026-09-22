@@ -195,6 +195,14 @@
           "vercel": ["Production", "Preview"],
           "source": "Adresse d'envoi vérifiée chez Resend.",
           "example": "noreply@example.com"
+        },
+        {
+          "name": "SUPPORT_EMAIL",
+          "sensitive": false,
+          "required": "email",
+          "vercel": ["Production", "Preview"],
+          "source": "Boîte de réception des demandes envoyées depuis le formulaire de support.",
+          "example": "musikpro2026@gmail.com"
         }
       ]
     },

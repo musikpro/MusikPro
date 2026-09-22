@@ -1,6 +1,7 @@
 "use client";
 
 import { useDemo } from "./DemoProvider";
+import { translate as t } from "@/lib/i18n/translate";
 
 function GooglePlayLogo() {
   return (
@@ -29,8 +30,8 @@ export default function StoreDownloadCard({ compact = false }: { compact?: boole
   const unavailable = () => demo.notify("L’application MusikPro sera bientôt disponible sur les stores.");
   return (
     <section className={`musik-store-card ${compact ? "musik-store-card-compact" : ""}`}>
-      <h2>Télécharger l’application MusikPro</h2>
-      <p>Créez vos chansons partout, à tout moment.</p>
+      <h2>{t("Télécharger l’application MusikPro")}</h2>
+      <p>{t("Créez vos chansons partout, à tout moment.")}</p>
       <div className="musik-store-actions">
         <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur Google Play">
           <GooglePlayLogo />

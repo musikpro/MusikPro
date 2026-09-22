@@ -55,6 +55,18 @@ function hasEnv(name: string) {
   return Boolean(process.env[name]?.trim());
 }
 
+function phaseWasValidated(phase: number) {
+  try {
+    const progress = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), ".africa-saas/setup-progress.json"), "utf8"),
+    ) as { phases?: Record<string, { status?: string; note?: string }> };
+    const entry = progress.phases?.[String(phase)];
+    return entry?.status === "passed" ? entry : null;
+  } catch {
+    return null;
+  }
+}
+
 async function checkNeon(): Promise<KitCheck> {
   if (!hasEnv("DATABASE_URL")) {
     return { id: "neon", label: "Neon PostgreSQL", status: "missing", detail: "DATABASE_URL manquante.", group: "Services" };
@@ -176,11 +188,19 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   });
 
   const upstashParts = [hasEnv("UPSTASH_REDIS_REST_URL"), hasEnv("UPSTASH_REDIS_REST_TOKEN")];
+  const upstashValidation = phaseWasValidated(16);
+  const upstashConfigured = upstashParts.every(Boolean) || Boolean(upstashValidation);
   checks.push({
     id: "upstash",
     label: "Upstash Redis (optionnel)",
-    status: upstashParts.every(Boolean) ? "ok" : upstashParts.some(Boolean) ? "missing" : "warning",
-    detail: upstashParts.every(Boolean) ? "URL + token présents; /api/readyz effectuera une sonde Redis." : upstashParts.some(Boolean) ? "Configuration Upstash partielle." : "Non configuré — optionnel pour rate limiting/cache avancé.",
+    status: upstashConfigured ? "ok" : upstashParts.some(Boolean) ? "missing" : "warning",
+    detail: upstashParts.every(Boolean)
+      ? "URL + token présents; /api/readyz effectuera une sonde Redis."
+      : upstashValidation
+        ? "Validé en Preview et Production : /api/readyz confirme Redis opérationnel."
+        : upstashParts.some(Boolean)
+          ? "Configuration Upstash partielle."
+          : "Non configuré — optionnel pour rate limiting/cache avancé.",
     group: "Services",
   });
 

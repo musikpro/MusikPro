@@ -168,6 +168,35 @@ export const occasions = pgTable(
   }),
 );
 
+export const languages = pgTable(
+  "languages",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull().unique(),
+    name: text("name").notNull(),
+    nativeName: text("native_name").notNull(),
+    flag: text("flag").notNull().default("🌍"),
+    interfaceEnabled: boolean("interface_enabled").notNull().default(false),
+    lyricsEnabled: boolean("lyrics_enabled").notNull().default(true),
+    interfaceOrder: integer("interface_order").notNull().default(100),
+    lyricsOrder: integer("lyrics_order").notNull().default(100),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    interfaceOrderIndex: index("languages_interface_order_idx").on(table.interfaceEnabled, table.interfaceOrder),
+    lyricsOrderIndex: index("languages_lyrics_order_idx").on(table.lyricsEnabled, table.lyricsOrder),
+  }),
+);
+
+export const localizationSettings = pgTable("localization_settings", {
+  id: text("id").primaryKey().default("global"),
+  automaticDetectionEnabled: boolean("automatic_detection_enabled").notNull().default(true),
+  defaultLanguageCode: text("default_language_code").notNull().default("fr"),
+  countryCacheTtlSeconds: integer("country_cache_ttl_seconds").notNull().default(604800),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const libraryCollections = pgTable(
   "library_collections",
   {

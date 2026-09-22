@@ -17,10 +17,11 @@ export default function QuickLanguageSelect({ compact = false }: { compact?: boo
       menuClassName="quick-language-menu"
       value={demo.choices.appLanguage}
       onChange={(value) => demo.choose("appLanguage", value)}
-      options={[
-        { value: "Français", label: "Français", display: "🇫🇷" },
-        { value: "English", label: "English", display: "🇬🇧" },
-      ]}
+      options={demo.interfaceLanguages.map((language) => ({
+        value: language.nativeName,
+        label: language.nativeName,
+        display: language.flag,
+      }))}
     />
   );
 }

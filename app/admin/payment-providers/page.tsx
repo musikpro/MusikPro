@@ -1,213 +1,87 @@
-import { asc, desc, gte, sql } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import {
-  paymentAttempts,
-  paymentCountryRoutes,
-  paymentProviderConfigs,
-  planProviderMappings,
-  plans,
-} from "@/db/schema";
+import { paymentProviderConfigs, planProviderMappings, plans } from "@/db/schema";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { requireAdmin } from "@/lib/auth/session";
-import { providerCapabilities } from "@/lib/payments/capabilities";
-import { saveCountryRoute, savePlanMapping, saveProvider } from "./actions";
+import { getChariowConfiguration } from "@/lib/payments/chariow-config";
+import { deletePlanMapping, saveChariowProvider, savePlanMapping } from "./actions";
+
+function InfoTip({ text }: { text: string }) {
+  return <span className="admin-info-tip" tabIndex={0} aria-label={text}><Icon i="info" size={14} /><span role="tooltip">{text}</span></span>;
+}
 
 export default async function PaymentProvidersPage() {
   await requireAdmin();
   const db = getServiceDb();
-  const [configs, routes, allPlans, mappings, attempts] = await Promise.all([
-    db.select().from(paymentProviderConfigs).orderBy(asc(paymentProviderConfigs.priority)),
-    db
-      .select()
-      .from(paymentCountryRoutes)
-      .orderBy(asc(paymentCountryRoutes.country), asc(paymentCountryRoutes.priority)),
+  const [configs, allPlans, mappings] = await Promise.all([
+    db.select().from(paymentProviderConfigs),
     db.select().from(plans).orderBy(asc(plans.name)),
     db.select().from(planProviderMappings),
-    db
-      .select()
-      .from(paymentAttempts)
-      .where(gte(paymentAttempts.createdAt, sql`now() - interval '24 hours'`))
-      .orderBy(desc(paymentAttempts.createdAt))
-      .limit(500),
   ]);
-  const configMap = new Map(configs.map((entry) => [entry.provider, entry]));
-  const mappingMap = new Map(mappings.map((entry) => [`${entry.planId}:${entry.provider}`, entry]));
-  return (
-    <AdminPage>
-      <AdminPageHeader
-        eyebrow="Paiements"
-        title="Passerelles"
-        description="Configure le Smart Router sans exposer les secrets des fournisseurs."
-      />
-      <section className="admin-provider-grid">
-        {Object.entries(providerCapabilities).map(([provider, capability]) => {
-          const config = configMap.get(provider);
-          const providerAttempts = attempts.filter(
-            (entry) => entry.provider === provider && ["checkout_created", "provider_error"].includes(entry.outcome),
-          );
-          const successes = providerAttempts.filter((entry) => entry.outcome === "checkout_created").length;
-          const rate = providerAttempts.length ? Math.round((successes / providerAttempts.length) * 100) : null;
-          const blocked = ["scaffold", "merchant-validation"].includes(capability.readiness);
-          return (
-            <article className="admin-panel admin-provider-card" key={provider}>
-              <div className="admin-provider-heading">
-                <span className="admin-catalog-icon">
-                  <Icon i="waypoints" size={20} />
-                </span>
-                <div>
-                  <h2>{provider}</h2>
-                  <p>{capability.note}</p>
-                </div>
-                <span className={`admin-status ${config?.enabled ? "is-success" : "is-pending"}`}>
-                  {config?.enabled ? "Actif" : capability.readiness}
-                </span>
-              </div>
-              <div className="admin-provider-facts">
-                <span>
-                  <strong>{providerAttempts.length}</strong>Tentatives 24 h
-                </span>
-                <span>
-                  <strong>{rate === null ? "—" : `${rate}%`}</strong>Succès checkout
-                </span>
-              </div>
-              <form action={saveProvider} className="admin-provider-form">
-                <input type="hidden" name="provider" value={provider} />
-                <label className="admin-check-control">
-                  <input type="checkbox" name="enabled" defaultChecked={config?.enabled} disabled={blocked} />
-                  <span>Activer</span>
-                </label>
-                <label>
-                  <span>Priorité</span>
-                  <input name="priority" type="number" defaultValue={config?.priority ?? 100} min="1" max="999" />
-                </label>
-                <div className="admin-provider-field">
-                  <span>Mode</span>
-                  <AdminSelect
-                    name="mode"
-                    defaultValue={config?.mode ?? "sandbox"}
-                    ariaLabel={`Mode ${provider}`}
-                    options={[
-                      { value: "sandbox", label: "Sandbox" },
-                      { value: "live", label: "Live" },
-                    ]}
-                  />
-                </div>
-                <button type="submit">
-                  <Icon i="save" size={16} />
-                  Enregistrer
-                </button>
-              </form>
-            </article>
-          );
-        })}
-      </section>
-      <section className="admin-insight-grid">
-        <article className="admin-panel">
-          <div className="admin-panel-heading">
-            <div>
-              <span className="admin-panel-icon">
-                <Icon i="map-pinned" size={18} />
-              </span>
-              <div>
-                <h2>Routage par pays</h2>
-                <p>Priorité, moyens et devises autorisés</p>
-              </div>
-            </div>
+  const current = configs.find((entry) => entry.provider === "chariow");
+  const chariowMappings = mappings.filter((entry) => entry.provider === "chariow");
+  const planMap = new Map(allPlans.map((plan) => [plan.id, plan]));
+  let apiLast4 = "";
+  let webhookLast4 = "";
+  let webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://votre-domaine.com"}/api/webhooks/chariow`;
+  try {
+    const stored = await getChariowConfiguration();
+    apiLast4 = stored.config.apiKey?.last4 || "";
+    webhookLast4 = stored.config.webhookSecret?.last4 || "";
+    if (stored.webhookSecret) webhookUrl += `?secret=${encodeURIComponent(stored.webhookSecret)}`;
+  } catch {}
+
+  return <AdminPage>
+    <AdminPageHeader eyebrow="Paiements" title="Passerelles" description="Chariow est la passerelle active de MusikPro. L’architecture reste prête pour de futurs fournisseurs." />
+
+    <div className="admin-payment-provider-layout">
+    <section className="admin-panel admin-provider-card admin-provider-card-featured">
+      <div className="admin-provider-heading">
+        <span className="admin-catalog-icon"><Icon i="credit-card" size={20} /></span>
+        <div><h2>Chariow</h2><p>Mobile Money et carte bancaire via une page de paiement sécurisée.</p></div>
+        <span className={`admin-status ${current?.enabled && apiLast4 ? "is-success" : "is-pending"}`}>{current?.enabled && apiLast4 ? "Actif" : "À configurer"}</span>
+      </div>
+      <form action={saveChariowProvider} className="admin-stack-form admin-chariow-form">
+        <div className="admin-editor-grid">
+          <label className="admin-editor-field admin-editor-field-wide"><span>Clé API Chariow <InfoTip text="Copie la clé API privée depuis ton espace Chariow. Elle est chiffrée avant stockage et ne sera jamais réaffichée." /></span><input type="password" name="apiKey" autoComplete="new-password" placeholder={apiLast4 ? `Clé enregistrée ••••${apiLast4} — laisser vide pour conserver` : "Saisir la clé API Chariow"} /></label>
+          <label className="admin-editor-field admin-editor-field-wide"><span>Secret du webhook <InfoTip text="Secret placé dans l’URL Pulse pour authentifier Chariow. Laisse vide pour le générer ou conserver l’existant." /></span><input type="password" name="webhookSecret" autoComplete="new-password" placeholder={webhookLast4 ? `Secret enregistré ••••${webhookLast4} — laisser vide pour conserver` : "Laisser vide pour générer automatiquement"} /></label>
+          <label className="admin-editor-field"><span>Priorité <InfoTip text="Ordre du routeur. Chariow est actuellement l’unique passerelle proposée." /></span><input name="priority" type="number" defaultValue={current?.priority ?? 10} min="1" max="999" /></label>
+          <div className="admin-editor-field"><span>Mode <InfoTip text="Passe en production seulement après un paiement de test réussi." /></span><AdminSelect name="mode" defaultValue={current?.mode ?? "live"} ariaLabel="Mode Chariow" options={[{ value: "sandbox", label: "Test / Sandbox" }, { value: "live", label: "Production" }]} /></div>
+          <label className="admin-check-control"><input type="checkbox" name="enabled" defaultChecked={current?.enabled} /><span>Activer Chariow</span></label>
+        </div>
+        <button className="admin-form-submit" type="submit"><Icon i="save" size={16} />Enregistrer Chariow</button>
+      </form>
+      <div className="admin-webhook-box"><div><strong>URL du webhook Pulse <InfoTip text="Copie cette URL complète dans Chariow. Chaque notification déclenche ensuite une vérification directe de la vente avant l’ajout des crédits." /></strong><code>{webhookUrl}</code></div></div>
+    </section>
+
+    <section className="admin-panel admin-chariow-products">
+      <div className="admin-panel-heading"><div><span className="admin-panel-icon"><Icon i="package-check" size={18} /></span><div><h2>Produits Chariow</h2><p>Associe chaque offre MusikPro à son produit créé dans Chariow.</p></div></div></div>
+      <form action={savePlanMapping} className="admin-product-create-form">
+        <input type="hidden" name="provider" value="chariow" />
+        <div className="admin-editor-field"><span>Offre MusikPro <InfoTip text="Choisis l’offre de crédits qui déclenchera ce produit Chariow." /></span><AdminSelect name="planId" ariaLabel="Offre MusikPro" options={allPlans.map((plan) => ({ value: plan.id, label: plan.name }))} /></div>
+        <label className="admin-editor-field"><span>Nom personnalisé <InfoTip text="Nom interne libre. Tu peux le modifier à tout moment sans changer le code ni le nom de l’offre." /></span><input name="productName" placeholder="Ex. Pack Découverte Chariow" required /></label>
+        <label className="admin-editor-field"><span>Identifiant du produit <InfoTip text="Identifiant exact du produit copié depuis ton espace Chariow." /></span><input name="externalProductId" placeholder="prod_..." required /></label>
+        <button className="admin-form-submit" type="submit"><Icon i="plus" size={16} />Ajouter le produit</button>
+      </form>
+      <div className="admin-mapping-list">{chariowMappings.length ? chariowMappings.map((mapping) => {
+        const metadata = (mapping.metadata || {}) as { productName?: string };
+        const plan = planMap.get(mapping.planId);
+        return <form action={savePlanMapping} key={mapping.id} className="admin-product-row">
+          <input type="hidden" name="planId" value={mapping.planId} /><input type="hidden" name="provider" value="chariow" />
+          <span className="admin-product-plan">Offre : <strong>{plan?.name || mapping.planId}</strong></span>
+          <label><span>Nom du produit</span><input name="productName" defaultValue={metadata.productName || plan?.name || "Produit Chariow"} required /></label>
+          <label><span>Identifiant Chariow</span><input name="externalProductId" defaultValue={mapping.externalProductId || ""} required /></label>
+          <div className="admin-product-actions">
+            <button type="submit" aria-label={`Enregistrer ${metadata.productName || plan?.name || "le produit"}`}><Icon i="save" size={15} /></button>
+            <button type="submit" formAction={deletePlanMapping} className="is-danger" aria-label={`Supprimer ${metadata.productName || plan?.name || "le produit"}`}><Icon i="trash-2" size={15} /></button>
           </div>
-          <form action={saveCountryRoute} className="admin-stack-form">
-            <div className="admin-editor-grid">
-              <label className="admin-editor-field">
-                <span>Pays ISO</span>
-                <input name="country" placeholder="CI" maxLength={2} required />
-              </label>
-              <div className="admin-editor-field">
-                <span>Fournisseur</span>
-                <AdminSelect
-                  name="provider"
-                  ariaLabel="Fournisseur"
-                  options={Object.entries(providerCapabilities)
-                    .filter(([, capability]) => !["scaffold", "merchant-validation"].includes(capability.readiness))
-                    .map(([provider]) => ({ value: provider, label: provider }))}
-                />
-              </div>
-              <label className="admin-editor-field">
-                <span>Priorité</span>
-                <input name="priority" type="number" defaultValue="100" />
-              </label>
-              <label className="admin-editor-field">
-                <span>Moyens</span>
-                <input name="methods" placeholder="wave, orange_money" />
-              </label>
-              <label className="admin-editor-field">
-                <span>Devises</span>
-                <input name="currencies" placeholder="XOF, USD" />
-              </label>
-              <label className="admin-check-control">
-                <input name="enabled" type="checkbox" defaultChecked />
-                <span>Route active</span>
-              </label>
-            </div>
-            <button className="admin-form-submit" type="submit">
-              <Icon i="plus" size={16} />
-              Ajouter ou modifier
-            </button>
-          </form>
-          {routes.length ? (
-            <div className="admin-route-list">
-              {routes.map((route) => (
-                <div key={route.id}>
-                  <strong>
-                    {route.country} → {route.provider}
-                  </strong>
-                  <span>
-                    Priorité {route.priority} · {route.enabled ? "Active" : "Désactivée"}
-                  </span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="admin-empty-state">
-              <Icon i="route" size={22} />
-              <strong>Aucune route</strong>
-              <p>Ajoute une première règle de routage.</p>
-            </div>
-          )}
-        </article>
-        <article className="admin-panel">
-          <div className="admin-panel-heading">
-            <div>
-              <span className="admin-panel-icon">
-                <Icon i="package-check" size={18} />
-              </span>
-              <div>
-                <h2>Produits Chariow</h2>
-                <p>Correspondance entre packs et produits externes</p>
-              </div>
-            </div>
-          </div>
-          <div className="admin-mapping-list">
-            {allPlans.map((plan) => (
-              <form action={savePlanMapping} key={plan.id}>
-                <input type="hidden" name="planId" value={plan.id} />
-                <input type="hidden" name="provider" value="chariow" />
-                <label>
-                  <span>{plan.name}</span>
-                  <input
-                    name="externalProductId"
-                    placeholder="prd_..."
-                    defaultValue={mappingMap.get(`${plan.id}:chariow`)?.externalProductId ?? ""}
-                  />
-                </label>
-                <button type="submit" aria-label={`Enregistrer le mapping ${plan.name}`}>
-                  <Icon i="save" size={15} />
-                </button>
-              </form>
-            ))}
-          </div>
-        </article>
-      </section>
-    </AdminPage>
-  );
+        </form>;
+      }) : <div className="admin-empty-state"><Icon i="package-open" size={22} /><strong>Aucun produit configuré</strong><p>Ajoute ton premier produit Chariow avec le formulaire ci-dessus.</p></div>}</div>
+    </section>
+    </div>
+
+    <section className="admin-panel admin-future-provider"><span className="admin-panel-icon"><Icon i="plus" size={18} /></span><div><h2>Autres passerelles</h2><p>Emplacement prêt pour ajouter plus tard un fournisseur sans modifier le parcours client ni les crédits.</p></div><span className="admin-status is-pending">À venir</span></section>
+  </AdminPage>;
 }

@@ -1,6 +1,6 @@
 "use client";
 import { useDemo } from "./DemoProvider";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 import Icon from "./Icon";
 
@@ -25,9 +25,7 @@ export default function SongCard({
         <Icon i="music-2" size={22} className="text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="font-semibold text-base text-foreground truncate">
-          {title}
-        </p>
+        <p className="font-semibold text-base text-foreground truncate">{title}</p>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-xs text-muted-foreground">{style}</span>
           <span className="text-xs text-muted-foreground">·</span>

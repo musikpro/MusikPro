@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
 import { useDemo } from "./DemoProvider";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 
 import Icon from "./Icon";
 import MobileMenuDrawer from "./MobileMenuDrawer";

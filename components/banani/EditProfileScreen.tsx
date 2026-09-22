@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
@@ -24,55 +24,32 @@ export default function EditProfileScreen() {
         >
           <Icon i="arrow-left" size={18} /> {t("Retour")}
         </button>
-        <h1 className="text-sm font-medium text-muted-foreground">
-          {t("Éditer profil")}
-        </h1>
+        <h1 className="text-sm font-medium text-muted-foreground">{t("Éditer profil")}</h1>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-4 py-6 overflow-y-auto space-y-5">
         {/* Name */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase">
-            {t("Nom complet")}
-          </label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">{t("Nom complet")}</label>
           <div className="border border-border rounded-lg px-3 py-3 mt-2 bg-input">
-            <DemoField
-              name="profile.name"
-              label="Nom complet"
-              type="text"
-              maxLength={254}
-            />
+            <DemoField name="profile.name" label="Nom complet" type="text" maxLength={254} />
           </div>
         </div>
 
         {/* Email */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase">
-            {t("Email")}
-          </label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">{t("Email")}</label>
           <div className="border border-border rounded-lg px-3 py-3 mt-2 bg-input">
-            <DemoField
-              name="profile.email"
-              label="Email"
-              type="email"
-              maxLength={254}
-            />
+            <DemoField name="profile.email" label="Email" type="email" maxLength={254} />
           </div>
         </div>
 
         {/* Location */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground uppercase">
-            {t("Localisation")}
-          </label>
+          <label className="text-xs font-bold text-muted-foreground uppercase">{t("Localisation")}</label>
           <div className="border border-border rounded-lg px-3 py-3 mt-2 bg-input">
-            <DemoField
-              name="profile.location"
-              label="Localisation"
-              type="text"
-              maxLength={254}
-            />
+            <DemoField name="profile.location" label="Localisation" type="text" maxLength={254} />
           </div>
         </div>
       </div>

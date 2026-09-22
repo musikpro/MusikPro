@@ -1,5 +1,5 @@
 "use client";
-const t = (text: string) => text;
+import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 import DemoToggle from "./DemoToggle";
@@ -23,42 +23,32 @@ export default function NotificationsSettingsScreen() {
         >
           <Icon i="arrow-left" size={18} /> {t("Retour")}
         </button>
-        <h1 className="text-sm font-medium text-muted-foreground">
-          {t("Notifications")}
-        </h1>
+        <h1 className="text-sm font-medium text-muted-foreground">{t("Notifications")}</h1>
       </div>
 
       {/* Content */}
       <div className="flex-1 px-4 py-6 overflow-y-auto space-y-6">
         {/* Music Notifications */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase">
-            {t("Vos chansons")}
-          </h3>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Vos chansons")}</h3>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="music" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Génération terminée")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Génération terminée")}</span>
             </div>
             <DemoToggle label="Génération terminée" />
           </div>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="heart" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Nouvelles likes")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Nouvelles likes")}</span>
             </div>
             <DemoToggle label="Nouvelles likes" />
           </div>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="play" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Nouvelles écoutes")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Nouvelles écoutes")}</span>
             </div>
             <DemoToggle label="Nouvelles écoutes" />
           </div>
@@ -66,24 +56,18 @@ export default function NotificationsSettingsScreen() {
 
         {/* Community Notifications */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase">
-            {t("Communauté")}
-          </h3>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Communauté")}</h3>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="bell" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Concours & événements")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Concours & événements")}</span>
             </div>
             <DemoToggle label="Concours & événements" />
           </div>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="trending-up" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Tendances musicales")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Tendances musicales")}</span>
             </div>
             <DemoToggle label="Tendances musicales" />
           </div>
@@ -91,24 +75,18 @@ export default function NotificationsSettingsScreen() {
 
         {/* System Notifications */}
         <div className="space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase">
-            {t("Système")}
-          </h3>
+          <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Système")}</h3>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="mail" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Emails promotionnels")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Emails promotionnels")}</span>
             </div>
             <DemoToggle label="Emails promotionnels" />
           </div>
           <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-3 flex-1">
               <Icon i="alert-circle" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">
-                {t("Alertes de sécurité")}
-              </span>
+              <span className="text-sm font-medium text-foreground">{t("Alertes de sécurité")}</span>
             </div>
             <DemoToggle label="Alertes de sécurité" />
           </div>
