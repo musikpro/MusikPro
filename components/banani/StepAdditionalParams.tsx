@@ -99,18 +99,20 @@ export default function StepAdditionalParams() {
 
         {/* Special Event Section */}
         <div className="mb-6">
-          <label className="block text-sm font-bold text-foreground mb-3">{t("Détail spécial (optionnel)")}</label>
+          <label className="block text-sm font-bold text-foreground mb-3">
+            {t("Quel souvenir gardes-tu de cette personne ? (optionnel)")}
+          </label>
           <div className="additional-detail-shell bg-card border-2 border-border rounded-xl p-4 relative">
             <DemoField
               name="detail"
-              label="Détail spécial"
+              label="Souvenir spécial avec cette personne"
               multiline
               rows={3}
               maxLength={3000}
               ariaInvalid={Boolean(detailError)}
               describedBy={detailError ? "detail-special-error" : undefined}
               onValueChange={() => setDetailError("")}
-              placeholder="Y a-t-il un événement ou moment spécial que tu aimerais ajouter ?"
+              placeholder="Ex. : un voyage, une phrase qu’elle répète, un moment drôle ou une qualité qui te touche…"
             />
             <VoiceMicrophoneButton
               value={demo.fields.detail}
@@ -120,7 +122,7 @@ export default function StepAdditionalParams() {
               }}
               onMessage={demo.notify}
               language={demo.choices.language === "Anglais" ? "en-US" : "fr-FR"}
-              label="Ajouter le détail spécial avec le microphone"
+              label="Raconter un souvenir avec le microphone"
               className="absolute top-3 right-3"
             />
           </div>
@@ -130,7 +132,7 @@ export default function StepAdditionalParams() {
             </InlineNotice>
           )}
           <p className="text-xs text-muted-foreground mt-2">
-            {t("Maximum 50 mots · L'IA transcrit automatiquement le vocal")}
+            {t("Quelques mots suffisent. Tu peux aussi laisser ce champ vide · Maximum 50 mots")}
           </p>
         </div>
 
@@ -150,6 +152,16 @@ export default function StepAdditionalParams() {
           data-demo-ready="true"
           disabled={!hasRequiredOptions || demo.lyricsPending}
           onClick={async () => {
+            if (!demo.choices.occasion || !demo.choices.genre) {
+              demo.notify("Choisis d’abord l’occasion et le style de la chanson.");
+              demo.go("/dashboard/create");
+              return;
+            }
+            if (demo.fields.story.trim().length < 2) {
+              demo.notify("Raconte d’abord ton histoire avant de générer les paroles.");
+              demo.go("/dashboard/create/story");
+              return;
+            }
             const parsed = demoDetailSchema.safeParse(demo.fields.detail);
             if (!parsed.success) {
               setDetailError(parsed.error.issues[0].message);

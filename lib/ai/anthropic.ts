@@ -3,7 +3,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { AiLyricsTask } from "@/lib/validation/ai";
 
 export function createAnthropicClient(apiKey: string) {
-  return new Anthropic({ apiKey, timeout: 60_000, maxRetries: 1 });
+  return new Anthropic({ apiKey, timeout: 110_000, maxRetries: 1 });
 }
 
 export async function runAnthropicLyricsTask(

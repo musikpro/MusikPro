@@ -16,6 +16,7 @@ type SpeechRecognitionErrorEventLike = Event & { error: string };
 type SpeechRecognitionLike = {
   continuous: boolean;
   interimResults: boolean;
+  maxAlternatives: number;
   lang: string;
   onresult: ((event: SpeechRecognitionEventLike) => void) | null;
   onerror: ((event: SpeechRecognitionErrorEventLike) => void) | null;
@@ -74,18 +75,18 @@ export default function VoiceMicrophoneButton({
 
     const recognition = new Recognition();
     const initialValue = value.trim();
-    let finalTranscript = "";
     recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
     recognition.lang = language;
     recognition.onresult = (event) => {
-      let interimTranscript = "";
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
-        const transcript = event.results[index][0]?.transcript?.trim() ?? "";
-        if (event.results[index].isFinal) finalTranscript = `${finalTranscript} ${transcript}`.trim();
-        else interimTranscript = `${interimTranscript} ${transcript}`.trim();
+      const finalParts: string[] = [];
+      for (let index = 0; index < event.results.length; index += 1) {
+        if (!event.results[index].isFinal) continue;
+        const transcript = event.results[index][0]?.transcript?.trim();
+        if (transcript) finalParts.push(transcript);
       }
-      onTranscript([initialValue, finalTranscript, interimTranscript].filter(Boolean).join(" "));
+      onTranscript([initialValue, finalParts.join(" ")].filter(Boolean).join(" "));
     };
     recognition.onerror = (event) => {
       const message =

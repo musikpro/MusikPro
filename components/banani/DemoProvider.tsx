@@ -283,6 +283,7 @@ function useDemoState(
       go("/dashboard/create/lyrics");
       return true;
     }
+    if (lyricsPending) return false;
     setLyricsPending(true);
     try {
       const result = await apiFetch<{ lyrics: string }>("/api/ai/generate", {
@@ -304,13 +305,19 @@ function useDemoState(
             ...(task === "lyrics.extend" ? { lyrics: fields.lyrics } : {}),
           },
         }),
-        timeoutMs: 60_000,
+        timeoutMs: 115_000,
       });
       field("lyrics", result.lyrics);
       go("/dashboard/create/lyrics");
       return true;
     } catch (error) {
-      notify(error instanceof Error ? error.message : "La génération des paroles a échoué.");
+      notify(
+        error instanceof DOMException && error.name === "AbortError"
+          ? "La génération prend plus de temps que prévu. Réessaie dans un instant."
+          : error instanceof Error
+            ? error.message
+            : "La génération des paroles a échoué.",
+      );
       go("/dashboard/create/parameters");
       return false;
     } finally {

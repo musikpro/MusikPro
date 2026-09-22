@@ -9,6 +9,7 @@ import { classifyAnthropicError, classifyOpenAiError } from "@/lib/ai/errors";
 import { createLogger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
+export const maxDuration = 120;
 const logger = createLogger("ai-lyrics");
 
 export async function POST(request: Request) {
