@@ -9,6 +9,7 @@ export default function Preview({ children }: { children: ReactNode }) {
     <div
       className="banani-copy musik-modern"
       data-theme={demo.choices.theme === "Sombre" ? "dark" : demo.choices.theme === "Auto" ? "auto" : "light"}
+      suppressHydrationWarning
       onClickCapture={(event) => {
         const target = event.target as HTMLElement;
         const control = target.closest("button,a");
