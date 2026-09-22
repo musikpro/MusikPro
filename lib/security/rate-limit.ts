@@ -1,7 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import { sql } from "drizzle-orm";
-import { getServiceDb } from "@/db";
+import { db } from "@/db";
 
 type LimitResult = {
   success: boolean;
@@ -13,12 +13,11 @@ type LimitResult = {
 const memory = new Map<string, { count: number; reset: number }>();
 
 async function databaseRateLimit(key: string, limit: number, windowSeconds: number): Promise<LimitResult | null> {
-  if (!process.env.DATABASE_SERVICE_URL) return null;
   const now = Date.now();
   const nextReset = now + windowSeconds * 1000;
   const digest = createHash("sha256").update(key).digest("hex");
   try {
-    const result = await getServiceDb().execute(sql`
+    const result = await db.execute(sql`
       INSERT INTO "rateLimit" ("id", "key", "count", "last_request")
       VALUES (${`app:${digest}`}, ${`app:${digest}`}, 1, ${nextReset})
       ON CONFLICT ("key") DO UPDATE SET
