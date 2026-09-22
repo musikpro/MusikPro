@@ -1,5 +1,5 @@
 {
-  "version": "0.10.1",
+  "version": "0.10.4",
   "features": {
     "database": {
       "description": "Neon PostgreSQL + Drizzle",
@@ -354,6 +354,22 @@
       "routes": [],
       "removalComplexity": "never",
       "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
+    },
+    "claude-code-support": {
+      "description": "Compatibilité Claude Code + commandes projet + Computer Use/Browser vérifiable séparément",
+      "optional": true,
+      "env": [],
+      "files": [
+        "CLAUDE.md",
+        ".claude/settings.json",
+        ".claude/commands/setup-saas.md",
+        "scripts/claude-code-check.mjs",
+        "scripts/computer-use-claude-check.mjs"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": [],
+      "disableBehavior": "Le SaaS et les workflows OpenAI/Codex restent utilisables sans Claude Code."
     },
     "musikpro-demo": {
       "description": "Parcours public /demo sans mot de passe, isolé du tableau de bord authentifié : fixtures, contexte client en mémoire, formulaires Zod UX, aucune API métier ni mutation Neon.",

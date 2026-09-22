@@ -7,6 +7,8 @@ const root = process.cwd();
 const requiredFiles = [
   '.agents/skills/setup-saas/SKILL.md',
   '.agents/skills/security-saas/SKILL.md',
+  '.agents/skills/claude-code/SKILL.md',
+  '.agents/skills/computer-use-claude/SKILL.md',
   'AGENTS.md',
   'README.md',
   'SECURITY.md',
@@ -34,9 +36,65 @@ const requiredFiles = [
   'scripts/staging-test.mjs',
   'scripts/production-release-gate.mjs',
   'docs/deployment/staging-vercel.md',
+  'CLAUDE.md',
+  '.claude/settings.json',
+  '.claude/commands/setup-saas.md',
+  '.claude/commands/security-saas.md',
+  '.claude/commands/import-banani.md',
+  '.claude/commands/computer-use-claude.md',
+  '.claude/commands/claude-code.md',
+  'scripts/claude-code-check.mjs',
+  'scripts/computer-use-claude-check.mjs',
+  'scripts/computer-use-claude-mark.mjs',
 ];
 
 const failures = [];
+
+const frenchInstructionFiles = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  '.claude/README.md',
+  '.codex/README.md',
+];
+for (const rel of frenchInstructionFiles) {
+  const abs = path.join(root, rel);
+  if (!fs.existsSync(abs)) continue;
+  const content = fs.readFileSync(abs, 'utf8');
+  if (!/toujours répondre[^\n]*français/i.test(content)) {
+    failures.push(`${rel} — règle de réponse en français absente`);
+  }
+}
+
+const refactorInstructionFiles = [
+  'AGENTS.md',
+  'CLAUDE.md',
+  '.claude/README.md',
+  '.codex/README.md',
+];
+for (const rel of refactorInstructionFiles) {
+  const abs = path.join(root, rel);
+  if (!fs.existsSync(abs)) continue;
+  const content = fs.readFileSync(abs, 'utf8');
+  if (!/refactorisation[^\n]*(propre|professionnelle)/i.test(content) || !/(non régressive|préserver les fonctionnalités existantes)/i.test(content)) {
+    failures.push(`${rel} — règle de refactorisation propre/non régressive absente`);
+  }
+}
+
+const skillsRoot = path.join(root, '.agents/skills');
+if (fs.existsSync(skillsRoot)) {
+  for (const entry of fs.readdirSync(skillsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+    const abs = path.join(skillsRoot, entry.name, 'SKILL.md');
+    if (!fs.existsSync(abs)) continue;
+    const content = fs.readFileSync(abs, 'utf8');
+    if (!/Langue de réponse/i.test(content) || !/français/i.test(content)) {
+      failures.push(`.agents/skills/${entry.name}/SKILL.md — règle de langue française absente`);
+    }
+    if (!/Règle de refactorisation/i.test(content) || !/refactorisation[^\n]*(propre|professionnelle)/i.test(content)) {
+      failures.push(`.agents/skills/${entry.name}/SKILL.md — règle de refactorisation non régressive absente`);
+    }
+  }
+}
 for (const rel of requiredFiles) {
   const abs = path.join(root, rel);
   if (!fs.existsSync(abs)) {
@@ -73,6 +131,7 @@ if (fs.existsSync(dashboardPath)) {
   if (!/npm run kit:verify/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — kit:verify command missing from dashboard');
   if (!/npm run first-run/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — first-run command missing from dashboard');
   if (!/Staging Vercel — obligatoire avant Production/.test(dashboard) || !/staging:approve/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — mandatory staging section missing');
+  if (!/Agents IA & Computer Use/.test(dashboard) || !/computer-use:claude:check/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — Claude Code / Computer Use readiness section missing');
 }
 
 

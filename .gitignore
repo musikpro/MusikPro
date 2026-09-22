@@ -34,3 +34,7 @@ generated/*
 .env*
 
 !.env.example
+
+# Claude Code local/private state
+.claude/settings.local.json
+.claude/*.local.json

@@ -1,3 +1,10 @@
+# Règle de langue
+
+**Toujours répondre en français** dans Codex/Antigravity pour ce projet. Les commandes, chemins, identifiants et extraits de code gardent leur syntaxe technique d’origine.
+## Règle de refactorisation
+Toute modification du projet doit être une **refactorisation propre, professionnelle et non régressive** : préserver les fonctionnalités existantes, privilégier les changements additifs/réversibles, puis relancer les contrôles d’intégrité, sécurité et Zod adaptés avant de terminer.
+
+
 # Codex MCP local configuration
 
 `config.toml` is intentionally shipped **empty**.

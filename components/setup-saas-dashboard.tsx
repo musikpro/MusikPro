@@ -35,6 +35,18 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
         <Link className="btn secondary" href="/setup">Actualiser les contrôles</Link>
       </div>
 
+
+      <section className="card kit-next">
+        <h2>Agents IA & Computer Use</h2>
+        <p className="muted">Le kit est compatible avec ChatGPT/Codex/Antigravity et Claude Code. Les deux voyants Computer Use sont indépendants : ils deviennent verts uniquement après un test réel enregistré, pas sur simple présence d’un fichier.</p>
+        <div className="kit-actions">
+          <code>npm run computer-use:openai:check</code>
+          <code>npm run claude-code:check</code>
+          <code>npm run computer-use:claude:check</code>
+        </div>
+        <p className="muted">Pour Claude Code, les instructions projet sont dans <code>CLAUDE.md</code> et les raccourcis dans <code>.claude/commands/</code>. Les workflows métier restent centralisés dans <code>.agents/skills/</code> afin d’éviter deux versions contradictoires du kit.</p>
+      </section>
+
       <section className="card kit-next">
         <h2>Premier démarrage — installation guidée</h2>
         <p className="muted">Une commande simple vérifie Node/npm, l’intégrité du starter et l’état des dépendances sans écraser votre configuration. Le mode <code>first-run:install</code> lance aussi <code>npm install</code>, puis vous indique la prochaine étape.</p>
@@ -198,13 +210,13 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
           <li>CRUD Clients post-Banani : modèle Prisma Client + routes <code>/api/clients/*</code> + Zod + RLS</li>
           <li>Admin, paiements optionnels, webhooks, cron et uploads Cloudinary optionnels</li>
           <li>Health/readiness, tests Vitest, ESLint, Prettier, typecheck, build et audit npm</li>
-          <li>Computer Use / Browser Tools, responsive Web, Mobile App WebView optionnelle, skeleton loaders, SEO, Banani planner et handoff GitHub/Vercel</li>
+          <li>Computer Use OpenAI + Claude Code, compatibilité Claude Code, responsive Web, Mobile App WebView optionnelle, skeleton loaders, SEO, Banani planner et handoff GitHub/Vercel</li>
         </ul>
       </section>
 
       <section className="card kit-next">
         <h2>Ordre recommandé</h2>
-        <p className="muted">1. Lance <code>/setup-saas</code> → 2. vérifie Computer Use / Browser Tools → 3. configure Neon et les services de base → 4. importe Banani → attache le CRUD Clients si nécessaire → construis le SaaS → 5. teste/build → 6. prépare GitHub/Vercel → 7. valide obligatoirement le staging Vercel → 8. configure les services optionnels utiles → 9. finalise la production Web → 10. seulement ensuite, décide si la Phase 21 WebView Android/iPhone doit être activée.</p>
+        <p className="muted">1. Lance <code>/setup-saas</code> → 2. vérifie les voyants Computer Use OpenAI et Claude Code → 3. configure Neon et les services de base → 4. importe Banani → attache le CRUD Clients si nécessaire → construis le SaaS → 5. teste/build → 6. prépare GitHub/Vercel → 7. valide obligatoirement le staging Vercel → 8. configure les services optionnels utiles → 9. finalise la production Web → 10. seulement ensuite, décide si la Phase 21 WebView Android/iPhone doit être activée.</p>
       </section>
     </main>
   );

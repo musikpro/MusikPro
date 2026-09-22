@@ -1,3 +1,18 @@
+# Règle prioritaire — langue de réponse
+- **Toujours répondre à l’utilisateur en français.**
+- Les explications, diagnostics, résumés, demandes de confirmation et recommandations doivent être rédigés en français, quel que soit l’agent utilisé (ChatGPT/Codex/Antigravity ou Claude Code).
+- Les commandes, noms de fichiers, identifiants de code, noms d’API et messages techniques peuvent rester dans leur forme originale quand cela évite de casser ou d’altérer le code.
+- Ne changer de langue que si l’utilisateur demande explicitement une autre langue pour une réponse précise.
+
+
+# Règle obligatoire — refactorisation propre et non régressive
+- **Toute modification, correction, mise à jour, migration, intégration ou nouvelle fonctionnalité doit être traitée comme une refactorisation propre, professionnelle et non régressive.**
+- Inspecter d’abord l’architecture, les dépendances et les fonctionnalités déjà présentes avant de modifier le code.
+- Préserver les comportements existants, routes, contrats API, modèles de données, variables d’environnement, règles de sécurité, skills et workflows, sauf demande explicite nécessitant leur évolution.
+- Préférer des changements additifs, isolés, réversibles et rétrocompatibles plutôt qu’une réécriture destructive.
+- Ne jamais supprimer ou casser une fonctionnalité existante pour en ajouter une nouvelle ; si une évolution incompatible est réellement nécessaire, prévoir une migration claire et documentée.
+- Après chaque refactorisation, exécuter les contrôles pertinents du kit (`npm run kit:integrity`, `npm run kit:audit`, `/security-saas`, gates Zod et tests de la fonctionnalité concernée) et corriger toute régression avant de considérer le travail terminé.
+
 
 # Règle prioritaire — Mobile App Pipeline WebView optionnel
 - Le SaaS Web Next.js est construit, testé et déployé avant toute préparation Android/iOS.
@@ -322,6 +337,13 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 - Toujours déployer et valider une Vercel Preview avant Production.
 - Ne jamais contourner `npm run deploy:production:check`.
 - Séparer les secrets/variables Preview et Production; préférer une base de staging distincte.
+
+## Claude Code — agent officiellement supporté
+- Lire `CLAUDE.md` lorsqu’une session est exécutée avec Claude Code.
+- Les commandes `.claude/commands/` doivent réutiliser les scripts npm et les skills `.agents/skills/`; ne pas créer une deuxième logique métier.
+- Exécuter `npm run claude-code:check` après installation/mise à jour de Claude Code.
+- Pour Computer Use/Browser Claude Code, exécuter `npm run computer-use:claude:check`; le voyant ne devient vert qu’après un vrai test enregistré via `npm run computer-use:claude:mark -- --status=verified --evidence="..."`.
+- Le statut OpenAI et le statut Claude Code sont indépendants. Ne jamais copier automatiquement la preuve de l’un vers l’autre.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

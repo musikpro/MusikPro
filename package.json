@@ -1,6 +1,6 @@
 {
   "name": "africa-saas-kit",
-  "version": "0.10.1",
+  "version": "0.10.4",
   "private": true,
   "engines": {
     "node": ">=20.9.0"
@@ -23,8 +23,8 @@
     "doctor:production": "node scripts/production-doctor.mjs",
     "doctor:production:online": "node scripts/production-doctor.mjs --online",
     "doctor:json": "node scripts/production-doctor.mjs --json",
-    "verify:code": "npm run kit:integrity && npm run dependencies:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run security:check && npm run version:check && npm run env:check && npm run runtime:check && npm run mobile:check && npm run mobile:app:check && npm run ui:icons-check && npm run ui:loading-check && npm run ui:hydration-check && npm run seo:check && npm run deploy:check && npm run staging:check && npm run clients:crud:check && npm run features:check && npm run lint && npm run typecheck && npm run test",
-    "verify:production": "npm run kit:integrity && npm run dependencies:check:production && npm run setup:check && npm run version:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run security:check && npm run env:check && npm run runtime:check && npm run mobile:check && npm run mobile:app:check && npm run ui:icons-check && npm run ui:loading-check && npm run ui:hydration-check && npm run seo:check && npm run staging:check && npm run deploy:production:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run audit:prod && npm run security:audit && npm run doctor:production && npm run clients:crud:check && npm run features:check && npm run conformity:check",
+    "verify:code": "npm run kit:integrity && npm run claude-code:check && npm run dependencies:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run security:check && npm run version:check && npm run env:check && npm run runtime:check && npm run mobile:check && npm run mobile:app:check && npm run ui:icons-check && npm run ui:loading-check && npm run ui:hydration-check && npm run seo:check && npm run deploy:check && npm run staging:check && npm run clients:crud:check && npm run features:check && npm run lint && npm run typecheck && npm run test",
+    "verify:production": "npm run kit:integrity && npm run claude-code:check && npm run dependencies:check:production && npm run setup:check && npm run version:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run security:check && npm run env:check && npm run runtime:check && npm run mobile:check && npm run mobile:app:check && npm run ui:icons-check && npm run ui:loading-check && npm run ui:hydration-check && npm run seo:check && npm run staging:check && npm run deploy:production:check && npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run audit:prod && npm run security:audit && npm run doctor:production && npm run clients:crud:check && npm run features:check && npm run conformity:check",
     "payments:ngrok": "ngrok http 3000",
     "payments:local": "node scripts/local-payment-lab.mjs",
     "payments:local:apply": "node scripts/local-payment-lab.mjs --write-env",
@@ -47,7 +47,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
-    "ci:check": "npm run kit:integrity && npm run dependencies:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run format:check && npm run version:check && npm run env:check && npm run runtime:check && npm run clients:crud:check && npm run features:check && npm run lint && npm run ui:hydration-check && npm run typecheck && npm run test && npm run build && npm run audit:prod && npm run mobile:app:check",
+    "ci:check": "npm run kit:integrity && npm run claude-code:check && npm run dependencies:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run format:check && npm run version:check && npm run env:check && npm run runtime:check && npm run clients:crud:check && npm run features:check && npm run lint && npm run ui:hydration-check && npm run typecheck && npm run test && npm run build && npm run audit:prod && npm run mobile:app:check",
     "format:prettier": "prettier --check .",
     "routes:list": "node scripts/route-inventory.mjs",
     "runtime:check": "node scripts/runtime-check.mjs",
@@ -105,7 +105,13 @@
     "first-run:install": "node scripts/first-run.mjs --install",
     "db:runtime:migrate": "node scripts/neon-runtime-setup.mjs --migrate",
     "db:runtime:provision": "node scripts/neon-runtime-setup.mjs --provision",
-    "db:runtime:test": "node scripts/neon-runtime-setup.mjs --test"
+    "db:runtime:test": "node scripts/neon-runtime-setup.mjs --test",
+    "claude-code:prepare": "node scripts/claude-code-prepare.mjs",
+    "claude-code:check": "node scripts/claude-code-check.mjs",
+    "computer-use:openai:check": "node scripts/computer-use-check.mjs",
+    "computer-use:openai:mark": "node scripts/computer-use-mark.mjs",
+    "computer-use:claude:check": "node scripts/computer-use-claude-check.mjs",
+    "computer-use:claude:mark": "node scripts/computer-use-claude-mark.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.127.0",

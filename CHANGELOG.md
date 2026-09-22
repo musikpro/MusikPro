@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.10.4 — Refactorisation non régressive par défaut
+
+- Ajoute une règle générale obligatoire : toute intervention doit être une refactorisation propre, professionnelle et non régressive.
+- Propage cette règle à `AGENTS.md`, `CLAUDE.md`, `.claude/README.md`, `.codex/README.md` et tous les skills officiels.
+- Renforce `kit:integrity` pour détecter la disparition de la règle dans une future version.
+- Exige de préserver les fonctionnalités existantes, privilégier les changements additifs/réversibles et relancer les gates pertinents après modification.
+
+## 0.10.3 — French-first AI instructions
+- Ajoute une règle globale : réponses utilisateur toujours en français pour ChatGPT/Codex/Antigravity et Claude Code.
+- Propage la règle dans `AGENTS.md`, `CLAUDE.md`, `.claude/README.md` et tous les skills officiels.
+- Renforce `kit:integrity` pour détecter la disparition de cette règle lors d’une future refactorisation.
+- Les commandes, chemins, identifiants et extraits de code gardent leur syntaxe technique d’origine.
+
+## 0.10.2 — Claude Code + Computer Use multi-agent
+- Ajout de `CLAUDE.md` et `.claude/commands/` pour Claude Code.
+- Ajout de `claude-code:check` / `claude-code:prepare`.
+- Deux voyants indépendants Computer Use: OpenAI et Claude Code.
+- Ajout des commandes `computer-use:claude:check` et `computer-use:claude:mark`.
+- Renforcement des gates d’intégrité et d’audit pour protéger l’intégration Claude.
+
+
 ## 0.10.1 — Integrity refactor + guided first run
 
 - Adds `npm run first-run` and `npm run first-run:install` as a safe, guided installation entry point.

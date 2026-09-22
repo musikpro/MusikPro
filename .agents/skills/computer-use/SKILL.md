@@ -2,9 +2,17 @@
 name: computer-use
 description: Vérifie et utilise le Browser Subagent / Browser Tools d’Antigravity pour assister visuellement le développement, tester les interfaces et valider les étapes du Africa SaaS Kit sans prétendre qu’un simple fichier prouve l’activation.
 ---
+
+## Langue de réponse
+Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
+
 # /computer-use — Assistance navigateur continue
 
 Cette skill est l’interface officielle du kit pour le **Computer Use / Browser Tools** dans Antigravity.
+
+
+## Règle de refactorisation
+Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.
 
 ## Principe
 Antigravity fournit nativement un Browser Subagent capable d’ouvrir, lire et manipuler Chrome. Il n’y a donc **aucun package npm `computer-use` à installer** dans le projet. Le setup doit vérifier que les Browser Tools sont activés et qu’un vrai test navigateur fonctionne.

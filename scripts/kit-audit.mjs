@@ -25,6 +25,7 @@ const checks = [
   ['seo', 'SEO', ['node', ['scripts/seo-check.mjs']]],
   ['deployment', 'Deployment handoff', ['node', ['scripts/deployment-check.mjs']]],
   ['conformity', 'Conformité structurelle globale', ['node', ['scripts/conformity-check.mjs']]],
+  ['claude-code', 'Compatibilité Claude Code', ['node', ['scripts/claude-code-check.mjs']]],
   ['format-hygiene', 'Hygiène de format', ['node', ['scripts/format-check.mjs']]],
 ];
 

@@ -2,9 +2,17 @@
 name: provider
 description: Liste et charge les skills, guides et adaptateurs des fournisseurs de paiement de Africa SaaS Kit. Utiliser avec /provider pour voir le catalogue ou /provider <nom> pour ouvrir un provider précis, sans forcer l'activation des paiements.
 ---
+
+## Langue de réponse
+Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
+
 # /provider — Routeur officiel des providers Africa SaaS Kit
 
 Cette skill est le point d'entrée officiel pour consulter les fournisseurs de paiement du kit.
+
+
+## Règle de refactorisation
+Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.
 
 ## Syntaxe
 

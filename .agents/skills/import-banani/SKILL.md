@@ -2,9 +2,17 @@
 name: import-banani
 description: Importe le projet/design Banani via MCP, inventorie tous les écrans observés, compare avec Africa SaaS Kit et génère un gap analysis + plan d’implémentation sans doublons.
 ---
+
+## Langue de réponse
+Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
+
 # /import-banani — Import design Banani → comparaison starter → plan d’implémentation
 
 Cette skill s’utilise **après** `npm run banani:check` et seulement si Banani MCP est réellement connecté via `.codex/config.toml`.
+
+
+## Règle de refactorisation
+Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.
 
 ## Objectif
 Ne jamais passer directement du design Banani au code. La skill doit d’abord voir le design disponible dans Banani, l’inventorier, le comparer avec ce qui existe déjà dans Africa SaaS Kit, puis générer un plan d’implémentation complet.

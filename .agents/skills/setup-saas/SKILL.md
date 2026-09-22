@@ -2,12 +2,16 @@
 name: setup-saas
 description: Assistant officiel Africa SaaS Kit. Analyse l’état du projet et guide l’utilisateur phase par phase jusqu’à la production, sans exiger les paiements, Cloudflare ou Cloudinary quand ils ne sont pas nécessaires.
 ---
+
+## Langue de réponse
+Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
+
 # /setup-saas — Assistant de configuration complet en 21 phases
 
 Quand cette skill est invoquée, lire `AGENTS.md`, `README.md`, `SECURITY.md`, `DESIGN.md`, `docs/setup-saas.md` et la configuration réelle si elle existe.
 
 1. Exécuter `npm run features:list` puis `npm run setup-saas` afin de connaître les briques déjà présentes et éviter les doublons.
-2. Avant toute construction, exécuter `npm run computer-use:check`; dans Antigravity, vérifier réellement Browser Tools avec le Browser Subagent. Si le test réussit, marquer la preuve avec `npm run computer-use:mark`.
+2. Avant toute construction, exécuter `npm run computer-use:openai:check` pour OpenAI/Antigravity et `npm run claude-code:check` + `npm run computer-use:claude:check` si Claude Code est utilisé; dans Antigravity, vérifier réellement Browser Tools avec le Browser Subagent. Si le test réussit, marquer la preuve avec `npm run computer-use:mark`.
 3. Pour chaque phase suivante, lire la section **Assistance Computer Use pour cette phase** du rapport et utiliser le Browser Subagent dès qu’une surface web/visuelle est vérifiable. Ne pas prétendre à un PASS visuel sans observation réelle.
 4. Lire `generated/setup-saas-report.md` et `.json`.
 5. Afficher la roadmap complète avec 🟢 / 🟡 / 🔴 / ⚪ et une explication courte de chaque phase.
@@ -31,3 +35,9 @@ La définition détaillée des phases et les règles de progression sont dans `A
 
 ## Staging Gate obligatoire
 Avant toute Production, lire `docs/deployment/staging-vercel.md` et valider une Vercel Preview du commit courant : `npm run staging:deploy`, `npm run staging:test -- --url=...`, `npm run staging:approve -- --url=...`, puis `npm run deploy:production:check`. Ne jamais contourner ce gate. Séparer les variables et bases Preview/Production ; refaire le staging si le code change.
+
+16. Compatibilité Claude Code : lire `CLAUDE.md`, utiliser les commandes `.claude/commands/`, et garder les voyants Computer Use OpenAI/Claude indépendants. Un voyant vert exige un test réel marqué `verified`.
+
+
+## Règle de refactorisation
+Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.
