@@ -97,6 +97,19 @@
         "requireContentType"
       ]
     },
+    "app/api/ai/pronunciation/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "pronunciationRequestSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
     "app/api/music/generate/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

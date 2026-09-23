@@ -118,3 +118,10 @@ export const aiLyricsTaskSchema = z.discriminatedUnion("task", [
 ]);
 
 export type AiLyricsTask = z.infer<typeof aiLyricsTaskSchema>;
+
+export const pronunciationRequestSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  language: z.string().trim().max(50).optional().default(""),
+});
+
+export type PronunciationRequest = z.infer<typeof pronunciationRequestSchema>;

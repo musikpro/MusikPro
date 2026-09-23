@@ -539,7 +539,7 @@
       ]
     },
     "multi-provider-lyrics-generation": {
-      "description": "Fournisseurs OpenAI et Anthropic administrables, chiffrés et sélectionnables pour générer, réviser et rallonger les paroles.",
+      "description": "Fournisseurs OpenAI et Anthropic administrables, chiffrés et sélectionnables pour générer, réviser et rallonger les paroles, ainsi que pour suggérer la prononciation phonétique des noms (même fournisseur, aucune clé séparée).",
       "optional": true,
       "env": [
         "APP_SECRETS_ENCRYPTION_KEY",
@@ -558,8 +558,10 @@
         "lib/ai/provider.ts",
         "lib/ai/lyrics.ts",
         "lib/ai/anthropic.ts",
+        "lib/ai/pronunciation.ts",
         "lib/validation/ai.ts",
         "app/api/ai/generate/route.ts",
+        "app/api/ai/pronunciation/route.ts",
         "app/admin/ai-providers/page.tsx",
         "app/admin/ai-providers/loading.tsx",
         "app/admin/ai-providers/lyrics/page.tsx",
@@ -571,12 +573,13 @@
         "components/admin/AdminAiProviderForm.tsx",
         "components/admin/AdminToast.tsx",
         "components/admin/AdminAiCapabilityPlaceholder.tsx",
+        "components/banani/StepRecipient.tsx",
         "components/banani/DemoProvider.tsx"
       ],
-      "routes": ["/api/ai/generate"],
+      "routes": ["/api/ai/generate", "/api/ai/pronunciation"],
       "dependsOn": ["database", "auth", "api-client", "upstash"],
       "removalComplexity": "medium",
-      "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local.",
+      "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local. La suggestion de prononciation retombe silencieusement sur l’heuristique locale côté client si le fournisseur est indisponible.",
       "notes": [
         "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
         "OPENAI_API_KEY et ANTHROPIC_API_KEY peuvent servir de clés serveur de secours si aucune clé chiffrée n’est enregistrée.",
