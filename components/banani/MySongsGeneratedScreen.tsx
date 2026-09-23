@@ -27,6 +27,7 @@ export default function MySongsGenerated() {
   const [selectedTab, setTab] = useState("Toutes");
   const [search, setSearch] = useState("");
   const [playingVersion, setPlayingVersion] = useState<string | null>(null);
+  const [sortByPlays, setSortByPlays] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -68,11 +69,15 @@ export default function MySongsGenerated() {
     if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
   };
 
-  const generatedSongs = demo.songs.filter(
-    (s) =>
-      matchesSongSearch(search, s.title, s.style, s.occasion) &&
-      (selectedTab !== "Favorites" || demo.favorites.includes(s.title)),
-  );
+  const totalPlays = (song: (typeof demo.songs)[number]) => song.versions.reduce((n, v) => n + v.plays, 0);
+  const generatedSongs = demo.songs
+    .filter(
+      (s) =>
+        matchesSongSearch(search, s.title, s.style, s.occasion) &&
+        (selectedTab !== "Favorites" || demo.favorites.includes(s.title)),
+    )
+    .slice()
+    .sort((a, b) => (sortByPlays ? totalPlays(b) - totalPlays(a) : 0));
   return (
     <div className="bg-background flex flex-col font-body">
       <audio ref={audioRef} onEnded={() => setPlayingVersion(null)} className="sr-only" />
@@ -103,11 +108,15 @@ export default function MySongsGenerated() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
-          aria-label="Filtrer"
-          className="flex items-center gap-1.5 border border-border rounded-lg px-3 py-2 bg-input"
+          onClick={() => {
+            setSortByPlays((prev) => !prev);
+            demo.notify(sortByPlays ? "Tri : plus récentes d'abord." : "Tri : plus écoutées d'abord.");
+          }}
+          aria-pressed={sortByPlays}
+          aria-label="Trier par nombre d'écoutes"
+          className={`flex items-center gap-1.5 border rounded-lg px-3 py-2 ${sortByPlays ? "border-primary bg-secondary" : "border-border bg-input"}`}
         >
-          <Icon i="sliders-horizontal" size={14} className="text-muted-foreground" />
+          <Icon i="sliders-horizontal" size={14} className={sortByPlays ? "text-primary" : "text-muted-foreground"} />
         </button>
       </div>
 
@@ -165,8 +174,10 @@ export default function MySongsGenerated() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
-                aria-label="Options"
+                onClick={() => {
+                  if (window.confirm(`Retirer « ${song.title} » et ses versions ?`)) demo.removeSong(song.id);
+                }}
+                aria-label={`Options pour ${song.title}`}
                 className="text-muted-foreground ml-2 mt-0.5"
               >
                 <Icon i="more-vertical" size={18} />
@@ -261,11 +272,15 @@ export default function MySongsGenerated() {
                         type="button"
                         data-demo-ready="true"
                         disabled={!demo.isDemo && (isPending || isFailed)}
-                        onClick={() =>
-                          demo.isDemo || !v.audioUrl
-                            ? demo.notify("Action de démonstration : aucune opération réelle effectuée.")
-                            : void shareVersion(song.title, v.label, v.audioUrl)
-                        }
+                        onClick={() => {
+                          if (demo.isDemo) {
+                            demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                          } else if (!v.audioUrl) {
+                            demo.notify("Cette version n’est pas encore prête à être partagée.");
+                          } else {
+                            void shareVersion(song.title, v.label, v.audioUrl);
+                          }
+                        }}
                         aria-label="Partager"
                         className={`text-muted-foreground ${!demo.isDemo && (isPending || isFailed) ? "opacity-50" : ""}`}
                       >
@@ -275,11 +290,15 @@ export default function MySongsGenerated() {
                         type="button"
                         data-demo-ready="true"
                         disabled={!demo.isDemo && (isPending || isFailed)}
-                        onClick={() =>
-                          demo.isDemo || !v.audioUrl
-                            ? demo.notify("Action de démonstration : aucune opération réelle effectuée.")
-                            : void downloadVersion(song.title, v.label, v.audioUrl)
-                        }
+                        onClick={() => {
+                          if (demo.isDemo) {
+                            demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                          } else if (!v.audioUrl) {
+                            demo.notify("Cette version n’est pas encore prête à être téléchargée.");
+                          } else {
+                            void downloadVersion(song.title, v.label, v.audioUrl);
+                          }
+                        }}
                         aria-label="Télécharger"
                         className={`song-download-button ${!demo.isDemo && (isPending || isFailed) ? "opacity-50" : ""}`}
                       >

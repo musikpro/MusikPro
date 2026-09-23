@@ -24,9 +24,15 @@ export default function SongPlayerScreen() {
   const currentSong = demo.currentSong;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [progress, setProgress] = useState({ current: 0, duration: 0 });
+  const [muted, setMuted] = useState(false);
   const isReal = !demo.isDemo;
   const isPending = isReal && currentSong?.status && currentSong.status !== "completed";
   const audioUrl = isReal ? currentSong?.audioUrl : null;
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) audio.muted = muted;
+  }, [muted, audioUrl]);
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -180,11 +186,14 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
-            aria-label="Volume de démonstration"
+            onClick={() =>
+              audioUrl ? setMuted((prev) => !prev) : demo.notify("Action de démonstration : aucune opération réelle effectuée.")
+            }
+            aria-pressed={muted}
+            aria-label={muted ? "Réactiver le son" : "Couper le son"}
             className="flex items-center gap-2 text-muted-foreground"
           >
-            <Icon i="volume-2" size={18} />
+            <Icon i={muted ? "volume-x" : "volume-2"} size={18} />
           </button>
         </div>
 
