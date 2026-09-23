@@ -26,6 +26,12 @@ generated/setup-saas-report.json
 # Local Codex MCP config (may contain bearer tokens)
 .codex/config.toml
 
+# Local Claude Code MCP config (Banani connection token pasted directly)
+.mcp.json
+
+# Local Playwright MCP debugging output (screenshots, snapshots, console logs)
+.playwright-mcp/
+
 tsconfig.tsbuildinfo
 
 # Generated local reports/artifacts: keep directory only
