@@ -33,6 +33,7 @@ export default function PaymentBypassPanel({ status }: { status: PaymentBypassSt
         <input type="hidden" name="enabled" value={enabled ? "off" : "on"} />
         <div className="admin-btn-row">
           <AdminConfirmSubmit
+            variant="primary"
             confirmMessage={
               enabled
                 ? "Désactiver le mode test ? Les comptes propriétaires devront de nouveau avoir des crédits pour générer une chanson."
