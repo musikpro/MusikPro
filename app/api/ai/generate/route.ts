@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       { status: 400 },
     );
   try {
-    const result = await runLyricsTask(parsed.data);
+    const result = await runLyricsTask(parsed.data, session.user.id);
     return NextResponse.json({ lyrics: result.text, requestId: result.id });
   } catch (error) {
     const code = error instanceof Error ? error.message : "AI_REQUEST_FAILED";
@@ -42,6 +42,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Le fournisseur de paroles n’est pas encore configuré." }, { status: 503 });
     if (code === "AI_CAPABILITY_DISABLED")
       return NextResponse.json({ error: "Cette fonction de paroles est désactivée." }, { status: 403 });
+    if (code === "CONTENT_BLOCKED_REQUEST")
+      return NextResponse.json(
+        { error: "Ta description contient du contenu qui ne peut pas être utilisé pour générer une chanson. Modifie ton texte et réessaie.", code },
+        { status: 422 },
+      );
+    if (code === "CONTENT_BLOCKED_RESULT")
+      return NextResponse.json(
+        { error: "Le résultat généré n’a pas pu être validé. Réessaie avec une description différente.", code },
+        { status: 422 },
+      );
     const failure = provider.provider === "anthropic" ? classifyAnthropicError(error) : classifyOpenAiError(error);
     logger.error("AI lyrics request failed", {
       provider: provider.provider,

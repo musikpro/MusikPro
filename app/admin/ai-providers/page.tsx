@@ -59,8 +59,10 @@ export default async function AdminAIProvidersPage() {
           id: "moderation",
           title: "Contrôle du contenu",
           subtitle: "Filtrage des demandes et des résultats générés",
-          meta: "Architecture à définir",
-          status: "coming",
+          meta: lyricsProvider?.enabled
+            ? `Réutilise ${lyricsProvider.provider === "anthropic" ? "Claude" : "OpenAI"} · ${lyricsProvider.model}`
+            : "Configure d'abord les paroles",
+          status: lyricsProvider?.enabled ? "active" : "coming",
           icon: "shield-check",
           href: "/admin/ai-providers/moderation",
         },

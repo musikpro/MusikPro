@@ -539,7 +539,7 @@
       ]
     },
     "multi-provider-lyrics-generation": {
-      "description": "Fournisseurs OpenAI et Anthropic administrables, chiffrés et sélectionnables pour générer, réviser et rallonger les paroles, ainsi que pour suggérer la prononciation phonétique des noms (même fournisseur, aucune clé séparée).",
+      "description": "Fournisseurs OpenAI et Anthropic administrables, chiffrés et sélectionnables pour générer, réviser et rallonger les paroles, suggérer la prononciation phonétique des noms et filtrer les demandes/résultats (même fournisseur, aucune clé séparée).",
       "optional": true,
       "env": [
         "APP_SECRETS_ENCRYPTION_KEY",
@@ -559,6 +559,7 @@
         "lib/ai/lyrics.ts",
         "lib/ai/anthropic.ts",
         "lib/ai/pronunciation.ts",
+        "lib/ai/moderation.ts",
         "lib/validation/ai.ts",
         "app/api/ai/generate/route.ts",
         "app/api/ai/pronunciation/route.ts",
@@ -583,7 +584,8 @@
       "notes": [
         "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
         "OPENAI_API_KEY et ANTHROPIC_API_KEY peuvent servir de clés serveur de secours si aucune clé chiffrée n’est enregistrée.",
-        "Un seul fournisseur est sélectionné pour les paroles; aucun fallback silencieux n’est effectué."
+        "Un seul fournisseur est sélectionné pour les paroles; aucun fallback silencieux n’est effectué.",
+        "Le contrôle du contenu analyse la demande utilisateur puis les paroles générées via le même fournisseur; tout contenu signalé est bloqué (HTTP 422) et consigné dans audit_logs. Si le fournisseur est indisponible, la modération est ignorée (fail-open) plutôt que de bloquer toute génération."
       ]
     },
     "musicful-audio-generation": {

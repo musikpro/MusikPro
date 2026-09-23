@@ -3,6 +3,8 @@ import type { AiLyricsTask } from "@/lib/validation/ai";
 import { createOpenAiClient, getLyricsProvider } from "./provider";
 import { runAnthropicLyricsTask } from "./anthropic";
 import { enforceLyricsWordLimit, LYRICS_MAX_WORDS } from "./lyrics-policy";
+import { moderateText } from "./moderation";
+import { writeAuditLog } from "@/lib/security/audit";
 
 export function promptFor(task: AiLyricsTask) {
   const input = task.input;
@@ -27,7 +29,7 @@ export function promptFor(task: AiLyricsTask) {
   return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain et pont si pertinent), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.`;
 }
 
-export async function runLyricsTask(task: AiLyricsTask) {
+export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
   const provider = await getLyricsProvider();
   if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");
   const isRewrite = task.task !== "lyrics.generate";
@@ -37,25 +39,44 @@ export async function runLyricsTask(task: AiLyricsTask) {
   ) {
     throw new Error("AI_CAPABILITY_DISABLED");
   }
+
+  const requestText = [task.input.story, task.input.additionalDetails, task.input.recipientName].filter(Boolean).join("\n");
+  const requestVerdict = await moderateText(requestText, "Demande utilisateur (histoire, détails, destinataire) pour une chanson");
+  if (requestVerdict.flagged) {
+    await writeAuditLog({
+      action: "ai.content.blocked_request",
+      actorId,
+      metadata: { categories: requestVerdict.categories, reason: requestVerdict.reason },
+    });
+    throw new Error("CONTENT_BLOCKED_REQUEST");
+  }
+
   const instructions =
     `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
+  let result: { id: string; text: string; model: string };
   if (provider.provider === "anthropic") {
-    const result = await runAnthropicLyricsTask(
-      provider.apiKey,
-      provider.model,
-      provider.maxOutputTokens,
+    const raw = await runAnthropicLyricsTask(provider.apiKey, provider.model, provider.maxOutputTokens, instructions, promptFor(task));
+    result = { ...raw, text: enforceLyricsWordLimit(raw.text) };
+  } else {
+    const response = await createOpenAiClient(provider.apiKey).responses.create({
+      model: provider.model,
       instructions,
-      promptFor(task),
-    );
-    return { ...result, text: enforceLyricsWordLimit(result.text) };
+      input: promptFor(task),
+      max_output_tokens: provider.maxOutputTokens,
+    });
+    const text = response.output_text.trim();
+    if (!text) throw new Error("AI_EMPTY_RESPONSE");
+    result = { id: response.id, text: enforceLyricsWordLimit(text), model: provider.model };
   }
-  const response = await createOpenAiClient(provider.apiKey).responses.create({
-    model: provider.model,
-    instructions,
-    input: promptFor(task),
-    max_output_tokens: provider.maxOutputTokens,
-  });
-  const text = response.output_text.trim();
-  if (!text) throw new Error("AI_EMPTY_RESPONSE");
-  return { id: response.id, text: enforceLyricsWordLimit(text), model: provider.model };
+
+  const resultVerdict = await moderateText(result.text, "Paroles de chanson générées");
+  if (resultVerdict.flagged) {
+    await writeAuditLog({
+      action: "ai.content.blocked_result",
+      actorId,
+      metadata: { categories: resultVerdict.categories, reason: resultVerdict.reason },
+    });
+    throw new Error("CONTENT_BLOCKED_RESULT");
+  }
+  return result;
 }
