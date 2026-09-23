@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs } from "@/db/schema";
 import { createMusicfulClient, getMusicfulProvider, MusicfulApiError } from "./musicful";
@@ -9,6 +9,8 @@ import { createLogger } from "@/lib/observability/logger";
 
 const logger = createLogger("music-jobs");
 
+type JobRow = typeof musicGenerationJobs.$inferSelect;
+
 export class MusicJobOwnershipError extends Error {
   constructor() {
     super("MUSIC_JOB_NOT_FOUND");
@@ -16,12 +18,14 @@ export class MusicJobOwnershipError extends Error {
 }
 
 /**
- * Musicful's documented success response only shows `{ task_id }`, but the exact envelope
- * for `/v1/music/generate` isn't confirmed against a live account. Rather than trust a single
- * guessed shape (which would silently leave `providerTaskId` null and strand the job in
- * "processing" forever with no error), this checks the common wrapper conventions.
+ * Musicful's documented success response only shows `{ task_id }`, but a live account
+ * confirms the real `/v1/music/generate` envelope is `{ data: { ids: [id1, id2] }, status,
+ * message }` — ONE call returns TWO task ids (Musicful always generates a pair of variants
+ * per auto-generate request). This checks that real shape first, then falls back to other
+ * common wrapper conventions so a single well-formed id is still picked up if the provider
+ * ever changes its envelope.
  */
-function extractTaskId(response: unknown): string | null {
+function extractTaskIds(response: unknown): string[] {
   const readId = (value: unknown): string | null => {
     if (!value || typeof value !== "object") return null;
     const record = value as Record<string, unknown>;
@@ -29,10 +33,21 @@ function extractTaskId(response: unknown): string | null {
     return typeof candidate === "string" && candidate ? candidate : null;
   };
   const direct = readId(response);
-  if (direct) return direct;
+  if (direct) return [direct];
   const data = response && typeof response === "object" ? (response as Record<string, unknown>).data : undefined;
-  if (Array.isArray(data)) return readId(data[0]);
-  return readId(data);
+  if (data && typeof data === "object" && !Array.isArray(data)) {
+    const ids = (data as Record<string, unknown>).ids;
+    if (Array.isArray(ids)) {
+      const found = ids.filter((id): id is string => typeof id === "string" && id.length > 0);
+      if (found.length) return found;
+    }
+  }
+  if (Array.isArray(data)) {
+    const found = data.map(readId).filter((id): id is string => Boolean(id));
+    if (found.length) return found;
+  }
+  const single = readId(data);
+  return single ? [single] : [];
 }
 
 export type MusicJobGroupContext = {
@@ -92,7 +107,7 @@ export async function submitMusicJob(jobId: string) {
       .where(eq(musicGenerationJobs.id, jobId));
     throw error;
   }
-  const providerTaskId = extractTaskId(response);
+  const providerTaskId = extractTaskIds(response)[0] ?? null;
   if (!providerTaskId) {
     logger.error("Musicful generate response had no extractable task id", { jobId, response });
     await database
@@ -106,6 +121,73 @@ export async function submitMusicJob(jobId: string) {
     .set({ providerTaskId, status: "processing", responsePayload: response, updatedAt: new Date() })
     .where(eq(musicGenerationJobs.id, jobId));
   return { ...job, providerTaskId, status: "processing" as const };
+}
+
+/**
+ * Submits ONE Musicful generate call shared by every job in a song group. Musicful's auto
+ * endpoint always returns a pair of task ids (`{ data: { ids: [...] } }`) for a single
+ * request, so calling it once per version (as the group's job count would suggest) would
+ * double-submit to the provider and only ever have one id to assign. Instead this submits
+ * once — using the first job's generation params, which are identical across versions by
+ * construction — and distributes the returned ids across the group's jobs in order.
+ */
+export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded: number; failed: number }> {
+  if (!jobIds.length) return { succeeded: 0, failed: 0 };
+  const database = getServiceDb();
+  const jobs = await database.select().from(musicGenerationJobs).where(inArray(musicGenerationJobs.id, jobIds));
+  const ordered = jobIds.map((id) => jobs.find((job) => job.id === id)).filter((job): job is JobRow => Boolean(job));
+  if (!ordered.length) return { succeeded: 0, failed: 0 };
+  const [primary] = ordered;
+  const provider = await getMusicfulProvider();
+  if (!provider.enabled || !provider.apiKey) throw new Error("MUSICFUL_NOT_CONFIGURED");
+  const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
+  await Promise.all(
+    ordered.map((job) =>
+      database.update(musicGenerationJobs).set({ status: "submitting", startedAt: new Date(), updatedAt: new Date() }).where(eq(musicGenerationJobs.id, job.id)),
+    ),
+  );
+  let response: unknown;
+  try {
+    response = await client.generateMusicAuto({
+      style: primary.style,
+      mv: primary.model,
+      instrumental: primary.instrumental ? 1 : 0,
+      gender: (primary.gender as "male" | "female" | "" | null) || undefined,
+    });
+  } catch (error) {
+    const failureReason = error instanceof MusicfulApiError ? `HTTP ${error.status}` : "submission_failed";
+    await Promise.all(
+      ordered.map((job) =>
+        database
+          .update(musicGenerationJobs)
+          .set({ status: "failed", failureReason, failedAt: new Date(), updatedAt: new Date() })
+          .where(eq(musicGenerationJobs.id, job.id)),
+      ),
+    );
+    return { succeeded: 0, failed: ordered.length };
+  }
+  const providerTaskIds = extractTaskIds(response);
+  if (!providerTaskIds.length) {
+    logger.error("Musicful generate response had no extractable task ids", { jobIds: ordered.map((job) => job.id), response });
+  }
+  let succeeded = 0;
+  await Promise.all(
+    ordered.map((job, index) => {
+      const providerTaskId = providerTaskIds[index];
+      if (providerTaskId) {
+        succeeded += 1;
+        return database
+          .update(musicGenerationJobs)
+          .set({ providerTaskId, status: "processing", responsePayload: response, updatedAt: new Date() })
+          .where(eq(musicGenerationJobs.id, job.id));
+      }
+      return database
+        .update(musicGenerationJobs)
+        .set({ status: "failed", failureReason: "MUSICFUL_TASK_ID_MISSING", responsePayload: response, failedAt: new Date(), updatedAt: new Date() })
+        .where(eq(musicGenerationJobs.id, job.id));
+    }),
+  );
+  return { succeeded, failed: ordered.length - succeeded };
 }
 
 async function getOwnedJob(jobId: string, userId: string) {

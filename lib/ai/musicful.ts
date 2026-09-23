@@ -111,7 +111,15 @@ export class MusicfulClient {
   async getTasks(ids: string | string[]) {
     const idList = Array.isArray(ids) ? ids.join(",") : ids;
     const params = new URLSearchParams({ ids: idList });
-    return this.request<MusicfulTask[]>(`/v1/music/tasks?${params}`, { method: "GET" });
+    const response = await this.request<unknown>(`/v1/music/tasks?${params}`, { method: "GET" });
+    // A live account confirms /v1/music/generate wraps its payload as `{ data, status, message }`
+    // rather than returning it bare; /v1/music/tasks follows the same account's response
+    // convention, so a bare array is unwrapped from `.data` here instead of assumed.
+    if (Array.isArray(response)) return response as MusicfulTask[];
+    if (response && typeof response === "object" && Array.isArray((response as Record<string, unknown>).data)) {
+      return (response as { data: MusicfulTask[] }).data;
+    }
+    return [] as MusicfulTask[];
   }
 
   async generateVibe(songId: string) {

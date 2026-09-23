@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs } from "@/db/schema";
-import { createMusicJob, submitMusicJob, pollMusicJob, MusicJobOwnershipError } from "./music-jobs";
+import { createMusicJob, submitSongGroupJobs, pollMusicJob, MusicJobOwnershipError } from "./music-jobs";
 import { VERSIONS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 
 type JobRow = typeof musicGenerationJobs.$inferSelect;
@@ -92,9 +92,8 @@ export async function submitSongGeneration(
       ),
     ),
   );
-  const results = await Promise.allSettled(jobs.map((job) => submitMusicJob(job.id)));
-  const succeeded = results.filter((result) => result.status === "fulfilled").length;
-  return { songGroupId, succeeded, failed: results.length - succeeded };
+  const { succeeded, failed } = await submitSongGroupJobs(jobs.map((job) => job.id));
+  return { songGroupId, succeeded, failed };
 }
 
 /**
