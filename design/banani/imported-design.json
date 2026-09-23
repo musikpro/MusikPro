@@ -4,7 +4,7 @@
     "id": "QMj5OQRWpKXU",
     "name": "MusikPro",
     "source": "banani-mcp",
-    "observedAt": "2026-09-19T13:45:52.453Z"
+    "observedAt": "2026-09-23T07:18:40.717Z"
   },
   "screens": [
     {
@@ -2505,6 +2505,38 @@
       ],
       "integrations": [],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER."
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/new_screen2.jsx",
+      "name": "Génération en cours — Attente",
+      "route": "TBD",
+      "auth": "authenticated",
+      "purpose": "Afficher une animation pendant la création de la chanson puis annoncer une redirection automatique vers le résultat une fois prêt",
+      "states": [
+        "default"
+      ],
+      "viewport": "mobile",
+      "keyElements": [
+        "Badge « Génération IA »",
+        "Anneaux animés autour d'une icône musicale centrale",
+        "Titre « Ta chanson est en création… »",
+        "Chronomètre écoulé (ex. 00:42)",
+        "Barre de progression (ex. 72%)",
+        "Encart « Le saviez-vous ? »",
+        "Liste de 3 messages d'encouragement avec état terminé / en cours / à venir",
+        "Bouton « Voir ma chanson générée » affiché en aperçu désactivé (opacity-40)",
+        "Texte « Redirection automatique dès que ta chanson est prête »"
+      ],
+      "interactions": [
+        "Redirection automatique annoncée dès que la génération est terminée ; minuterie, destination et déclencheur exacts non exposés par Banani",
+        "Bouton CTA final visible mais grisé dans le design : présenté comme un aperçu de l'état « terminé », pas un contrôle actif"
+      ],
+      "dataNeeds": [
+        "Chrono et pourcentage de progression codés en dur dans le JSX importé (00:42, 72%) ; à remplacer par un état réel ou une animation bornée non trompeuse",
+        "3 messages d'encouragement statiques ; rotation réelle dans le temps À CONFIRMER"
+      ],
+      "integrations": [],
+      "notes": "Nouvel écran sélectionné par l'utilisateur le 23 septembre 2026, à insérer dans le flow creation-payment-preview juste après GeneratingScreen.jsx (paiement confirmé). Le produit actuel ne dispose d'aucun moteur de génération audio réel (confirmé par app/admin/generations : « Le schéma Neon ne contient pas encore de table de générations musicales »). demo.generateSong() existant est synchrone et instantané, et crée déjà 2 versions avant de rediriger vers /dashboard/songs. Durée réelle de l'animation, et légitimité d'un délai borné pour l'expérience utilisateur (vs. règle « jamais de délai artificiel » du Skeleton Loader Gate), restent À CONFIRMER avant implémentation."
     }
   ],
   "designSystem": {
@@ -2557,9 +2589,10 @@
         "QMj5OQRWpKXU/screens/FinalConfirmationScreen.jsx",
         "QMj5OQRWpKXU/screens/PaymentScreen.jsx",
         "QMj5OQRWpKXU/screens/PaymentRedirectChariowScreen.jsx",
-        "QMj5OQRWpKXU/screens/GeneratingScreen.jsx"
+        "QMj5OQRWpKXU/screens/GeneratingScreen.jsx",
+        "QMj5OQRWpKXU/screens/new_screen2.jsx"
       ],
-      "notes": "Enchaînement demandé par l’utilisateur. Les trois écrans de paiement ont été réobservés ; la logique Chariow et la destination après confirmation restent NON VÉRIFIÉES. Implémenter uniquement une démonstration locale tant que paymentsEnabled=false."
+      "notes": "Enchaînement demandé par l’utilisateur. Les trois écrans de paiement ont été réobservés ; la logique Chariow et la destination après confirmation restent NON VÉRIFIÉES. Implémenter uniquement une démonstration locale tant que paymentsEnabled=false. Écran d'animation « Génération en cours » réobservé le 23 septembre 2026 et inséré après la confirmation de paiement ; destination et durée exactes À CONFIRMER."
     },
     {
       "id": "owner-admin",
@@ -2664,6 +2697,8 @@
     "Le branding bleu/Inter affiché comme contenu administrable diverge du thème global orange/DM Sans ; comportement de prévisualisation et application du branding À CONFIRMER.",
     "Variantes responsive des pages admin autres que le dashboard et le menu mobile NON VÉRIFIÉES ; elles devront être conçues mobile-first.",
     "La variante desktop de Vérification Double Facteur n’a pas été fournie par Banani ; adaptation responsive à créer avec le design system MusikPro.",
-    "Le design montre un code envoyé par e-mail et Google Authenticator. Seul le TOTP Better Auth est démontré dans le code actuel ; l’e-mail 2FA, son expiration et son renvoi restent À CONFIRMER."
+    "Le design montre un code envoyé par e-mail et Google Authenticator. Seul le TOTP Better Auth est démontré dans le code actuel ; l’e-mail 2FA, son expiration et son renvoi restent À CONFIRMER.",
+    "Nouvel écran new_screen2.jsx (Génération en cours — Attente) sélectionné le 23 septembre 2026 : chrono (00:42) et barre de progression (72%) codés en dur dans le design Banani, sans valeur réelle côté produit à ce jour.",
+    "Aucun moteur de génération audio réel n'existe dans le produit (confirmé côté app/admin/generations) ; la durée et le contenu de l'animation d'attente restent À CONFIRMER, de même que sa compatibilité avec la règle « jamais de délai artificiel » du Skeleton Loader Gate (AGENTS.md)."
   ]
 }

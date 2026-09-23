@@ -11,7 +11,48 @@ import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plan
 import type { OccasionOption } from "@/lib/occasions/catalog";
 import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
 import type { LanguageOption } from "@/lib/languages/catalog";
-import { apiFetch } from "@/lib/api/client";
+import { apiFetch, ApiClientError } from "@/lib/api/client";
+import type { WorkspaceSong } from "@/lib/demo/song-types";
+
+type SongGroupResponse = {
+  songGroupId: string;
+  title: string;
+  occasion: string | null;
+  style: string | null;
+  lyrics: string | null;
+  status: "processing" | "completed" | "failed";
+  createdAt: string;
+  versions: Array<{
+    label: string;
+    status: WorkspaceSong["versions"][number]["status"];
+    duration: string;
+    audioUrl: string | null;
+    plays: number;
+    liked: boolean;
+    failureReason: string | null;
+  }>;
+};
+
+function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
+  return {
+    id: song.songGroupId,
+    title: song.title,
+    occasion: song.occasion || "",
+    style: song.style || "",
+    date: new Date(song.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+    lyrics: song.lyrics || "",
+    status: song.status,
+    versions: song.versions.map((v) => ({
+      label: v.label,
+      duration: v.duration,
+      plays: v.plays,
+      liked: v.liked,
+      status: v.status,
+      audioUrl: v.audioUrl,
+      failureReason: v.failureReason,
+    })),
+  };
+}
 
 type DemoProfile = { name: string; email: string; location: string };
 
@@ -26,6 +67,7 @@ function useDemoState(
   initialLyricsLanguages: LanguageOption[],
   initialDetectedInterfaceLanguage: LanguageOption | null,
   persistenceId: string,
+  paymentBypassEnabled: boolean,
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -227,6 +269,7 @@ function useDemoState(
     };
   });
   const owned = songs.find((s) => s.title === selectedTitle);
+  const ownedVersion = owned?.versions[selectedVersion];
   const currentSong = selectedTitle
     ? owned
       ? {
@@ -234,19 +277,25 @@ function useDemoState(
           title: owned.title,
           style: owned.style,
           img: "",
-          duration: owned.versions[selectedVersion]?.duration ?? "1m 32s",
+          duration: ownedVersion?.duration ?? "1m 32s",
           artist: profile.name,
-          likes: owned.versions[selectedVersion]?.plays ?? 0,
+          likes: ownedVersion?.plays ?? 0,
+          audioUrl: ownedVersion?.audioUrl ?? null,
+          status: ownedVersion?.status ?? "completed",
         }
-      : (library.find((s) => s.title === selectedTitle) ?? {
-          id: -1,
-          title: selectedTitle,
-          style: isDemo ? "Création de démonstration" : "Création MusikPro",
-          img: "",
-          duration: "1:32",
-          artist: profile.name,
-          likes: 0,
-        })
+      : {
+          audioUrl: null as string | null,
+          status: "completed" as const,
+          ...(library.find((s) => s.title === selectedTitle) ?? {
+            id: -1,
+            title: selectedTitle,
+            style: isDemo ? "Création de démonstration" : "Création MusikPro",
+            img: "",
+            duration: "1:32",
+            artist: profile.name,
+            likes: 0,
+          }),
+        }
     : null;
   const go = (route: string) => {
     notify("");
@@ -312,16 +361,17 @@ function useDemoState(
     const index = library.findIndex((s) => s.title === selectedTitle);
     setSelectedTitle(library[(index + direction + library.length) % library.length].title);
   };
-  const generateSong = () => {
-    if (!isDemo) {
-      notify("La génération musicale réelle doit être connectée avant d’ajouter une chanson.");
-      return;
+  const refreshSongs = async () => {
+    if (isDemo) return;
+    try {
+      const result = await apiFetch<{ songs: SongGroupResponse[] }>("/api/songs", { timeoutMs: 20_000 });
+      setSongs(result.songs.map(mapSongGroup));
+    } catch {
+      // A failed background refresh must not disrupt the current screen.
     }
-    if (balance < CREDITS_PER_GENERATION) {
-      router.push(href("/dashboard/credits"));
-      notify(`Il faut ${CREDITS_PER_GENERATION} crédits pour lancer une génération musicale.`);
-      return;
-    }
+  };
+  /** Demo-only instant fake generation, unchanged from the original scaffold. */
+  const generateSong = async () => {
     const title = `Ma chanson — ${choices.occasion}`;
     setSongs((prev) =>
       prev.some((s) => s.title === title)
@@ -332,28 +382,50 @@ function useDemoState(
               title,
               occasion: choices.occasion,
               style: choices.genre,
-              date: isDemo ? "Session de démonstration" : "Session MusikPro",
+              date: "Session de démonstration",
+              lyrics: fields.lyrics,
               versions: [
-                {
-                  label: "Version 1",
-                  duration: "1m 32s",
-                  plays: 0,
-                  liked: false,
-                },
-                {
-                  label: "Version 2",
-                  duration: "1m 45s",
-                  plays: 0,
-                  liked: false,
-                },
+                { label: "Version 1", duration: "1m 32s", plays: 0, liked: false },
+                { label: "Version 2", duration: "1m 45s", plays: 0, liked: false },
               ],
             },
             ...prev,
           ],
     );
-    setBalance((current) => Math.max(0, current - CREDITS_PER_GENERATION));
     setSelectedTitle(title);
     go("/dashboard/songs");
+  };
+  /**
+   * Real submission only — no navigation. The caller (StepGeneratingSong) owns waiting for
+   * the versions to actually finish before leaving the animation screen.
+   */
+  const startRealGeneration = async (): Promise<{ songGroupId: string } | null> => {
+    if (!paymentBypassEnabled && balance < CREDITS_PER_GENERATION) {
+      router.push(href("/dashboard/credits"));
+      notify(`Il faut ${CREDITS_PER_GENERATION} crédits pour lancer une génération musicale.`);
+      return null;
+    }
+    try {
+      const result = await apiFetch<{ songGroupId: string; newBalance: number }>("/api/songs/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          occasion: choices.occasion,
+          genre: choices.genre,
+          mood: choices.mood,
+          voice: choices.voice,
+          lyrics: fields.lyrics,
+        }),
+        timeoutMs: 30_000,
+      });
+      setBalance(result.newBalance);
+      setSelectedTitle(`Ma chanson — ${choices.occasion}`);
+      return { songGroupId: result.songGroupId };
+    } catch (error) {
+      notify(error instanceof ApiClientError ? error.message : "La génération n’a pas pu démarrer. Réessaie dans un instant.");
+      go("/dashboard/songs");
+      return null;
+    }
   };
   const generateLyrics = async (
     task: "lyrics.generate" | "lyrics.extend" | "lyrics.rewrite" = "lyrics.generate",
@@ -409,6 +481,7 @@ function useDemoState(
   };
   return {
     isDemo,
+    paymentBypassEnabled,
     balance,
     pathname,
     href,
@@ -450,13 +523,27 @@ function useDemoState(
     paymentConfirmed,
     setPaymentConfirmed,
     generateSong,
+    startRealGeneration,
     generateLyrics,
     lyricsPending,
-    removeSong: (title: string) => {
-      setSongs((prev) => prev.filter((s) => s.title !== title));
-      setFavorites((prev) => prev.filter((v) => v !== title));
-      setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${title}|`)));
-      notify(isDemo ? "Chanson retirée de cette démonstration locale." : "Chanson retirée.");
+    refreshSongs,
+    removeSong: async (id: string | number) => {
+      const song = songs.find((s) => s.id === id);
+      if (!song) return;
+      if (isDemo) {
+        setSongs((prev) => prev.filter((s) => s.id !== id));
+        setFavorites((prev) => prev.filter((v) => v !== song.title));
+        setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${song.title}|`)));
+        notify("Chanson retirée de cette démonstration locale.");
+        return;
+      }
+      try {
+        await apiFetch(`/api/songs/${id}`, { method: "DELETE" });
+        await refreshSongs();
+        notify("Chanson retirée.");
+      } catch {
+        notify("Impossible de retirer cette chanson pour le moment.");
+      }
     },
     go,
     exitAccount,
@@ -477,6 +564,7 @@ export function DemoProvider({
   initialLyricsLanguages,
   initialDetectedInterfaceLanguage,
   persistenceId,
+  paymentBypassEnabled = false,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
@@ -489,6 +577,7 @@ export function DemoProvider({
   initialLyricsLanguages: LanguageOption[];
   initialDetectedInterfaceLanguage: LanguageOption | null;
   persistenceId: string;
+  paymentBypassEnabled?: boolean;
 }) {
   const state = useDemoState(
     mode,
@@ -501,6 +590,7 @@ export function DemoProvider({
     initialLyricsLanguages,
     initialDetectedInterfaceLanguage,
     persistenceId,
+    paymentBypassEnabled,
   );
   const [offline, setOffline] = useState(false);
   useEffect(() => {

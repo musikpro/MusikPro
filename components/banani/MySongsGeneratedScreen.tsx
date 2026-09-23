@@ -4,7 +4,7 @@ import { matchesSongSearch } from "@/lib/demo/search";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export const displayName = "Mes Chansons Générées";
 export const screenSize = "mobile";
@@ -26,16 +26,43 @@ export default function MySongsGenerated() {
   const [selectedTab, setTab] = useState("Toutes");
   const [search, setSearch] = useState("");
   const [playingVersion, setPlayingVersion] = useState<string | null>(null);
-  const generatedSongs = demo.songs
-    .filter(
-      (s) =>
-        matchesSongSearch(search, s.title, s.style, s.occasion) &&
-        (selectedTab !== "Favorites" || demo.favorites.includes(s.title)),
-    )
-    .slice()
-    .sort((a, b) => (selectedTab === "Récentes" ? b.id - a.id : 0));
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    if (demo.isDemo) return;
+    void demo.refreshSongs();
+    // Refresh once on mount only: the interval below takes over polling while a song is still processing.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo.isDemo]);
+
+  const hasPendingSong = demo.songs.some((song) => song.status === "processing");
+  useEffect(() => {
+    if (demo.isDemo || !hasPendingSong) return;
+    const timer = window.setInterval(() => void demo.refreshSongs(), 4000);
+    return () => window.clearInterval(timer);
+  }, [demo, demo.isDemo, hasPendingSong]);
+
+  const playVersion = (versionKey: string, audioUrl: string | null | undefined) => {
+    const audio = audioRef.current;
+    if (!audio || !audioUrl) return;
+    if (playingVersion === versionKey) {
+      audio.pause();
+      setPlayingVersion(null);
+      return;
+    }
+    audio.src = audioUrl;
+    void audio.play();
+    setPlayingVersion(versionKey);
+  };
+
+  const generatedSongs = demo.songs.filter(
+    (s) =>
+      matchesSongSearch(search, s.title, s.style, s.occasion) &&
+      (selectedTab !== "Favorites" || demo.favorites.includes(s.title)),
+  );
   return (
     <div className="bg-background flex flex-col font-body">
+      <audio ref={audioRef} onEnded={() => setPlayingVersion(null)} className="sr-only" />
       <MobileTopBar credits={demo.balance} />
 
       {/* Header */}
@@ -144,6 +171,9 @@ export default function MySongsGenerated() {
               {song.versions.map((v, vi) => {
                 const versionKey = `${song.title}|${vi}`;
                 const isPlaying = playingVersion === versionKey;
+                const versionStatus = v.status ?? "completed";
+                const isPending = !demo.isDemo && (versionStatus === "queued" || versionStatus === "submitting" || versionStatus === "processing");
+                const isFailed = !demo.isDemo && versionStatus === "failed";
                 return (
                   <div
                     key={vi}
@@ -153,17 +183,20 @@ export default function MySongsGenerated() {
                     <button
                       type="button"
                       data-demo-ready="true"
-                      onClick={() => setPlayingVersion(isPlaying ? null : versionKey)}
+                      disabled={isPending || isFailed}
+                      onClick={() =>
+                        demo.isDemo ? setPlayingVersion(isPlaying ? null : versionKey) : playVersion(versionKey, v.audioUrl)
+                      }
                       aria-label={
                         isPlaying ? `Mettre en pause ${song.title}, ${v.label}` : `Lire ${song.title}, ${v.label}`
                       }
                       aria-pressed={isPlaying}
-                      className={`song-inline-play w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isPlaying ? "bg-primary" : "bg-muted"}`}
+                      className={`song-inline-play w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${isPlaying ? "bg-primary" : "bg-muted"} ${isPending || isFailed ? "opacity-50" : ""}`}
                     >
                       <Icon
-                        i={isPlaying ? "pause" : "play"}
+                        i={isPending ? "loader-circle" : isFailed ? "circle-alert" : isPlaying ? "pause" : "play"}
                         size={16}
-                        className={isPlaying ? "text-primary-foreground" : "text-muted-foreground"}
+                        className={`${isPending ? "animate-spin" : ""} ${isPlaying ? "text-primary-foreground" : "text-muted-foreground"}`}
                       />
                     </button>
 
@@ -173,20 +206,24 @@ export default function MySongsGenerated() {
                         <span className={`text-sm font-semibold ${isPlaying ? "text-primary" : "text-foreground"}`}>
                           {v.label}
                         </span>
-                        <span className="text-xs text-muted-foreground">{v.duration}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {isPending ? "En cours de génération…" : isFailed ? "Échec" : v.duration}
+                        </span>
                       </div>
                       {/* Mini waveform */}
-                      <div
-                        className={`song-inline-waveform flex items-end gap-0.5 h-4 ${isPlaying ? "is-playing" : ""}`}
-                      >
-                        {[3, 6, 4, 9, 7, 5, 10, 8, 6, 9, 5, 7, 4, 8, 6, 10, 7, 5, 8, 4].map((h, i) => (
-                          <div
-                            key={i}
-                            className={`w-1 rounded-sm ${isPlaying ? "bg-primary/60" : "bg-muted-foreground/30"}`}
-                            style={{ height: `${h}px` }}
-                          />
-                        ))}
-                      </div>
+                      {!isPending && !isFailed ? (
+                        <div
+                          className={`song-inline-waveform flex items-end gap-0.5 h-4 ${isPlaying ? "is-playing" : ""}`}
+                        >
+                          {[3, 6, 4, 9, 7, 5, 10, 8, 6, 9, 5, 7, 4, 8, 6, 10, 7, 5, 8, 4].map((h, i) => (
+                            <div
+                              key={i}
+                              className={`w-1 rounded-sm ${isPlaying ? "bg-primary/60" : "bg-muted-foreground/30"}`}
+                              style={{ height: `${h}px` }}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
 
                     {/* Actions */}
@@ -257,8 +294,8 @@ export default function MySongsGenerated() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.removeSong(song.title)}
-                aria-label={`Retirer ${song.title} de la démonstration`}
+                onClick={() => demo.removeSong(song.id)}
+                aria-label={`Retirer ${song.title}`}
                 className="flex items-center justify-center w-9 h-9 bg-red-50 border border-red-100 rounded-lg flex-shrink-0"
               >
                 <Icon i="trash-2" size={14} className="text-red-400" />

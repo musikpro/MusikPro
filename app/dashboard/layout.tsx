@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { privatePageMetadata } from "@/lib/seo/metadata";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { isDemoRequest, requireUser } from "@/lib/auth/session";
+import { hasAppRole } from "@/lib/auth/permissions";
 import { DemoProvider } from "@/components/banani/DemoProvider";
 import { eq } from "drizzle-orm";
 import { db, userQuery } from "@/db";
@@ -11,6 +12,7 @@ import { getActiveOccasions } from "@/lib/occasions/server";
 import { getPublishedLibraryCollections } from "@/lib/library-collections/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { detectInterfaceLanguage } from "@/lib/languages/detection";
+import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
 import { headers } from "next/headers";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
@@ -29,6 +31,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const libraryCollectionOptions = await getPublishedLibraryCollections();
   const languageCatalog = await getActiveLanguageCatalog({ demo });
   const detectedInterfaceLanguage = await detectInterfaceLanguage(await headers(), languageCatalog.interfaceLanguages);
+  // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
+  const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
+  const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
   const balance = demo
     ? 0
     : Number(
@@ -43,6 +48,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <DemoProvider
       mode={demo ? "demo" : "real"}
       initialBalance={balance}
+      paymentBypassEnabled={paymentBypassEnabled}
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
       initialLibraryCollections={libraryCollectionOptions}

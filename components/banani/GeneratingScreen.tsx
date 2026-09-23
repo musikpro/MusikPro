@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 import { translate as t } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
@@ -7,8 +8,18 @@ import Icon from "./Icon";
 export const displayName = "Écran de génération musicale";
 export const screenSize = "mobile";
 
+const AUTO_ADVANCE_MS = 1600;
+
 export default function GeneratingScreen() {
   const demo = useDemo();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => demo.go("/dashboard/payment-preview/generating"), AUTO_ADVANCE_MS);
+    return () => window.clearTimeout(timer);
+    // Runs once: restarting the timer on every demo context change would delay the auto-advance.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="bg-surface flex flex-col" style={{ minHeight: 700 }}>
       {/* Top */}
@@ -67,7 +78,7 @@ export default function GeneratingScreen() {
         <button
           type="button"
           data-demo-ready
-          onClick={() => demo.generateSong()}
+          onClick={() => demo.go("/dashboard/payment-preview/generating")}
           className="payment-confirmed-generate"
         >
           <Icon i="music-2" size={17} /> {t("Générer ma chanson")}

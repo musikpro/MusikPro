@@ -104,7 +104,7 @@ export default function StepAdditionalParams() {
               name="detail"
               label="Souvenir spécial avec cette personne"
               multiline
-              rows={3}
+              rows={2}
               maxLength={3000}
               ariaInvalid={Boolean(detailError)}
               describedBy={detailError ? "detail-special-error" : undefined}

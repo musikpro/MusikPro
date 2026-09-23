@@ -92,6 +92,27 @@
       "when": 1790120000000,
       "tag": "0012_chariow_only_gateway",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1790143694786,
+      "tag": "0013_payment_bypass_settings",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1790200000000,
+      "tag": "0014_musicful_audio_provider",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1790210000000,
+      "tag": "0015_music_generation_song_groups",
+      "breakpoints": true
     }
   ]
 }

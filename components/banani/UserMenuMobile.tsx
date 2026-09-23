@@ -13,6 +13,7 @@ import Icon from "./Icon";
 
 const menuItems = [
   { icon: "user", label: t("Mon Profil"), sub: t("Gérer mes informations") },
+  { icon: "file-text", label: t("Mes paroles"), sub: t("Paroles de vos chansons") },
   { icon: "heart", label: t("Mes Favoris"), sub: t("Chansons aimées") },
   {
     icon: "download",

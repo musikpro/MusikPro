@@ -9,6 +9,7 @@ import CreationTopNav from "./CreationTopNav";
 import MusikSelect from "./MusikSelect";
 import { DEMO_PHONE_RULES, demoPaymentSchema, type DemoPhoneCountry } from "@/lib/validation/musikpro-demo";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 
 export const displayName = "Vos informations";
 export const screenSize = "mobile";
@@ -47,7 +48,9 @@ export default function PaymentScreen() {
     });
   };
 
-  const continueToPacks = () => {
+  const hasEnoughCredits = demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION;
+
+  const handleContinue = () => {
     const parsed = demoPaymentSchema.safeParse({
       name: demo.fields["payment.name"],
       email: demo.fields["payment.email"],
@@ -66,6 +69,10 @@ export default function PaymentScreen() {
       return;
     }
     setFieldErrors({});
+    if (hasEnoughCredits) {
+      demo.go("/dashboard/payment-preview/generating");
+      return;
+    }
     demo.go("/dashboard/create/pack");
   };
 
@@ -204,9 +211,18 @@ export default function PaymentScreen() {
       </div>
 
       <div className="creation-mobile-cta checkout-information-cta">
-        <button type="button" data-demo-ready="true" onClick={continueToPacks}>
-          {t("Continuer vers les crédits")}
-          <Icon i="arrow-right" size={19} />
+        <button type="button" data-demo-ready="true" onClick={handleContinue}>
+          {hasEnoughCredits ? (
+            <>
+              {t("Générer ma chanson")}
+              <Icon i="music-2" size={19} />
+            </>
+          ) : (
+            <>
+              {t("Continuer vers les crédits")}
+              <Icon i="arrow-right" size={19} />
+            </>
+          )}
         </button>
       </div>
     </div>

@@ -9,7 +9,7 @@ import { translate as t } from "@/lib/i18n/translate";
 
 export default function WorkspaceBalanceCard() {
   const demo = useDemo();
-  const canGenerate = demo.balance >= CREDITS_PER_GENERATION;
+  const canGenerate = demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION;
 
   return (
     <section className="workspace-context-card workspace-credit-card">
@@ -28,9 +28,11 @@ export default function WorkspaceBalanceCard() {
       </div>
       <p className="workspace-credit-demo">
         <Icon i={canGenerate ? "check" : "info"} size={14} />
-        {canGenerate
-          ? `${getGenerationCount(demo.balance)} génération${getGenerationCount(demo.balance) > 1 ? "s" : ""} disponible${getGenerationCount(demo.balance) > 1 ? "s" : ""}`
-          : t("Ajoutez des crédits pour lancer une génération")}
+        {demo.paymentBypassEnabled
+          ? t("Mode test — génération gratuite activée")
+          : canGenerate
+            ? `${getGenerationCount(demo.balance)} génération${getGenerationCount(demo.balance) > 1 ? "s" : ""} disponible${getGenerationCount(demo.balance) > 1 ? "s" : ""}`
+            : t("Ajoutez des crédits pour lancer une génération")}
       </p>
       <Link href={demo.href("/dashboard/credits")} className="workspace-primary-link">
         {t("Voir les crédits")}

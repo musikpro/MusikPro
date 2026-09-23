@@ -1,0 +1,80 @@
+CREATE TABLE "audio_provider_configs" (
+	"id" text PRIMARY KEY NOT NULL,
+	"provider" text DEFAULT 'musicful' NOT NULL,
+	"enabled" boolean DEFAULT false NOT NULL,
+	"api_key_ciphertext" text,
+	"api_key_iv" text,
+	"api_key_auth_tag" text,
+	"api_key_last4" text,
+	"api_base_url" text DEFAULT 'https://api.musicful.ai' NOT NULL,
+	"default_model" text DEFAULT 'MFV3.0' NOT NULL,
+	"default_instrumental" boolean DEFAULT false NOT NULL,
+	"default_gender" text,
+	"request_timeout_ms" integer DEFAULT 60000 NOT NULL,
+	"polling_interval_ms" integer DEFAULT 5000 NOT NULL,
+	"max_polling_minutes" integer DEFAULT 10 NOT NULL,
+	"max_retries" integer DEFAULT 2 NOT NULL,
+	"allow_text_to_music" boolean DEFAULT true NOT NULL,
+	"allow_lyrics_to_music" boolean DEFAULT true NOT NULL,
+	"allow_instrumental" boolean DEFAULT true NOT NULL,
+	"allow_lyrics_generator" boolean DEFAULT true NOT NULL,
+	"allow_vibe" boolean DEFAULT true NOT NULL,
+	"allow_wav_conversion" boolean DEFAULT true NOT NULL,
+	"allow_mp4_conversion" boolean DEFAULT true NOT NULL,
+	"max_generations_per_user_per_day" integer DEFAULT 5 NOT NULL,
+	"max_generations_per_user_per_hour" integer DEFAULT 2 NOT NULL,
+	"max_concurrent_jobs" integer DEFAULT 2 NOT NULL,
+	"last_connection_status" text,
+	"last_connection_error" text,
+	"last_tested_at" timestamp,
+	"provider_key_status" integer,
+	"provider_credits" text,
+	"provider_email" text,
+	"provider_member_id" text,
+	"provider_key_name" text,
+	"provider_key_created_at" text,
+	"provider_last_used_at" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "audio_provider_configs_provider_unique" UNIQUE("provider")
+);
+--> statement-breakpoint
+CREATE TABLE "music_generation_jobs" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text,
+	"provider" text DEFAULT 'musicful' NOT NULL,
+	"provider_task_id" text,
+	"provider_song_id" text,
+	"action" text DEFAULT 'auto' NOT NULL,
+	"model" text NOT NULL,
+	"prompt" text,
+	"lyrics" text,
+	"style" text,
+	"title" text,
+	"instrumental" boolean DEFAULT false NOT NULL,
+	"gender" text,
+	"status" text DEFAULT 'queued' NOT NULL,
+	"provider_status" integer,
+	"duration_seconds" integer,
+	"audio_url" text,
+	"cover_url" text,
+	"wav_url" text,
+	"mp4_url" text,
+	"failure_code" integer,
+	"failure_reason" text,
+	"request_payload" jsonb,
+	"response_payload" jsonb,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"started_at" timestamp,
+	"completed_at" timestamp,
+	"failed_at" timestamp,
+	"updated_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "music_generation_jobs" ADD CONSTRAINT "music_generation_jobs_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;
+--> statement-breakpoint
+CREATE INDEX "music_generation_jobs_user_created_idx" ON "music_generation_jobs" USING btree ("user_id","created_at");
+--> statement-breakpoint
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE "audio_provider_configs" TO musikpro_service;
+--> statement-breakpoint
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE "music_generation_jobs" TO musikpro_service;

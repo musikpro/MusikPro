@@ -5,6 +5,8 @@ export const demoGeneratedSongs = [
     occasion: "Anniversaire",
     style: "Afrobeat",
     date: "21 juillet 2025",
+    lyrics:
+      "Pour toi Mariam, ce jour est béni\nTon sourire éclaire toute la famille réunie\nQue cette année t'apporte joie et douceur\nPour toi Mariam, on chante de tout cœur\n\nLes bougies s'allument, les rires résonnent\nSous le ciel d'Afrique, la joie couronne\nTon anniversaire, on le fête ensemble\nPour toi Mariam, que le bonheur te ressemble",
     versions: [
       { label: "Version 1", duration: "1m 32s", plays: 14, liked: true },
       { label: "Version 2", duration: "1m 45s", plays: 8, liked: false },
@@ -16,6 +18,8 @@ export const demoGeneratedSongs = [
     occasion: "Mariage",
     style: "Amapiano",
     date: "20 juillet 2025",
+    lyrics:
+      "Aujourd'hui commence notre histoire\nDeux cœurs unis, une seule mémoire\nDevant nos proches, devant le ciel\nNotre amour devient éternel\n\nAu rythme doux de l'Amapiano\nOn danse la vie main dans la main\nMon mariage, le plus beau des matins\nPour toujours, jusqu'à demain",
     versions: [
       { label: "Version 1", duration: "1m 48s", plays: 22, liked: true },
       { label: "Version 2", duration: "1m 55s", plays: 5, liked: false },
@@ -27,6 +31,8 @@ export const demoGeneratedSongs = [
     occasion: "Hommage",
     style: "Gospel",
     date: "19 juillet 2025",
+    lyrics:
+      "Gloire à Dieu dans les hauteurs\nMerci Seigneur pour tes faveurs\nTa grâce nous accompagne chaque jour\nGloire à Dieu, à Lui tout amour\n\nNos voix s'élèvent en louange\nTon nom résonne comme un ange\nGloire à Dieu, source de notre joie\nNous chantons ta gloire ici, avec foi",
     versions: [
       { label: "Version 1", duration: "2m 04s", plays: 31, liked: true },
       { label: "Version 2", duration: "1m 58s", plays: 18, liked: true },

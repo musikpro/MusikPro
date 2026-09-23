@@ -13,6 +13,7 @@ type AdminShellProps = {
     name: string;
     email: string;
   };
+  paymentBypassEnabled?: boolean;
 };
 
 type NavItem = {
@@ -63,6 +64,10 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/integrations/google", icon: "search", label: "Google" },
       { href: "/admin/production-doctor", icon: "activity", label: "État production" },
     ],
+  },
+  {
+    title: "Paramètres",
+    items: [{ href: "/admin/settings", icon: "settings", label: "Paramètres généraux" }],
   },
 ];
 
@@ -130,6 +135,15 @@ function Brand() {
   );
 }
 
+function BypassNotice() {
+  return (
+    <Link href="/admin/settings" className="admin-bypass-notice">
+      <Icon i="flask-conical" size={15} />
+      <span>Mode test actif — générations gratuites</span>
+    </Link>
+  );
+}
+
 function Account({ user }: { user: AdminShellProps["user"] }) {
   const initials = getNameInitials(user.name);
   return (
@@ -146,7 +160,7 @@ function Account({ user }: { user: AdminShellProps["user"] }) {
   );
 }
 
-export default function AdminShell({ children, user }: AdminShellProps) {
+export default function AdminShell({ children, user, paymentBypassEnabled = false }: AdminShellProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -202,8 +216,19 @@ export default function AdminShell({ children, user }: AdminShellProps) {
     <div className="admin-app" suppressHydrationWarning>
       <aside ref={sidebar} className="admin-sidebar">
         <Brand />
+        {paymentBypassEnabled ? <BypassNotice /> : null}
         <AdminNav pathname={pathname} />
         <Account user={user} />
+        <button
+          type="button"
+          className="admin-logout-action"
+          aria-label="Se déconnecter du compte propriétaire"
+          disabled={signingOut}
+          onClick={() => void signOut()}
+        >
+          <Icon i="log-out" size={16} />
+          {signingOut ? "Déconnexion…" : "Se déconnecter"}
+        </button>
       </aside>
 
       <div className="admin-workspace">
@@ -238,17 +263,6 @@ export default function AdminShell({ children, user }: AdminShellProps) {
               <Icon i="arrow-up-right" size={16} />
               Espace client
             </Link>
-            <button
-              type="button"
-              className="admin-topbar-logout"
-              aria-label="Se déconnecter du compte propriétaire"
-              title="Se déconnecter"
-              disabled={signingOut}
-              onClick={() => void signOut()}
-            >
-              <Icon i="log-out" size={16} />
-              <span>{signingOut ? "Déconnexion…" : "Déconnexion"}</span>
-            </button>
             <span className="admin-topbar-avatar" aria-label={`Compte de ${user.name}`}>
               {getNameInitials(user.name)}
             </span>
@@ -298,6 +312,7 @@ export default function AdminShell({ children, user }: AdminShellProps) {
                 <Icon i="x" size={20} />
               </button>
             </div>
+            {paymentBypassEnabled ? <BypassNotice /> : null}
             <Account user={user} />
             <AdminNav pathname={pathname} onNavigate={() => setDrawerOpen(false)} />
             <Link className="admin-client-link" href="/dashboard" onClick={() => setDrawerOpen(false)}>

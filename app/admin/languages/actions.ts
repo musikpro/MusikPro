@@ -30,6 +30,13 @@ const languageSchema = z
 const idSchema = z.object({ id: z.string().trim().min(1).max(120) });
 const toggleSchema = idSchema.extend({ scope: z.enum(["interface", "lyrics"]) });
 const automaticDetectionSchema = z.object({ enabled: z.enum(["true", "false"]) });
+const defaultLanguageSchema = z.object({
+  code: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z]{2,3}(?:-[a-z]{2})?$/),
+});
 function refresh() {
   ["/admin/languages", "/dashboard", "/dashboard/create/parameters", "/demo"].forEach((path) => revalidatePath(path));
 }
@@ -102,6 +109,28 @@ export async function deleteLanguage(formData: FormData) {
   const { id } = idSchema.parse(Object.fromEntries(formData));
   await getServiceDb().delete(languages).where(eq(languages.id, id));
   await writeAuditLog({ action: "language.deleted", actorId: session.user.id, targetType: "language", targetId: id });
+  refresh();
+}
+
+export async function setDefaultLanguage(formData: FormData) {
+  const session = await requireAdmin();
+  const { code } = defaultLanguageSchema.parse(Object.fromEntries(formData));
+  const [language] = await getServiceDb().select().from(languages).where(eq(languages.code, code)).limit(1);
+  if (!language) return;
+  await getServiceDb()
+    .insert(localizationSettings)
+    .values({ id: "global", defaultLanguageCode: code })
+    .onConflictDoUpdate({
+      target: localizationSettings.id,
+      set: { defaultLanguageCode: code, updatedAt: new Date() },
+    });
+  await writeAuditLog({
+    action: "localization.default_language.changed",
+    actorId: session.user.id,
+    targetType: "localization_settings",
+    targetId: "global",
+    metadata: { code },
+  });
   refresh();
 }
 

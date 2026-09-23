@@ -5,14 +5,34 @@ import { useDemo } from "./DemoProvider";
 export const displayName = "Lecteur de chanson";
 export const screenSize = "mobile";
 
+import { useEffect, useRef, useState } from "react";
 import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import Image from "./Image";
 
+function formatTime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+  const minutes = Math.floor(seconds / 60);
+  const remaining = Math.floor(seconds % 60);
+  return `${minutes}:${String(remaining).padStart(2, "0")}`;
+}
+
 export default function SongPlayerScreen() {
   const demo = useDemo();
   const currentSong = demo.currentSong;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [progress, setProgress] = useState({ current: 0, duration: 0 });
+  const isReal = !demo.isDemo;
+  const isPending = isReal && currentSong?.status && currentSong.status !== "completed";
+  const audioUrl = isReal ? currentSong?.audioUrl : null;
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !audioUrl) return;
+    if (demo.playing) audio.play().catch(() => demo.setPlaying(false));
+    else audio.pause();
+  }, [demo.playing, audioUrl]);
 
   if (!currentSong) {
     return (
@@ -86,16 +106,37 @@ export default function SongPlayerScreen() {
           </button>
         </div>
 
-        {/* Progress Bar */}
-        <div className="px-4 pb-4">
-          <div className="bg-border rounded-full h-1 mb-2">
-            <div className="bg-primary h-1 rounded-full" style={{ width: "45%" }}></div>
+        {audioUrl ? (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            onTimeUpdate={(e) => setProgress((p) => ({ ...p, current: e.currentTarget.currentTime }))}
+            onLoadedMetadata={(e) => setProgress((p) => ({ ...p, duration: e.currentTarget.duration }))}
+            onEnded={() => demo.setPlaying(false)}
+            className="sr-only"
+          />
+        ) : null}
+
+        {isPending ? (
+          <div className="px-4 pb-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Icon i="loader-circle" size={16} className="animate-spin text-primary" />
+            {currentSong.status === "failed" ? "La génération de cette version a échoué." : "Génération en cours…"}
           </div>
-          <div className="flex justify-between text-xs text-muted-foreground">
-            <span>1:41</span>
-            <span>{currentSong.duration}</span>
+        ) : (
+          /* Progress Bar */
+          <div className="px-4 pb-4">
+            <div className="bg-border rounded-full h-1 mb-2">
+              <div
+                className="bg-primary h-1 rounded-full"
+                style={{ width: audioUrl && progress.duration ? `${Math.min(100, (progress.current / progress.duration) * 100)}%` : "45%" }}
+              />
+            </div>
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>{audioUrl ? formatTime(progress.current) : "1:41"}</span>
+              <span>{currentSong.duration}</span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Player Controls */}
         <div className="px-4 pb-8 flex items-center justify-center gap-8">
@@ -111,9 +152,10 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
+            disabled={Boolean(isPending)}
             onClick={() => demo.setPlaying(!demo.playing)}
-            aria-label={demo.playing ? "Pause simulée" : "Lecture simulée"}
-            className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg"
+            aria-label={demo.playing ? "Mettre en pause" : "Lire"}
+            className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
             style={{ boxShadow: "0 6px 18px rgba(242,101,34,0.35)" }}
           >
             <Icon i={demo.playing ? "pause" : "play"} size={24} />

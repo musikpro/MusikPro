@@ -5,6 +5,7 @@ const destinations: Record<string, string> = {
   Téléchargements: "/dashboard/songs/overview",
   Créer: "/dashboard/create",
   "Mes chansons": "/dashboard/songs",
+  "Mes paroles": "/dashboard/lyrics",
   "Mon Profil": "/dashboard/profile",
   Profil: "/dashboard/profile",
   Favoris: "/dashboard/favorites",

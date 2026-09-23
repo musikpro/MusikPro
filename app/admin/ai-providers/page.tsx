@@ -1,15 +1,21 @@
 import { eq } from "drizzle-orm";
 import AdminCatalogPage from "@/components/admin/AdminCatalogPage";
 import { getServiceDb } from "@/db";
-import { aiProviderConfigs } from "@/db/schema";
+import { aiProviderConfigs, audioProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 
 export default async function AdminAIProvidersPage() {
   await requireAdmin();
-  const [lyricsProvider] = await getServiceDb()
+  const database = getServiceDb();
+  const [lyricsProvider] = await database
     .select({ enabled: aiProviderConfigs.enabled, model: aiProviderConfigs.defaultModel, provider: aiProviderConfigs.provider })
     .from(aiProviderConfigs)
     .where(eq(aiProviderConfigs.isDefaultForLyrics, true))
+    .limit(1);
+  const [audioProvider] = await database
+    .select({ enabled: audioProviderConfigs.enabled, model: audioProviderConfigs.defaultModel, apiKeyLast4: audioProviderConfigs.apiKeyLast4 })
+    .from(audioProviderConfigs)
+    .where(eq(audioProviderConfigs.provider, "musicful"))
     .limit(1);
 
   return (
@@ -33,8 +39,8 @@ export default async function AdminAIProvidersPage() {
           id: "audio",
           title: "Génération audio",
           subtitle: "Transformation des paroles en chansons et versions audio",
-          meta: "Fournisseur audio à choisir",
-          status: "inactive",
+          meta: audioProvider?.apiKeyLast4 ? `Musicful · ${audioProvider.model}` : "Musicful à configurer",
+          status: audioProvider?.enabled && audioProvider.apiKeyLast4 ? "active" : "inactive",
           icon: "audio-waveform",
           href: "/admin/ai-providers/audio",
         },

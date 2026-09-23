@@ -4553,14 +4553,13 @@ span.musik-user-avatar {
   width: 100%;
   min-width: 100%;
   max-width: 100%;
-  min-height: 140px;
+  min-height: 84px;
   padding-right: 52px;
   resize: vertical;
 }
 
 .additional-detail-shell {
   width: 100%;
-  max-width: none;
   box-sizing: border-box;
 }
 

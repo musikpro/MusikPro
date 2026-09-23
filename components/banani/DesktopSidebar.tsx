@@ -9,10 +9,11 @@ import { translate as t } from "@/lib/i18n/translate";
 const groups = [
   [
     ["home", "Accueil", ""],
-    ["compass", "Découvrir", "/discover"],
     ["plus-circle", "Créer", "/create"],
     ["music", "Mes chansons", "/songs"],
+    ["file-text", "Mes paroles", "/lyrics"],
     ["heart", "Favoris", "/favorites"],
+    ["compass", "Découvrir", "/discover"],
   ],
   [
     ["coins", "Crédits", "/credits"],

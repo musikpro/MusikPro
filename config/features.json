@@ -67,6 +67,39 @@
       "dependsOn": ["database", "auth"],
       "disableBehavior": "paymentsEnabled=false + providers=[]; garder le code inerte si aucun paiement n’est requis."
     },
+    "payment-bypass-test-mode": {
+      "description": "Bascule globale, réservée aux comptes propriétaires (rôle admin), permettant de générer sans crédits ni passerelle active pour tester le parcours avant de régler les paiements.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0013_payment_bypass_settings.sql",
+        "lib/settings/payment-bypass.ts",
+        "lib/auth/permissions.ts",
+        "app/admin/settings/actions.ts",
+        "app/admin/settings/page.tsx",
+        "app/admin/settings/loading.tsx",
+        "app/admin/settings/PaymentBypassPanel.tsx",
+        "components/admin/AdminConfirmSubmit.tsx",
+        "components/admin/AdminShell.tsx",
+        "app/admin/layout.tsx",
+        "app/dashboard/layout.tsx",
+        "components/banani/DemoProvider.tsx",
+        "components/banani/PaymentScreen.tsx",
+        "components/banani/WorkspaceBalanceCard.tsx"
+      ],
+      "routes": [],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "auth", "credit-catalog"],
+      "disableBehavior": "Désactiver le mode test depuis /admin/settings (ligne payment_bypass_settings.enabled=false); le parcours de génération redemande alors des crédits/paiement normalement.",
+      "notes": [
+        "Réservé au rôle admin: app/dashboard/layout.tsx ne lit le flag que pour un compte hasAppRole(role, \"admin\"); un compte client reste inchangé même si le flag global est actif.",
+        "Aucune bannière n’est affichée dans le tableau de bord client, actif ou non. Côté propriétaire, une notice discrète apparaît dans la barre latérale admin (desktop et tiroir mobile) tant que le mode est actif, en plus de l’état visible sur /admin/settings.",
+        "Nécessite une confirmation explicite dans l’admin avant activation; journalisé via writeAuditLog (payment.bypass.enabled/disabled).",
+        "N’affecte jamais le mode démo public (/demo), qui reste gratuit par conception indépendamment de ce flag.",
+        "Aucun crédit réel n’est débité tant que le mode est actif; le solde stocké en base n’est pas modifié."
+      ]
+    },
     "credit-catalog": {
       "description": "Catalogue d’offres de crédits partagé entre l’administration, les comptes clients réels et la démonstration.",
       "optional": false,
@@ -532,7 +565,6 @@
         "app/admin/ai-providers/lyrics/page.tsx",
         "app/admin/ai-providers/lyrics/openai/page.tsx",
         "app/admin/ai-providers/lyrics/anthropic/page.tsx",
-        "app/admin/ai-providers/audio/page.tsx",
         "app/admin/ai-providers/pronunciation/page.tsx",
         "app/admin/ai-providers/moderation/page.tsx",
         "app/admin/ai-providers/actions.ts",
@@ -549,6 +581,72 @@
         "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
         "OPENAI_API_KEY et ANTHROPIC_API_KEY peuvent servir de clés serveur de secours si aucune clé chiffrée n’est enregistrée.",
         "Un seul fournisseur est sélectionné pour les paroles; aucun fallback silencieux n’est effectué."
+      ]
+    },
+    "musicful-audio-generation": {
+      "description": "Fournisseur audio Musicful administrable et chiffré : génération de chansons (mode auto), suivi asynchrone des tâches, conversion WAV/MP4.",
+      "optional": true,
+      "env": ["APP_SECRETS_ENCRYPTION_KEY", "MUSICFUL_API_KEY"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0014_musicful_audio_provider.sql",
+        "lib/ai/musicful.ts",
+        "lib/ai/music-jobs.ts",
+        "lib/ai/errors.ts",
+        "lib/validation/ai.ts",
+        "app/admin/ai-providers/page.tsx",
+        "app/admin/ai-providers/audio/page.tsx",
+        "app/admin/ai-providers/actions.ts",
+        "components/admin/AdminMusicfulProviderForm.tsx",
+        "app/api/music/generate/route.ts",
+        "app/api/music/jobs/[id]/route.ts",
+        "app/api/music/jobs/[id]/wav/route.ts",
+        "app/api/music/jobs/[id]/mp4/route.ts"
+      ],
+      "routes": ["/api/music/generate", "/api/music/jobs/[id]", "/api/music/jobs/[id]/wav", "/api/music/jobs/[id]/mp4"],
+      "dependsOn": ["database", "auth", "api-client"],
+      "removalComplexity": "medium",
+      "disableBehavior": "Désactiver le fournisseur dans l’administration ; les routes /api/music/* renvoient alors 503 MUSICFUL_NOT_CONFIGURED sans affecter le reste du SaaS.",
+      "notes": [
+        "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
+        "MUSICFUL_API_KEY peut servir de clé serveur de secours si aucune clé chiffrée n’est enregistrée.",
+        "Seul le mode « auto » de l’API Musicful est implémenté ; les autres modes (custom/extend/concat/upload/artist) ne sont pas exposés tant que leurs schémas ne sont pas confirmés dans la documentation officielle.",
+        "Les statuts numériques de tâche renvoyés par Musicful ne sont pas documentés publiquement : l’état interne (completed/failed/processing) est déduit des champs documentés audio_url/fail_code plutôt que du code numérique.",
+        "Le parcours client réel (feature real-song-generation-journey) construit des chansons à deux versions au-dessus de ces jobs bas niveau via lib/ai/songs.ts."
+      ]
+    },
+    "real-song-generation-journey": {
+      "description": "Parcours client réel « Générer ma chanson » : soumission Musicful (2 versions), déduction/remboursement de crédits atomique, page « Mes chansons » et lecteur alimentés par de vraies données au lieu des données de démonstration factices.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0015_music_generation_song_groups.sql",
+        "lib/ai/songs.ts",
+        "lib/ai/music-jobs.ts",
+        "lib/credits/service.ts",
+        "lib/validation/ai.ts",
+        "lib/demo/song-types.ts",
+        "lib/demo/workspace-defaults.ts",
+        "app/api/songs/route.ts",
+        "app/api/songs/generate/route.ts",
+        "app/api/songs/[groupId]/route.ts",
+        "components/banani/DemoProvider.tsx",
+        "components/banani/StepGeneratingSong.tsx",
+        "components/banani/PaymentScreen.tsx",
+        "components/banani/MySongsGeneratedScreen.tsx",
+        "components/banani/SongPlayerScreen.tsx",
+        "components/banani/MyLyricsScreen.tsx"
+      ],
+      "routes": ["/api/songs", "/api/songs/generate", "/api/songs/[groupId]"],
+      "dependsOn": ["database", "auth", "musicful-audio-generation"],
+      "removalComplexity": "medium",
+      "disableBehavior": "Désactiver Musicful dans l’administration ramène /api/songs/generate à une réponse 503 ; l’espace démonstration (/demo) n’est jamais affecté, il conserve son propre flux local factice.",
+      "notes": [
+        "Une génération soumet toujours 2 versions Musicful en parallèle (VERSIONS_PER_GENERATION), regroupées par song_group_id sur music_generation_jobs — pas de nouvelle table dédiée.",
+        "Les crédits sont débités atomiquement en base (UPDATE ... WHERE balance >= coût RETURNING) via lib/credits/service.ts avant l’appel Musicful, puis recrédités si aucune des deux versions ne démarre.",
+        "Le mode test propriétaire (payment-bypass-test-mode) est revérifié côté serveur dans /api/songs/generate ; il n’est jamais fait confiance au drapeau envoyé par le client.",
+        "La page « Mes chansons » et le lecteur affichent un badge « En cours de génération » et sondent /api/songs/[groupId] tant qu’une version n’est pas terminée, au lieu d’afficher une durée fictive."
       ]
     },
     "browser-voice-transcription": {

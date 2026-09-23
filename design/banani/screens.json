@@ -1,7 +1,7 @@
 {
   "project": "MusikPro",
   "source": "banani-mcp",
-  "importedAt": "2026-09-19T13:45:52.453Z",
+  "importedAt": "2026-09-23T07:18:40.717Z",
   "screens": [
     {
       "id": "QMj5OQRWpKXU/screens/ContactSupportScreen.jsx",
@@ -2497,6 +2497,38 @@
       ],
       "dataNeeds": [
         "Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"
+      ],
+      "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/new_screen2.jsx",
+      "name": "Génération en cours — Attente",
+      "route": "TBD",
+      "auth": "authenticated",
+      "purpose": "Afficher une animation pendant la création de la chanson puis annoncer une redirection automatique vers le résultat une fois prêt",
+      "states": [
+        "default"
+      ],
+      "notes": "Nouvel écran sélectionné par l'utilisateur le 23 septembre 2026, à insérer dans le flow creation-payment-preview juste après GeneratingScreen.jsx (paiement confirmé). Le produit actuel ne dispose d'aucun moteur de génération audio réel (confirmé par app/admin/generations : « Le schéma Neon ne contient pas encore de table de générations musicales »). demo.generateSong() existant est synchrone et instantané, et crée déjà 2 versions avant de rediriger vers /dashboard/songs. Durée réelle de l'animation, et légitimité d'un délai borné pour l'expérience utilisateur (vs. règle « jamais de délai artificiel » du Skeleton Loader Gate), restent À CONFIRMER avant implémentation.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Badge « Génération IA »",
+        "Anneaux animés autour d'une icône musicale centrale",
+        "Titre « Ta chanson est en création… »",
+        "Chronomètre écoulé (ex. 00:42)",
+        "Barre de progression (ex. 72%)",
+        "Encart « Le saviez-vous ? »",
+        "Liste de 3 messages d'encouragement avec état terminé / en cours / à venir",
+        "Bouton « Voir ma chanson générée » affiché en aperçu désactivé (opacity-40)",
+        "Texte « Redirection automatique dès que ta chanson est prête »"
+      ],
+      "interactions": [
+        "Redirection automatique annoncée dès que la génération est terminée ; minuterie, destination et déclencheur exacts non exposés par Banani",
+        "Bouton CTA final visible mais grisé dans le design : présenté comme un aperçu de l'état « terminé », pas un contrôle actif"
+      ],
+      "dataNeeds": [
+        "Chrono et pourcentage de progression codés en dur dans le JSX importé (00:42, 72%) ; à remplacer par un état réel ou une animation bornée non trompeuse",
+        "3 messages d'encouragement statiques ; rotation réelle dans le temps À CONFIRMER"
       ],
       "integrations": []
     }

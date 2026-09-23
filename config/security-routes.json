@@ -97,6 +97,62 @@
         "requireContentType"
       ]
     },
+    "app/api/music/generate/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "musicfulGenerateRequestSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
+    "app/api/music/jobs/[id]/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "jobIdSchema.safeParse", "rateLimit("]
+    },
+    "app/api/music/jobs/[id]/wav/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "jobIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
+    },
+    "app/api/music/jobs/[id]/mp4/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "jobIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
+    },
+    "app/api/songs/route.ts": {
+      "auth": "session",
+      "validation": "no-input",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "rateLimit("]
+    },
+    "app/api/songs/generate/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "songGenerateRequestSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
+    "app/api/songs/[groupId]/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "groupIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
+    },
     "app/api/support/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

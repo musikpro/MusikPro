@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Icon from "@/components/banani/Icon";
 import { AdminPage, AdminPageHeader, AdminSourceNotice } from "./AdminPage";
@@ -31,6 +31,7 @@ export default function AdminCatalogPage({
   items,
   action,
   sourceNote,
+  banner,
   emptyTitle = "Aucun résultat",
   emptyDescription = "Modifie la recherche ou le statut sélectionné.",
 }: {
@@ -41,6 +42,7 @@ export default function AdminCatalogPage({
   items: AdminCatalogItem[];
   action?: { href: string; label: string };
   sourceNote?: string;
+  banner?: ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
 }) {
@@ -59,6 +61,7 @@ export default function AdminCatalogPage({
   return (
     <AdminPage>
       <AdminPageHeader eyebrow={eyebrow} title={title} description={description} action={action} />
+      {banner}
       {sourceNote ? <AdminSourceNotice>{sourceNote}</AdminSourceNotice> : null}
       <section className="admin-catalog-toolbar" aria-label={`Filtres ${title}`}>
         <label className="admin-search-field">
