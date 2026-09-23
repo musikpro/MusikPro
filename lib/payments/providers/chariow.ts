@@ -1,10 +1,13 @@
-import { chariowPayloadSchema } from "@/lib/validation/payment-providers";
+import {
+  chariowPayloadSchema,
+  chariowProductsPayloadSchema,
+} from "@/lib/validation/payment-providers";
 import { timingSafeEqual } from "node:crypto";
 import {
   parsePhoneNumberFromString,
   type CountryCode,
 } from "libphonenumber-js";
-import { HttpPaymentProvider } from "../provider-base";
+import { HttpPaymentProvider, PaymentProviderHttpError } from "../provider-base";
 import type { CheckoutInput, CheckoutResult } from "../types";
 import { getChariowConfiguration } from "@/lib/payments/chariow-config";
 
@@ -156,4 +159,35 @@ export class ChariowProvider extends HttpPaymentProvider {
       payload: { ...payload, transaction: { id } },
     };
   }
+}
+
+export type ChariowProductOption = { id: string; name: string; price?: string };
+
+/** Reads the merchant's own Chariow catalog so the admin can pick a real product instead of copy-pasting an id. */
+export async function listChariowProducts(): Promise<ChariowProductOption[]> {
+  const { apiKey } = await getChariowConfiguration();
+  if (!apiKey) return [];
+  const response = await fetch(`${BASE}/products`, {
+    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    cache: "no-store",
+  });
+  if (!response.ok) throw new PaymentProviderHttpError(response.status);
+  const body = chariowProductsPayloadSchema.parse(
+    await response.json().catch(() => ({})),
+  );
+  const items = body.data ?? body.products ?? [];
+  const options: ChariowProductOption[] = [];
+  for (const item of items) {
+    const id = item.id === undefined || item.id === null ? "" : String(item.id);
+    if (!id) continue;
+    const name = String(item.name || item.title || id);
+    const priceValue = typeof item.price === "object" ? item.price?.value : item.price;
+    const priceCurrency = typeof item.price === "object" ? item.price?.currency : item.currency;
+    const price =
+      priceValue !== undefined && priceValue !== null
+        ? `${priceValue}${priceCurrency ? ` ${priceCurrency}` : ""}`
+        : undefined;
+    options.push({ id, name, price });
+  }
+  return options;
 }

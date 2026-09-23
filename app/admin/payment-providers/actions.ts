@@ -161,6 +161,7 @@ export async function saveChariowProvider(formData: FormData) {
     metadata: { enabled: parsed.enabled, priority: parsed.priority, mode: parsed.mode, apiKeyUpdated: Boolean(parsed.apiKey) },
   });
   revalidatePath("/admin/payment-providers");
+  revalidatePath("/admin/payment-providers/chariow");
 }
 
 export async function saveCountryRoute(formData: FormData) {
@@ -256,6 +257,7 @@ export async function savePlanMapping(formData: FormData) {
     },
   });
   revalidatePath("/admin/payment-providers");
+  revalidatePath("/admin/payment-providers/chariow");
 }
 
 const deleteMappingSchema = z.object({
@@ -282,4 +284,5 @@ export async function deletePlanMapping(formData: FormData) {
     metadata: { provider: parsed.provider },
   });
   revalidatePath("/admin/payment-providers");
+  revalidatePath("/admin/payment-providers/chariow");
 }

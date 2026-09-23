@@ -71,9 +71,9 @@ export default function PaymentRedirectScreen() {
     );
   }
   return (
-    <div className="bg-surface flex flex-col h-full justify-between">
+    <div className="bg-surface flex flex-col min-h-full justify-between">
       {/* Content - Centered */}
-      <div className="flex-1 flex flex-col items-center justify-center px-4 text-center space-y-6">
+      <div className="flex-1 flex flex-col items-center justify-center px-4 pt-10 pb-4 text-center space-y-6">
         {/* Loading Animation */}
         <div className="relative w-20 h-20">
           <div className="absolute inset-0 border-4 border-muted rounded-full" />

@@ -1,4 +1,5 @@
 import AdminSelect from "@/components/admin/AdminSelect";
+import AdminSecretField from "@/components/admin/AdminSecretField";
 import Icon from "@/components/banani/Icon";
 import AdminToast from "@/components/admin/AdminToast";
 import { removeAnthropicKey, removeOpenAiKey, saveAnthropicSettings, saveOpenAiSettings, testAnthropicConnection, testOpenAiConnection } from "@/app/admin/ai-providers/actions";
@@ -89,12 +90,9 @@ export default function AdminAiProviderForm({
           <FieldLabel help={`Colle ici la clé secrète créée dans ${isAnthropic ? "Claude Platform" : "OpenAI Platform"}. Le champ masque les caractères pendant la saisie. Après enregistrement, seule la fin de la clé sera affichée.`}>
             Clé API {providerName}
           </FieldLabel>
-          <input
+          <AdminSecretField
             name="apiKey"
-            type="password"
-            autoComplete="new-password"
-            minLength={20}
-            maxLength={500}
+            configured={Boolean(settings.apiKeyLast4)}
             disabled={!encryptionReady}
             placeholder={
               settings.apiKeyLast4

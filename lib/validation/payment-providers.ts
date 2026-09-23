@@ -101,6 +101,20 @@ export const chariowPayloadSchema = chariowData.extend({
   license: entity.optional(),
   affiliate: entity.optional(),
 });
+const chariowProductPrice = z
+  .union([z.number(), z.string().max(1000), z.looseObject({ value: scalar, currency: text })])
+  .optional();
+const chariowProductItem = z.looseObject({
+  id: scalar,
+  name: text,
+  title: text,
+  price: chariowProductPrice,
+  currency: text,
+});
+export const chariowProductsPayloadSchema = z.looseObject({
+  data: z.array(chariowProductItem).optional(),
+  products: z.array(chariowProductItem).optional(),
+});
 export const fedapayPayloadSchema = z.looseObject({
   id: scalar,
   name: text,
