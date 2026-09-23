@@ -1290,6 +1290,20 @@
   gap: 7px;
 }
 
+.admin-field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.admin-field-error {
+  margin: 0;
+  color: var(--admin-danger);
+  font-size: 11px;
+  font-weight: 700;
+}
+
 .admin-check-grid {
   display: grid;
   gap: 8px;
@@ -1533,6 +1547,7 @@
 }
 
 .admin-editor-field > span,
+.admin-field-label-row > span,
 .admin-choice-fieldset legend {
   color: var(--admin-muted);
   font-size: 10px;
@@ -2091,6 +2106,12 @@
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 9px;
+}
+
+.admin-btn-sm {
+  min-height: 30px;
+  padding: 6px 11px;
+  font-size: 10px;
 }
 
 .admin-plan-create {
@@ -4485,6 +4506,7 @@ body:has(.admin-app),
 }
 
 .admin-editor-field > span,
+.admin-field-label-row > span,
 .admin-choice-fieldset legend,
 .admin-provider-form > label > span,
 .admin-check-control > span {

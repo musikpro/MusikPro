@@ -1,7 +1,7 @@
 import "server-only";
 import type { AiLyricsTask } from "@/lib/validation/ai";
-import { createOpenAiClient, getLyricsProvider } from "./provider";
-import { runAnthropicLyricsTask } from "./anthropic";
+import { getLyricsProvider } from "./provider";
+import { runProviderTextTask } from "./text-generation";
 import { enforceLyricsWordLimit, LYRICS_MAX_WORDS } from "./lyrics-policy";
 import { moderateText } from "./moderation";
 import { writeAuditLog } from "@/lib/security/audit";
@@ -53,21 +53,8 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
 
   const instructions =
     `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
-  let result: { id: string; text: string; model: string };
-  if (provider.provider === "anthropic") {
-    const raw = await runAnthropicLyricsTask(provider.apiKey, provider.model, provider.maxOutputTokens, instructions, promptFor(task));
-    result = { ...raw, text: enforceLyricsWordLimit(raw.text) };
-  } else {
-    const response = await createOpenAiClient(provider.apiKey).responses.create({
-      model: provider.model,
-      instructions,
-      input: promptFor(task),
-      max_output_tokens: provider.maxOutputTokens,
-    });
-    const text = response.output_text.trim();
-    if (!text) throw new Error("AI_EMPTY_RESPONSE");
-    result = { id: response.id, text: enforceLyricsWordLimit(text), model: provider.model };
-  }
+  const raw = await runProviderTextTask(provider, instructions, promptFor(task));
+  const result = { ...raw, text: enforceLyricsWordLimit(raw.text) };
 
   const resultVerdict = await moderateText(result.text, "Paroles de chanson générées");
   if (resultVerdict.flagged) {

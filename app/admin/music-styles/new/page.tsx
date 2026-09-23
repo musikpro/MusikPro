@@ -1,4 +1,5 @@
 import AdminSelect from "@/components/admin/AdminSelect";
+import AdminMusicStyleDescriptionFields from "@/components/admin/AdminMusicStyleDescriptionFields";
 import AdminMusicStyleVisualPicker from "@/components/admin/AdminMusicStyleVisualPicker";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
@@ -25,17 +26,7 @@ export default async function AdminNewMusicStylePage() {
             <span>Position d’affichage</span>
             <input name="sortOrder" required type="number" min="0" max="999" defaultValue="100" />
           </label>
-          <label className="admin-editor-field is-wide">
-            <span>Description</span>
-            <textarea
-              name="description"
-              required
-              minLength={5}
-              maxLength={240}
-              rows={4}
-              placeholder="Décris le rythme et l’ambiance proposés au client"
-            />
-          </label>
+          <AdminMusicStyleDescriptionFields />
           <AdminMusicStyleVisualPicker />
           <div className="admin-editor-field is-wide">
             <span>État initial</span>

@@ -560,9 +560,14 @@
         "lib/ai/anthropic.ts",
         "lib/ai/pronunciation.ts",
         "lib/ai/moderation.ts",
+        "lib/ai/text-generation.ts",
+        "lib/ai/music-style-description.ts",
         "lib/validation/ai.ts",
         "app/api/ai/generate/route.ts",
         "app/api/ai/pronunciation/route.ts",
+        "app/api/admin/ai/music-style-description/route.ts",
+        "components/admin/AdminMusicStyleDescriptionFields.tsx",
+        "db/migrations/0018_music_style_ai_description.sql",
         "app/admin/ai-providers/page.tsx",
         "app/admin/ai-providers/loading.tsx",
         "app/admin/ai-providers/lyrics/page.tsx",
@@ -577,15 +582,16 @@
         "components/banani/StepRecipient.tsx",
         "components/banani/DemoProvider.tsx"
       ],
-      "routes": ["/api/ai/generate", "/api/ai/pronunciation"],
+      "routes": ["/api/ai/generate", "/api/ai/pronunciation", "/api/admin/ai/music-style-description"],
       "dependsOn": ["database", "auth", "api-client", "upstash"],
       "removalComplexity": "medium",
-      "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local. La suggestion de prononciation retombe silencieusement sur l’heuristique locale côté client si le fournisseur est indisponible.",
+      "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local. La suggestion de prononciation retombe silencieusement sur l’heuristique locale côté client si le fournisseur est indisponible. Les boutons « Générer avec l’IA » du catalogue de styles musicaux renvoient une erreur 503 explicite si le fournisseur est indisponible; les descriptions restent modifiables manuellement.",
       "notes": [
         "La clé saisie dans l’administration est chiffrée AES-256-GCM et n’est jamais renvoyée au navigateur.",
         "OPENAI_API_KEY et ANTHROPIC_API_KEY peuvent servir de clés serveur de secours si aucune clé chiffrée n’est enregistrée.",
         "Un seul fournisseur est sélectionné pour les paroles; aucun fallback silencieux n’est effectué.",
-        "Le contrôle du contenu analyse la demande utilisateur puis les paroles générées via le même fournisseur; tout contenu signalé est bloqué (HTTP 422) et consigné dans audit_logs. Si le fournisseur est indisponible, la modération est ignorée (fail-open) plutôt que de bloquer toute génération."
+        "Le contrôle du contenu analyse la demande utilisateur puis les paroles générées via le même fournisseur; tout contenu signalé est bloqué (HTTP 422) et consigné dans audit_logs. Si le fournisseur est indisponible, la modération est ignorée (fail-open) plutôt que de bloquer toute génération.",
+        "Le même fournisseur (lib/ai/text-generation.ts, extrait de lib/ai/lyrics.ts) génère aussi, à la demande de l’admin, la description client et la description technique (pour l’IA génératrice de musique) de chaque style dans /admin/music-styles — réutilisées ensuite par lib/ai/style-prompt.ts."
       ]
     },
     "musicful-audio-generation": {

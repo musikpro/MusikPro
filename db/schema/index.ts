@@ -138,6 +138,8 @@ export const musicStyles = pgTable(
     name: text("name").notNull(),
     slug: text("slug").notNull().unique(),
     description: text("description").notNull(),
+    /** Description technique envoyée en priorité à l'IA génératrice de musique (Musicful) — voir lib/ai/style-prompt.ts. */
+    aiDescription: text("ai_description").notNull().default(""),
     icon: text("icon").notNull().default("music-2"),
     tone: text("tone").notNull().default("orange"),
     active: boolean("active").notNull().default(true),

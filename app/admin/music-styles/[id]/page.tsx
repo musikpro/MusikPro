@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import AdminMusicStyleDescriptionFields from "@/components/admin/AdminMusicStyleDescriptionFields";
 import AdminMusicStyleVisualPicker from "@/components/admin/AdminMusicStyleVisualPicker";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
@@ -34,10 +35,10 @@ export default async function AdminEditMusicStylePage({ params }: { params: Prom
             <span>Position d’affichage</span>
             <input name="sortOrder" required type="number" min="0" max="999" defaultValue={style.sortOrder} />
           </label>
-          <label className="admin-editor-field is-wide">
-            <span>Description</span>
-            <textarea name="description" required minLength={5} maxLength={240} rows={4} defaultValue={style.description} />
-          </label>
+          <AdminMusicStyleDescriptionFields
+            defaultClientDescription={style.description}
+            defaultAiDescription={style.aiDescription}
+          />
           <AdminMusicStyleVisualPicker defaultIcon={style.icon} defaultTone={style.tone} />
           <div className="admin-editor-field is-wide">
             <span>État</span>

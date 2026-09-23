@@ -97,6 +97,20 @@
         "requireContentType"
       ]
     },
+    "app/api/admin/ai/music-style-description/route.ts": {
+      "auth": "session-admin",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "hasAppRole",
+        "musicStyleDescriptionRequestSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
     "app/api/ai/pronunciation/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

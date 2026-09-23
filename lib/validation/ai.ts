@@ -122,6 +122,16 @@ export const aiLyricsTaskSchema = z.discriminatedUnion("task", [
 
 export type AiLyricsTask = z.infer<typeof aiLyricsTaskSchema>;
 
+export const musicStyleDescriptionKindSchema = z.enum(["client", "ai"]);
+
+export const musicStyleDescriptionRequestSchema = z.object({
+  styleName: z.string().trim().min(2).max(60),
+  kind: musicStyleDescriptionKindSchema,
+  otherDescription: z.string().trim().max(600).optional(),
+});
+
+export type MusicStyleDescriptionRequest = z.infer<typeof musicStyleDescriptionRequestSchema>;
+
 export const pronunciationRequestSchema = z.object({
   name: z.string().trim().min(1).max(120),
   language: z.string().trim().max(50).optional().default(""),

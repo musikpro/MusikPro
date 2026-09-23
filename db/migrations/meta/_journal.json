@@ -127,6 +127,13 @@
       "when": 1790230000000,
       "tag": "0017_strict_style_adherence",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1790240000000,
+      "tag": "0018_music_style_ai_description",
+      "breakpoints": true
     }
   ]
 }
