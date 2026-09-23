@@ -156,32 +156,19 @@ export default function MySongsGenerated() {
             style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.06)" }}
           >
             {/* Card Header */}
-            <div className="px-4 pt-4 pb-3 flex items-start justify-between">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <h2 className="font-headings font-bold text-base text-foreground truncate">{song.title}</h2>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span
-                    className={`text-xs font-semibold px-2 py-0.5 rounded-md ${styleColors[song.style] || "bg-muted text-muted-foreground"}`}
-                  >
-                    {song.style}
-                  </span>
-                  <span className="text-xs text-muted-foreground">{song.occasion}</span>
-                  <span className="text-xs text-muted-foreground">· {song.date}</span>
-                </div>
+            <div className="px-4 pt-4 pb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <h2 className="font-headings font-bold text-base text-foreground truncate">{song.title}</h2>
               </div>
-              <button
-                type="button"
-                data-demo-ready="true"
-                onClick={() => {
-                  if (window.confirm(`Retirer « ${song.title} » et ses versions ?`)) demo.removeSong(song.id);
-                }}
-                aria-label={`Options pour ${song.title}`}
-                className="text-muted-foreground ml-2 mt-0.5"
-              >
-                <Icon i="more-vertical" size={18} />
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-md ${styleColors[song.style] || "bg-muted text-muted-foreground"}`}
+                >
+                  {song.style}
+                </span>
+                <span className="text-xs text-muted-foreground">{song.occasion}</span>
+                <span className="text-xs text-muted-foreground">· {song.date}</span>
+              </div>
             </div>
 
             {/* Divider */}
@@ -338,8 +325,10 @@ export default function MySongsGenerated() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.removeSong(song.id)}
-                aria-label={`Retirer ${song.title}`}
+                onClick={() => {
+                  if (window.confirm(`Supprimer « ${song.title} » et ses versions ? Cette action est définitive.`)) demo.removeSong(song.id);
+                }}
+                aria-label={`Supprimer ${song.title}`}
                 className="flex items-center justify-center w-9 h-9 bg-red-50 border border-red-100 rounded-lg flex-shrink-0"
               >
                 <Icon i="trash-2" size={14} className="text-red-400" />
