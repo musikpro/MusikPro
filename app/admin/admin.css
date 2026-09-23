@@ -2059,6 +2059,27 @@
   display: block;
 }
 
+.admin-generation-failure {
+  color: #dc2626;
+}
+
+.admin-generation-play {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #e5e7eb);
+  background: var(--input, #f4f4f5);
+  color: var(--muted-foreground, #6b7280);
+}
+
+.admin-generation-play:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .admin-inline-form {
   display: grid;
   grid-template-columns: minmax(148px, 1fr) auto;
