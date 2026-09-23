@@ -90,8 +90,14 @@ export default function MusikSelect({
     if (portal && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const width = portalWidth ?? rect.width;
+      // Estimated height mirrors .musik-select-menu's own cap (max-height: 264px, ~40px rows) —
+      // a trigger near the bottom of the viewport (e.g. the mobile menu's language selector)
+      // would otherwise always drop the menu below the fold, out of view.
+      const estimatedHeight = Math.min(264, options.length * 42 + 12);
+      const availableBelow = window.innerHeight - rect.bottom - 12;
+      const openAbove = availableBelow < Math.min(160, estimatedHeight) && rect.top > availableBelow;
       setPortalPosition({
-        top: rect.bottom + 7,
+        top: openAbove ? Math.max(8, rect.top - estimatedHeight - 7) : rect.bottom + 7,
         left: Math.min(window.innerWidth - width - 8, Math.max(8, rect.right - width)),
         width,
       });

@@ -71,15 +71,6 @@ export default function MobileMenuDrawer({
           </button>
         </div>
 
-        <button type="button" className="mobile-menu-profile" onClick={() => navigate("Mon Profil")}>
-          <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-12 h-12 rounded-xl" />
-          <span>
-            <strong>{demo.profile.name}</strong>
-            <small>{demo.profile.email}</small>
-          </span>
-          <Icon i="chevron-right" size={17} />
-        </button>
-
         <nav className="mobile-menu-links" aria-label="Menu principal mobile">
           {drawerItems.map((item) => (
             <button key={item.label} type="button" onClick={() => navigate(item.label)}>
@@ -96,6 +87,15 @@ export default function MobileMenuDrawer({
           <span>Langue</span>
           <QuickLanguageSelect compact />
         </div>
+
+        <button type="button" className="mobile-menu-profile" onClick={() => navigate("Mon Profil")}>
+          <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-12 h-12 rounded-xl" />
+          <span>
+            <strong>{demo.profile.name}</strong>
+            <small>{demo.profile.email}</small>
+          </span>
+          <Icon i="chevron-right" size={17} />
+        </button>
       </aside>
     </div>
   );
