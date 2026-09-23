@@ -6,9 +6,11 @@ import Icon from "@/components/banani/Icon";
 export default function AdminToast({
   message,
   tone = "success",
+  title,
 }: {
   message: string;
   tone?: "success" | "error" | "info";
+  title?: string;
 }) {
   const [visible, setVisible] = useState(true);
 
@@ -29,7 +31,7 @@ export default function AdminToast({
       </span>
       <div>
         <strong>
-          {tone === "success" ? "Connexion réussie" : tone === "error" ? "Connexion impossible" : "Information"}
+          {title ?? (tone === "success" ? "Connexion réussie" : tone === "error" ? "Connexion impossible" : "Information")}
         </strong>
         <p>{message}</p>
       </div>
