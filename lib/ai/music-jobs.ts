@@ -214,7 +214,16 @@ async function getOwnedJob(jobId: string, userId: string) {
  * flips, but that first URL is a redirect through a third-party stream host that can 403 with
  * "Invalid or expired stream URL" — the real, stable file only appears at `files.musicful.ai`
  * a bit later once their pipeline finishes copying it. Rather than trust `audio_url` being
- * non-empty, this fetches a byte range and only accepts it once it actually serves audio.
+ * non-empty, this fetches a byte range and only accepts it once it actually serves media.
+ *
+ * Musicful's stable file isn't consistently labeled: one completed task served
+ * `audio/mpeg`, another (confirmed live, same account) served the exact same finished song
+ * as `video/mp4` — an MP4 container holding only an audio track, which `<audio>` elements
+ * play fine despite the "video" MIME type. Requiring an `audio/` prefix rejected that second
+ * case forever, since the job's `fail_code` was null and Musicful never serves a different
+ * URL for a task it considers done — the job just stayed "processing" indefinitely even
+ * though the song was long finished and playable. Only an actual error page (Musicful's
+ * failure responses come back as JSON) should be treated as "not ready yet".
  */
 async function isAudioUrlPlayable(url: string): Promise<boolean> {
   const controller = new AbortController();
@@ -223,7 +232,7 @@ async function isAudioUrlPlayable(url: string): Promise<boolean> {
     const response = await fetch(url, { method: "GET", headers: { Range: "bytes=0-1023" }, signal: controller.signal });
     if (!response.ok) return false;
     const contentType = response.headers.get("content-type") || "";
-    return contentType.startsWith("audio/");
+    return contentType.startsWith("audio/") || contentType.startsWith("video/");
   } catch {
     return false;
   } finally {

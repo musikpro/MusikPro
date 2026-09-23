@@ -59,7 +59,7 @@ export default function MySongsGenerated() {
   };
 
   const downloadVersion = async (title: string, label: string, audioUrl: string) => {
-    const ok = await downloadAudioFile(audioUrl, `${title} — ${label}.mp3`);
+    const ok = await downloadAudioFile(audioUrl, `${title} — ${label}`);
     if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
   };
 

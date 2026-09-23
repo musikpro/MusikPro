@@ -226,7 +226,7 @@ export default function SongPlayerScreen() {
                 demo.notify("Action de démonstration : aucune opération réelle effectuée.");
                 return;
               }
-              const ok = await downloadAudioFile(audioUrl, `${currentSong.title}.mp3`);
+              const ok = await downloadAudioFile(audioUrl, currentSong.title);
               if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
             }}
             className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
