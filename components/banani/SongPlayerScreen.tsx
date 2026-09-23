@@ -120,6 +120,11 @@ export default function SongPlayerScreen() {
             onTimeUpdate={(e) => setProgress((p) => ({ ...p, current: e.currentTarget.currentTime }))}
             onLoadedMetadata={(e) => setProgress((p) => ({ ...p, duration: e.currentTarget.duration }))}
             onEnded={() => demo.setPlaying(false)}
+            onError={() => {
+              demo.setPlaying(false);
+              demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
+            }}
+            onStalled={() => demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")}
             className="sr-only"
           />
         ) : null}

@@ -80,7 +80,16 @@ export default function MySongsGenerated() {
     .sort((a, b) => (sortByPlays ? totalPlays(b) - totalPlays(a) : 0));
   return (
     <div className="bg-background flex flex-col font-body">
-      <audio ref={audioRef} onEnded={() => setPlayingVersion(null)} className="sr-only" />
+      <audio
+        ref={audioRef}
+        onEnded={() => setPlayingVersion(null)}
+        onError={() => {
+          setPlayingVersion(null);
+          demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
+        }}
+        onStalled={() => demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")}
+        className="sr-only"
+      />
       <MobileTopBar credits={demo.balance} />
 
       {/* Header */}

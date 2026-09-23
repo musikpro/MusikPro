@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDemo } from "./DemoProvider";
 
 import { translate as t } from "@/lib/i18n/translate";
+import { downloadAudioFile } from "@/lib/demo/audio-actions";
 
 export const displayName = "Dashboard Utilisateur Mobile";
 export const screenSize = "mobile";
@@ -74,21 +75,72 @@ export default function UserDashboardMobile() {
   const visibleTrends = demo.isDemo ? trendingSongs : [];
   const visibleTestimonials = demo.isDemo ? testimonials : [];
   const [launching, setLaunching] = useState(false);
+  const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const openCreator = () => {
     if (launching) return;
     setLaunching(true);
     window.setTimeout(() => demo.go("/dashboard/create"), 180);
   };
-  const recentSongs = demo.songs.slice(0, 2).map((song) => ({
-    title: song.title,
-    style: song.style,
-    occasion: song.occasion,
-    versions: song.versions.length,
-    plays: song.versions.reduce((total, version) => total + version.plays, 0),
-    likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
-  }));
+  const recentSongs = demo.songs.slice(0, 2).map((song) => {
+    const primaryVersion = song.versions[0];
+    return {
+      id: song.id,
+      title: song.title,
+      style: song.style,
+      occasion: song.occasion,
+      versions: song.versions.length,
+      plays: song.versions.reduce((total, version) => total + version.plays, 0),
+      likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
+      audioUrl: primaryVersion?.audioUrl ?? null,
+      versionStatus: primaryVersion?.status ?? "processing",
+    };
+  });
+  const playSong = (song: (typeof recentSongs)[number]) => {
+    if (demo.isDemo) {
+      demo.openSong(song.title);
+      return;
+    }
+    if (!song.audioUrl) {
+      demo.notify("Cette chanson n’est pas encore prête à être écoutée.");
+      return;
+    }
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playingSongId === song.id) {
+      audio.pause();
+      setPlayingSongId(null);
+      return;
+    }
+    audio.src = song.audioUrl;
+    void audio.play().catch(() => demo.notify("La lecture a échoué. Réessaie dans un instant."));
+    setPlayingSongId(song.id);
+    demo.registerPlay(song.id, 0);
+  };
+  const downloadSong = async (song: (typeof recentSongs)[number]) => {
+    if (demo.isDemo) {
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      return;
+    }
+    if (!song.audioUrl) {
+      demo.notify("Cette chanson n’est pas encore prête à être téléchargée.");
+      return;
+    }
+    const ok = await downloadAudioFile(song.audioUrl, song.title);
+    if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
+  };
   return (
     <div className="bg-background flex flex-col">
+      <audio
+        ref={audioRef}
+        className="sr-only"
+        onEnded={() => setPlayingSongId(null)}
+        onError={() => {
+          setPlayingSongId(null);
+          demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
+        }}
+        onStalled={() => demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")}
+      />
       <MobileTopBar credits={demo.balance} />
 
       {/* Greeting */}
@@ -186,7 +238,15 @@ export default function UserDashboardMobile() {
             </div>
           )}
           {recentSongs.map((s) => (
-            <SongCard key={s.title} {...s} />
+            <SongCard
+              key={s.id}
+              {...s}
+              isPlaying={playingSongId === s.id}
+              isPending={!demo.isDemo && s.versionStatus !== "completed" && s.versionStatus !== "failed"}
+              isFailed={!demo.isDemo && s.versionStatus === "failed"}
+              onPlay={() => playSong(s)}
+              onDownload={() => void downloadSong(s)}
+            />
           ))}
         </div>
       </div>

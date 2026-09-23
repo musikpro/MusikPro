@@ -409,6 +409,14 @@ function useDemoState(
       // A failed background refresh must not disrupt the current screen.
     }
   };
+  useEffect(() => {
+    // Real songs otherwise only ever load once a page happens to fetch them itself (e.g. the
+    // full "Mes chansons" screen) — every other dashboard page (home, player, ...) reads
+    // `songs` from this same provider, so it must be populated once here on mount too, or it
+    // stays permanently empty for them.
+    window.queueMicrotask(() => void refreshSongs());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isDemo]);
   /** Demo-only instant fake generation, unchanged from the original scaffold. */
   const generateSong = async () => {
     const title = `Ma chanson — ${choices.occasion}`;
