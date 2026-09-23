@@ -248,26 +248,17 @@
 .admin-panel-icon,
 .admin-record-icon,
 .admin-user-initial {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  display: grid;
+  place-items: center;
   color: var(--admin-primary);
   background: var(--admin-secondary);
 }
 
-.admin-stat-icon svg,
-.admin-panel-icon svg,
-.admin-record-icon svg {
-  display: block;
-  flex-shrink: 0;
-}
-
 .admin-stat-icon {
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   margin-bottom: 16px;
-  border-radius: 14px;
+  border-radius: 13px;
 }
 
 .admin-stat-icon.is-success {
@@ -1226,7 +1217,7 @@
 }
 
 .admin-compact-metric strong,
-.admin-compact-metric span,
+.admin-compact-metric span:not(.admin-stat-icon),
 .admin-compact-metric small {
   display: block;
 }
@@ -1237,7 +1228,7 @@
   line-height: 1.05;
 }
 
-.admin-compact-metric span {
+.admin-compact-metric span:not(.admin-stat-icon) {
   margin-top: 4px;
   font-size: 10px;
   font-weight: 800;
@@ -2986,13 +2977,12 @@
 }
 
 .admin-users-metrics .admin-compact-metric .admin-stat-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
   width: 52px;
   height: 52px;
   flex: 0 0 52px;
   margin: 0;
+  place-items: center;
   border-radius: 16px;
 }
 
@@ -4433,7 +4423,7 @@ body:has(.admin-app),
   font-size: 23px;
 }
 
-.admin-compact-metric span {
+.admin-compact-metric span:not(.admin-stat-icon) {
   font-size: 12px;
 }
 
