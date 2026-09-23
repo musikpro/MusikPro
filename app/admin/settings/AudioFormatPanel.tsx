@@ -24,7 +24,7 @@ export default function AudioFormatPanel({ preferredAudioFormat }: { preferredAu
         </div>
         <span className="admin-status is-success">{FORMAT_LABELS[preferredAudioFormat] ?? preferredAudioFormat}</span>
       </div>
-      <form action={setPreferredAudioFormat} className="admin-inline-form">
+      <form action={setPreferredAudioFormat} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <AdminSelect
           name="preferredAudioFormat"
           defaultValue={preferredAudioFormat}
