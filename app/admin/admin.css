@@ -248,17 +248,26 @@
 .admin-panel-icon,
 .admin-record-icon,
 .admin-user-initial {
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   color: var(--admin-primary);
   background: var(--admin-secondary);
 }
 
+.admin-stat-icon svg,
+.admin-panel-icon svg,
+.admin-record-icon svg {
+  display: block;
+  flex-shrink: 0;
+}
+
 .admin-stat-icon {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   margin-bottom: 16px;
-  border-radius: 13px;
+  border-radius: 14px;
 }
 
 .admin-stat-icon.is-success {
@@ -2977,12 +2986,13 @@
 }
 
 .admin-users-metrics .admin-compact-metric .admin-stat-icon {
-  display: grid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 52px;
   height: 52px;
   flex: 0 0 52px;
   margin: 0;
-  place-items: center;
   border-radius: 16px;
 }
 

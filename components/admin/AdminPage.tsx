@@ -62,7 +62,7 @@ export function AdminMetric({
   return (
     <article className="admin-compact-metric">
       <span className={`admin-stat-icon is-${tone}`}>
-        <Icon i={icon} size={18} />
+        <Icon i={icon} size={20} />
       </span>
       <div>
         <strong>{value}</strong>
