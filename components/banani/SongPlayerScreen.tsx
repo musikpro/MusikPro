@@ -1,5 +1,6 @@
 "use client";
 import { translate as t } from "@/lib/i18n/translate";
+import { downloadAudioFile, shareAudioFile } from "@/lib/demo/audio-actions";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Lecteur de chanson";
@@ -153,7 +154,10 @@ export default function SongPlayerScreen() {
             type="button"
             data-demo-ready="true"
             disabled={Boolean(isPending)}
-            onClick={() => demo.setPlaying(!demo.playing)}
+            onClick={() => {
+              if (isReal && !demo.playing && audioUrl) demo.registerPlay(currentSong.id, demo.selectedVersion);
+              demo.setPlaying(!demo.playing);
+            }}
             aria-label={demo.playing ? "Mettre en pause" : "Lire"}
             className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
             style={{ boxShadow: "0 6px 18px rgba(242,101,34,0.35)" }}
@@ -189,8 +193,17 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
-            className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2"
+            disabled={Boolean(isPending)}
+            onClick={async () => {
+              if (!audioUrl) {
+                demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                return;
+              }
+              const result = await shareAudioFile(audioUrl, currentSong.title);
+              if (result === "copied") demo.notify("Lien de la chanson copié dans le presse-papiers.");
+              if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
+            }}
+            className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Icon i="share-2" size={16} />
             {t("Partager")}
@@ -198,8 +211,16 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
-            className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2"
+            disabled={Boolean(isPending)}
+            onClick={async () => {
+              if (!audioUrl) {
+                demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                return;
+              }
+              const ok = await downloadAudioFile(audioUrl, `${currentSong.title}.mp3`);
+              if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
+            }}
+            className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <Icon i="download" size={16} />
             {t("Télécharger")}

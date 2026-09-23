@@ -23,6 +23,7 @@ type SongGroupResponse = {
   status: "processing" | "completed" | "failed";
   createdAt: string;
   versions: Array<{
+    jobId: string;
     label: string;
     status: WorkspaceSong["versions"][number]["status"];
     duration: string;
@@ -43,6 +44,7 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
     lyrics: song.lyrics || "",
     status: song.status,
     versions: song.versions.map((v) => ({
+      jobId: v.jobId,
       label: v.label,
       duration: v.duration,
       plays: v.plays,
@@ -338,6 +340,27 @@ function useDemoState(
   const toggleFavorite = (title: string) =>
     setFavorites((prev) => (prev.includes(title) ? prev.filter((v) => v !== title) : [...prev, title]));
   const toggleVersion = (title: string, index: number) => {
+    if (!isDemo) {
+      const song = songs.find((s) => s.title === title);
+      const version = song?.versions[index];
+      if (!song || !version?.jobId) return;
+      const nextLiked = !version.liked;
+      const jobId = version.jobId;
+      setSongs((prev) =>
+        prev.map((s) => (s.id !== song.id ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: nextLiked } : v)) })),
+      );
+      void apiFetch(`/api/songs/${song.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggle-like", jobId, liked: nextLiked }),
+      }).catch(() => {
+        setSongs((prev) =>
+          prev.map((s) => (s.id !== song.id ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: !nextLiked } : v)) })),
+        );
+        notify("Impossible d’enregistrer ce favori pour le moment.");
+      });
+      return;
+    }
     const key = `${title}|${index}`;
     const next = versionFavorites.includes(key)
       ? versionFavorites.filter((v) => v !== key)
@@ -350,6 +373,22 @@ function useDemoState(
           : [...prev, title]
         : prev.filter((v) => v !== title),
     );
+  };
+  const registerPlay = (songId: string | number, index: number) => {
+    if (isDemo) return;
+    const song = songs.find((s) => s.id === songId);
+    const jobId = song?.versions[index]?.jobId;
+    if (!jobId) return;
+    setSongs((prev) =>
+      prev.map((s) => (s.id !== songId ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, plays: v.plays + 1 } : v)) })),
+    );
+    void apiFetch(`/api/songs/${songId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "increment-play", jobId }),
+    }).catch(() => {
+      // A missed play-count tick is not worth surfacing to the listener.
+    });
   };
   const openSong = (title: string, version = 0) => {
     setSelectedTitle(title);
@@ -506,6 +545,7 @@ function useDemoState(
     versionFavorites,
     toggleFavorite,
     toggleVersion,
+    registerPlay,
     readNotifications,
     setReadNotifications,
     toggles,

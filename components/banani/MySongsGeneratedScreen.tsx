@@ -1,6 +1,7 @@
 "use client";
 import { translate as t } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
+import { downloadAudioFile, shareAudioFile } from "@/lib/demo/audio-actions";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
 
@@ -42,7 +43,7 @@ export default function MySongsGenerated() {
     return () => window.clearInterval(timer);
   }, [demo, demo.isDemo, hasPendingSong]);
 
-  const playVersion = (versionKey: string, audioUrl: string | null | undefined) => {
+  const playVersion = (versionKey: string, audioUrl: string | null | undefined, songId: string | number, versionIndex: number) => {
     const audio = audioRef.current;
     if (!audio || !audioUrl) return;
     if (playingVersion === versionKey) {
@@ -53,6 +54,18 @@ export default function MySongsGenerated() {
     audio.src = audioUrl;
     void audio.play();
     setPlayingVersion(versionKey);
+    demo.registerPlay(songId, versionIndex);
+  };
+
+  const downloadVersion = async (title: string, label: string, audioUrl: string) => {
+    const ok = await downloadAudioFile(audioUrl, `${title} — ${label}.mp3`);
+    if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
+  };
+
+  const shareVersion = async (title: string, label: string, audioUrl: string) => {
+    const result = await shareAudioFile(audioUrl, `${title} — ${label}`);
+    if (result === "copied") demo.notify("Lien de la chanson copié dans le presse-papiers.");
+    if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
   };
 
   const generatedSongs = demo.songs.filter(
@@ -185,7 +198,9 @@ export default function MySongsGenerated() {
                       data-demo-ready="true"
                       disabled={isPending || isFailed}
                       onClick={() =>
-                        demo.isDemo ? setPlayingVersion(isPlaying ? null : versionKey) : playVersion(versionKey, v.audioUrl)
+                        demo.isDemo
+                          ? setPlayingVersion(isPlaying ? null : versionKey)
+                          : playVersion(versionKey, v.audioUrl, song.id, vi)
                       }
                       aria-label={
                         isPlaying ? `Mettre en pause ${song.title}, ${v.label}` : `Lire ${song.title}, ${v.label}`
@@ -235,28 +250,38 @@ export default function MySongsGenerated() {
                         aria-label={`Favori ${song.title} ${v.label}`}
                         onClick={() => demo.toggleVersion(song.title, vi)}
                         className={
-                          demo.versionFavorites.includes(`${song.title}|${vi}`)
+                          (demo.isDemo ? demo.versionFavorites.includes(`${song.title}|${vi}`) : v.liked)
                             ? "text-red-400"
                             : "text-muted-foreground"
                         }
                       >
-                        <Icon i={demo.versionFavorites.includes(`${song.title}|${vi}`) ? "heart" : "heart"} size={15} />
+                        <Icon i="heart" size={15} />
                       </button>
                       <button
                         type="button"
                         data-demo-ready="true"
-                        onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
+                        disabled={!demo.isDemo && (isPending || isFailed)}
+                        onClick={() =>
+                          demo.isDemo || !v.audioUrl
+                            ? demo.notify("Action de démonstration : aucune opération réelle effectuée.")
+                            : void shareVersion(song.title, v.label, v.audioUrl)
+                        }
                         aria-label="Partager"
-                        className="text-muted-foreground"
+                        className={`text-muted-foreground ${!demo.isDemo && (isPending || isFailed) ? "opacity-50" : ""}`}
                       >
                         <Icon i="share-2" size={15} />
                       </button>
                       <button
                         type="button"
                         data-demo-ready="true"
-                        onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
+                        disabled={!demo.isDemo && (isPending || isFailed)}
+                        onClick={() =>
+                          demo.isDemo || !v.audioUrl
+                            ? demo.notify("Action de démonstration : aucune opération réelle effectuée.")
+                            : void downloadVersion(song.title, v.label, v.audioUrl)
+                        }
                         aria-label="Télécharger"
-                        className="song-download-button"
+                        className={`song-download-button ${!demo.isDemo && (isPending || isFailed) ? "opacity-50" : ""}`}
                       >
                         <Icon i="download" size={19} />
                       </button>

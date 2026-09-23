@@ -1,6 +1,6 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs } from "@/db/schema";
 import { createMusicJob, submitSongGroupJobs, pollMusicJob, MusicJobOwnershipError } from "./music-jobs";
@@ -170,4 +170,26 @@ export async function getSongGroupForUser(userId: string, songGroupId: string): 
 export async function removeSongGroupForUser(userId: string, songGroupId: string) {
   const database = getServiceDb();
   await database.delete(musicGenerationJobs).where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)));
+}
+
+export async function setSongVersionLiked(userId: string, jobId: string, liked: boolean): Promise<SongVersionView> {
+  const database = getServiceDb();
+  const [job] = await database
+    .update(musicGenerationJobs)
+    .set({ liked, updatedAt: new Date() })
+    .where(and(eq(musicGenerationJobs.id, jobId), eq(musicGenerationJobs.userId, userId)))
+    .returning();
+  if (!job) throw new MusicJobOwnershipError();
+  return toVersionView(job);
+}
+
+export async function incrementSongVersionPlays(userId: string, jobId: string): Promise<SongVersionView> {
+  const database = getServiceDb();
+  const [job] = await database
+    .update(musicGenerationJobs)
+    .set({ plays: sql`${musicGenerationJobs.plays} + 1`, updatedAt: new Date() })
+    .where(and(eq(musicGenerationJobs.id, jobId), eq(musicGenerationJobs.userId, userId)))
+    .returning();
+  if (!job) throw new MusicJobOwnershipError();
+  return toVersionView(job);
 }

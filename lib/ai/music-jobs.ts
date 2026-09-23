@@ -201,6 +201,28 @@ async function getOwnedJob(jobId: string, userId: string) {
   return job;
 }
 
+/**
+ * A live account confirms Musicful hands back an `audio_url` the moment its internal status
+ * flips, but that first URL is a redirect through a third-party stream host that can 403 with
+ * "Invalid or expired stream URL" — the real, stable file only appears at `files.musicful.ai`
+ * a bit later once their pipeline finishes copying it. Rather than trust `audio_url` being
+ * non-empty, this fetches a byte range and only accepts it once it actually serves audio.
+ */
+async function isAudioUrlPlayable(url: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8_000);
+  try {
+    const response = await fetch(url, { method: "GET", headers: { Range: "bytes=0-1023" }, signal: controller.signal });
+    if (!response.ok) return false;
+    const contentType = response.headers.get("content-type") || "";
+    return contentType.startsWith("audio/");
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function pollMusicJob(jobId: string, userId: string) {
   const job = await getOwnedJob(jobId, userId);
   if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId) return job;
@@ -215,13 +237,19 @@ export async function pollMusicJob(jobId: string, userId: string) {
     // Musicful's numeric `status` codes aren't publicly documented; we infer state from
     // the documented content fields (audio_url / fail_code) instead of guessing the enum.
     const isFailed = task.fail_code != null;
-    const isCompleted = !isFailed && Boolean(task.audio_url);
+    const candidateAudioUrl = !isFailed ? task.audio_url || null : null;
+    const audioReady = candidateAudioUrl ? await isAudioUrlPlayable(candidateAudioUrl) : false;
+    const isCompleted = !isFailed && audioReady;
+    // Musicful reports `duration` in milliseconds (confirmed against a live completed task:
+    // 179614 ≈ a 3-minute song), and -1 while still processing.
+    const durationSeconds =
+      typeof task.duration === "number" && task.duration > 0 ? Math.round(task.duration / 1000) : job.durationSeconds;
     const values = {
       providerSongId: task.song_id || job.providerSongId,
-      title: task.title || job.title,
+      title: job.title || task.title,
       style: task.style || job.style,
-      durationSeconds: task.duration ?? job.durationSeconds,
-      audioUrl: task.audio_url || job.audioUrl,
+      durationSeconds,
+      audioUrl: isCompleted ? candidateAudioUrl : job.audioUrl,
       coverUrl: task.cover_url || job.coverUrl,
       providerStatus: task.status,
       responsePayload: task,
