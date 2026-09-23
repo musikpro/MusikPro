@@ -86,20 +86,48 @@ export class MusicfulClient {
     });
   }
 
+  /**
+   * "auto" lets Musicful improvise its own lyrics from just a style/genre description — it has
+   * no `lyrics` field, so any lyrics the caller already wrote are never sent. Use this only when
+   * there are no user-written lyrics to sing.
+   */
   async generateMusicAuto(input: {
     style?: string | null;
     mv: string;
     instrumental: 0 | 1;
     gender?: "male" | "female" | "" | null;
   }) {
-    // The documented request only shows `{ task_id }` on success, but third-party APIs in this
-    // family commonly wrap responses (`{ data: { task_id } }`, `{ data: [{ task_id }] }`, …); the
-    // exact envelope isn't confirmed, so the response is left untyped and extracted defensively
-    // by the caller instead of guessing a single shape here.
     return this.request<unknown>("/v1/music/generate", {
       method: "POST",
       body: JSON.stringify({
         action: "auto",
+        style: input.style ?? undefined,
+        mv: input.mv,
+        instrumental: input.instrumental,
+        gender: input.gender || undefined,
+      }),
+    });
+  }
+
+  /**
+   * "custom" is Musicful's documented mode for singing the caller's own lyrics (confirmed live:
+   * the task's `lyric` field echoes back exactly what was submitted, unlike "auto"). Use this
+   * whenever real lyrics exist for the song.
+   */
+  async generateMusicCustom(input: {
+    lyrics: string;
+    title?: string | null;
+    style?: string | null;
+    mv: string;
+    instrumental: 0 | 1;
+    gender?: "male" | "female" | "" | null;
+  }) {
+    return this.request<unknown>("/v1/music/generate", {
+      method: "POST",
+      body: JSON.stringify({
+        action: "custom",
+        lyrics: input.lyrics,
+        title: input.title || undefined,
         style: input.style ?? undefined,
         mv: input.mv,
         instrumental: input.instrumental,

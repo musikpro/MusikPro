@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs } from "@/db/schema";
-import { createMusicfulClient, getMusicfulProvider, MusicfulApiError } from "./musicful";
+import { createMusicfulClient, getMusicfulProvider, MusicfulApiError, type MusicfulClient } from "./musicful";
 import { musicfulTasksSchema, type MusicfulGenerateRequest } from "@/lib/validation/ai";
 import { createLogger } from "@/lib/observability/logger";
 
@@ -83,6 +83,24 @@ export async function createMusicJob(userId: string, input: MusicfulGenerateRequ
   return job;
 }
 
+/**
+ * Musicful only sings lyrics submitted through "custom" mode — "auto" ignores any lyrics
+ * field entirely and improvises its own, which is why generated audio used to be a
+ * completely different song from what the user wrote. This picks the mode that actually
+ * matches what the job has.
+ */
+function callMusicfulGenerate(
+  client: MusicfulClient,
+  job: Pick<JobRow, "lyrics" | "title" | "style" | "model" | "instrumental" | "gender">,
+) {
+  const gender = (job.gender as "male" | "female" | "" | null) || undefined;
+  const instrumental: 0 | 1 = job.instrumental ? 1 : 0;
+  if (job.lyrics && !job.instrumental) {
+    return client.generateMusicCustom({ lyrics: job.lyrics, title: job.title, style: job.style, mv: job.model, instrumental, gender });
+  }
+  return client.generateMusicAuto({ style: job.style, mv: job.model, instrumental, gender });
+}
+
 export async function submitMusicJob(jobId: string) {
   const database = getServiceDb();
   const [job] = await database.select().from(musicGenerationJobs).where(eq(musicGenerationJobs.id, jobId)).limit(1);
@@ -93,12 +111,7 @@ export async function submitMusicJob(jobId: string) {
   await database.update(musicGenerationJobs).set({ status: "submitting", startedAt: new Date(), updatedAt: new Date() }).where(eq(musicGenerationJobs.id, jobId));
   let response: unknown;
   try {
-    response = await client.generateMusicAuto({
-      style: job.style,
-      mv: job.model,
-      instrumental: job.instrumental ? 1 : 0,
-      gender: (job.gender as "male" | "female" | "" | null) || undefined,
-    });
+    response = await callMusicfulGenerate(client, job);
   } catch (error) {
     const failureReason = error instanceof MusicfulApiError ? `HTTP ${error.status}` : "submission_failed";
     await database
@@ -148,12 +161,7 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
   );
   let response: unknown;
   try {
-    response = await client.generateMusicAuto({
-      style: primary.style,
-      mv: primary.model,
-      instrumental: primary.instrumental ? 1 : 0,
-      gender: (primary.gender as "male" | "female" | "" | null) || undefined,
-    });
+    response = await callMusicfulGenerate(client, primary);
   } catch (error) {
     const failureReason = error instanceof MusicfulApiError ? `HTTP ${error.status}` : "submission_failed";
     await Promise.all(
