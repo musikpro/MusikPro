@@ -31,17 +31,18 @@ export default function PaymentBypassPanel({ status }: { status: PaymentBypassSt
       ) : null}
       <form action={setPaymentBypass}>
         <input type="hidden" name="enabled" value={enabled ? "off" : "on"} />
-        <AdminConfirmSubmit
-          className="admin-secondary-action"
-          confirmMessage={
-            enabled
-              ? "Désactiver le mode test ? Les comptes propriétaires devront de nouveau avoir des crédits pour générer une chanson."
-              : "Activer le mode test ? Tant que c’est actif, les comptes propriétaires (rôle admin) pourront générer une chanson gratuitement, sans crédits ni passerelle configurée. Les comptes clients ne sont jamais concernés. Pense à le désactiver avant la mise en ligne réelle."
-          }
-        >
-          <Icon i={enabled ? "power-off" : "flask-conical"} size={15} />
-          {enabled ? "Désactiver le mode test" : "Activer le mode test"}
-        </AdminConfirmSubmit>
+        <div className="admin-btn-row">
+          <AdminConfirmSubmit
+            confirmMessage={
+              enabled
+                ? "Désactiver le mode test ? Les comptes propriétaires devront de nouveau avoir des crédits pour générer une chanson."
+                : "Activer le mode test ? Tant que c’est actif, les comptes propriétaires (rôle admin) pourront générer une chanson gratuitement, sans crédits ni passerelle configurée. Les comptes clients ne sont jamais concernés. Pense à le désactiver avant la mise en ligne réelle."
+            }
+          >
+            <Icon i={enabled ? "power-off" : "flask-conical"} size={15} />
+            {enabled ? "Désactiver le mode test" : "Activer le mode test"}
+          </AdminConfirmSubmit>
+        </div>
       </form>
     </section>
   );

@@ -2591,10 +2591,6 @@
   margin-top: 14px;
 }
 
-.admin-bypass-panel .admin-secondary-action {
-  width: fit-content;
-}
-
 .admin-bypass-warning {
   display: flex;
   align-items: flex-start;
