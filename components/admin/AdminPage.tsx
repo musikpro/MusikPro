@@ -19,7 +19,7 @@ export function AdminPageHeader({
 }) {
   return (
     <header className="admin-page-header">
-      <div>
+      <div suppressHydrationWarning>
         <span className="admin-eyebrow">{eyebrow}</span>
         <h1>{title}</h1>
         <p>{description}</p>

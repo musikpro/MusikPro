@@ -199,7 +199,7 @@ export default function AdminShell({ children, user }: AdminShellProps) {
   }, [drawerOpen]);
 
   return (
-    <div className="admin-app">
+    <div className="admin-app" suppressHydrationWarning>
       <aside ref={sidebar} className="admin-sidebar">
         <Brand />
         <AdminNav pathname={pathname} />
