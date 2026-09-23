@@ -48,6 +48,7 @@ export default async function AdminAudioProviderPage({ searchParams }: { searchP
           allowWavConversion: stored?.allowWavConversion ?? true,
           allowMp4Conversion: stored?.allowMp4Conversion ?? true,
           preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
+          strictStyleAdherence: stored?.strictStyleAdherence ?? true,
           maxGenerationsPerUserPerDay: stored?.maxGenerationsPerUserPerDay ?? 5,
           maxGenerationsPerUserPerHour: stored?.maxGenerationsPerUserPerHour ?? 2,
           maxConcurrentJobs: stored?.maxConcurrentJobs ?? 2,

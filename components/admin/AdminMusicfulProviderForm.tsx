@@ -23,6 +23,7 @@ type MusicfulSettings = {
   allowWavConversion: boolean;
   allowMp4Conversion: boolean;
   preferredAudioFormat: "native" | "wav";
+  strictStyleAdherence: boolean;
   maxGenerationsPerUserPerDay: number;
   maxGenerationsPerUserPerHour: number;
   maxConcurrentJobs: number;
@@ -286,6 +287,10 @@ export default function AdminMusicfulProviderForm({
             <label className="admin-check-control">
               <input type="checkbox" name="allowMp4Conversion" defaultChecked={settings.allowMp4Conversion} />
               <span>Conversion MP4</span>
+            </label>
+            <label className="admin-check-control" title="Enrichit automatiquement le style envoyé à Musicful avec la description de chaque genre du catalogue (Styles musicaux), plus une consigne explicite de fidélité au genre — s’applique à tous les styles actuels et futurs.">
+              <input type="checkbox" name="strictStyleAdherence" defaultChecked={settings.strictStyleAdherence} />
+              <span>Respect strict du style musical</span>
             </label>
           </div>
         </div>

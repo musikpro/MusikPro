@@ -20,6 +20,7 @@ describe("Musicful settings validation", () => {
     allowWavConversion: true,
     allowMp4Conversion: true,
     preferredAudioFormat: "native",
+    strictStyleAdherence: true,
     maxGenerationsPerUserPerDay: "5",
     maxGenerationsPerUserPerHour: "2",
     maxConcurrentJobs: "2",

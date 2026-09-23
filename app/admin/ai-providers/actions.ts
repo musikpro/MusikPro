@@ -162,6 +162,7 @@ export async function saveMusicfulSettings(formData: FormData) {
     allowVibe: formData.get("allowVibe") === "on",
     allowWavConversion: formData.get("allowWavConversion") === "on",
     allowMp4Conversion: formData.get("allowMp4Conversion") === "on",
+    strictStyleAdherence: formData.get("strictStyleAdherence") === "on",
   });
   const database = getServiceDb();
   const [current] = await database.select().from(audioProviderConfigs).where(eq(audioProviderConfigs.provider, "musicful")).limit(1);
@@ -187,6 +188,7 @@ export async function saveMusicfulSettings(formData: FormData) {
     allowWavConversion: parsed.allowWavConversion,
     allowMp4Conversion: parsed.allowMp4Conversion,
     preferredAudioFormat: parsed.preferredAudioFormat,
+    strictStyleAdherence: parsed.strictStyleAdherence,
     maxGenerationsPerUserPerDay: parsed.maxGenerationsPerUserPerDay,
     maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
     maxConcurrentJobs: parsed.maxConcurrentJobs,

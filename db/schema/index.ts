@@ -346,6 +346,14 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
    * audio, regardless of what the native file already was.
    */
   preferredAudioFormat: text("preferred_audio_format").notNull().default("native"),
+  /**
+   * When enabled, the style prompt sent to Musicful is built from the admin's music-style
+   * catalog description (e.g. Zouglou's "Musique ivoirienne, festive, sociale, engagée") plus
+   * an explicit instruction to stay authentic to that exact genre, instead of just the bare
+   * genre name — see lib/ai/style-prompt.ts. Applies to every style in the catalog, present or
+   * future, since it's a live lookup rather than per-genre logic.
+   */
+  strictStyleAdherence: boolean("strict_style_adherence").notNull().default(true),
   maxGenerationsPerUserPerDay: integer("max_generations_per_user_per_day").notNull().default(5),
   maxGenerationsPerUserPerHour: integer("max_generations_per_user_per_hour").notNull().default(2),
   maxConcurrentJobs: integer("max_concurrent_jobs").notNull().default(2),

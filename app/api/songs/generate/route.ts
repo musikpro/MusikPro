@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
 import { getMusicfulProvider } from "@/lib/ai/musicful";
+import { resolveStylePrompt } from "@/lib/ai/style-prompt";
 import { submitSongGeneration } from "@/lib/ai/songs";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
 import { deductCredits, refundCredits } from "@/lib/credits/service";
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
   }
 
   const title = `Ma chanson — ${input.occasion}`;
-  const style = input.mood ? `${input.genre} — ${input.mood}` : input.genre;
+  const style = await resolveStylePrompt(input.genre, input.mood, provider.strictStyleAdherence);
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 
   try {

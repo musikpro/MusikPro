@@ -120,6 +120,13 @@
       "when": 1790220000000,
       "tag": "0016_preferred_audio_format",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790230000000,
+      "tag": "0017_strict_style_adherence",
+      "breakpoints": true
     }
   ]
 }
