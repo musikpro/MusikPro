@@ -1,11 +1,13 @@
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import { requireAdmin } from "@/lib/auth/session";
 import { getPaymentBypassStatus } from "@/lib/settings/payment-bypass";
+import { getMusicfulProvider } from "@/lib/ai/musicful";
 import PaymentBypassPanel from "./PaymentBypassPanel";
+import AudioFormatPanel from "./AudioFormatPanel";
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
-  const bypassStatus = await getPaymentBypassStatus();
+  const [bypassStatus, musicfulProvider] = await Promise.all([getPaymentBypassStatus(), getMusicfulProvider()]);
 
   return (
     <AdminPage>
@@ -16,6 +18,7 @@ export default async function AdminSettingsPage() {
       />
       <div className="admin-settings-grid">
         <PaymentBypassPanel status={bypassStatus} />
+        <AudioFormatPanel preferredAudioFormat={musicfulProvider.preferredAudioFormat} />
       </div>
     </AdminPage>
   );
