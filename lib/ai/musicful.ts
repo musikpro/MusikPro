@@ -155,15 +155,34 @@ export class MusicfulClient {
     return this.request<unknown>(`/v1/music/generate-vibe?${params}`, { method: "POST" });
   }
 
-  async convertToWav(songId: string) {
+  /**
+   * A live conversion confirms this wraps its payload the same way `/v1/music/generate` and
+   * `/v1/music/tasks` do — `{ data: { audio_url }, status, message }` — not a bare `{ url }`.
+   */
+  async convertToWav(songId: string): Promise<{ url: string | null }> {
     const params = new URLSearchParams({ song_id: songId });
-    return this.request<{ url?: string }>(`/v1/music/generate-wav?${params}`, { method: "POST" });
+    const response = await this.request<unknown>(`/v1/music/generate-wav?${params}`, { method: "POST" });
+    return { url: extractConversionUrl(response) };
   }
 
-  async convertToMp4(songId: string) {
+  async convertToMp4(songId: string): Promise<{ url: string | null }> {
     const params = new URLSearchParams({ song_id: songId });
-    return this.request<{ url?: string }>(`/v1/music/generate-mp4?${params}`, { method: "POST" });
+    const response = await this.request<unknown>(`/v1/music/generate-mp4?${params}`, { method: "POST" });
+    return { url: extractConversionUrl(response) };
   }
+}
+
+function extractConversionUrl(response: unknown): string | null {
+  if (!response || typeof response !== "object") return null;
+  const record = response as Record<string, unknown>;
+  const direct = record.url ?? record.audio_url;
+  if (typeof direct === "string" && direct) return direct;
+  const data = record.data;
+  if (data && typeof data === "object") {
+    const nested = (data as Record<string, unknown>).url ?? (data as Record<string, unknown>).audio_url;
+    if (typeof nested === "string" && nested) return nested;
+  }
+  return null;
 }
 
 export async function getMusicfulProvider() {

@@ -214,30 +214,57 @@ async function getOwnedJob(jobId: string, userId: string) {
  * flips, but that first URL is a redirect through a third-party stream host that can 403 with
  * "Invalid or expired stream URL" — the real, stable file only appears at `files.musicful.ai`
  * a bit later once their pipeline finishes copying it. Rather than trust `audio_url` being
- * non-empty, this fetches a byte range and only accepts it once it actually serves media.
- *
- * Musicful's stable file isn't consistently labeled: one completed task served
- * `audio/mpeg`, another (confirmed live, same account) served the exact same finished song
- * as `video/mp4` — an MP4 container holding only an audio track, which `<audio>` elements
- * play fine despite the "video" MIME type. Requiring an `audio/` prefix rejected that second
- * case forever, since the job's `fail_code` was null and Musicful never serves a different
- * URL for a task it considers done — the job just stayed "processing" indefinitely even
- * though the song was long finished and playable. Only an actual error page (Musicful's
- * failure responses come back as JSON) should be treated as "not ready yet".
+ * non-empty, this fetches a byte range and reports what it actually serves.
  */
-async function isAudioUrlPlayable(url: string): Promise<boolean> {
+async function probeMediaUrl(url: string): Promise<{ ok: boolean; contentType: string }> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8_000);
   try {
     const response = await fetch(url, { method: "GET", headers: { Range: "bytes=0-1023" }, signal: controller.signal });
-    if (!response.ok) return false;
-    const contentType = response.headers.get("content-type") || "";
-    return contentType.startsWith("audio/") || contentType.startsWith("video/");
+    return { ok: response.ok, contentType: response.headers.get("content-type") || "" };
   } catch {
-    return false;
+    return { ok: false, contentType: "" };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/**
+ * MusikPro is audio-only, but Musicful's finished file isn't consistently labeled: a live
+ * account confirms the exact same account can get back `audio/mpeg` for one song and
+ * `video/mp4` for another — and Musicful's `/v1/music/generate` has no request parameter to
+ * force an audio-only response (checked against their official docs). Since we can't ask for
+ * audio at generation time, this guarantees it after the fact: whenever the finished file
+ * isn't already audio-typed, it's converted through Musicful's own WAV conversion endpoint
+ * (confirmed live: synchronous, ~6s, returns a genuine `audio/x-wav` file) before it's ever
+ * treated as ready. Falls back to the video-typed URL only if that conversion isn't possible
+ * (disabled by an admin, no song_id yet, or the provider call itself fails) so a real
+ * finished song is never stuck "processing" forever over a labeling quirk.
+ */
+async function resolveAudioOnlyUrl(
+  client: MusicfulClient,
+  candidateUrl: string,
+  songId: string | null | undefined,
+  allowWavConversion: boolean,
+  jobId: string,
+): Promise<string | null> {
+  const probe = await probeMediaUrl(candidateUrl);
+  if (!probe.ok) return null;
+  if (probe.contentType.startsWith("audio/")) return candidateUrl;
+  if (!probe.contentType.startsWith("video/")) return null;
+  if (allowWavConversion && songId) {
+    try {
+      const wav = await client.convertToWav(songId);
+      if (wav.url) return wav.url;
+    } catch (error) {
+      logger.error("Musicful WAV fallback conversion failed", {
+        jobId,
+        songId,
+        error: error instanceof Error ? error.message : "unknown",
+      });
+    }
+  }
+  return candidateUrl;
 }
 
 export async function pollMusicJob(jobId: string, userId: string) {
@@ -255,8 +282,10 @@ export async function pollMusicJob(jobId: string, userId: string) {
     // the documented content fields (audio_url / fail_code) instead of guessing the enum.
     const isFailed = task.fail_code != null;
     const candidateAudioUrl = !isFailed ? task.audio_url || null : null;
-    const audioReady = candidateAudioUrl ? await isAudioUrlPlayable(candidateAudioUrl) : false;
-    const isCompleted = !isFailed && audioReady;
+    const resolvedAudioUrl = candidateAudioUrl
+      ? await resolveAudioOnlyUrl(client, candidateAudioUrl, task.song_id, provider.allowWavConversion, job.id)
+      : null;
+    const isCompleted = !isFailed && Boolean(resolvedAudioUrl);
     // Musicful reports `duration` in milliseconds (confirmed against a live completed task:
     // 179614 ≈ a 3-minute song), and -1 while still processing.
     const durationSeconds =
@@ -266,7 +295,7 @@ export async function pollMusicJob(jobId: string, userId: string) {
       title: job.title || task.title,
       style: task.style || job.style,
       durationSeconds,
-      audioUrl: isCompleted ? candidateAudioUrl : job.audioUrl,
+      audioUrl: isCompleted ? resolvedAudioUrl : job.audioUrl,
       coverUrl: task.cover_url || job.coverUrl,
       providerStatus: task.status,
       responsePayload: task,
