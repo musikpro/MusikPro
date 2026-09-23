@@ -2046,6 +2046,53 @@
   cursor: pointer;
 }
 
+/**
+ * Shared admin button system (AdminButton component) — every variant is fully self-contained
+ * so it renders the same regardless of which wrapper it's placed in.
+ */
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 13px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.admin-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.admin-btn-primary {
+  color: white;
+  background: var(--admin-primary);
+}
+
+.admin-btn-secondary {
+  border-color: var(--admin-border);
+  color: var(--admin-foreground);
+  background: var(--admin-card);
+}
+
+.admin-btn-danger {
+  color: white;
+  background: var(--admin-danger);
+}
+
+.admin-btn-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 9px;
+}
+
 .admin-plan-create {
   margin-top: 4px;
 }

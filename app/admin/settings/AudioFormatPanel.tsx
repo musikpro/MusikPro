@@ -1,4 +1,5 @@
 import AdminSelect from "@/components/admin/AdminSelect";
+import AdminButton from "@/components/admin/AdminButton";
 import Icon from "@/components/banani/Icon";
 import { setPreferredAudioFormat } from "./actions";
 
@@ -34,10 +35,12 @@ export default function AudioFormatPanel({ preferredAudioFormat }: { preferredAu
             { value: "wav", label: "WAV systématique (qualité studio, fichiers plus lourds)" },
           ]}
         />
-        <button type="submit" className="admin-secondary-action">
-          <Icon i="save" size={15} />
-          Enregistrer
-        </button>
+        <div className="admin-btn-row">
+          <AdminButton type="submit" variant="primary">
+            <Icon i="save" size={15} />
+            Enregistrer
+          </AdminButton>
+        </div>
       </form>
     </section>
   );
