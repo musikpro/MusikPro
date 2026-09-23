@@ -337,6 +337,15 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
   allowVibe: boolean("allow_vibe").notNull().default(true),
   allowWavConversion: boolean("allow_wav_conversion").notNull().default(true),
   allowMp4Conversion: boolean("allow_mp4_conversion").notNull().default(true),
+  /**
+   * Musicful's generate endpoint has no request-time audio-format parameter (confirmed
+   * against their official docs) — the finished file's type is decided by their backend and
+   * varies per song. "native" accepts whatever they hand back (falling back to a WAV
+   * conversion only when it isn't audio-typed at all, e.g. served as video/mp4); "wav" forces
+   * every finished song through their WAV conversion endpoint for guaranteed studio-quality
+   * audio, regardless of what the native file already was.
+   */
+  preferredAudioFormat: text("preferred_audio_format").notNull().default("native"),
   maxGenerationsPerUserPerDay: integer("max_generations_per_user_per_day").notNull().default(5),
   maxGenerationsPerUserPerHour: integer("max_generations_per_user_per_hour").notNull().default(2),
   maxConcurrentJobs: integer("max_concurrent_jobs").notNull().default(2),

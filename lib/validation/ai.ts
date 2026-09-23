@@ -17,6 +17,7 @@ export const anthropicSettingsSchema = openAiSettingsSchema.extend({
 
 const musicfulModelEnum = z.enum(["MFV3.0", "MFV2.0", "MFV1.5X", "MFV1.5", "MFV1.0"]);
 const musicfulGenderEnum = z.enum(["male", "female", ""]);
+export const musicfulAudioFormatEnum = z.enum(["native", "wav"]);
 
 export const musicfulSettingsSchema = z.object({
   apiKey: z.string().trim().min(10).max(500).optional().or(z.literal("")),
@@ -35,6 +36,7 @@ export const musicfulSettingsSchema = z.object({
   allowVibe: z.boolean(),
   allowWavConversion: z.boolean(),
   allowMp4Conversion: z.boolean(),
+  preferredAudioFormat: musicfulAudioFormatEnum,
   maxGenerationsPerUserPerDay: z.coerce.number().int().min(1).max(1_000),
   maxGenerationsPerUserPerHour: z.coerce.number().int().min(1).max(1_000),
   maxConcurrentJobs: z.coerce.number().int().min(1).max(50),

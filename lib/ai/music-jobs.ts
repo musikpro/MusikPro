@@ -234,30 +234,37 @@ async function probeMediaUrl(url: string): Promise<{ ok: boolean; contentType: s
  * account confirms the exact same account can get back `audio/mpeg` for one song and
  * `video/mp4` for another — and Musicful's `/v1/music/generate` has no request parameter to
  * force an audio-only response (checked against their official docs). Since we can't ask for
- * audio at generation time, this guarantees it after the fact: whenever the finished file
- * isn't already audio-typed, it's converted through Musicful's own WAV conversion endpoint
- * (confirmed live: synchronous, ~6s, returns a genuine `audio/x-wav` file) before it's ever
- * treated as ready. Falls back to the video-typed URL only if that conversion isn't possible
- * (disabled by an admin, no song_id yet, or the provider call itself fails) so a real
- * finished song is never stuck "processing" forever over a labeling quirk.
+ * audio at generation time, this guarantees it after the fact via their WAV conversion
+ * endpoint (confirmed live: synchronous, ~6s, returns a genuine `audio/x-wav` file):
+ * conversion runs whenever the native file isn't audio-typed at all (a `video/mp4` labeling
+ * quirk), or whenever the admin's "preferred audio format" setting asks for WAV on every
+ * song regardless of what Musicful natively returned. Falls back to the native file when
+ * conversion isn't needed, isn't possible (disabled by an admin, no song_id yet), or fails,
+ * so a real finished song is never stuck "processing" forever over a labeling quirk — the
+ * fallback only ever surfaces a video-typed file when an admin has explicitly turned WAV
+ * conversion off.
  */
 async function resolveAudioOnlyUrl(
   client: MusicfulClient,
   candidateUrl: string,
   songId: string | null | undefined,
   allowWavConversion: boolean,
+  preferredFormat: "native" | "wav",
   jobId: string,
 ): Promise<string | null> {
   const probe = await probeMediaUrl(candidateUrl);
   if (!probe.ok) return null;
-  if (probe.contentType.startsWith("audio/")) return candidateUrl;
-  if (!probe.contentType.startsWith("video/")) return null;
-  if (allowWavConversion && songId) {
+  const isNativeAudio = probe.contentType.startsWith("audio/");
+  const isNativeVideo = probe.contentType.startsWith("video/");
+  if (!isNativeAudio && !isNativeVideo) return null;
+
+  const wantsWavConversion = isNativeVideo || preferredFormat === "wav";
+  if (wantsWavConversion && allowWavConversion && songId) {
     try {
       const wav = await client.convertToWav(songId);
       if (wav.url) return wav.url;
     } catch (error) {
-      logger.error("Musicful WAV fallback conversion failed", {
+      logger.error("Musicful WAV conversion failed", {
         jobId,
         songId,
         error: error instanceof Error ? error.message : "unknown",
@@ -283,7 +290,7 @@ export async function pollMusicJob(jobId: string, userId: string) {
     const isFailed = task.fail_code != null;
     const candidateAudioUrl = !isFailed ? task.audio_url || null : null;
     const resolvedAudioUrl = candidateAudioUrl
-      ? await resolveAudioOnlyUrl(client, candidateAudioUrl, task.song_id, provider.allowWavConversion, job.id)
+      ? await resolveAudioOnlyUrl(client, candidateAudioUrl, task.song_id, provider.allowWavConversion, provider.preferredAudioFormat, job.id)
       : null;
     const isCompleted = !isFailed && Boolean(resolvedAudioUrl);
     // Musicful reports `duration` in milliseconds (confirmed against a live completed task:

@@ -113,6 +113,13 @@
       "when": 1790210000000,
       "tag": "0015_music_generation_song_groups",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1790220000000,
+      "tag": "0016_preferred_audio_format",
+      "breakpoints": true
     }
   ]
 }

@@ -186,6 +186,7 @@ export async function saveMusicfulSettings(formData: FormData) {
     allowVibe: parsed.allowVibe,
     allowWavConversion: parsed.allowWavConversion,
     allowMp4Conversion: parsed.allowMp4Conversion,
+    preferredAudioFormat: parsed.preferredAudioFormat,
     maxGenerationsPerUserPerDay: parsed.maxGenerationsPerUserPerDay,
     maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
     maxConcurrentJobs: parsed.maxConcurrentJobs,

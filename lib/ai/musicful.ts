@@ -210,6 +210,7 @@ export async function getMusicfulProvider() {
     allowInstrumental: stored?.allowInstrumental ?? true,
     allowWavConversion: stored?.allowWavConversion ?? true,
     allowMp4Conversion: stored?.allowMp4Conversion ?? true,
+    preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
   };
 }
 

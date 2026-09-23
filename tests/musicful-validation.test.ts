@@ -19,6 +19,7 @@ describe("Musicful settings validation", () => {
     allowVibe: true,
     allowWavConversion: true,
     allowMp4Conversion: true,
+    preferredAudioFormat: "native",
     maxGenerationsPerUserPerDay: "5",
     maxGenerationsPerUserPerHour: "2",
     maxConcurrentJobs: "2",
@@ -34,6 +35,10 @@ describe("Musicful settings validation", () => {
 
   it("rejects an unsupported gender value", () => {
     expect(musicfulSettingsSchema.safeParse({ ...validSettings, defaultGender: "nonbinary" }).success).toBe(false);
+  });
+
+  it("rejects an unsupported preferred audio format", () => {
+    expect(musicfulSettingsSchema.safeParse({ ...validSettings, preferredAudioFormat: "mp4" }).success).toBe(false);
   });
 });
 

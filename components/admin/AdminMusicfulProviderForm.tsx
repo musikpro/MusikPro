@@ -22,6 +22,7 @@ type MusicfulSettings = {
   allowVibe: boolean;
   allowWavConversion: boolean;
   allowMp4Conversion: boolean;
+  preferredAudioFormat: "native" | "wav";
   maxGenerationsPerUserPerDay: number;
   maxGenerationsPerUserPerHour: number;
   maxConcurrentJobs: number;
@@ -201,6 +202,20 @@ export default function AdminMusicfulProviderForm({
             Instrumental par défaut
           </FieldLabel>
           <AdminSelect name="defaultInstrumental" defaultValue={String(settings.defaultInstrumental)} ariaLabel="Instrumental par défaut" options={boolOptions("Instrumental", "Avec voix/paroles")} />
+        </label>
+        <label className="admin-editor-field">
+          <FieldLabel help="MusikPro est un site 100% musique : Musicful ne propose aucun réglage pour demander directement de l’audio plutôt qu’une vidéo à la génération — le fichier final peut arriver en MP3 (audio) ou en MP4 (vidéo) selon la chanson. « Automatique » accepte le MP3 natif et ne convertit en WAV que si Musicful renvoie une vidéo. « WAV » force systématiquement une conversion en audio WAV qualité studio, même quand le natif est déjà un MP3 (fichiers plus lourds).">
+            Format audio souhaité
+          </FieldLabel>
+          <AdminSelect
+            name="preferredAudioFormat"
+            defaultValue={settings.preferredAudioFormat}
+            ariaLabel="Format audio souhaité"
+            options={[
+              { value: "native", label: "Automatique (MP3 natif, conversion WAV si vidéo)" },
+              { value: "wav", label: "WAV systématique (qualité studio, fichiers plus lourds)" },
+            ]}
+          />
         </label>
         <label className="admin-editor-field">
           <FieldLabel help="Délai maximal (en millisecondes) accordé à chaque appel HTTP vers Musicful avant abandon.">
