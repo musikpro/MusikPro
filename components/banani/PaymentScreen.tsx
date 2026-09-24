@@ -78,7 +78,7 @@ export default function PaymentScreen() {
 
   return (
     <div className="checkout-information-screen bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/confirm" label="Informations" />
+      <CreationTopNav backHref="/dashboard/create/confirm" label={t("Informations")} />
 
       <div className="checkout-information-content">
         <header className="checkout-information-heading">

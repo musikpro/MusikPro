@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import Image from "next/image";
 import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
@@ -98,8 +98,8 @@ export default function CreditsMobile() {
             <p className="pack-generation-cost-note">
               <Icon i="coins" size={15} />
               <span>
-                À chaque génération, <strong>2 crédits</strong> sont débités de ton solde. Tu reçois deux versions de ta
-                chanson.
+                {t("À chaque génération,")} <strong>{t("2 crédits")}</strong>{" "}
+                {t("sont débités de ton solde. Tu reçois deux versions de ta chanson.")}
               </span>
             </p>
           </div>
@@ -188,7 +188,9 @@ export default function CreditsMobile() {
             <div>
               <p className="text-sm font-semibold text-foreground mb-1">{t("Comment fonctionnent les crédits ?")}</p>
               <p className="text-xs text-muted-foreground">
-                {t(`Chaque génération consomme ${CREDITS_PER_GENERATION} crédits et produit deux versions musicales.`)}
+                {translateTemplate("Chaque génération consomme {count} crédits et produit deux versions musicales.", {
+                  count: CREDITS_PER_GENERATION,
+                })}
               </p>
             </div>
           </div>
@@ -207,8 +209,8 @@ export default function CreditsMobile() {
           <Icon i="zap" size={16} />
           {t("Acheter des crédits")}
         </button>
-        <div className="pack-payment-methods" aria-label="Moyens de paiement acceptés">
-          <p>Moyens de paiement acceptés</p>
+        <div className="pack-payment-methods" aria-label={t("Moyens de paiement acceptés")}>
+          <p>{t("Moyens de paiement acceptés")}</p>
           <div className="pack-payment-logos">
             <span className="payment-logo payment-logo-orange-money" title="Orange Money">
               <Image src="/banani/payment-logos/orange-money.png" alt="Orange Money" width={132} height={36} />
@@ -237,8 +239,8 @@ export default function CreditsMobile() {
           {visibleHistory.length === 0 && (
             <div className="px-5 py-7 text-center">
               <Icon i="receipt-text" size={24} className="mx-auto mb-2 text-primary" />
-              <p className="font-semibold text-foreground">Aucune opération</p>
-              <p className="mt-1 text-sm text-muted-foreground">Les achats et utilisations réels apparaîtront ici.</p>
+              <p className="font-semibold text-foreground">{t("Aucune opération")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{t("Les achats et utilisations réels apparaîtront ici.")}</p>
             </div>
           )}
           {visibleHistory.map((tx, i) => (

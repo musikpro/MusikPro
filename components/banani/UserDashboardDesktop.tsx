@@ -264,7 +264,7 @@ export default function UserDashboardDesktop() {
                   <div className="col-span-3 rounded-xl border border-border bg-card px-6 py-8 text-center">
                     <Icon i="message-square" size={26} className="mx-auto mb-2 text-primary" />
                     <p className="font-semibold text-foreground">{t("Aucun témoignage publié")}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">Les témoignages réels apparaîtront ici.</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{t("Les témoignages réels apparaîtront ici.")}</p>
                   </div>
                 )}
                 {visibleTestimonials.map((testimonial, idx) => (
@@ -324,7 +324,7 @@ export default function UserDashboardDesktop() {
                   <div className="rounded-xl border border-border bg-card px-5 py-7 text-center">
                     <Icon i="headphones" size={24} className="mx-auto mb-2 text-primary" />
                     <p className="text-sm font-semibold text-foreground">{t("Aucune tendance disponible")}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Les chansons publiées apparaîtront ici.</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{t("Les chansons publiées apparaîtront ici.")}</p>
                   </div>
                 )}
                 {visibleTrends.map((tc) => (

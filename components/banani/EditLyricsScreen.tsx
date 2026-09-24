@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
@@ -16,7 +16,7 @@ export default function EditLyricsScreen() {
   const demo = useDemo();
   return (
     <div className="bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/lyrics" label="Édition" />
+      <CreationTopNav backHref="/dashboard/create/lyrics" label={t("Édition")} />
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
@@ -41,7 +41,7 @@ export default function EditLyricsScreen() {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            {t(`Clique pour éditer · Maximum ${DEMO_LYRICS_MAX_WORDS} mots`)}
+            {translateTemplate("Clique pour éditer · Maximum {count} mots", { count: DEMO_LYRICS_MAX_WORDS })}
           </p>
         </div>
 

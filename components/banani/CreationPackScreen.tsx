@@ -62,7 +62,7 @@ export default function CreationPackScreen() {
 
   return (
     <div className="creation-pack-screen bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/payment-preview" label="Choix des crédits" />
+      <CreationTopNav backHref="/dashboard/payment-preview" label={t("Choix des crédits")} />
 
       <div className="creation-pack-content">
         <header className="creation-pack-heading">
@@ -187,7 +187,7 @@ export default function CreationPackScreen() {
             </div>
           ) : null}
 
-          <div className="creation-pack-payment-methods" aria-label="Moyens de paiement acceptés">
+          <div className="creation-pack-payment-methods" aria-label={t("Moyens de paiement acceptés")}>
             <p>{t("Moyens de paiement acceptés")}</p>
             <div className="pack-payment-logos">
               <span className="payment-logo payment-logo-orange-money">

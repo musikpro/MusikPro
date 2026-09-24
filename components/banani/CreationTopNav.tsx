@@ -2,6 +2,7 @@
 
 import Icon from "./Icon";
 import { useDemo } from "./DemoProvider";
+import { translate as t } from "@/lib/i18n/translate";
 
 export default function CreationTopNav({
   backHref,
@@ -23,7 +24,7 @@ export default function CreationTopNav({
         onClick={() => demo.go(backHref)}
         className="creation-back-button"
       >
-        <Icon i="arrow-left" size={17} /> Retour
+        <Icon i="arrow-left" size={17} /> {t("Retour")}
       </button>
       <button
         type="button"
@@ -32,10 +33,10 @@ export default function CreationTopNav({
         className="creation-dashboard-button"
       >
         <Icon i="layout-dashboard" size={16} />
-        Tableau de bord
+        {t("Tableau de bord")}
       </button>
       <span className="creation-step-label">
-        {label ?? `Étape ${current}/${total}`}
+        {label ?? `${t("Étape")} ${current}/${total}`}
       </span>
     </div>
   );

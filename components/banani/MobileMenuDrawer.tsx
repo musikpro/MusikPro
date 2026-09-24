@@ -6,6 +6,7 @@ import Icon from "./Icon";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import UserAvatar from "./UserAvatar";
 import { useDemo } from "./DemoProvider";
+import { translate as t } from "@/lib/i18n/translate";
 
 const drawerItems = [
   { icon: "house", label: "Accueil" },
@@ -77,14 +78,14 @@ export default function MobileMenuDrawer({
               <span className="mobile-menu-link-icon">
                 <Icon i={item.icon} size={17} />
               </span>
-              <span>{item.label}</span>
+              <span>{t(item.label)}</span>
               <Icon i="chevron-right" size={15} />
             </button>
           ))}
         </nav>
 
         <div className="mobile-menu-footer">
-          <span>Langue</span>
+          <span>{t("Langue")}</span>
           <QuickLanguageSelect compact />
         </div>
 

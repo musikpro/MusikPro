@@ -7,6 +7,7 @@ import Icon from "./Icon";
 import UserAvatar from "./UserAvatar";
 import MobileBottomNav from "./MobileBottomNav";
 import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
+import { translate as t } from "@/lib/i18n/translate";
 
 export default function DesktopWorkspace({ children }: { children: ReactNode }) {
   const demo = useDemo();
@@ -42,14 +43,14 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                 ? "menu"
                 : "form";
   const label = {
-    creation: "Studio de création",
-    player: "Lecteur musical",
-    songs: "Vos créations",
-    discover: "Bibliothèque musicale",
-    settings: "Préférences",
-    profile: "Votre espace personnel",
-    menu: "Votre espace",
-    form: "Votre espace MusikPro",
+    creation: t("Studio de création"),
+    player: t("Lecteur musical"),
+    songs: t("Vos créations"),
+    discover: t("Bibliothèque musicale"),
+    settings: t("Préférences"),
+    profile: t("Votre espace personnel"),
+    menu: t("Votre espace"),
+    form: t("Votre espace MusikPro"),
   }[section];
   return (
     <div className="workspace-layout" data-section={section}>
@@ -58,13 +59,13 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
         <header className="workspace-header">
           <div>
             <p>{label}</p>
-            <small>Chaque histoire mérite sa chanson</small>
+            <small>{t("Chaque histoire mérite sa chanson")}</small>
           </div>
           <div className="workspace-header-actions">
-            <Link href={demo.href("/dashboard/notifications")} aria-label="Notifications">
+            <Link href={demo.href("/dashboard/notifications")} aria-label={t("Notifications")}>
               <Icon i="bell" size={20} />
             </Link>
-            <Link href={demo.href("/dashboard/profile")} aria-label="Mon profil">
+            <Link href={demo.href("/dashboard/profile")} aria-label={t("Mon profil")}>
               <UserAvatar
                 gender="male"
                 ageGroup="25-35"
@@ -84,21 +85,24 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
               </div>
             )}
           </main>
-          <aside className="workspace-context" aria-label={creation ? "Résumé de création" : "Raccourcis et activité"}>
+          <aside
+            className="workspace-context"
+            aria-label={creation ? t("Résumé de création") : t("Raccourcis et activité")}
+          >
             <WorkspaceBalanceCard />
             {creation ? (
               <section className="workspace-context-card">
                 <h2>
                   <Icon i="sliders-horizontal" size={18} />
-                  Votre chanson
+                  {t("Votre chanson")}
                 </h2>
                 <dl>
                   {[
-                    ["Occasion", demo.choices.occasion],
-                    ["Style", demo.choices.genre],
-                    ["Ambiance", demo.choices.mood],
-                    ["Langue", demo.choices.language],
-                    ["Voix", demo.choices.voice],
+                    [t("Occasion"), demo.choices.occasion],
+                    [t("Style musical"), demo.choices.genre],
+                    [t("Ambiance"), demo.choices.mood],
+                    [t("Langue"), demo.choices.language],
+                    [t("Voix"), demo.choices.voice],
                   ].map(([label, value]) => (
                     <div key={label}>
                       <dt>{label}</dt>
@@ -106,16 +110,16 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                     </div>
                   ))}
                 </dl>
-                <p className="workspace-hint">Vos choix restent disponibles pendant les étapes de création.</p>
+                <p className="workspace-hint">{t("Vos choix restent disponibles pendant les étapes de création.")}</p>
               </section>
             ) : (
               <section className="workspace-context-card">
                 <h2>
                   <Icon i="music-2" size={18} />
-                  Dernières créations
+                  {t("Dernières créations")}
                 </h2>
                 <div className="workspace-recent-list">
-                  {demo.songs.length === 0 && <p className="workspace-hint">Aucune création pour le moment.</p>}
+                  {demo.songs.length === 0 && <p className="workspace-hint">{t("Aucune création pour le moment.")}</p>}
                   {demo.songs.slice(0, 3).map((song) => (
                     <button key={song.title} type="button" data-demo-ready onClick={() => demo.openSong(song.title)}>
                       <span className="workspace-song-icon">
@@ -130,21 +134,21 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                   ))}
                 </div>
                 <Link href={demo.href("/dashboard/songs")} className="workspace-text-link">
-                  Toutes mes chansons
+                  {t("Toutes mes chansons")}
                   <Icon i="arrow-right" size={14} />
                 </Link>
               </section>
             )}
             <section className="workspace-context-card workspace-help-card">
               <Icon i={creation ? "headphones" : "life-buoy"} size={25} />
-              <h2>{creation ? "Créez à votre rythme" : "Un coup de main ?"}</h2>
+              <h2>{creation ? t("Créez à votre rythme") : t("Un coup de main ?")}</h2>
               <p>
                 {creation
-                  ? "Racontez un souvenir précis pour donner plus de personnalité à votre chanson."
-                  : "Retrouvez nos conseils et les réponses à vos questions."}
+                  ? t("Racontez un souvenir précis pour donner plus de personnalité à votre chanson.")
+                  : t("Retrouvez nos conseils et les réponses à vos questions.")}
               </p>
               <Link href={demo.href("/dashboard/help")} className="workspace-text-link">
-                Consulter l’aide
+                {t("Consulter l’aide")}
                 <Icon i="arrow-right" size={14} />
               </Link>
             </section>
