@@ -9,6 +9,7 @@ import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
 import { getActiveCreditPlans } from "@/lib/credit-plans/server";
 import { getActiveOccasions } from "@/lib/occasions/server";
+import { getActiveMusicStyles } from "@/lib/music-styles/server";
 import { getActiveRecipientRelations } from "@/lib/recipient-relations/server";
 import { getPublishedLibraryCollections } from "@/lib/library-collections/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
@@ -29,6 +30,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const demo = await isDemoRequest();
   const creditPlans = await getActiveCreditPlans({ demo });
   const occasionOptions = await getActiveOccasions({ demo });
+  const musicStyleOptions = await getActiveMusicStyles({ demo });
   const recipientRelationOptions = await getActiveRecipientRelations({ demo });
   const libraryCollectionOptions = await getPublishedLibraryCollections();
   const languageCatalog = await getActiveLanguageCatalog({ demo });
@@ -53,6 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       paymentBypassEnabled={paymentBypassEnabled}
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
+      initialMusicStyles={musicStyleOptions}
       initialRecipientRelations={recipientRelationOptions}
       initialLibraryCollections={libraryCollectionOptions}
       initialInterfaceLanguages={languageCatalog.interfaceLanguages}

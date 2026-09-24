@@ -1,9 +1,12 @@
+import type { CatalogTranslations } from "@/lib/i18n/translate";
+
 export type OccasionOption = {
   id: string;
   name: string;
   slug: string;
   description: string;
   emoji: string;
+  translations?: CatalogTranslations | null;
 };
 
 export const OCCASION_EMOJI_OPTIONS = [

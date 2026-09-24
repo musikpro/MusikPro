@@ -9,10 +9,12 @@ import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 import { demoCreationChoicesSchema, demoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import type { OccasionOption } from "@/lib/occasions/catalog";
+import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import type { RecipientRelationOption } from "@/lib/recipient-relations/catalog";
 import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
 import type { LanguageOption } from "@/lib/languages/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
+import { localizeField, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 
 type SongGroupResponse = {
@@ -65,6 +67,7 @@ function useDemoState(
   initialBalance: number,
   initialCreditPlans: CreditPlanOption[],
   initialOccasions: OccasionOption[],
+  initialMusicStyles: MusicStyleOption[],
   initialRecipientRelations: RecipientRelationOption[],
   initialLibraryCollections: LibraryCollectionOption[],
   initialInterfaceLanguages: LanguageOption[],
@@ -256,11 +259,19 @@ function useDemoState(
     : [];
   const songPacks = initialCreditPlans;
   const occasions = initialOccasions;
+  const musicStyles = initialMusicStyles;
   const recipientRelations = initialRecipientRelations;
   const libraryCollections = initialLibraryCollections;
   const interfaceLanguages = initialInterfaceLanguages;
   const lyricsLanguages = initialLyricsLanguages;
   const occasionEmoji = (name: string) => occasions.find((occasion) => occasion.name === name)?.emoji ?? "";
+  /**
+   * Displays a catalog choice (occasion/genre/plan/recipient-relation name) in the active UI
+   * language, without ever changing the stored/matched value itself: demo.choices.* and the
+   * generation payload always stay the canonical French name from the DB row.
+   */
+  const displayName = (list: { name: string; translations?: CatalogTranslations | null }[], value: string) =>
+    localizeField(value, list.find((item) => item.name === value)?.translations, "name");
   const favoriteSongs = favorites.map((title, i) => {
     const original = isDemo ? demoFavoriteSongs.find((s) => s.title === title) : undefined;
     const own = songs.find((s) => s.title === title);
@@ -554,11 +565,13 @@ function useDemoState(
     library,
     songPacks,
     occasions,
+    musicStyles,
     recipientRelations,
     libraryCollections,
     interfaceLanguages,
     lyricsLanguages,
     occasionEmoji,
+    displayName,
     favorites,
     favoriteSongs,
     versionFavorites,
@@ -620,6 +633,7 @@ export function DemoProvider({
   initialBalance = 0,
   initialCreditPlans,
   initialOccasions,
+  initialMusicStyles,
   initialRecipientRelations,
   initialLibraryCollections,
   initialInterfaceLanguages,
@@ -634,6 +648,7 @@ export function DemoProvider({
   initialBalance?: number;
   initialCreditPlans: CreditPlanOption[];
   initialOccasions: OccasionOption[];
+  initialMusicStyles: MusicStyleOption[];
   initialRecipientRelations: RecipientRelationOption[];
   initialLibraryCollections: LibraryCollectionOption[];
   initialInterfaceLanguages: LanguageOption[];
@@ -648,6 +663,7 @@ export function DemoProvider({
     initialBalance,
     initialCreditPlans,
     initialOccasions,
+    initialMusicStyles,
     initialRecipientRelations,
     initialLibraryCollections,
     initialInterfaceLanguages,

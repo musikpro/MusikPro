@@ -9,6 +9,7 @@ import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
 import StepProgressBar from "./StepProgressBar";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { translate as t, localizeField } from "@/lib/i18n/translate";
 
 export const displayName = "Étape 3 — Destinataire de la chanson";
 export const screenSize = "mobile";
@@ -107,13 +108,13 @@ export default function StepRecipient() {
 
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)}
         </span>
       </div>
 
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">À qui est destinée la chanson ?</h1>
-        <p className="text-sm text-muted-foreground">Aide MusikPro à personnaliser les paroles et la prononciation.</p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("À qui est destinée la chanson ?")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Aide MusikPro à personnaliser les paroles et la prononciation.")}</p>
       </div>
 
       <div className="recipient-form-shell px-4">
@@ -123,21 +124,21 @@ export default function StepRecipient() {
               <Icon i="user-round" size={17} />
             </span>
             <div>
-              <h2 id="recipient-form-title">La personne concernée</h2>
-              <p>Indique son nom, sa prononciation et votre lien.</p>
+              <h2 id="recipient-form-title">{t("La personne concernée")}</h2>
+              <p>{t("Indique son nom, sa prononciation et votre lien.")}</p>
             </div>
           </div>
 
           <div className="story-name-row">
             <div className="story-recipient-field">
-              <label htmlFor="recipient-name">Nom de la personne</label>
+              <label htmlFor="recipient-name">{t("Nom de la personne")}</label>
               <input
                 id="recipient-name"
                 type="text"
                 value={demo.fields.recipientName}
                 maxLength={100}
                 autoComplete="name"
-                placeholder="Ex. Aïcha"
+                placeholder={t("Ex. Aïcha")}
                 aria-invalid={Boolean(fieldErrors.name)}
                 aria-describedby={fieldErrors.name ? "recipient-name-error" : undefined}
                 onChange={(event) => {
@@ -156,9 +157,9 @@ export default function StepRecipient() {
             </div>
             <div className="story-recipient-field is-pronunciation">
               <span id="recipient-pronunciation-label" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-                Prononciation suggérée
+                {t("Prononciation suggérée")}
                 {pronunciationLoading ? (
-                  <Icon i="loader-circle" size={12} className="animate-spin" aria-label="Suggestion IA en cours" />
+                  <Icon i="loader-circle" size={12} className="animate-spin" aria-label={t("Suggestion IA en cours")} />
                 ) : null}
               </span>
               <input
@@ -181,12 +182,12 @@ export default function StepRecipient() {
           </div>
 
           <div className="story-relation-field">
-            <span>Lien avec cette personne</span>
+            <span>{t("Lien avec cette personne")}</span>
             <MusikSelect
               className="story-relation-select"
               icon="heart-handshake"
-              ariaLabel="Lien avec cette personne"
-              placeholder="Sélectionner une relation"
+              ariaLabel={t("Lien avec cette personne")}
+              placeholder={t("Sélectionner une relation")}
               value={demo.choices.recipientRelation}
               ariaInvalid={Boolean(fieldErrors.relation)}
               describedBy={fieldErrors.relation ? "recipient-relation-error" : undefined}
@@ -194,7 +195,10 @@ export default function StepRecipient() {
                 demo.choose("recipientRelation", value);
                 clearFieldError("relation");
               }}
-              options={demo.recipientRelations.map((relation) => ({ value: relation.name, label: relation.name }))}
+              options={demo.recipientRelations.map((relation) => ({
+                value: relation.name,
+                label: localizeField(relation.name, relation.translations, "name"),
+              }))}
             />
             {fieldErrors.relation && (
               <InlineNotice id="recipient-relation-error" tone="error" className="field-notice">
@@ -211,28 +215,30 @@ export default function StepRecipient() {
             <Icon i="lightbulb" size={18} />
           </span>
           <div>
-            <h2 id="recipient-tips-title">Pourquoi remplir cette partie ?</h2>
-            <p>Ces précisions rendent la chanson plus naturelle et personnelle.</p>
+            <h2 id="recipient-tips-title">{t("Pourquoi remplir cette partie ?")}</h2>
+            <p>{t("Ces précisions rendent la chanson plus naturelle et personnelle.")}</p>
           </div>
         </div>
         <ul>
           <li>
             <Icon i="audio-lines" size={16} />
             <span>
-              <strong>Une meilleure prononciation</strong>Le nom est chanté plus clairement, notamment pour les prénoms
-              africains.
+              <strong>{t("Une meilleure prononciation")}</strong>
+              {t("Le nom est chanté plus clairement, notamment pour les prénoms africains.")}
             </span>
           </li>
           <li>
             <Icon i="heart" size={16} />
             <span>
-              <strong>Le bon ton émotionnel</strong>Le lien choisi adapte les mots à votre relation.
+              <strong>{t("Le bon ton émotionnel")}</strong>
+              {t("Le lien choisi adapte les mots à votre relation.")}
             </span>
           </li>
           <li>
             <Icon i="pencil" size={16} />
             <span>
-              <strong>Tu gardes le contrôle</strong>La prononciation proposée peut être corrigée avant de continuer.
+              <strong>{t("Tu gardes le contrôle")}</strong>
+              {t("La prononciation proposée peut être corrigée avant de continuer.")}
             </span>
           </li>
         </ul>
@@ -246,7 +252,7 @@ export default function StepRecipient() {
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
         >
-          Continuer <Icon i="chevron-right" size={18} />
+          {t("Continuer")} <Icon i="chevron-right" size={18} />
         </button>
       </div>
     </div>

@@ -1,7 +1,10 @@
+import type { CatalogTranslations } from "@/lib/i18n/translate";
+
 export type RecipientRelationOption = {
   id: string;
   name: string;
   slug: string;
+  translations?: CatalogTranslations | null;
 };
 
 export const DEFAULT_RECIPIENT_RELATIONS: RecipientRelationOption[] = [

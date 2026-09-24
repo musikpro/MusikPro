@@ -13,7 +13,12 @@ export async function getActiveRecipientRelations(options: { demo?: boolean } = 
       .where(eq(recipientRelations.active, true))
       .orderBy(asc(recipientRelations.sortOrder), asc(recipientRelations.name));
 
-    return rows.map(({ id, name, slug }) => ({ id, name, slug }));
+    return rows.map(({ id, name, slug, translations }) => ({
+      id,
+      name,
+      slug,
+      translations: translations as RecipientRelationOption["translations"],
+    }));
   } catch (error) {
     if (options.demo) return DEFAULT_RECIPIENT_RELATIONS;
     throw error;

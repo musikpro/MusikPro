@@ -98,11 +98,11 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                 </h2>
                 <dl>
                   {[
-                    [t("Occasion"), demo.choices.occasion],
-                    [t("Style musical"), demo.choices.genre],
-                    [t("Ambiance"), demo.choices.mood],
-                    [t("Langue"), demo.choices.language],
-                    [t("Voix"), demo.choices.voice],
+                    [t("Occasion"), demo.displayName(demo.occasions, demo.choices.occasion)],
+                    [t("Style musical"), demo.displayName(demo.musicStyles, demo.choices.genre)],
+                    [t("Ambiance"), t(demo.choices.mood)],
+                    [t("Langue"), t(demo.choices.language)],
+                    [t("Voix"), t(demo.choices.voice)],
                   ].map(([label, value]) => (
                     <div key={label}>
                       <dt>{label}</dt>

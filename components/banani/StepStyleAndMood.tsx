@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, localizeField } from "@/lib/i18n/translate";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import { useDemo } from "./DemoProvider";
 
@@ -34,7 +34,7 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)}
         </span>
       </div>
 
@@ -63,16 +63,16 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
                   <Icon i={genre.icon} size={20} />
                 </span>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-foreground">{genre.name}</p>
-                  <p className="text-xs text-muted-foreground">{genre.description}</p>
+                  <p className="font-semibold text-sm text-foreground">{localizeField(genre.name, genre.translations, "name")}</p>
+                  <p className="text-xs text-muted-foreground">{localizeField(genre.description, genre.translations, "description")}</p>
                 </div>
               </button>
             ))}
             {!genres.length ? (
               <div className="music-style-empty">
                 <Icon i="music-2" size={24} />
-                <strong>Aucun style disponible</strong>
-                <p>Les styles musicaux seront bientôt proposés.</p>
+                <strong>{t("Aucun style disponible")}</strong>
+                <p>{t("Les styles musicaux seront bientôt proposés.")}</p>
               </div>
             ) : null}
           </div>
@@ -92,7 +92,7 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
                 className="demo-choice-card bg-card border-2 border-border rounded-lg py-3 px-2 flex flex-col items-center gap-1"
               >
                 <span className="text-2xl">{mood.emoji}</span>
-                <p className="font-semibold text-xs text-foreground text-center">{mood.label}</p>
+                <p className="font-semibold text-xs text-foreground text-center">{t(mood.label)}</p>
                 <p className="text-xs text-muted-foreground">{mood.desc}</p>
               </button>
             ))}

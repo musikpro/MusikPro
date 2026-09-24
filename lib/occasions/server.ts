@@ -13,7 +13,14 @@ export async function getActiveOccasions(options: { demo?: boolean } = {}): Prom
       .where(eq(occasions.active, true))
       .orderBy(asc(occasions.sortOrder), asc(occasions.name));
 
-    return rows.map(({ id, name, slug, description, emoji }) => ({ id, name, slug, description, emoji }));
+    return rows.map(({ id, name, slug, description, emoji, translations }) => ({
+      id,
+      name,
+      slug,
+      description,
+      emoji,
+      translations: translations as OccasionOption["translations"],
+    }));
   } catch (error) {
     if (options.demo) return DEFAULT_OCCASIONS;
     throw error;

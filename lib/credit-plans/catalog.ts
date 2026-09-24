@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { CatalogTranslations } from "@/lib/i18n/translate";
 
 export const CREDITS_PER_GENERATION = 2;
 export const VERSIONS_PER_GENERATION = 2;
@@ -16,6 +17,7 @@ export type CreditPlanOption = {
   bonus: string | null;
   sortOrder: number;
   active: boolean;
+  translations?: CatalogTranslations | null;
 };
 
 export const creditPlanFeaturesSchema = z.object({

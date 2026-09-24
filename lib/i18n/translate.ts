@@ -5,6 +5,14 @@ import pt from "./locales/pt.json";
 type Locale = "fr" | "en" | "es" | "pt";
 
 /**
+ * Shape stored in an admin-managed catalog row's `translations` jsonb column (occasions, music
+ * styles, recipient relations, credit plans) — kept here, not in lib/i18n/catalog-translate.ts,
+ * so pure client-side types (e.g. lib/occasions/catalog.ts's OccasionOption) can reference it
+ * without pulling in that module's server-only AI/DB dependencies into a client bundle.
+ */
+export type CatalogTranslations = Partial<Record<Exclude<Locale, "fr">, Record<string, string>>>;
+
+/**
  * French is the source language (keys double as the fallback string, never translated here).
  * The en/es/pt dictionaries are generated files: run `npm run i18n:sync` after adding new
  * t("...") calls to fill in missing keys via the connected AI provider (see scripts/i18n-sync.mts).
@@ -29,4 +37,23 @@ export function translateTemplate(text: string, params: Record<string, string | 
     (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
     translate(text),
   );
+}
+
+/**
+ * For a single named field of an admin-managed catalog row (occasion/music style/recipient
+ * relation/credit plan name, description, bonus…) whose French value is also the app's canonical
+ * stored/matching value (see lib/banani/DemoProvider.tsx `choose()`): never translate that stored
+ * value itself, only its DISPLAY via this helper, reading the row's own `translations` jsonb
+ * column (shape `{ en: { [field]: "..." }, es: {...}, pt: {...} }`) — populated by the "Actualiser
+ * les traductions" admin action (app/admin/languages/actions.ts), not the static t() dictionary.
+ */
+export function localizeField(
+  base: string,
+  translations: CatalogTranslations | null | undefined,
+  field: string,
+): string {
+  if (typeof document === "undefined") return base;
+  const locale = document.documentElement.lang.split("-")[0] as Locale;
+  if (locale === "fr") return base;
+  return translations?.[locale]?.[field] || base;
 }

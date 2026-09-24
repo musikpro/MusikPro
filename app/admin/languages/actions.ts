@@ -5,9 +5,11 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { languages, localizationSettings } from "@/db/schema";
+import { languages, localizationSettings, musicStyles, occasions, plans, recipientRelations } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
+import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
+import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
 
 const languageSchema = z
   .object({
@@ -153,4 +155,91 @@ export async function updateAutomaticLanguageDetection(formData: FormData) {
     metadata: { automaticDetectionEnabled },
   });
   refresh();
+}
+
+/**
+ * Re-translates every admin-managed catalog table (occasions, music styles, recipient
+ * relations, credit plans) via the connected AI provider and stores the result in each row's
+ * own `translations` jsonb column — see lib/i18n/catalog-translate.ts. Triggered by the
+ * "Actualiser les traductions" button so the admin can refresh translations whenever catalog
+ * content changes, without a redeploy.
+ */
+export async function refreshCatalogTranslations() {
+  const session = await requireAdmin();
+  const serviceDb = getServiceDb();
+
+  const [occasionRows, styleRows, relationRows, planRows] = await Promise.all([
+    serviceDb.select().from(occasions),
+    serviceDb.select().from(musicStyles),
+    serviceDb.select().from(recipientRelations),
+    serviceDb.select().from(plans),
+  ]);
+
+  const [occasionTranslations, styleTranslations, relationTranslations, planTranslations] = await Promise.all([
+    translateCatalogTable(
+      occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+    ),
+    translateCatalogTable(
+      styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+    ),
+    translateCatalogTable(relationRows.map((row) => ({ id: row.id, fields: { name: row.name } }))),
+    translateCatalogTable(
+      planRows.map((row) => {
+        const features = creditPlanFeaturesSchema.safeParse(row.features);
+        return {
+          id: row.id,
+          fields: {
+            name: row.name,
+            description: row.description,
+            bonus: features.success ? features.data.bonus : null,
+          },
+        };
+      }),
+    ),
+  ]);
+
+  await Promise.all([
+    ...occasionRows.map((row) =>
+      serviceDb
+        .update(occasions)
+        .set({ translations: occasionTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(occasions.id, row.id)),
+    ),
+    ...styleRows.map((row) =>
+      serviceDb
+        .update(musicStyles)
+        .set({ translations: styleTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(musicStyles.id, row.id)),
+    ),
+    ...relationRows.map((row) =>
+      serviceDb
+        .update(recipientRelations)
+        .set({ translations: relationTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(recipientRelations.id, row.id)),
+    ),
+    ...planRows.map((row) =>
+      serviceDb
+        .update(plans)
+        .set({ translations: planTranslations.get(row.id) ?? {} })
+        .where(eq(plans.id, row.id)),
+    ),
+  ]);
+
+  const counts = {
+    occasions: occasionRows.length,
+    musicStyles: styleRows.length,
+    recipientRelations: relationRows.length,
+    plans: planRows.length,
+  };
+
+  await writeAuditLog({
+    action: "catalog.translations.refreshed",
+    actorId: session.user.id,
+    targetType: "localization_settings",
+    targetId: "global",
+    metadata: counts,
+  });
+
+  refresh();
+  return { counts };
 }

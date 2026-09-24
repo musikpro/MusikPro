@@ -1,5 +1,5 @@
 "use client";
-import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
 import Image from "next/image";
 import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
@@ -144,9 +144,11 @@ export default function CreditsMobile() {
                 <div className="pack-grid-card-heading">
                   <div>
                     <h3 className={`font-bold text-sm ${isSelected ? "text-primary" : "text-foreground"}`}>
-                      {pack.name}
+                      {localizeField(pack.name, pack.translations, "name")}
                     </h3>
-                    <p className="text-xs text-muted-foreground">{pack.description}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {localizeField(pack.description, pack.translations, "description")}
+                    </p>
                   </div>
                   <div className={`pack-grid-song-count ${isSelected ? "text-primary" : "text-foreground"}`}>
                     <strong>{pack.credits}</strong>
@@ -155,14 +157,16 @@ export default function CreditsMobile() {
                 </div>
 
                 <p className="pack-grid-credit-rule">
-                  {getGenerationCount(pack.credits, pack.generationCost)} générations · jusqu’à{" "}
-                  {getVersionCount(pack.credits, pack.generationCost)} versions
+                  {translateTemplate("{count} générations · jusqu’à {versions} versions", {
+                    count: getGenerationCount(pack.credits, pack.generationCost),
+                    versions: getVersionCount(pack.credits, pack.generationCost),
+                  })}
                 </p>
 
                 {pack.bonus && (
                   <span className="pack-grid-bonus">
                     <Icon i="gift" size={12} />
-                    {pack.bonus}
+                    {localizeField(pack.bonus, pack.translations, "bonus")}
                   </span>
                 )}
 
@@ -171,7 +175,7 @@ export default function CreditsMobile() {
                     {formatDemoPackPrice(pack.priceValue, demo.choices.currency)}
                   </span>
                   <span className="pack-grid-card-status">
-                    {demo.pack?.id === pack.id ? <span>Sélectionné</span> : <Icon i="arrow-right" size={14} />}
+                    {demo.pack?.id === pack.id ? <span>{t("Sélectionné")}</span> : <Icon i="arrow-right" size={14} />}
                   </span>
                 </div>
               </button>

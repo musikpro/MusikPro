@@ -19,7 +19,7 @@ export default function ReviewLyricsScreen() {
     if (!hasLyrics) demo.go("/dashboard/create/parameters");
   }, [demo, hasLyrics]);
   if (!hasLyrics) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">Redirection vers la génération des paroles…</p>;
+    return <p className="p-6 text-center text-sm text-muted-foreground">{t("Redirection vers la génération des paroles…")}</p>;
   }
   const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
   const estimatedDuration = formatLyricsDuration(estimateLyricsDurationSeconds(lyricsWordCount));
@@ -35,7 +35,8 @@ export default function ReviewLyricsScreen() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion} • 🎵 {demo.choices.genre}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)} • 🎵{" "}
+          {demo.displayName(demo.musicStyles, demo.choices.genre)}
         </span>
       </div>
 

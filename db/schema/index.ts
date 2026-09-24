@@ -12,6 +12,8 @@ export const plans = pgTable("plans", {
   active: boolean("active").notNull().default(true),
   features: jsonb("features"),
   metadata: jsonb("metadata"),
+  /** AI-generated per-locale { en: { name, description, bonus }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+  translations: jsonb("translations"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -172,6 +174,8 @@ export const musicStyles = pgTable(
     tone: text("tone").notNull().default("orange"),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
+    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -190,6 +194,8 @@ export const occasions = pgTable(
     emoji: text("emoji").notNull().default("🎉"),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
+    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -206,6 +212,8 @@ export const recipientRelations = pgTable(
     slug: text("slug").notNull().unique(),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
+    /** AI-generated per-locale { en: { name }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

@@ -32,6 +32,7 @@ export async function getActiveCreditPlans(options: { demo?: boolean } = {}): Pr
         bonus: features.data.bonus,
         sortOrder: features.data.sortOrder,
         active: row.active,
+        translations: row.translations as CreditPlanOption["translations"],
       }];
     });
 

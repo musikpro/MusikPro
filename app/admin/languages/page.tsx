@@ -2,6 +2,7 @@ import { asc } from "drizzle-orm";
 import Link from "next/link";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
 import { getServiceDb } from "@/db";
 import { languages, localizationSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
@@ -129,6 +130,19 @@ export default async function AdminLanguagesPage() {
             {automaticDetectionEnabled ? "Désactiver la détection" : "Activer la détection"}
           </button>
         </form>
+      </section>
+      <section className="admin-panel admin-language-detection">
+        <div className="admin-section-heading">
+          <div>
+            <h2>Traductions du catalogue</h2>
+            <p>
+              Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans
+              toutes les langues actives, pour que le parcours de création et les crédits s’affichent dans la
+              langue choisie par le client. Le contenu source en français n’est jamais modifié.
+            </p>
+          </div>
+        </div>
+        <RefreshCatalogTranslationsButton />
       </section>
       <LanguageSection
         title="Langues de l’interface"

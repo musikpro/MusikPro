@@ -23,7 +23,8 @@ export default function FinalConfirmationScreen() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion} • 🎵 {demo.choices.genre}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)} • 🎵{" "}
+          {demo.displayName(demo.musicStyles, demo.choices.genre)}
         </span>
       </div>
 
@@ -40,20 +41,22 @@ export default function FinalConfirmationScreen() {
           <div>
             <label className="text-xs font-bold text-muted-foreground uppercase">{t("Occasion")}</label>
             <p className="text-base font-semibold text-foreground mt-1">
-              {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
+              {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)}
             </p>
           </div>
           <div className="border-t border-border pt-3">
             <label className="text-xs font-bold text-muted-foreground uppercase">{t("Style musical")}</label>
-            <p className="text-base font-semibold text-foreground mt-1">🎵 {demo.choices.genre}</p>
+            <p className="text-base font-semibold text-foreground mt-1">
+              🎵 {demo.displayName(demo.musicStyles, demo.choices.genre)}
+            </p>
           </div>
           <div className="border-t border-border pt-3">
             <label className="text-xs font-bold text-muted-foreground uppercase">{t("Voix")}</label>
-            <p className="text-base font-semibold text-foreground mt-1">👩🎤 {demo.choices.voice}</p>
+            <p className="text-base font-semibold text-foreground mt-1">👩🎤 {t(demo.choices.voice)}</p>
           </div>
           <div className="border-t border-border pt-3">
             <label className="text-xs font-bold text-muted-foreground uppercase">{t("Langue")}</label>
-            <p className="text-base font-semibold text-foreground mt-1">🇫🇷 {demo.choices.language}</p>
+            <p className="text-base font-semibold text-foreground mt-1">🇫🇷 {t(demo.choices.language)}</p>
           </div>
         </div>
 

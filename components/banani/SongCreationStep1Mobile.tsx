@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, localizeField } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 1 — Choisir une occasion";
@@ -39,7 +39,7 @@ export default function SongCreationStep1Mobile() {
               className="demo-choice-card bg-card border border-border rounded-xl p-4 flex flex-col items-center justify-center gap-2 text-center"
             >
               <span className="text-3xl">{occasion.emoji}</span>
-              <p className="text-sm font-semibold text-foreground">{occasion.name}</p>
+              <p className="text-sm font-semibold text-foreground">{localizeField(occasion.name, occasion.translations, "name")}</p>
             </button>
           ))}
         </div>

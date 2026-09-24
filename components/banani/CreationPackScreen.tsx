@@ -13,7 +13,7 @@ import { CREDITS_PER_GENERATION, getGenerationCount, getVersionCount } from "@/l
 export const displayName = "Choix de l’offre de crédits";
 export const screenSize = "mobile";
 
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
 
 type CouponApplyResult = {
   valid: boolean;
@@ -43,12 +43,12 @@ export default function CreationPackScreen() {
       });
       if (!result.valid || result.discountAmount == null) {
         demo.setCoupon(null);
-        setCouponError(result.reason || "Code promo invalide.");
+        setCouponError(result.reason || t("Code promo invalide."));
         return;
       }
       demo.setCoupon({ code: result.code ?? code, discountAmount: result.discountAmount, finalAmount: result.finalAmount ?? 0 });
     } catch {
-      setCouponError("Impossible de vérifier ce code pour le moment.");
+      setCouponError(t("Impossible de vérifier ce code pour le moment."));
     } finally {
       setCouponPending(false);
     }
@@ -69,7 +69,7 @@ export default function CreationPackScreen() {
           <div>
             <span className="creation-pack-kicker">
               <Icon i="music-2" size={16} />
-              {CREDITS_PER_GENERATION} crédits · une génération · deux versions
+              {translateTemplate("{count} crédits · une génération · deux versions", { count: CREDITS_PER_GENERATION })}
             </span>
             <h1>{t("Choisis tes crédits")}</h1>
             <p>{t("Sélectionne l’offre adaptée au nombre de générations souhaité.")}</p>
@@ -77,7 +77,7 @@ export default function CreationPackScreen() {
           <MusikSelect
             className="pack-currency-select"
             icon="coins"
-            ariaLabel="Devise"
+            ariaLabel={t("Devise")}
             showOptionDisplays={false}
             showSelectionMark={false}
             value={demo.choices.currency}
@@ -101,7 +101,7 @@ export default function CreationPackScreen() {
             </div>
           </div>
 
-          <div className="creation-pack-list" role="radiogroup" aria-label="Offres de crédits disponibles">
+          <div className="creation-pack-list" role="radiogroup" aria-label={t("Offres de crédits disponibles")}>
             {demo.songPacks.length === 0 && (
               <div className="creation-pack-card is-empty">
                 <span className="creation-pack-card-main">
@@ -127,23 +127,25 @@ export default function CreationPackScreen() {
                 >
                   <span className="creation-pack-card-main">
                     <span className="creation-pack-card-title">
-                      <strong>{pack.name}</strong>
+                      <strong>{localizeField(pack.name, pack.translations, "name")}</strong>
                       {pack.popular && <em>{t("Populaire")}</em>}
                     </span>
-                    <small>{pack.description}</small>
+                    <small>{localizeField(pack.description, pack.translations, "description")}</small>
                     {pack.bonus && (
                       <span className="creation-pack-bonus">
                         <Icon i="gift" size={13} />
-                        {pack.bonus}
+                        {localizeField(pack.bonus, pack.translations, "bonus")}
                       </span>
                     )}
                   </span>
                   <span className="creation-pack-card-value">
                     <strong>{pack.credits}</strong>
-                    <small>crédits</small>
+                    <small>{t("crédits")}</small>
                     <small>
-                      {getGenerationCount(pack.credits, pack.generationCost)} générations ·{" "}
-                      {getVersionCount(pack.credits, pack.generationCost)} versions
+                      {translateTemplate("{count} générations · {versions} versions", {
+                        count: getGenerationCount(pack.credits, pack.generationCost),
+                        versions: getVersionCount(pack.credits, pack.generationCost),
+                      })}
                     </small>
                     <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>
                   </span>
@@ -153,7 +155,7 @@ export default function CreationPackScreen() {
           </div>
 
           {!demo.isDemo && demo.pack ? (
-            <div className="creation-pack-coupon" aria-label="Code promo">
+            <div className="creation-pack-coupon" aria-label={t("Code promo")}>
               <p>{t("Un code promo ?")}</p>
               {demo.coupon ? (
                 <div className="creation-pack-coupon-applied">
@@ -213,7 +215,9 @@ export default function CreationPackScreen() {
 
       <div className="creation-mobile-cta creation-pack-cta">
         <div className="creation-pack-total">
-          <span>{demo.pack?.name ?? t("Aucune offre sélectionnée")}</span>
+          <span>
+            {demo.pack ? localizeField(demo.pack.name, demo.pack.translations, "name") : t("Aucune offre sélectionnée")}
+          </span>
           {demo.pack && demo.coupon ? (
             <span className="creation-pack-total-discounted">
               <s>{formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}</s>

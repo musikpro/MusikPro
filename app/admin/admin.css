@@ -3865,6 +3865,22 @@ body:has(.admin-app),
   min-height: 46px;
 }
 
+.admin-language-detection-actions {
+  margin-top: 18px;
+}
+
+.admin-language-detection-actions .admin-secondary-action {
+  width: 100%;
+  min-height: 46px;
+}
+
+.admin-language-detection-hint {
+  margin: 10px 0 0;
+  color: var(--admin-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .admin-language-section .admin-style-actions {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }

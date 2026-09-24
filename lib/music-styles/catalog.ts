@@ -66,6 +66,8 @@ export const MUSIC_STYLE_TONES = [
 export type MusicStyleIcon = (typeof MUSIC_STYLE_ICONS)[number];
 export type MusicStyleTone = (typeof MUSIC_STYLE_TONES)[number];
 
+import type { CatalogTranslations } from "@/lib/i18n/translate";
+
 export type MusicStyleOption = {
   id: string;
   name: string;
@@ -73,6 +75,7 @@ export type MusicStyleOption = {
   description: string;
   icon: MusicStyleIcon;
   tone: MusicStyleTone;
+  translations?: CatalogTranslations | null;
 };
 
 export const DEFAULT_MUSIC_STYLES: MusicStyleOption[] = [

@@ -21,5 +21,6 @@ export async function getActiveMusicStyles(options: { demo?: boolean } = {}): Pr
     description: row.description,
     icon: isMusicStyleIcon(row.icon) ? row.icon : "music-2",
     tone: isMusicStyleTone(row.tone) ? row.tone : "orange",
+    translations: row.translations as MusicStyleOption["translations"],
   }));
 }

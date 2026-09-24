@@ -37,8 +37,8 @@ export default function StepAdditionalParams() {
       {/* Occasion tag */}
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
-          {demo.occasionEmoji(demo.choices.occasion)} {demo.choices.occasion}
-          {demo.choices.mood ? ` • 🚀 ${demo.choices.mood}` : ""}
+          {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)}
+          {demo.choices.mood ? ` • 🚀 ${t(demo.choices.mood)}` : ""}
         </span>
       </div>
 
@@ -64,7 +64,7 @@ export default function StepAdditionalParams() {
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
               >
                 <span className="text-lg">{lang.flag}</span>
-                <p className="text-sm font-semibold text-foreground">{lang.name}</p>
+                <p className="text-sm font-semibold text-foreground">{t(lang.name)}</p>
               </button>
             ))}
           </div>
@@ -75,9 +75,9 @@ export default function StepAdditionalParams() {
           <label className="block text-sm font-bold text-foreground mb-3">{t("Voix du chanteur")}</label>
           <div className="flex flex-col gap-2">
             {[
-              { emoji: "👩🎤", text: t("Femme") },
-              { emoji: "👨🎤", text: t("Homme") },
-              { emoji: "👥", text: t("Duo") },
+              { emoji: "👩🎤", text: "Femme" },
+              { emoji: "👨🎤", text: "Homme" },
+              { emoji: "👥", text: "Duo" },
             ].map((voice) => (
               <button
                 type="button"
@@ -88,7 +88,7 @@ export default function StepAdditionalParams() {
                 className="demo-choice-card bg-card border-2 border-border rounded-lg p-3 flex items-center gap-3"
               >
                 <span className="text-lg">{voice.emoji}</span>
-                <p className="text-sm font-semibold text-foreground">{voice.text}</p>
+                <p className="text-sm font-semibold text-foreground">{t(voice.text)}</p>
               </button>
             ))}
           </div>
@@ -102,14 +102,14 @@ export default function StepAdditionalParams() {
           <div className="additional-detail-shell bg-card border-2 border-border rounded-xl p-4 relative">
             <DemoField
               name="detail"
-              label="Souvenir spécial avec cette personne"
+              label={t("Souvenir spécial avec cette personne")}
               multiline
               rows={2}
               maxLength={3000}
               ariaInvalid={Boolean(detailError)}
               describedBy={detailError ? "detail-special-error" : undefined}
               onValueChange={() => setDetailError("")}
-              placeholder="Ex. : un voyage, une phrase qu’elle répète, un moment drôle ou une qualité qui te touche…"
+              placeholder={t("Ex. : un voyage, une phrase qu’elle répète, un moment drôle ou une qualité qui te touche…")}
             />
             <VoiceMicrophoneButton
               value={demo.fields.detail}
@@ -119,7 +119,7 @@ export default function StepAdditionalParams() {
               }}
               onMessage={demo.notify}
               language={demo.choices.language === "Anglais" ? "en-US" : "fr-FR"}
-              label="Raconter un souvenir avec le microphone"
+              label={t("Raconter un souvenir avec le microphone")}
               className="absolute top-3 right-3"
             />
           </div>
@@ -150,12 +150,12 @@ export default function StepAdditionalParams() {
           disabled={!hasRequiredOptions || demo.lyricsPending}
           onClick={() => {
             if (!demo.choices.occasion || !demo.choices.genre) {
-              demo.notify("Choisis d’abord l’occasion et le style de la chanson.");
+              demo.notify(t("Choisis d’abord l’occasion et le style de la chanson."));
               demo.go("/dashboard/create");
               return;
             }
             if (demo.fields.story.trim().length < 2) {
-              demo.notify("Raconte d’abord ton histoire avant de générer les paroles.");
+              demo.notify(t("Raconte d’abord ton histoire avant de générer les paroles."));
               demo.go("/dashboard/create/story");
               return;
             }
