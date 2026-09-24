@@ -35,26 +35,9 @@ export const demoStorySchema = z
 export const demoRecipientSchema = z.object({
   name: z.string().trim().min(2, "Indique le nom de la personne concernée.").max(100),
   pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
-  relation: z.enum(
-    [
-      "Ma femme",
-      "Mon mari",
-      "Ma copine",
-      "Mon copain",
-      "Ma mère",
-      "Mon père",
-      "Mon oncle",
-      "Ma tante",
-      "Mes enfants",
-      "Mon frère",
-      "Ma sœur",
-      "Un ami",
-      "Une amie",
-      "Pour moi",
-      "Une personne qui compte",
-    ],
-    { error: "Choisis à qui la chanson est destinée." },
-  ),
+  // The set of valid values is admin-managed (see lib/recipient-relations) rather than fixed here,
+  // so this only bounds length/emptiness — the select already constrains the choice client-side.
+  relation: z.string().trim().min(1, "Choisis à qui la chanson est destinée.").max(100),
 });
 export const demoLyricsSchema = z
   .string()

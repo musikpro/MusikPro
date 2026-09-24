@@ -13,24 +13,6 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 export const displayName = "Étape 3 — Destinataire de la chanson";
 export const screenSize = "mobile";
 
-const recipientRelations = [
-  "Ma femme",
-  "Mon mari",
-  "Ma copine",
-  "Mon copain",
-  "Ma mère",
-  "Mon père",
-  "Mon oncle",
-  "Ma tante",
-  "Mes enfants",
-  "Mon frère",
-  "Ma sœur",
-  "Un ami",
-  "Une amie",
-  "Pour moi",
-  "Une personne qui compte",
-] as const;
-
 function localPronunciationGuess(name: string) {
   const vowels = "aeiouyàâäéèêëïîôöùûüÿœ";
   return name
@@ -212,7 +194,7 @@ export default function StepRecipient() {
                 demo.choose("recipientRelation", value);
                 clearFieldError("relation");
               }}
-              options={recipientRelations.map((relation) => ({ value: relation, label: relation }))}
+              options={demo.recipientRelations.map((relation) => ({ value: relation.name, label: relation.name }))}
             />
             {fieldErrors.relation && (
               <InlineNotice id="recipient-relation-error" tone="error" className="field-notice">

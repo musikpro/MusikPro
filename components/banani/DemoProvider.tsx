@@ -9,6 +9,7 @@ import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 import { demoCreationChoicesSchema, demoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import type { OccasionOption } from "@/lib/occasions/catalog";
+import type { RecipientRelationOption } from "@/lib/recipient-relations/catalog";
 import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
 import type { LanguageOption } from "@/lib/languages/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
@@ -64,6 +65,7 @@ function useDemoState(
   initialBalance: number,
   initialCreditPlans: CreditPlanOption[],
   initialOccasions: OccasionOption[],
+  initialRecipientRelations: RecipientRelationOption[],
   initialLibraryCollections: LibraryCollectionOption[],
   initialInterfaceLanguages: LanguageOption[],
   initialLyricsLanguages: LanguageOption[],
@@ -253,6 +255,7 @@ function useDemoState(
     : [];
   const songPacks = initialCreditPlans;
   const occasions = initialOccasions;
+  const recipientRelations = initialRecipientRelations;
   const libraryCollections = initialLibraryCollections;
   const interfaceLanguages = initialInterfaceLanguages;
   const lyricsLanguages = initialLyricsLanguages;
@@ -550,6 +553,7 @@ function useDemoState(
     library,
     songPacks,
     occasions,
+    recipientRelations,
     libraryCollections,
     interfaceLanguages,
     lyricsLanguages,
@@ -613,6 +617,7 @@ export function DemoProvider({
   initialBalance = 0,
   initialCreditPlans,
   initialOccasions,
+  initialRecipientRelations,
   initialLibraryCollections,
   initialInterfaceLanguages,
   initialLyricsLanguages,
@@ -626,6 +631,7 @@ export function DemoProvider({
   initialBalance?: number;
   initialCreditPlans: CreditPlanOption[];
   initialOccasions: OccasionOption[];
+  initialRecipientRelations: RecipientRelationOption[];
   initialLibraryCollections: LibraryCollectionOption[];
   initialInterfaceLanguages: LanguageOption[];
   initialLyricsLanguages: LanguageOption[];
@@ -639,6 +645,7 @@ export function DemoProvider({
     initialBalance,
     initialCreditPlans,
     initialOccasions,
+    initialRecipientRelations,
     initialLibraryCollections,
     initialInterfaceLanguages,
     initialLyricsLanguages,

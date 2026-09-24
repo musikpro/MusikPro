@@ -170,6 +170,22 @@ export const occasions = pgTable(
   }),
 );
 
+export const recipientRelations = pgTable(
+  "recipient_relations",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(100),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    activeOrderIndex: index("recipient_relations_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
+
 export const languages = pgTable(
   "languages",
   {
