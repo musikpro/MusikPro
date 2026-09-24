@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import Icon from "@/components/banani/Icon";
-import { setRole } from "@/app/admin/users/actions";
+import { deleteUser, setRole } from "@/app/admin/users/actions";
 import { getNameInitials } from "@/lib/profile/name-initials";
+import AdminDeleteUserButton from "./AdminDeleteUserButton";
 import AdminSelect from "./AdminSelect";
 
 const roleOptions = [
@@ -106,19 +107,25 @@ export default function AdminUsersTable({
                   </span>
                 </td>
                 <td>
-                  <form action={setRole} className="admin-inline-form">
-                    <input type="hidden" name="userId" value={row.id} />
-                    <AdminSelect
-                      name="role"
-                      defaultValue={row.role}
-                      options={roleOptions}
-                      ariaLabel={`Rôle de ${row.name}`}
-                    />
-                    <button type="submit" aria-label={`Enregistrer le rôle de ${row.name}`}>
-                      <Icon i="check" size={17} />
-                      <span>Valider</span>
-                    </button>
-                  </form>
+                  <div className="admin-table-actions">
+                    <form action={setRole} className="admin-inline-form">
+                      <input type="hidden" name="userId" value={row.id} />
+                      <AdminSelect
+                        name="role"
+                        defaultValue={row.role}
+                        options={roleOptions}
+                        ariaLabel={`Rôle de ${row.name}`}
+                      />
+                      <button type="submit" aria-label={`Enregistrer le rôle de ${row.name}`}>
+                        <Icon i="check" size={17} />
+                        <span>Valider</span>
+                      </button>
+                    </form>
+                    <form action={deleteUser}>
+                      <input type="hidden" name="userId" value={row.id} />
+                      <AdminDeleteUserButton email={row.email} />
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -154,19 +161,25 @@ export default function AdminUsersTable({
                 <dd>{twoFactorAvailable ? (row.twoFactor ? "Activée" : "Non") : "Suspendue"}</dd>
               </div>
             </dl>
-            <form action={setRole} className="admin-inline-form">
-              <input type="hidden" name="userId" value={row.id} />
-              <AdminSelect
-                name="role"
-                defaultValue={row.role}
-                options={roleOptions}
-                ariaLabel={`Rôle de ${row.name}`}
-              />
-              <button type="submit" aria-label={`Enregistrer le rôle de ${row.name}`}>
-                <Icon i="check" size={17} />
-                <span>Valider</span>
-              </button>
-            </form>
+            <div className="admin-table-actions">
+              <form action={setRole} className="admin-inline-form">
+                <input type="hidden" name="userId" value={row.id} />
+                <AdminSelect
+                  name="role"
+                  defaultValue={row.role}
+                  options={roleOptions}
+                  ariaLabel={`Rôle de ${row.name}`}
+                />
+                <button type="submit" aria-label={`Enregistrer le rôle de ${row.name}`}>
+                  <Icon i="check" size={17} />
+                  <span>Valider</span>
+                </button>
+              </form>
+              <form action={deleteUser}>
+                <input type="hidden" name="userId" value={row.id} />
+                <AdminDeleteUserButton email={row.email} />
+              </form>
+            </div>
           </article>
         ))}
       </div>
