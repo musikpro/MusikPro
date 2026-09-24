@@ -194,32 +194,6 @@ export default function UserDashboardDesktop() {
               <Icon i="chevron-right" size={20} className="text-primary-foreground/70" />
             </button>
 
-            <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-5 flex items-center gap-4">
-              <span className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <Icon i="trophy" size={25} />
-              </span>
-              <div className="flex-1 min-w-0">
-                <p className="font-bold text-base text-foreground">
-                  {demo.isDemo ? t("Concours — Voix d'Afrique") : t("Aucun concours en cours")}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {demo.isDemo
-                    ? t("Se termine le 31 juillet · 50 000 FCFA")
-                    : t("Les prochains concours publiés apparaîtront ici.")}
-                </p>
-              </div>
-              <button
-                type="button"
-                data-demo-ready
-                onClick={() => demo.notify("Cette fonctionnalité sera bientôt disponible.")}
-                aria-label={demo.isDemo ? "Participer au concours" : "Aucun concours disponible"}
-                disabled={!demo.isDemo}
-                className="text-sm font-bold text-primary bg-secondary px-5 py-2.5 rounded-lg flex-shrink-0 disabled:cursor-not-allowed disabled:opacity-55"
-              >
-                {demo.isDemo ? t("Participer") : t("Indisponible")}
-              </button>
-            </div>
-
             {/* Mes chansons */}
             <div>
               <div className="flex items-center justify-between mb-4">

@@ -180,40 +180,6 @@ export default function UserDashboardMobile() {
         </button>
       </div>
 
-      {/* Concours Banner */}
-      <div className="px-4 mb-5 hidden">
-        <div className="bg-gradient-to-r from-secondary to-card border border-primary/20 rounded-xl p-4 flex items-center gap-3">
-          <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon i="trophy" size={23} />
-          </span>
-          <div className="flex-1 min-w-0">
-            <p className="font-bold text-sm text-foreground">
-              {demo.isDemo ? t("Concours — Voix d'Afrique") : t("Aucun concours en cours")}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {demo.isDemo
-                ? t("Se termine le 31 juillet · 50 000 FCFA")
-                : t("Les prochains concours apparaîtront ici.")}
-            </p>
-          </div>
-          <button
-            type="button"
-            data-demo-ready
-            onClick={() =>
-              demo.notify(
-                demo.isDemo
-                  ? "Action de démonstration : service non connecté."
-                  : "Cette fonctionnalité sera bientôt disponible.",
-              )
-            }
-            aria-label="Participer au concours"
-            className="text-xs font-bold text-primary bg-secondary px-3 py-1.5 rounded-lg flex-shrink-0"
-          >
-            {t("Participer")}
-          </button>
-        </div>
-      </div>
-
       {/* Mes chansons */}
       <div className="px-4 mb-5">
         <div className="flex items-center justify-between mb-3">
