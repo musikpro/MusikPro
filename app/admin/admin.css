@@ -3243,6 +3243,14 @@
   gap: 8px;
 }
 
+.admin-coupons-panel .admin-data-table :is(th, td):last-child {
+  text-align: right;
+}
+
+.admin-coupons-panel .admin-table-actions {
+  align-items: flex-end;
+}
+
 .admin-users-mobile-list {
   display: none;
 }

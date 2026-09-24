@@ -35,7 +35,7 @@ export default function AdminCouponsTable({ rows }: { rows: AdminCouponRow[] }) 
   }, [query, rows]);
 
   return (
-    <section className="admin-panel admin-table-panel">
+    <section className="admin-panel admin-table-panel admin-coupons-panel">
       <div className="admin-catalog-toolbar admin-table-toolbar">
         <label className="admin-search-field">
           <Icon i="search" size={17} />
