@@ -17,6 +17,15 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Ne jamais supprimer ou casser une fonctionnalité existante pour en ajouter une nouvelle ; si une évolution incompatible est réellement nécessaire, prévoir une migration claire et documentée.
 - Après chaque refactorisation, exécuter les contrôles pertinents du kit (`npm run kit:integrity`, `npm run kit:audit`, `/security-saas`, gates Zod et tests de la fonctionnalité concernée) et corriger toute régression avant de considérer le travail terminé.
 
+## Règle obligatoire — traduction multilingue (i18n)
+- **Toute nouvelle fonctionnalité visible côté client doit rester traduisible automatiquement dans les langues actives (FR = source, EN/ES/PT aujourd'hui) via l'IA déjà connectée — jamais de texte français figé qui ne suit pas le changement de langue.**
+- Deux mécanismes existent selon la nature du texte ; ne pas en inventer un troisième :
+  1. **Texte fixe de l'interface** (libellés, boutons, titres, messages codés en dur dans les composants) → l'envelopper avec `translate`/`t` (ou `translateTemplate` pour du texte avec valeurs dynamiques du type `{param}` — ne jamais interpoler la valeur dans le template literal avant l'appel, sinon la clé du dictionnaire ne correspond plus) depuis `lib/i18n/translate.ts`. Après ajout, lancer `npm run i18n:sync` pour que l'IA connectée remplisse `lib/i18n/locales/{en,es,pt}.json` ; `npm run i18n:check` (déjà dans `ci:check`) vérifie qu'aucune clé n'est oubliée.
+  2. **Contenu géré par l'admin en base et affiché tel quel côté client** (occasions, styles musicaux, relations destinataire, offres de crédits, et toute future table catalogue du même type) → ajouter une colonne jsonb `translations` sur la table (migration Drizzle), inclure la table dans `refreshCatalogTranslations()` (`app/admin/languages/actions.ts`, via `translateCatalogTable()` de `lib/i18n/catalog-translate.ts`), puis afficher avec `localizeField()` (ou `demo.displayName()` dans `DemoProvider`) — ne jamais remplacer la valeur française stockée, qui reste la clé canonique de sélection/comparaison/paiement envoyée en génération ; seul l'affichage change de langue.
+  3. Si une nouvelle table catalogue de ce type est ajoutée, l'intégrer au bouton existant **« Actualiser les traductions »** (`/admin/languages`) plutôt que de créer un nouveau mécanisme ou un nouveau bouton.
+- Exception stricte : ne jamais traduire le titre des chansons, ni plus généralement le contenu généré ou saisi librement par l'utilisateur, sauf mécanisme dédié explicitement validé.
+- Les traductions proviennent uniquement du fournisseur IA déjà connecté (`lib/ai/provider.ts`) ; ne jamais écrire de traductions statiques à la main.
+
 ## Sources de vérité
 - Lire `AGENTS.md`, `README.md`, `SECURITY.md`, `DESIGN.md` avant une refactorisation importante.
 - Réutiliser les workflows de `.agents/skills/` au lieu de créer une deuxième logique divergente.
