@@ -127,8 +127,21 @@ export default function SongPlayerScreen() {
           <audio
             ref={audioRef}
             src={audioUrl}
-            onTimeUpdate={(e) => setProgress((p) => ({ ...p, current: e.currentTarget.currentTime }))}
-            onLoadedMetadata={(e) => setProgress((p) => ({ ...p, duration: e.currentTarget.duration }))}
+            onTimeUpdate={(e) => {
+              // React nulls out a SyntheticEvent's `currentTarget` once the handler returns, but
+              // the functional updater below only runs later when React actually processes the
+              // queued state update — reading `e.currentTarget` from inside it crashed with
+              // "Cannot read properties of null" the moment this screen became reachable (it was
+              // unreachable in the real flow before the generating screen started redirecting
+              // here). Reading the value synchronously here, before it's captured by the
+              // updater's closure, avoids touching the event after React has released it.
+              const current = e.currentTarget.currentTime;
+              setProgress((p) => ({ ...p, current }));
+            }}
+            onLoadedMetadata={(e) => {
+              const duration = e.currentTarget.duration;
+              setProgress((p) => ({ ...p, duration }));
+            }}
             onEnded={() => demo.setPlaying(false)}
             onError={() => {
               demo.setPlaying(false);
