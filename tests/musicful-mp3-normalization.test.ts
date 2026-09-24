@@ -13,13 +13,19 @@ describe("Musicful v2 — MP3 Only", () => {
     expect(source).toContain("isCloudinaryConfigured");
     // audioUrl stays the sole field read by the UI (no new user-facing contract) — only
     // diagnostics are added alongside it.
-    expect(source).toContain("audioMimeType: isCompleted ? mp3Result!.mimeType : job.audioMimeType");
-    expect(source).toContain("audioNormalized: isCompleted ? mp3Result!.normalized : job.audioNormalized");
+    expect(source).toContain("audioMimeType: isCompleted ? mp3Result.mimeType : job.audioMimeType");
+    expect(source).toContain("audioNormalized: isCompleted ? mp3Result.normalized : job.audioNormalized");
   });
 
   it("never marks a job completed without a verified MP3 result", async () => {
     const source = await fs.readFile("lib/ai/music-jobs.ts", "utf8");
-    expect(source).toContain("const isCompleted = !isFailed && Boolean(mp3Result);");
+    expect(source).toContain("const isCompleted = !isFailed && Boolean(mp3Result.url);");
+  });
+
+  it("marks a job failed instead of polling forever once maxPollingMinutes elapses without a verified MP3", async () => {
+    const source = await fs.readFile("lib/ai/music-jobs.ts", "utf8");
+    expect(source).toContain("const isTimedOut = !isCompleted && !isFailed && elapsedMinutes > provider.maxPollingMinutes;");
+    expect(source).toContain("isFailed || isTimedOut ? (\"failed\" as const)");
   });
 
   it("has no MP4 generation/conversion path left anywhere in the Musicful integration", async () => {

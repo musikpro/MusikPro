@@ -263,6 +263,8 @@ async function probeMediaUrl(url: string): Promise<{ ok: boolean; contentType: s
  * fallback only ever surfaces a video-typed file when an admin has explicitly turned WAV
  * conversion off.
  */
+type AudioUrlResolution = { url: string; reason: null } | { url: null; reason: string };
+
 async function resolveAudioOnlyUrl(
   client: MusicfulClient,
   candidateUrl: string,
@@ -270,18 +272,20 @@ async function resolveAudioOnlyUrl(
   allowWavConversion: boolean,
   preferredFormat: "native" | "wav",
   jobId: string,
-): Promise<string | null> {
+): Promise<AudioUrlResolution> {
   const probe = await probeMediaUrl(candidateUrl);
-  if (!probe.ok) return null;
+  if (!probe.ok) return { url: null, reason: "musicful_audio_url_unreachable" };
   const isNativeAudio = probe.contentType.startsWith("audio/");
   const isNativeVideo = probe.contentType.startsWith("video/");
-  if (!isNativeAudio && !isNativeVideo) return null;
+  if (!isNativeAudio && !isNativeVideo) {
+    return { url: null, reason: `musicful_unexpected_content_type:${probe.contentType || "unknown"}` };
+  }
 
   const wantsWavConversion = isNativeVideo || preferredFormat === "wav";
   if (wantsWavConversion && allowWavConversion && songId) {
     try {
       const wav = await client.convertToWav(songId);
-      if (wav.url) return wav.url;
+      if (wav.url) return { url: wav.url, reason: null };
     } catch (error) {
       logger.error("Musicful WAV conversion failed", {
         jobId,
@@ -290,7 +294,7 @@ async function resolveAudioOnlyUrl(
       });
     }
   }
-  return candidateUrl;
+  return { url: candidateUrl, reason: null };
 }
 
 const VERIFIED_MP3_CONTENT_TYPES = new Set(["audio/mpeg", "audio/mp3", "audio/x-mpeg"]);
@@ -304,26 +308,28 @@ const VERIFIED_MP3_CONTENT_TYPES = new Set(["audio/mpeg", "audio/mp3", "audio/x-
  * the next poll) when the source can't be verified or Cloudinary isn't configured, so a
  * non-MP3 file is never silently relabeled or exposed as final.
  */
-export async function ensureVerifiedMp3(
-  candidateUrl: string,
-  jobId: string,
-): Promise<{ url: string; mimeType: "audio/mpeg"; normalized: boolean } | null> {
+export type Mp3Resolution =
+  | { url: string; mimeType: "audio/mpeg"; normalized: boolean; reason: null }
+  | { url: null; mimeType: null; normalized: false; reason: string };
+
+export async function ensureVerifiedMp3(candidateUrl: string, jobId: string): Promise<Mp3Resolution> {
   const probe = await probeMediaUrl(candidateUrl);
-  if (!probe.ok) return null;
+  if (!probe.ok) return { url: null, mimeType: null, normalized: false, reason: "resolved_audio_url_unreachable" };
   const contentType = probe.contentType.toLowerCase().split(";")[0].trim();
   if (VERIFIED_MP3_CONTENT_TYPES.has(contentType)) {
-    return { url: candidateUrl, mimeType: "audio/mpeg", normalized: false };
+    return { url: candidateUrl, mimeType: "audio/mpeg", normalized: false, reason: null };
   }
   if (!isCloudinaryConfigured()) {
     logger.error("Musicful audio isn't MP3 and Cloudinary isn't configured; cannot guarantee MP3-only output", { jobId, contentType });
-    return null;
+    return { url: null, mimeType: null, normalized: false, reason: "cloudinary_not_configured" };
   }
   try {
     const transcoded = await transcodeRemoteAudioToMp3(candidateUrl, { publicId: `job-${jobId}` });
-    return { url: transcoded.url, mimeType: "audio/mpeg", normalized: true };
+    return { url: transcoded.url, mimeType: "audio/mpeg", normalized: true, reason: null };
   } catch (error) {
-    logger.error("Musicful MP3 transcoding failed", { jobId, error: error instanceof Error ? error.message : "unknown" });
-    return null;
+    const message = error instanceof Error ? error.message : "unknown";
+    logger.error("Musicful MP3 transcoding failed", { jobId, error: message });
+    return { url: null, mimeType: null, normalized: false, reason: `cloudinary_transcode_failed:${message}` };
   }
 }
 
@@ -342,11 +348,19 @@ export async function pollMusicJob(jobId: string, userId: string) {
     // the documented content fields (audio_url / fail_code) instead of guessing the enum.
     const isFailed = task.fail_code != null;
     const candidateAudioUrl = !isFailed ? task.audio_url || null : null;
-    const resolvedAudioUrl = candidateAudioUrl
+    const resolvedAudio: AudioUrlResolution = candidateAudioUrl
       ? await resolveAudioOnlyUrl(client, candidateAudioUrl, task.song_id, provider.allowWavConversion, provider.preferredAudioFormat, job.id)
-      : null;
-    const mp3Result = resolvedAudioUrl ? await ensureVerifiedMp3(resolvedAudioUrl, job.id) : null;
-    const isCompleted = !isFailed && Boolean(mp3Result);
+      : { url: null, reason: "musicful_audio_not_ready" };
+    const mp3Result: Mp3Resolution = resolvedAudio.url
+      ? await ensureVerifiedMp3(resolvedAudio.url, job.id)
+      : { url: null, mimeType: null, normalized: false, reason: resolvedAudio.reason ?? "musicful_audio_not_ready" };
+    const isCompleted = !isFailed && Boolean(mp3Result.url);
+    // A job whose audio never verifies as MP3 (Cloudinary misconfigured, provider CDN never
+    // settling, ...) used to poll "processing" forever — maxPollingMinutes was a configurable
+    // admin setting that nothing ever read. This finally enforces it: past the deadline, the job
+    // is marked failed with the last diagnostic reason instead of spinning indefinitely.
+    const elapsedMinutes = (Date.now() - (job.startedAt ?? job.createdAt).getTime()) / 60_000;
+    const isTimedOut = !isCompleted && !isFailed && elapsedMinutes > provider.maxPollingMinutes;
     // Musicful reports `duration` in milliseconds (confirmed against a live completed task:
     // 179614 ≈ a 3-minute song), and -1 while still processing.
     const durationSeconds =
@@ -356,17 +370,21 @@ export async function pollMusicJob(jobId: string, userId: string) {
       title: job.title || task.title,
       style: task.style || job.style,
       durationSeconds,
-      audioUrl: isCompleted ? mp3Result!.url : job.audioUrl,
-      audioMimeType: isCompleted ? mp3Result!.mimeType : job.audioMimeType,
-      audioNormalized: isCompleted ? mp3Result!.normalized : job.audioNormalized,
+      audioUrl: isCompleted ? mp3Result.url : job.audioUrl,
+      audioMimeType: isCompleted ? mp3Result.mimeType : job.audioMimeType,
+      audioNormalized: isCompleted ? mp3Result.normalized : job.audioNormalized,
       coverUrl: task.cover_url || job.coverUrl,
       providerStatus: task.status,
       responsePayload: task,
-      status: isCompleted ? ("completed" as const) : isFailed ? ("failed" as const) : ("processing" as const),
+      status: isCompleted ? ("completed" as const) : isFailed || isTimedOut ? ("failed" as const) : ("processing" as const),
       failureCode: isFailed ? task.fail_code : job.failureCode,
-      failureReason: isFailed ? task.fail_reason || "provider_task_failed" : job.failureReason,
+      failureReason: isFailed
+        ? task.fail_reason || "provider_task_failed"
+        : isTimedOut
+          ? `audio_verification_timeout:${mp3Result.reason ?? "unknown"}`
+          : job.failureReason,
       completedAt: isCompleted ? new Date() : job.completedAt,
-      failedAt: isFailed ? new Date() : job.failedAt,
+      failedAt: isFailed || isTimedOut ? new Date() : job.failedAt,
       updatedAt: new Date(),
     };
     await database.update(musicGenerationJobs).set(values).where(eq(musicGenerationJobs.id, job.id));
