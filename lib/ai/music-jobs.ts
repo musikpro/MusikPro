@@ -52,6 +52,19 @@ function extractTaskIds(response: unknown): string[] {
   return single ? [single] : [];
 }
 
+/**
+ * Musicful reports request-validation failures (e.g. a `style` string over its length limit)
+ * as HTTP 200 with `{ data: {}, status: 400000, message: "Invalid request parameter, ..." }`
+ * rather than a non-2xx status — `MusicfulClient.request` only throws on HTTP failure, so this
+ * envelope-level error previously fell through to the generic "no task id" branch below and
+ * `failureReason` recorded "MUSICFUL_TASK_ID_MISSING" instead of the real, actionable message.
+ */
+function extractGenerateErrorMessage(response: unknown): string | null {
+  if (!response || typeof response !== "object") return null;
+  const message = (response as Record<string, unknown>).message;
+  return typeof message === "string" && message.trim() ? message.trim() : null;
+}
+
 export type MusicJobGroupContext = {
   songGroupId?: string;
   versionLabel?: string;
@@ -124,12 +137,14 @@ export async function submitMusicJob(jobId: string) {
   }
   const providerTaskId = extractTaskIds(response)[0] ?? null;
   if (!providerTaskId) {
+    const providerMessage = extractGenerateErrorMessage(response);
+    const failureReason = providerMessage ? `musicful_rejected: ${providerMessage}` : "MUSICFUL_TASK_ID_MISSING";
     logger.error("Musicful generate response had no extractable task id", { jobId, response });
     await database
       .update(musicGenerationJobs)
-      .set({ status: "failed", failureReason: "MUSICFUL_TASK_ID_MISSING", responsePayload: response, failedAt: new Date(), updatedAt: new Date() })
+      .set({ status: "failed", failureReason, responsePayload: response, failedAt: new Date(), updatedAt: new Date() })
       .where(eq(musicGenerationJobs.id, jobId));
-    throw new Error("MUSICFUL_TASK_ID_MISSING");
+    throw new Error(failureReason);
   }
   await database
     .update(musicGenerationJobs)
@@ -180,6 +195,8 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
   if (!providerTaskIds.length) {
     logger.error("Musicful generate response had no extractable task ids", { jobIds: ordered.map((job) => job.id), response });
   }
+  const providerMessage = extractGenerateErrorMessage(response);
+  const missingIdFailureReason = providerMessage ? `musicful_rejected: ${providerMessage}` : "MUSICFUL_TASK_ID_MISSING";
   let succeeded = 0;
   await Promise.all(
     ordered.map((job, index) => {
@@ -193,7 +210,7 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
       }
       return database
         .update(musicGenerationJobs)
-        .set({ status: "failed", failureReason: "MUSICFUL_TASK_ID_MISSING", responsePayload: response, failedAt: new Date(), updatedAt: new Date() })
+        .set({ status: "failed", failureReason: missingIdFailureReason, responsePayload: response, failedAt: new Date(), updatedAt: new Date() })
         .where(eq(musicGenerationJobs.id, job.id));
     }),
   );
