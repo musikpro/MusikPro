@@ -9,7 +9,9 @@ export type AdminGenerationRow = {
   userEmail: string | null;
   title: string | null;
   occasion: string | null;
+  /** Full AI-directive prompt sent to Musicful (see lib/ai/songs.ts:extractGenreLabel) — kept for the hover tooltip, never rendered directly. */
   style: string | null;
+  styleLabel: string | null;
   versionLabel: string | null;
   status: string;
   provider: string;
@@ -139,7 +141,9 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
                     <small className="admin-generation-failure">{row.failureReason}</small>
                   ) : null}
                 </td>
-                <td data-label="Style">{row.style ?? "—"}</td>
+                <td className="admin-generation-style" data-label="Style" title={row.style ?? undefined}>
+                  {row.styleLabel ?? "—"}
+                </td>
                 <td data-label="Fournisseur">
                   {row.provider}
                   <br />

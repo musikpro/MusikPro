@@ -4,6 +4,7 @@ import { musicGenerationJobs, user } from "@/db/schema";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import AdminGenerationsTable from "@/components/admin/AdminGenerationsTable";
 import { requireAdmin } from "@/lib/auth/session";
+import { extractGenreLabel } from "@/lib/ai/songs";
 
 const ROW_LIMIT = 300;
 const TERMINAL_STATUSES = new Set(["completed", "failed", "cancelled"]);
@@ -68,6 +69,7 @@ export default async function AdminGenerationsPage() {
           title: row.title,
           occasion: row.occasion,
           style: row.style,
+          styleLabel: extractGenreLabel(row.style),
           versionLabel: row.versionLabel,
           status: row.status,
           provider: row.provider,

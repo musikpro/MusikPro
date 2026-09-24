@@ -65,7 +65,7 @@ function toVersionView(job: JobRow): SongVersionView {
  * splitting on the first occurrence of either recovers just the genre for display — including
  * for songs generated before this fix, since it reads from the already-stored value.
  */
-function extractGenreLabel(style: string | null): string | null {
+export function extractGenreLabel(style: string | null): string | null {
   if (!style) return style;
   const match = style.match(/^(.*?)(?: \(| — )/);
   return (match ? match[1] : style).trim();

@@ -2131,6 +2131,12 @@
   color: #dc2626;
 }
 
+.admin-generation-style {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 .admin-generation-play {
   display: inline-flex;
   align-items: center;
