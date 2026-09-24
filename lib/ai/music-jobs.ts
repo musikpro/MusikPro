@@ -263,6 +263,12 @@ async function probeMediaUrl(url: string): Promise<{ ok: boolean; contentType: s
  * fallback only ever surfaces a video-typed file when an admin has explicitly turned WAV
  * conversion off.
  */
+const VERIFIED_MP3_CONTENT_TYPES = new Set(["audio/mpeg", "audio/mp3", "audio/x-mpeg"]);
+
+function normalizedContentType(rawContentType: string): string {
+  return rawContentType.toLowerCase().split(";")[0].trim();
+}
+
 type AudioUrlResolution = { url: string; reason: null } | { url: null; reason: string };
 
 async function resolveAudioOnlyUrl(
@@ -281,7 +287,13 @@ async function resolveAudioOnlyUrl(
     return { url: null, reason: `musicful_unexpected_content_type:${probe.contentType || "unknown"}` };
   }
 
-  const wantsWavConversion = isNativeVideo || preferredFormat === "wav";
+  // MP3 Only: once the native file already verifies as a genuine MP3, it IS the final output —
+  // routing it through Musicful's WAV endpoint and back through Cloudinary just to satisfy a
+  // "preferred audio format: wav" admin setting adds two extra third-party network hops (and two
+  // extra failure points) for a file that was already exactly what the pipeline guarantees in the
+  // end. That WAV detour is only useful when the native file genuinely isn't already an MP3.
+  const isAlreadyVerifiedMp3 = isNativeAudio && VERIFIED_MP3_CONTENT_TYPES.has(normalizedContentType(probe.contentType));
+  const wantsWavConversion = !isAlreadyVerifiedMp3 && (isNativeVideo || preferredFormat === "wav");
   if (wantsWavConversion && allowWavConversion && songId) {
     try {
       const wav = await client.convertToWav(songId);
@@ -296,8 +308,6 @@ async function resolveAudioOnlyUrl(
   }
   return { url: candidateUrl, reason: null };
 }
-
-const VERIFIED_MP3_CONTENT_TYPES = new Set(["audio/mpeg", "audio/mp3", "audio/x-mpeg"]);
 
 /**
  * Musicful v2 — MP3 Only golden rule: never expose anything but a genuine MP3 to the user.
@@ -315,7 +325,7 @@ export type Mp3Resolution =
 export async function ensureVerifiedMp3(candidateUrl: string, jobId: string): Promise<Mp3Resolution> {
   const probe = await probeMediaUrl(candidateUrl);
   if (!probe.ok) return { url: null, mimeType: null, normalized: false, reason: "resolved_audio_url_unreachable" };
-  const contentType = probe.contentType.toLowerCase().split(";")[0].trim();
+  const contentType = normalizedContentType(probe.contentType);
   if (VERIFIED_MP3_CONTENT_TYPES.has(contentType)) {
     return { url: candidateUrl, mimeType: "audio/mpeg", normalized: false, reason: null };
   }

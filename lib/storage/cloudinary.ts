@@ -118,7 +118,11 @@ export async function transcodeRemoteAudioToMp3(remoteUrl: string, options?: { f
     method: "POST",
     body: form,
   });
-  if (!response.ok) throw new Error(`Cloudinary audio transcode failed with HTTP ${response.status}`);
+  if (!response.ok) {
+    const body = await response.json().catch(() => null) as { error?: { message?: string } } | null;
+    const detail = body?.error?.message ? `: ${body.error.message}` : "";
+    throw new Error(`Cloudinary audio transcode failed with HTTP ${response.status}${detail}`);
+  }
   const data = (await response.json()) as { secure_url?: string; format?: string; bytes?: number };
   if (!data.secure_url) throw new Error("Cloudinary returned an incomplete transcode response");
   if (data.format && data.format.toLowerCase() !== "mp3") throw new Error(`Cloudinary returned unexpected format: ${data.format}`);
