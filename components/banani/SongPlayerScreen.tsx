@@ -29,6 +29,16 @@ export default function SongPlayerScreen() {
   const isPending = isReal && currentSong?.status && currentSong.status !== "completed";
   const audioUrl = isReal ? currentSong?.audioUrl : null;
 
+  // A visitor can land here (e.g. redirected straight from the generating screen) while the
+  // song is still "processing" — without this, the screen would freeze on "Génération en
+  // cours…" forever, since nothing else polls while this screen is mounted. Mirrors the same
+  // pattern already used on the songs list (MySongsGeneratedScreen).
+  useEffect(() => {
+    if (demo.isDemo || currentSong?.status !== "processing") return;
+    const timer = window.setInterval(() => void demo.refreshSongs(), 4000);
+    return () => window.clearInterval(timer);
+  }, [demo, currentSong?.status]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (audio) audio.muted = muted;

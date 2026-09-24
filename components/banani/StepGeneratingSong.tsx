@@ -12,9 +12,19 @@ export const screenSize = "mobile";
 /** Demo-only fake animation duration — the real path below waits for genuine Musicful completion instead. */
 const DEMO_DURATION_MS = 4000;
 const POLL_INTERVAL_MS = 5000;
-/** Musicful generation can genuinely take minutes; after this we stop waiting HERE but the
- * job keeps processing server-side and stays trackable (with live status) on the songs page. */
-const MAX_REAL_WAIT_MS = 5 * 60 * 1000;
+/** Purely cosmetic pacing for the progress bar/percentage — a real Musicful generation commonly
+ * takes close to this long, so the bar reaches its 92% cap around when most songs actually
+ * finish. This is NOT the polling deadline (see MAX_REAL_POLL_MS below): capping the wait itself
+ * at this same short duration used to cause the screen to give up and redirect before the job
+ * was actually done, which looked like "it never finishes automatically" even though the song
+ * was ready moments later on the songs list. */
+const PROGRESS_ANIMATION_MS = 5 * 60 * 1000;
+/** How long this screen keeps polling for a terminal (completed/failed) status before giving up
+ * and redirecting anyway. Set comfortably above the server's own generation timeout
+ * (admin-configurable "maxPollingMinutes", 10 minutes by default) so the server has almost
+ * always already resolved the job to completed/failed by the time this gives up — the job keeps
+ * processing server-side regardless and stays trackable on the songs page either way. */
+const MAX_REAL_POLL_MS = 12 * 60 * 1000;
 
 const encouragementMessages = [
   { icon: "music-2", text: "Ta chanson unique est en cours de création…" },
@@ -44,7 +54,7 @@ export default function StepGeneratingSong() {
   useEffect(() => {
     let active = true;
     const startedAt = Date.now();
-    const durationMs = demo.isDemo ? DEMO_DURATION_MS : MAX_REAL_WAIT_MS;
+    const durationMs = demo.isDemo ? DEMO_DURATION_MS : PROGRESS_ANIMATION_MS;
     const maxProgress = demo.isDemo ? 100 : 92;
     const messageStepMs = demo.isDemo ? DEMO_DURATION_MS / encouragementMessages.length : 20_000;
 
@@ -56,31 +66,40 @@ export default function StepGeneratingSong() {
       setMessageIndex(Math.min(encouragementMessages.length - 1, Math.floor(elapsed / messageStepMs)));
     }, demo.isDemo ? 100 : 1000);
 
-    const finish = () => {
+    const finish = (destination: "/dashboard/songs" | "/dashboard/songs/player") => {
       if (finished.current) return;
       finished.current = true;
       setProgress(100);
-      demo.go("/dashboard/songs");
+      demo.go(destination);
     };
 
     async function runReal() {
       const submission = await demo.startRealGeneration();
       if (!active || skipRequested.current) return;
       if (!submission) return; // startRealGeneration already redirected on failure/insufficient credits.
-      const deadline = Date.now() + MAX_REAL_WAIT_MS;
+      const deadline = Date.now() + MAX_REAL_POLL_MS;
+      let resolvedStatus: string | null = null;
       while (active && !skipRequested.current && Date.now() < deadline) {
         await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
         if (!active || skipRequested.current) break;
         try {
           const result = await apiFetch<{ song: { status: string } }>(`/api/songs/${submission.songGroupId}`, { timeoutMs: 20_000 });
-          if (result.song.status === "completed" || result.song.status === "failed") break;
+          if (result.song.status === "completed" || result.song.status === "failed") {
+            resolvedStatus = result.song.status;
+            break;
+          }
         } catch {
           // A transient poll failure just retries on the next tick until the deadline.
         }
       }
       if (!active) return;
       await demo.refreshSongs();
-      if (active) finish();
+      if (!active) return;
+      // A resolved outcome (song ready, or a clear failure to explain) goes straight to that
+      // song's player instead of the generic list — that screen keeps polling on its own if the
+      // status somehow still isn't terminal yet. Only an unresolved timeout falls back to the
+      // list, since there's no single song to point to in that case.
+      finish(resolvedStatus ? "/dashboard/songs/player" : "/dashboard/songs");
     }
 
     const demoTimer = demo.isDemo
