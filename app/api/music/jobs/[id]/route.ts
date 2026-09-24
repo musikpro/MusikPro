@@ -32,7 +32,6 @@ export async function GET(request: Request, ctx: Ctx) {
       audioUrl: job.audioUrl,
       coverUrl: job.coverUrl,
       wavUrl: job.wavUrl,
-      mp4Url: job.mp4Url,
       failureReason: job.status === "failed" ? "La génération a échoué. Réessaie." : null,
       createdAt: job.createdAt,
       completedAt: job.completedAt,

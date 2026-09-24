@@ -339,9 +339,13 @@ function useDemoState(
   const toggle = (key: string) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   const toggleFavorite = (title: string) =>
     setFavorites((prev) => (prev.includes(title) ? prev.filter((v) => v !== title) : [...prev, title]));
-  const toggleVersion = (title: string, index: number) => {
+  // Keyed by the song's unique id, not its title: several songs (e.g. two separate
+  // "Ma chanson — Anniversaire" generations) can share the exact same title, and a
+  // title-based key made liking/playing one collide visually with every same-titled song's
+  // version at the same index.
+  const toggleVersion = (songId: string | number, index: number) => {
     if (!isDemo) {
-      const song = songs.find((s) => s.title === title);
+      const song = songs.find((s) => s.id === songId);
       const version = song?.versions[index];
       if (!song || !version?.jobId) return;
       const nextLiked = !version.liked;
@@ -361,13 +365,15 @@ function useDemoState(
       });
       return;
     }
-    const key = `${title}|${index}`;
+    const key = `${songId}|${index}`;
     const next = versionFavorites.includes(key)
       ? versionFavorites.filter((v) => v !== key)
       : [...versionFavorites, key];
     setVersionFavorites(next);
+    const title = songs.find((s) => s.id === songId)?.title;
+    if (!title) return;
     setFavorites((prev) =>
-      next.some((v) => v.startsWith(`${title}|`))
+      next.some((v) => v.startsWith(`${songId}|`))
         ? prev.includes(title)
           ? prev
           : [...prev, title]
@@ -581,7 +587,7 @@ function useDemoState(
       if (isDemo) {
         setSongs((prev) => prev.filter((s) => s.id !== id));
         setFavorites((prev) => prev.filter((v) => v !== song.title));
-        setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${song.title}|`)));
+        setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${song.id}|`)));
         notify("Chanson retirée de cette démonstration locale.");
         return;
       }

@@ -2,6 +2,7 @@
 
 ## 0.10.4 — Refactorisation non régressive par défaut
 
+- Durcit la CSP : `script-src` passe d'`unsafe-inline` à un nonce généré par requête (`proxy.ts`), conformément au pattern officiel Next.js App Router. Les pages jusqu'ici statiques nécessitant ce nonce (`/privacy`, `/terms`, `/forgot-password`, `/register`, `/reset-password`, `/two-factor`, la page 404) passent en rendu dynamique. `style-src` garde `unsafe-inline` (nonce non applicable aux attributs `style=""` HTML, utilisés massivement via `style={{}}` React).
 - Ajoute une règle générale obligatoire : toute intervention doit être une refactorisation propre, professionnelle et non régressive.
 - Propage cette règle à `AGENTS.md`, `CLAUDE.md`, `.claude/README.md`, `.codex/README.md` et tous les skills officiels.
 - Renforce `kit:integrity` pour détecter la disparition de la règle dans une future version.

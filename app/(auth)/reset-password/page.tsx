@@ -2,6 +2,11 @@ import { Suspense } from "react";
 import { ResetPasswordForm } from "@/components/reset-password-form";
 import { Skeleton } from "@/components/ui/skeleton";
 
+// Forced dynamic: the CSP nonce (lib/security/headers.ts, set per request in proxy.ts) only
+// exists at request time, so a statically prerendered page would ship without one and Next's
+// own hydration scripts would be blocked by script-src.
+export const dynamic = "force-dynamic";
+
 function ResetPasswordSkeleton() {
   return (
     <main className="auth-page auth-reset-skeleton" aria-busy="true" aria-label="Chargement du formulaire">

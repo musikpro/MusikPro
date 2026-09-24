@@ -165,11 +165,8 @@ export class MusicfulClient {
     return { url: extractConversionUrl(response) };
   }
 
-  async convertToMp4(songId: string): Promise<{ url: string | null }> {
-    const params = new URLSearchParams({ song_id: songId });
-    const response = await this.request<unknown>(`/v1/music/generate-mp4?${params}`, { method: "POST" });
-    return { url: extractConversionUrl(response) };
-  }
+  // Musicful v2 — MP3 Only: the MP4/video conversion method is intentionally not implemented —
+  // MusikPro never exposes video output; see .agents/skills/Musicful-v2-MP3-Only-SKILL.md.
 }
 
 function extractConversionUrl(response: unknown): string | null {
@@ -209,7 +206,6 @@ export async function getMusicfulProvider() {
     allowLyricsToMusic: stored?.allowLyricsToMusic ?? true,
     allowInstrumental: stored?.allowInstrumental ?? true,
     allowWavConversion: stored?.allowWavConversion ?? true,
-    allowMp4Conversion: stored?.allowMp4Conversion ?? true,
     preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
     strictStyleAdherence: stored?.strictStyleAdherence ?? true,
   };

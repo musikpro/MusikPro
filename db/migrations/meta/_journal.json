@@ -134,6 +134,13 @@
       "when": 1790240000000,
       "tag": "0018_music_style_ai_description",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1790250000000,
+      "tag": "0019_musicful_mp3_normalization",
+      "breakpoints": true
     }
   ]
 }

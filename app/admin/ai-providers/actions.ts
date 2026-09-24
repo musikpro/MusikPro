@@ -161,7 +161,6 @@ export async function saveMusicfulSettings(formData: FormData) {
     allowLyricsGenerator: formData.get("allowLyricsGenerator") === "on",
     allowVibe: formData.get("allowVibe") === "on",
     allowWavConversion: formData.get("allowWavConversion") === "on",
-    allowMp4Conversion: formData.get("allowMp4Conversion") === "on",
     strictStyleAdherence: formData.get("strictStyleAdherence") === "on",
   });
   const database = getServiceDb();
@@ -186,7 +185,6 @@ export async function saveMusicfulSettings(formData: FormData) {
     allowLyricsGenerator: parsed.allowLyricsGenerator,
     allowVibe: parsed.allowVibe,
     allowWavConversion: parsed.allowWavConversion,
-    allowMp4Conversion: parsed.allowMp4Conversion,
     preferredAudioFormat: parsed.preferredAudioFormat,
     strictStyleAdherence: parsed.strictStyleAdherence,
     maxGenerationsPerUserPerDay: parsed.maxGenerationsPerUserPerDay,

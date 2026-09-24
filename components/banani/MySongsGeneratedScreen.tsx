@@ -189,7 +189,10 @@ export default function MySongsGenerated() {
                 {t("Versions")}
               </p>
               {song.versions.map((v, vi) => {
-                const versionKey = `${song.title}|${vi}`;
+                // Keyed by song.id (unique), not song.title: two songs can share the exact
+                // same title (e.g. two "Ma chanson — Anniversaire"), which previously made
+                // playing/liking one highlight every same-titled song's version at that index.
+                const versionKey = `${song.id}|${vi}`;
                 const isPlaying = playingVersion === versionKey;
                 const versionStatus = v.status ?? "completed";
                 const isPending = !demo.isDemo && (versionStatus === "queued" || versionStatus === "submitting" || versionStatus === "processing");
@@ -255,9 +258,9 @@ export default function MySongsGenerated() {
                         type="button"
                         data-demo-ready="true"
                         aria-label={`Favori ${song.title} ${v.label}`}
-                        onClick={() => demo.toggleVersion(song.title, vi)}
+                        onClick={() => demo.toggleVersion(song.id, vi)}
                         className={
-                          (demo.isDemo ? demo.versionFavorites.includes(`${song.title}|${vi}`) : v.liked)
+                          (demo.isDemo ? demo.versionFavorites.includes(`${song.id}|${vi}`) : v.liked)
                             ? "text-red-400"
                             : "text-muted-foreground"
                         }

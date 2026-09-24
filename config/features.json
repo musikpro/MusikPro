@@ -595,16 +595,18 @@
       ]
     },
     "musicful-audio-generation": {
-      "description": "Fournisseur audio Musicful administrable et chiffré : génération de chansons (mode auto), suivi asynchrone des tâches, conversion WAV/MP4.",
+      "description": "Fournisseur audio Musicful administrable et chiffré : génération de chansons (mode auto), suivi asynchrone des tâches, conversion WAV. Musicful v2 — MP3 Only : le fichier exposé à l’utilisateur (audioUrl) est toujours un MP3 vérifié, transcodé via Cloudinary si nécessaire ; aucune génération/conversion MP4 n’est effectuée.",
       "optional": true,
       "env": ["APP_SECRETS_ENCRYPTION_KEY", "MUSICFUL_API_KEY"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0014_musicful_audio_provider.sql",
+        "db/migrations/0019_musicful_mp3_normalization.sql",
         "lib/ai/musicful.ts",
         "lib/ai/music-jobs.ts",
         "lib/ai/errors.ts",
         "lib/validation/ai.ts",
+        "lib/storage/cloudinary.ts",
         "app/admin/ai-providers/page.tsx",
         "app/admin/ai-providers/audio/page.tsx",
         "app/admin/ai-providers/actions.ts",
@@ -612,9 +614,9 @@
         "app/api/music/generate/route.ts",
         "app/api/music/jobs/[id]/route.ts",
         "app/api/music/jobs/[id]/wav/route.ts",
-        "app/api/music/jobs/[id]/mp4/route.ts"
+        ".agents/skills/Musicful-v2-MP3-Only-SKILL.md"
       ],
-      "routes": ["/api/music/generate", "/api/music/jobs/[id]", "/api/music/jobs/[id]/wav", "/api/music/jobs/[id]/mp4"],
+      "routes": ["/api/music/generate", "/api/music/jobs/[id]", "/api/music/jobs/[id]/wav"],
       "dependsOn": ["database", "auth", "api-client"],
       "removalComplexity": "medium",
       "disableBehavior": "Désactiver le fournisseur dans l’administration ; les routes /api/music/* renvoient alors 503 MUSICFUL_NOT_CONFIGURED sans affecter le reste du SaaS.",
@@ -623,7 +625,9 @@
         "MUSICFUL_API_KEY peut servir de clé serveur de secours si aucune clé chiffrée n’est enregistrée.",
         "Seul le mode « auto » de l’API Musicful est implémenté ; les autres modes (custom/extend/concat/upload/artist) ne sont pas exposés tant que leurs schémas ne sont pas confirmés dans la documentation officielle.",
         "Les statuts numériques de tâche renvoyés par Musicful ne sont pas documentés publiquement : l’état interne (completed/failed/processing) est déduit des champs documentés audio_url/fail_code plutôt que du code numérique.",
-        "Le parcours client réel (feature real-song-generation-journey) construit des chansons à deux versions au-dessus de ces jobs bas niveau via lib/ai/songs.ts."
+        "Le parcours client réel (feature real-song-generation-journey) construit des chansons à deux versions au-dessus de ces jobs bas niveau via lib/ai/songs.ts.",
+        "MP4 : la méthode client convertToMp4, la route /api/music/jobs/[id]/mp4 et le flag allowMp4Conversion ont été retirés (ils n’étaient déjà appelés par aucun flux automatique ni par l’UI) ; les colonnes historiques mp4_url et allow_mp4_conversion restent en base pour compatibilité mais ne sont plus jamais lues ni écrites.",
+        "Garantie MP3 : après résolution du candidat audio (natif ou WAV), lib/ai/music-jobs.ts::ensureVerifiedMp3 vérifie le vrai Content-Type puis transcode en MP3 via lib/storage/cloudinary.ts::transcodeRemoteAudioToMp3 (déjà utilisé pour les images) si besoin — audioUrl reste le seul champ exposé, mais garantit désormais un fichier audio/mpeg réel. Si Cloudinary n’est pas configuré et que la source n’est pas déjà MP3, le job reste en 'processing' plutôt que d’exposer un fichier non-MP3."
       ]
     },
     "real-song-generation-journey": {

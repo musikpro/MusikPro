@@ -87,3 +87,40 @@ export async function uploadImageToCloudinary(file: File, options?: { folder?: s
     bytes: data.bytes ?? file.size,
   };
 }
+
+/**
+ * Musicful v2 — MP3 Only: Musicful's finished file isn't reliably audio-typed (it can come
+ * back as `video/mp4`), and there is no ffmpeg/transcoding runtime available in this Vercel
+ * deployment. Cloudinary (already wired for image uploads above) fetches the remote provider
+ * URL server-side and transcodes it to a genuine MP3 during upload — this is the "cloud
+ * transcoding service" strategy documented for serverless deployments. Never used when the
+ * source is already verified `audio/mpeg`.
+ */
+export async function transcodeRemoteAudioToMp3(remoteUrl: string, options?: { folder?: string; publicId?: string }) {
+  if (!/^https:\/\//i.test(remoteUrl)) throw new Error("Only https remote URLs can be transcoded");
+  const { cloudName, apiKey, apiSecret } = requireCloudinaryEnv();
+  const timestamp = Math.floor(Date.now() / 1000);
+  const folder = (options?.folder || `${process.env.CLOUDINARY_FOLDER || "africa-saas-kit"}/musicful-audio`).replace(/[^a-zA-Z0-9_\-/]/g, "-");
+  const publicId = options?.publicId ? options.publicId.replace(/[^a-zA-Z0-9_\-/]/g, "-") : undefined;
+  const params: Record<string, string | number> = { folder, format: "mp3", timestamp, ...(publicId ? { public_id: publicId } : {}) };
+  const signature = signParams(params, apiSecret);
+
+  const form = new FormData();
+  form.set("file", remoteUrl);
+  form.set("api_key", apiKey);
+  form.set("timestamp", String(timestamp));
+  form.set("folder", folder);
+  form.set("format", "mp3");
+  if (publicId) form.set("public_id", publicId);
+  form.set("signature", signature);
+
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/video/upload`, {
+    method: "POST",
+    body: form,
+  });
+  if (!response.ok) throw new Error(`Cloudinary audio transcode failed with HTTP ${response.status}`);
+  const data = (await response.json()) as { secure_url?: string; format?: string; bytes?: number };
+  if (!data.secure_url) throw new Error("Cloudinary returned an incomplete transcode response");
+  if (data.format && data.format.toLowerCase() !== "mp3") throw new Error(`Cloudinary returned unexpected format: ${data.format}`);
+  return { url: data.secure_url, bytes: data.bytes ?? null };
+}

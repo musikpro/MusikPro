@@ -149,12 +149,6 @@
       "rateLimit": "distributed-or-fail-closed",
       "markers": ["auth.api.getSession", "jobIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
     },
-    "app/api/music/jobs/[id]/mp4/route.ts": {
-      "auth": "session",
-      "validation": "zod-safeParse",
-      "rateLimit": "distributed-or-fail-closed",
-      "markers": ["auth.api.getSession", "jobIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
-    },
     "app/api/songs/route.ts": {
       "auth": "session",
       "validation": "no-input",

@@ -4,6 +4,7 @@ import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/Ad
 import { getServiceDb } from "@/db";
 import { audioProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { isCloudinaryConfigured } from "@/lib/storage/cloudinary";
 
 export default async function AdminAudioProviderPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   await requireAdmin();
@@ -46,7 +47,6 @@ export default async function AdminAudioProviderPage({ searchParams }: { searchP
           allowLyricsGenerator: stored?.allowLyricsGenerator ?? true,
           allowVibe: stored?.allowVibe ?? true,
           allowWavConversion: stored?.allowWavConversion ?? true,
-          allowMp4Conversion: stored?.allowMp4Conversion ?? true,
           preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
           strictStyleAdherence: stored?.strictStyleAdherence ?? true,
           maxGenerationsPerUserPerDay: stored?.maxGenerationsPerUserPerDay ?? 5,
@@ -68,6 +68,7 @@ export default async function AdminAudioProviderPage({ searchParams }: { searchP
         notice={notice}
         noticeTone={query.test === "failed" || query.test === "missing" ? "error" : query.removed ? "info" : "success"}
         encryptionReady={Boolean(process.env.APP_SECRETS_ENCRYPTION_KEY)}
+        mp3TranscodingReady={isCloudinaryConfigured()}
       />
     </AdminPage>
   );

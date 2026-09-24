@@ -14,6 +14,9 @@ export default function Icon({
     "bar-chart-2": "ChartNoAxesColumnIncreasing",
     "music-2": "Music2",
     "edit-2": "Pencil",
+    // lucide-react no longer exports a distinct "Trash2" icon (only "Trash") — without this
+    // alias every "trash-2" usage silently fell back to the default Music icon below.
+    "trash-2": "Trash",
   };
   const name =
     aliases[i] ??

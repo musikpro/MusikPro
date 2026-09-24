@@ -8,7 +8,7 @@ export function getWorkspaceDefaults(isDemo: boolean, realBalance = 0) {
     favorites: isDemo ? demoFavoriteSongs.map((song) => song.title) : [],
     versionFavorites: isDemo
       ? demoGeneratedSongs.flatMap((song) =>
-          song.versions.flatMap((version, index) => (version.liked ? [`${song.title}|${index}`] : [])),
+          song.versions.flatMap((version, index) => (version.liked ? [`${song.id}|${index}`] : [])),
         )
       : [],
   };

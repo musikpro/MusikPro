@@ -6,6 +6,8 @@ import { musicGenerationJobs } from "@/db/schema";
 import { createMusicfulClient, getMusicfulProvider, MusicfulApiError, type MusicfulClient } from "./musicful";
 import { musicfulTasksSchema, type MusicfulGenerateRequest } from "@/lib/validation/ai";
 import { createLogger } from "@/lib/observability/logger";
+import { isCloudinaryConfigured, transcodeRemoteAudioToMp3 } from "@/lib/storage/cloudinary";
+import { writeAuditLog } from "@/lib/security/audit";
 
 const logger = createLogger("music-jobs");
 
@@ -274,6 +276,40 @@ async function resolveAudioOnlyUrl(
   return candidateUrl;
 }
 
+const VERIFIED_MP3_CONTENT_TYPES = new Set(["audio/mpeg", "audio/mp3", "audio/x-mpeg"]);
+
+/**
+ * Musicful v2 — MP3 Only golden rule: never expose anything but a genuine MP3 to the user.
+ * `resolveAudioOnlyUrl` above only guarantees an *audio*-typed file (native or WAV); this
+ * verifies the real content-type and — since no ffmpeg runtime exists in this Vercel
+ * deployment — hands off to Cloudinary (already used for image uploads) to transcode
+ * whenever the source isn't already MP3. Returns null (job stays "processing" and retries on
+ * the next poll) when the source can't be verified or Cloudinary isn't configured, so a
+ * non-MP3 file is never silently relabeled or exposed as final.
+ */
+export async function ensureVerifiedMp3(
+  candidateUrl: string,
+  jobId: string,
+): Promise<{ url: string; mimeType: "audio/mpeg"; normalized: boolean } | null> {
+  const probe = await probeMediaUrl(candidateUrl);
+  if (!probe.ok) return null;
+  const contentType = probe.contentType.toLowerCase().split(";")[0].trim();
+  if (VERIFIED_MP3_CONTENT_TYPES.has(contentType)) {
+    return { url: candidateUrl, mimeType: "audio/mpeg", normalized: false };
+  }
+  if (!isCloudinaryConfigured()) {
+    logger.error("Musicful audio isn't MP3 and Cloudinary isn't configured; cannot guarantee MP3-only output", { jobId, contentType });
+    return null;
+  }
+  try {
+    const transcoded = await transcodeRemoteAudioToMp3(candidateUrl, { publicId: `job-${jobId}` });
+    return { url: transcoded.url, mimeType: "audio/mpeg", normalized: true };
+  } catch (error) {
+    logger.error("Musicful MP3 transcoding failed", { jobId, error: error instanceof Error ? error.message : "unknown" });
+    return null;
+  }
+}
+
 export async function pollMusicJob(jobId: string, userId: string) {
   const job = await getOwnedJob(jobId, userId);
   if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId) return job;
@@ -292,7 +328,8 @@ export async function pollMusicJob(jobId: string, userId: string) {
     const resolvedAudioUrl = candidateAudioUrl
       ? await resolveAudioOnlyUrl(client, candidateAudioUrl, task.song_id, provider.allowWavConversion, provider.preferredAudioFormat, job.id)
       : null;
-    const isCompleted = !isFailed && Boolean(resolvedAudioUrl);
+    const mp3Result = resolvedAudioUrl ? await ensureVerifiedMp3(resolvedAudioUrl, job.id) : null;
+    const isCompleted = !isFailed && Boolean(mp3Result);
     // Musicful reports `duration` in milliseconds (confirmed against a live completed task:
     // 179614 ≈ a 3-minute song), and -1 while still processing.
     const durationSeconds =
@@ -302,7 +339,9 @@ export async function pollMusicJob(jobId: string, userId: string) {
       title: job.title || task.title,
       style: task.style || job.style,
       durationSeconds,
-      audioUrl: isCompleted ? resolvedAudioUrl : job.audioUrl,
+      audioUrl: isCompleted ? mp3Result!.url : job.audioUrl,
+      audioMimeType: isCompleted ? mp3Result!.mimeType : job.audioMimeType,
+      audioNormalized: isCompleted ? mp3Result!.normalized : job.audioNormalized,
       coverUrl: task.cover_url || job.coverUrl,
       providerStatus: task.status,
       responsePayload: task,
@@ -314,6 +353,14 @@ export async function pollMusicJob(jobId: string, userId: string) {
       updatedAt: new Date(),
     };
     await database.update(musicGenerationJobs).set(values).where(eq(musicGenerationJobs.id, job.id));
+    if (isCompleted && mp3Result?.normalized) {
+      await writeAuditLog({
+        action: "musicful.audio.normalized_to_mp3",
+        actorId: userId,
+        targetType: "music_generation_job",
+        targetId: job.id,
+      });
+    }
     return { ...job, ...values };
   } catch (error) {
     logger.error("Musicful task poll failed", { jobId: job.id, providerTaskId: job.providerTaskId, error: error instanceof Error ? error.message : "unknown" });
@@ -338,16 +385,7 @@ export async function requestWavConversion(jobId: string, userId: string) {
   return { ...job, wavUrl: result.url || null };
 }
 
-export async function requestMp4Conversion(jobId: string, userId: string) {
-  const job = await requireCompletedOwnedJob(jobId, userId);
-  const provider = await getMusicfulProvider();
-  if (!provider.apiKey) throw new Error("MUSICFUL_NOT_CONFIGURED");
-  const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
-  const result = await client.convertToMp4(job.providerSongId!);
-  const database = getServiceDb();
-  await database.update(musicGenerationJobs).set({ mp4Url: result.url || null, updatedAt: new Date() }).where(eq(musicGenerationJobs.id, job.id));
-  return { ...job, mp4Url: result.url || null };
-}
+// Musicful v2 — MP3 Only: no MP4-conversion request helper here — MP4 output is never generated.
 
 export async function getJobForUser(jobId: string, userId: string) {
   return getOwnedJob(jobId, userId);

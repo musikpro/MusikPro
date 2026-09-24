@@ -21,7 +21,6 @@ type MusicfulSettings = {
   allowLyricsGenerator: boolean;
   allowVibe: boolean;
   allowWavConversion: boolean;
-  allowMp4Conversion: boolean;
   preferredAudioFormat: "native" | "wav";
   strictStyleAdherence: boolean;
   maxGenerationsPerUserPerDay: number;
@@ -73,12 +72,14 @@ export default function AdminMusicfulProviderForm({
   notice,
   noticeTone,
   encryptionReady,
+  mp3TranscodingReady,
 }: {
   settings: MusicfulSettings;
   account: MusicfulAccountInfo;
   notice?: string;
   noticeTone?: "success" | "error" | "info";
   encryptionReady: boolean;
+  mp3TranscodingReady: boolean;
 }) {
   return (
     <section className="admin-panel admin-editor-card">
@@ -91,6 +92,21 @@ export default function AdminMusicfulProviderForm({
         </span>
       </div>
       {notice ? <AdminToast message={notice} tone={noticeTone} /> : null}
+
+      <dl className="admin-info-grid">
+        <div>
+          <dt>Mode de sortie</dt>
+          <dd>MP3 uniquement — MP4/vidéo désactivé</dd>
+        </div>
+        <div>
+          <dt>Garantie MP3</dt>
+          <dd>
+            {mp3TranscodingReady
+              ? "Active : tout fichier non-MP3 renvoyé par Musicful est automatiquement transcodé en MP3 via Cloudinary."
+              : "Partielle : Cloudinary n’est pas configuré (npm run cloudinary:setup) — un fichier Musicful non-MP3 restera en attente au lieu d’être exposé tel quel."}
+          </dd>
+        </div>
+      </dl>
       {!encryptionReady ? (
         <div className="admin-secret-setup" role="status">
           <span className="admin-secret-setup-icon">
@@ -205,16 +221,16 @@ export default function AdminMusicfulProviderForm({
           <AdminSelect name="defaultInstrumental" defaultValue={String(settings.defaultInstrumental)} ariaLabel="Instrumental par défaut" options={boolOptions("Instrumental", "Avec voix/paroles")} />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="MusikPro est un site 100% musique : Musicful ne propose aucun réglage pour demander directement de l’audio plutôt qu’une vidéo à la génération — le fichier final peut arriver en MP3 (audio) ou en MP4 (vidéo) selon la chanson. « Automatique » accepte le MP3 natif et ne convertit en WAV que si Musicful renvoie une vidéo. « WAV » force systématiquement une conversion en audio WAV qualité studio, même quand le natif est déjà un MP3 (fichiers plus lourds).">
-            Format audio souhaité
+          <FieldLabel help="MusikPro est un site 100% musique et n’expose jamais que du MP3 à l’utilisateur final : Musicful ne propose aucun réglage pour demander directement de l’audio à la génération — le fichier natif peut arriver en MP3 ou en MP4/vidéo selon la chanson, mais il est toujours vérifié puis transcodé en MP3 si nécessaire avant d’être présenté. « Automatique » privilégie le MP3 natif quand Musicful le renvoie déjà. « WAV » force d’abord une conversion en audio WAV qualité studio (source intermédiaire plus riche), qui est ensuite elle aussi transcodée en MP3 avant d’être servie — fichiers de traitement plus lourds, mais résultat final identique : un MP3.">
+            Format audio source privilégié
           </FieldLabel>
           <AdminSelect
             name="preferredAudioFormat"
             defaultValue={settings.preferredAudioFormat}
-            ariaLabel="Format audio souhaité"
+            ariaLabel="Format audio source privilégié"
             options={[
-              { value: "native", label: "Automatique (MP3 natif, conversion WAV si vidéo)" },
-              { value: "wav", label: "WAV systématique (qualité studio, fichiers plus lourds)" },
+              { value: "native", label: "Automatique (MP3 natif si disponible)" },
+              { value: "wav", label: "WAV qualité studio en amont (toujours livré en MP3)" },
             ]}
           />
         </label>
@@ -282,11 +298,7 @@ export default function AdminMusicfulProviderForm({
             </label>
             <label className="admin-check-control">
               <input type="checkbox" name="allowWavConversion" defaultChecked={settings.allowWavConversion} />
-              <span>Conversion WAV</span>
-            </label>
-            <label className="admin-check-control">
-              <input type="checkbox" name="allowMp4Conversion" defaultChecked={settings.allowMp4Conversion} />
-              <span>Conversion MP4</span>
+              <span>Conversion WAV (source intermédiaire)</span>
             </label>
             <label className="admin-check-control" title="Enrichit automatiquement le style envoyé à Musicful avec la description de chaque genre du catalogue (Styles musicaux), plus une consigne explicite de fidélité au genre — s’applique à tous les styles actuels et futurs.">
               <input type="checkbox" name="strictStyleAdherence" defaultChecked={settings.strictStyleAdherence} />

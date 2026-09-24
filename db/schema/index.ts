@@ -338,6 +338,12 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
   allowLyricsGenerator: boolean("allow_lyrics_generator").notNull().default(true),
   allowVibe: boolean("allow_vibe").notNull().default(true),
   allowWavConversion: boolean("allow_wav_conversion").notNull().default(true),
+  /**
+   * @deprecated Musicful v2 — MP3 Only: no code reads or writes this column anymore (MP4
+   * generation was removed — it was already unreachable from any UI). Kept as a nullable-effect
+   * legacy column instead of a destructive DROP COLUMN migration; see
+   * .agents/skills/Musicful-v2-MP3-Only-SKILL.md section 24.
+   */
   allowMp4Conversion: boolean("allow_mp4_conversion").notNull().default(true),
   /**
    * Musicful's generate endpoint has no request-time audio-format parameter (confirmed
@@ -396,7 +402,16 @@ export const musicGenerationJobs = pgTable(
     audioUrl: text("audio_url"),
     coverUrl: text("cover_url"),
     wavUrl: text("wav_url"),
+    /** @deprecated Musicful v2 — MP3 Only: no longer read or written; see allowMp4Conversion above. */
     mp4Url: text("mp4_url"),
+    /**
+     * Musicful v2 — MP3 Only: `audioUrl` above is the sole user-facing field (unchanged
+     * contract), but it is now guaranteed to point at a verified `audio/mpeg` asset —
+     * transcoded via Cloudinary when Musicful's native/WAV result wasn't already MP3. These
+     * two columns are diagnostics only (admin/audit), never read by the UI.
+     */
+    audioMimeType: text("audio_mime_type"),
+    audioNormalized: boolean("audio_normalized").notNull().default(false),
     failureCode: integer("failure_code"),
     failureReason: text("failure_reason"),
     requestPayload: jsonb("request_payload"),

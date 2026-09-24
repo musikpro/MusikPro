@@ -16,7 +16,7 @@ Security is part of the architecture. Never trust the browser, a payment redirec
 10. Store private uploads in R2 and serve them with short-lived signed URLs.
 11. Enable Neon backups/restore strategy and test restoration.
 12. Enable Sentry/monitoring and audit logs.
-13. Review CSP whenever adding a third-party script/domain.
+13. Review CSP whenever adding a third-party script/domain. `script-src` is nonce-based (per-request, generated in `proxy.ts`) — any new inline `<script>` must read the nonce via `headers()` (`x-nonce`) and pass it as the `nonce` prop; any new `<Script src=...>` from a third-party host must be added to the CSP's `script-src` allowlist in `lib/security/headers.ts`.
 14. Run dependency and authorization tests before each release.
 
 ## Incident response

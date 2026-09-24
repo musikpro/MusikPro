@@ -54,7 +54,7 @@ Refactorisation visuelle : navigation mobile convertie vers des SVG homogènes e
 
 ## Risques restant PARTIELS / NON VÉRIFIÉS
 
-- CSP : `script-src` utilise encore `unsafe-inline` pour compatibilité. Passer à une CSP par nonce avant un profil `maximum`.
+- CSP : `script-src` utilise désormais un nonce par requête (`proxy.ts` + `lib/security/headers.ts`, plus de `unsafe-inline`) ; conséquence assumée, toutes les pages sous le matcher du proxy sont rendues dynamiquement (`export const dynamic = "force-dynamic"` sur `/privacy`, `/terms`, `/forgot-password`, `/register`, `/reset-password`, `/two-factor`, `app/not-found.tsx`), plus de statique/ISR/cache CDN pour elles. `style-src` garde `'unsafe-inline'` : un nonce ne couvre jamais l'attribut HTML `style="..."`, et l'app utilise massivement `style={{}}` React — un refactor Tailwind complet serait nécessaire pour aller plus loin, hors périmètre de ce durcissement.
 - Tokens OAuth Better Auth : ils sont gérés par Better Auth et restent sensibles en base. Évaluer chiffrement applicatif/KMS si le modèle de menace l'exige.
 - Webhook body limit : `Content-Length` est contrôlé, mais une limite de plateforme/proxy doit aussi être configurée car l'en-tête peut être absent.
 - Aucun `package-lock.json` dans le template tant que `npm install` n'a pas été exécuté réellement.

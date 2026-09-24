@@ -21,12 +21,12 @@ export function promptFor(task: AiLyricsTask) {
     `Détails supplémentaires: ${input.additionalDetails || "aucun"}`,
   ].join("\n");
   if (task.task === "lyrics.extend") {
-    return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nRallonge ces paroles avec des sections cohérentes, sans répéter inutilement le texte existant. Retourne la chanson complète et reste sous ${LYRICS_MAX_WORDS} mots au total.`;
+    return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nRallonge ces paroles avec des sections cohérentes, sans répéter inutilement le texte existant, et termine par un court outro qui referme la chanson en douceur (par exemple une reprise atténuée du refrain ou une dernière phrase conclusive) plutôt qu'une fin abrupte. Retourne la chanson complète et reste sous ${LYRICS_MAX_WORDS} mots au total.`;
   }
   if (task.task === "lyrics.rewrite") {
     return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nConsigne de révision: ${task.input.instruction}`;
   }
-  return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain et pont si pertinent), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.`;
+  return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain, pont si pertinent, et un court outro final qui referme la chanson en douceur — par exemple une reprise atténuée du refrain ou une dernière phrase conclusive — plutôt qu'une fin abrupte), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.`;
 }
 
 export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {

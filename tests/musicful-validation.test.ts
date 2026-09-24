@@ -18,7 +18,6 @@ describe("Musicful settings validation", () => {
     allowLyricsGenerator: true,
     allowVibe: true,
     allowWavConversion: true,
-    allowMp4Conversion: true,
     preferredAudioFormat: "native",
     strictStyleAdherence: true,
     maxGenerationsPerUserPerDay: "5",

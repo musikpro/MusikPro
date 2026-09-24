@@ -56,6 +56,21 @@ function toVersionView(job: JobRow): SongVersionView {
   };
 }
 
+/**
+ * `job.style` stores the full AI-directive prompt sent to Musicful (see
+ * lib/ai/style-prompt.ts — genre name + curated instrumentation/rhythm guidance + optional
+ * mood), not a short genre label. That's correct for what Musicful needs, but showing the
+ * whole paragraph to the user in a "style" badge was never intended. Every shape
+ * resolveStylePrompt can produce starts with the bare genre name followed by " (" or " — ", so
+ * splitting on the first occurrence of either recovers just the genre for display — including
+ * for songs generated before this fix, since it reads from the already-stored value.
+ */
+function extractGenreLabel(style: string | null): string | null {
+  if (!style) return style;
+  const match = style.match(/^(.*?)(?: \(| — )/);
+  return (match ? match[1] : style).trim();
+}
+
 function toGroupView(jobs: JobRow[]): SongGroupView {
   const [first] = jobs;
   const hasCompleted = jobs.some((job) => job.status === "completed");
@@ -65,7 +80,7 @@ function toGroupView(jobs: JobRow[]): SongGroupView {
     songGroupId: first.songGroupId!,
     title: first.title || "Chanson MusikPro",
     occasion: first.occasion,
-    style: first.style,
+    style: extractGenreLabel(first.style),
     lyrics: first.lyrics,
     status,
     createdAt: jobs.reduce((min, job) => (job.createdAt < min ? job.createdAt : min), first.createdAt),

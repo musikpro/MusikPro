@@ -84,7 +84,7 @@ export default function UserDashboardDesktop() {
       occasion: song.occasion,
       versions: song.versions.length,
       plays: song.versions.reduce((total, version) => total + version.plays, 0),
-      likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.title}|`)).length,
+      likes: demo.versionFavorites.filter((key) => key.startsWith(`${song.id}|`)).length,
       audioUrl: primaryVersion?.audioUrl ?? null,
       versionStatus: primaryVersion?.status ?? "processing",
     };
