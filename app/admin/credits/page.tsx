@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { asc, desc, eq, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { credits, user } from "@/db/schema";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
@@ -9,7 +9,7 @@ import { setCredits } from "./actions";
 export default async function AdminCreditsPage() {
   await requireAdmin();
   const db = getServiceDb();
-  const [rows, [total]] = await Promise.all([
+  const [rows, [total], userOptions] = await Promise.all([
     db
       .select({ credit: credits, email: user.email, name: user.name })
       .from(credits)
@@ -17,6 +17,7 @@ export default async function AdminCreditsPage() {
       .orderBy(desc(credits.updatedAt))
       .limit(100),
     db.select({ value: sql<number>`coalesce(sum(${credits.balance}), 0)::int` }).from(credits),
+    db.select({ email: user.email, name: user.name }).from(user).orderBy(asc(user.email)).limit(500),
   ]);
   return (
     <AdminPage>
@@ -54,7 +55,23 @@ export default async function AdminCreditsPage() {
         <form className="admin-editor-grid" action={setCredits}>
           <label className="admin-editor-field">
             <span>E-mail utilisateur</span>
-            <input type="email" name="email" required placeholder="utilisateur@exemple.com" />
+            <input
+              type="email"
+              name="email"
+              required
+              placeholder="utilisateur@exemple.com"
+              list="admin-user-emails"
+              autoComplete="off"
+            />
+            <datalist id="admin-user-emails">
+              {userOptions.map((option) =>
+                option.email ? (
+                  <option key={option.email} value={option.email}>
+                    {option.name ?? option.email}
+                  </option>
+                ) : null,
+              )}
+            </datalist>
           </label>
           <label className="admin-editor-field">
             <span>Nouveau solde</span>
