@@ -1275,6 +1275,124 @@
   line-height: 1.55;
 }
 
+.admin-insight-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-insight-charts {
+  display: grid;
+  gap: 16px;
+}
+
+.admin-bar-chart {
+  display: grid;
+  gap: 6px;
+}
+
+.admin-bar-chart-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--admin-muted);
+}
+
+.admin-bar-chart-heading strong {
+  color: var(--admin-foreground);
+  font-size: 13px;
+}
+
+.admin-bar-chart-svg {
+  width: 100%;
+  height: 56px;
+  overflow: visible;
+}
+
+.admin-bar-chart-svg rect {
+  fill: var(--admin-primary);
+}
+
+.admin-bar-chart-svg.is-success rect {
+  fill: var(--admin-success);
+}
+
+.admin-bar-chart-empty {
+  margin: 0;
+  padding: 18px 0;
+  color: var(--admin-muted);
+  font-size: 11px;
+  text-align: center;
+  border: 1px dashed var(--admin-border);
+  border-radius: 12px;
+}
+
+.admin-bar-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  color: var(--admin-muted);
+  font-size: 9px;
+}
+
+.admin-country-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-country-list li {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) minmax(60px, 120px) 32px;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+}
+
+.admin-country-flag {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.admin-country-name {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--admin-foreground);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-country-bar {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--admin-secondary);
+  overflow: hidden;
+}
+
+.admin-country-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--admin-primary);
+}
+
+.admin-country-count {
+  color: var(--admin-muted);
+  font-weight: 700;
+  text-align: right;
+}
+
+@media (min-width: 640px) {
+  .admin-insight-charts {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .admin-editor-card {
   display: grid;
   gap: 20px;
