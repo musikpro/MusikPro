@@ -4770,6 +4770,108 @@ span.musik-user-avatar {
   font-size: 11px;
 }
 
+.creation-pack-coupon {
+  padding: 13px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--color-secondary) 28%, var(--color-card));
+}
+
+.creation-pack-coupon>p {
+  margin-bottom: 9px;
+  color: var(--color-muted-foreground);
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.creation-pack-coupon-form {
+  display: flex;
+  gap: 8px;
+}
+
+.creation-pack-coupon-form input {
+  flex: 1;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-card);
+  color: var(--color-foreground);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.creation-pack-coupon-form button {
+  flex: 0 0 auto;
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: var(--color-primary);
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.creation-pack-coupon-form button:disabled {
+  opacity: 0.5;
+}
+
+.creation-pack-coupon-applied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: color-mix(in srgb, #16844b 12%, var(--color-card));
+  color: #16844b;
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.creation-pack-coupon-applied>span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.creation-pack-coupon-applied button {
+  flex: 0 0 auto;
+  display: grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  color: #16844b;
+  background: color-mix(in srgb, #16844b 16%, transparent);
+}
+
+.creation-pack-coupon-error {
+  margin-top: 8px;
+  color: #dc2626;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.creation-pack-total-discounted {
+  display: flex;
+  align-items: baseline;
+  gap: 7px;
+}
+
+.creation-pack-total-discounted s {
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.creation-pack-total-discounted strong {
+  color: #16844b;
+}
+
 .creation-pack-payment-methods {
   padding: 13px;
   border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--color-border));

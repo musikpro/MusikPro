@@ -100,6 +100,39 @@
         "Aucun crédit réel n’est débité tant que le mode est actif; le solde stocké en base n’est pas modifié."
       ]
     },
+    "coupons": {
+      "description": "Codes promo admin-gérables (pourcentage ou montant fixe), applicables par le client avant paiement sur l’écran de choix des crédits.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0021_sturdy_rhodey.sql",
+        "lib/coupons/catalog.ts",
+        "lib/coupons/server.ts",
+        "lib/validation/coupons.ts",
+        "app/admin/coupons/page.tsx",
+        "app/admin/coupons/actions.ts",
+        "app/admin/coupons/new/page.tsx",
+        "app/admin/coupons/[id]/page.tsx",
+        "components/admin/AdminCouponsTable.tsx",
+        "components/admin/AdminCouponForm.tsx",
+        "components/admin/AdminDeleteCouponButton.tsx",
+        "app/api/payments/coupons/apply/route.ts",
+        "app/api/payments/checkout/route.ts",
+        "lib/billing/reconcile.ts",
+        "components/banani/CreationPackScreen.tsx",
+        "components/banani/PaymentRedirectChariowScreen.tsx",
+        "components/banani/DemoProvider.tsx"
+      ],
+      "routes": ["/api/payments/coupons/apply"],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "auth", "payments"],
+      "disableBehavior": "Désactiver ou supprimer les codes depuis /admin/coupons ; sans code actif, l’écran de choix des crédits n’affiche simplement aucune réduction disponible. Le montant facturé reste inchangé (pas de coupon = pas de remise).",
+      "notes": [
+        "Le montant réduit n’est jamais calculé côté client : app/api/payments/checkout/route.ts revalide le code et recalcule chargedAmount à partir de plan.amount, exactement comme reconcilePayment ne fait jamais confiance à un webhook sans re-vérifier auprès du fournisseur.",
+        "redemption_count n’est incrémenté qu’après paiement confirmé (lib/billing/reconcile.ts), via un verrou idempotent sur payments.coupon_redeemed pour éviter un double comptage en cas de webhook/cron concurrent."
+      ]
+    },
     "credit-catalog": {
       "description": "Catalogue d’offres de crédits partagé entre l’administration, les comptes clients réels et la démonstration.",
       "optional": false,

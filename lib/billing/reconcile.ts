@@ -8,6 +8,7 @@ import {
   plans,
   subscriptions,
   credits,
+  coupons,
 } from "@/db/schema";
 import { getPaymentProvider } from "@/lib/payments";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
@@ -150,6 +151,21 @@ export async function reconcilePayment(paymentId: string) {
       .update(payments)
       .set({ status: "paid", paidAt: succeededAt })
       .where(eq(payments.id, payment.id));
+
+    if (payment.couponId) {
+      // "Claim" the redemption on the payment row first (idempotency key), then increment the
+      // coupon only if this call won the claim — mirrors the paymentFulfillments pattern above
+      // so a webhook/cron race can never redeem the same payment's coupon twice.
+      await db.execute(sql`
+        WITH claim AS (
+          UPDATE ${payments} SET coupon_redeemed = true
+          WHERE id = ${payment.id} AND coupon_redeemed = false
+          RETURNING coupon_id
+        )
+        UPDATE ${coupons} SET redemption_count = redemption_count + 1
+        FROM claim WHERE ${coupons.id} = claim.coupon_id
+      `);
+    }
 
     if (payment.userId && payment.planId) {
       const [plan] = await db

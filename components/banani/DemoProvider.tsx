@@ -227,6 +227,7 @@ function useDemoState(
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [packIndex, setPackIndex] = useState(-1);
+  const [coupon, setCoupon] = useState<{ code: string; discountAmount: number; finalAmount: number } | null>(null);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [lyricsPending, setLyricsPending] = useState(false);
   const library = isDemo
@@ -577,6 +578,8 @@ function useDemoState(
     setPlaying,
     packIndex,
     setPackIndex,
+    coupon,
+    setCoupon,
     pack: songPacks[packIndex] ?? null,
     paymentConfirmed,
     setPaymentConfirmed,

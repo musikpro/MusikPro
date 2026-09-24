@@ -15,6 +15,28 @@ export const plans = pgTable("plans", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const coupons = pgTable(
+  "coupons",
+  {
+    id: text("id").primaryKey(),
+    code: text("code").notNull().unique(),
+    /** "percent" (value is 1-100) or "fixed" (value is a XOF amount, the app's source-of-truth currency). */
+    type: text("type").notNull().default("percent"),
+    value: numeric("value", { precision: 18, scale: 2, mode: "number" }).notNull(),
+    description: text("description").notNull().default(""),
+    active: boolean("active").notNull().default(true),
+    maxRedemptions: integer("max_redemptions"),
+    redemptionCount: integer("redemption_count").notNull().default(0),
+    expiresAt: timestamp("expires_at"),
+    sortOrder: integer("sort_order").notNull().default(100),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    activeOrderIndex: index("coupons_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
+
 export const subscriptions = pgTable(
   "subscriptions",
   {
@@ -57,6 +79,12 @@ export const payments = pgTable(
     status: text("status").notNull().default("pending"),
     country: text("country"),
     method: text("method"),
+    couponId: text("coupon_id").references(() => coupons.id, { onDelete: "set null" }),
+    /** Snapshot of the code at payment time so it still displays if the coupon is later renamed/deleted. */
+    couponCode: text("coupon_code"),
+    discountAmount: numeric("discount_amount", { precision: 18, scale: 2, mode: "number" }),
+    /** Idempotency guard so a webhook/cron race can never increment coupons.redemption_count twice for the same payment. */
+    couponRedeemed: boolean("coupon_redeemed").notNull().default(false),
     metadata: jsonb("metadata"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     paidAt: timestamp("paid_at"),

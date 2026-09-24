@@ -39,6 +39,19 @@
         "requireContentType"
       ]
     },
+    "app/api/payments/coupons/apply/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
     "app/api/uploads/images/route.ts": {
       "auth": "session",
       "validation": "zod-file+type-size-magic-bytes",

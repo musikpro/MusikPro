@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
+import { apiFetch } from "@/lib/api/client";
 import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
@@ -13,8 +15,50 @@ export const screenSize = "mobile";
 
 import { translate as t } from "@/lib/i18n/translate";
 
+type CouponApplyResult = {
+  valid: boolean;
+  reason?: string;
+  code?: string;
+  discountAmount?: number;
+  finalAmount?: number;
+};
+
 export default function CreationPackScreen() {
   const demo = useDemo();
+  const [couponInput, setCouponInput] = useState("");
+  const [couponPending, setCouponPending] = useState(false);
+  const [couponError, setCouponError] = useState("");
+
+  const applyCoupon = async () => {
+    const code = couponInput.trim();
+    if (!code || !demo.pack || demo.isDemo) return;
+    setCouponPending(true);
+    setCouponError("");
+    try {
+      const result = await apiFetch<CouponApplyResult>("/api/payments/coupons/apply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, planId: demo.pack.id }),
+        timeoutMs: 15_000,
+      });
+      if (!result.valid || result.discountAmount == null) {
+        demo.setCoupon(null);
+        setCouponError(result.reason || "Code promo invalide.");
+        return;
+      }
+      demo.setCoupon({ code: result.code ?? code, discountAmount: result.discountAmount, finalAmount: result.finalAmount ?? 0 });
+    } catch {
+      setCouponError("Impossible de vérifier ce code pour le moment.");
+    } finally {
+      setCouponPending(false);
+    }
+  };
+
+  const clearCoupon = () => {
+    demo.setCoupon(null);
+    setCouponInput("");
+    setCouponError("");
+  };
 
   return (
     <div className="creation-pack-screen bg-surface flex flex-col">
@@ -75,7 +119,10 @@ export default function CreationPackScreen() {
                   aria-checked={selected}
                   data-demo-ready="true"
                   key={pack.id}
-                  onClick={() => demo.setPackIndex(demo.songPacks.findIndex((item) => item.id === pack.id))}
+                  onClick={() => {
+                    demo.setPackIndex(demo.songPacks.findIndex((item) => item.id === pack.id));
+                    if (!selected) clearCoupon();
+                  }}
                   className={`creation-pack-card${selected ? " is-selected" : ""}`}
                 >
                   <span className="creation-pack-card-main">
@@ -105,6 +152,41 @@ export default function CreationPackScreen() {
             })}
           </div>
 
+          {!demo.isDemo && demo.pack ? (
+            <div className="creation-pack-coupon" aria-label="Code promo">
+              <p>{t("Un code promo ?")}</p>
+              {demo.coupon ? (
+                <div className="creation-pack-coupon-applied">
+                  <span>
+                    <Icon i="ticket-percent" size={16} />
+                    {demo.coupon.code} — {t("réduction appliquée")}
+                  </span>
+                  <button type="button" onClick={clearCoupon} aria-label={t("Retirer le code promo")}>
+                    <Icon i="x" size={15} />
+                  </button>
+                </div>
+              ) : (
+                <div className="creation-pack-coupon-form">
+                  <input
+                    value={couponInput}
+                    onChange={(event) => setCouponInput(event.target.value.toUpperCase())}
+                    placeholder={t("Code promo")}
+                    maxLength={32}
+                    aria-label={t("Code promo")}
+                  />
+                  <button type="button" onClick={applyCoupon} disabled={!couponInput.trim() || couponPending}>
+                    {couponPending ? t("Vérification…") : t("Appliquer")}
+                  </button>
+                </div>
+              )}
+              {couponError ? (
+                <p role="alert" className="creation-pack-coupon-error">
+                  {couponError}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           <div className="creation-pack-payment-methods" aria-label="Moyens de paiement acceptés">
             <p>{t("Moyens de paiement acceptés")}</p>
             <div className="pack-payment-logos">
@@ -132,7 +214,14 @@ export default function CreationPackScreen() {
       <div className="creation-mobile-cta creation-pack-cta">
         <div className="creation-pack-total">
           <span>{demo.pack?.name ?? t("Aucune offre sélectionnée")}</span>
-          <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency) : "—"}</strong>
+          {demo.pack && demo.coupon ? (
+            <span className="creation-pack-total-discounted">
+              <s>{formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}</s>
+              <strong>{formatDemoPackPrice(demo.coupon.finalAmount, demo.choices.currency)}</strong>
+            </span>
+          ) : (
+            <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency) : "—"}</strong>
+          )}
         </div>
         <button
           type="button"

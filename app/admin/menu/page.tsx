@@ -14,6 +14,7 @@ const links = [
   ["/admin/recipient-relations", "Liens destinataire", "heart-handshake"],
   ["/admin/languages", "Langues", "languages"],
   ["/admin/payments", "Paiements", "credit-card"],
+  ["/admin/coupons", "Codes promo", "ticket-percent"],
   ["/admin/analytics", "Analytics", "chart-no-axes-column-increasing"],
   ["/admin/roles", "Rôles & accès", "shield-check"],
   ["/admin/branding", "Branding", "palette"],

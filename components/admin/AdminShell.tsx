@@ -30,7 +30,6 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/users", icon: "users", label: "Utilisateurs" },
       { href: "/admin/generations", icon: "music-2", label: "Générations" },
       { href: "/admin/library", icon: "library", label: "Bibliothèque" },
-      { href: "/admin/contests", icon: "trophy", label: "Concours" },
     ],
   },
   {
@@ -48,6 +47,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
     title: "Finance",
     items: [
       { href: "/admin/payments", icon: "credit-card", label: "Paiements" },
+      { href: "/admin/coupons", icon: "ticket-percent", label: "Codes promo" },
       { href: "/admin/subscriptions", icon: "refresh-cw", label: "Abonnements" },
       { href: "/admin/credits", icon: "coins", label: "Soldes crédits" },
       { href: "/admin/analytics", icon: "chart-no-axes-column-increasing", label: "Analytics" },

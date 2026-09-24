@@ -148,6 +148,13 @@
       "when": 1790254750620,
       "tag": "0020_closed_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1790257037187,
+      "tag": "0021_sturdy_rhodey",
+      "breakpoints": true
     }
   ]
 }

@@ -41,6 +41,7 @@ export default function PaymentRedirectScreen() {
           phoneLocal: parsedPhone.nationalNumber,
           successUrl: `${origin}/dashboard?payment=success`,
           cancelUrl: `${origin}/dashboard/create/pack?payment=cancelled`,
+          couponCode: demo.coupon?.code,
         }),
       });
       if (!result.checkoutUrl) throw new Error("Chariow n’a pas retourné de page de paiement.");
@@ -113,7 +114,9 @@ export default function PaymentRedirectScreen() {
             <div>
               <p className="text-sm font-semibold text-foreground">{t("Effectuez votre paiement")}</p>
               <p className="text-xs text-muted-foreground">
-                Montant : {formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}
+                Montant :{" "}
+                {formatDemoPackPrice(demo.coupon?.finalAmount ?? demo.pack.priceValue, demo.choices.currency)}
+                {demo.coupon ? ` (code ${demo.coupon.code} appliqué)` : ""}
               </p>
             </div>
           </div>

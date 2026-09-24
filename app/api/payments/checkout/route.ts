@@ -13,6 +13,9 @@ import { getPaymentProvider } from "@/lib/payments";
 import { isSafeProviderFallbackError } from "@/lib/payments/provider-base";
 import { rankProviders } from "@/lib/payments/routing";
 import type { PaymentProviderId } from "@/lib/payments/types";
+import { computeDiscount } from "@/lib/coupons/catalog";
+import { checkCouponEligibility, findActiveCouponByCode } from "@/lib/coupons/server";
+import { couponCodeSchema } from "@/lib/validation/coupons";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { getSecurityLevel, securityPolicy } from "@/lib/security/config";
 import { writeAuditLog } from "@/lib/security/audit";
@@ -52,6 +55,7 @@ const schema = z.object({
   phone: z.string().min(6).max(30).optional(),
   phoneCountry: z.string().regex(/^[A-Za-z]{2}$/).transform((v) => v.toUpperCase()).optional(),
   phoneLocal: z.string().min(4).max(30).optional(),
+  couponCode: couponCodeSchema.optional(),
 });
 
 export async function POST(request: Request) {
@@ -112,6 +116,24 @@ export async function POST(request: Request) {
   if (!plan?.active)
     return Response.json({ error: "Plan unavailable" }, { status: 404 });
 
+  // Never trust a client-supplied discount: the coupon is re-resolved and re-validated here,
+  // from scratch, against the plan's real amount — exactly like reconcilePayment re-pulls
+  // provider state instead of trusting a webhook payload.
+  let couponId: string | null = null;
+  let couponCode: string | null = null;
+  let discountAmount = 0;
+  if (body.couponCode) {
+    const coupon = await findActiveCouponByCode(body.couponCode);
+    if (!coupon)
+      return Response.json({ error: "Ce code n’existe pas ou n’est plus actif." }, { status: 400 });
+    const eligibility = checkCouponEligibility(coupon);
+    if (!eligibility.ok) return Response.json({ error: eligibility.reason }, { status: 400 });
+    couponId = coupon.id;
+    couponCode = coupon.code;
+    discountAmount = computeDiscount(plan.amount, { type: coupon.type as "percent" | "fixed", value: coupon.value });
+  }
+  const chargedAmount = plan.amount - discountAmount;
+
   let ranked = await rankProviders(country, body.method, plan.currency);
   if (body.provider)
     ranked = ranked.filter((x) => x.provider === body.provider);
@@ -131,11 +153,14 @@ export async function POST(request: Request) {
     planId: plan.id,
     provider: ranked[0].provider,
     reference,
-    amount: plan.amount,
+    amount: chargedAmount,
     currency: plan.currency,
     status: "pending",
     country,
     method: body.method,
+    couponId,
+    couponCode,
+    discountAmount: couponId ? discountAmount : null,
     metadata: {
       source: "pricing",
       routerCandidates: ranked.map((x) => x.provider),
@@ -176,7 +201,7 @@ export async function POST(request: Request) {
       const result = await getPaymentProvider(providerId).createCheckout({
         reference,
         money: {
-          amount: plan.amount,
+          amount: chargedAmount,
           currency:
             plan.currency as import("@/lib/payments/types").Money["currency"],
         },
@@ -226,6 +251,8 @@ export async function POST(request: Request) {
           planId: plan.id,
           routerScore: candidate.score,
           fallbackCount: failures.length,
+          couponCode,
+          discountAmount: couponId ? discountAmount : undefined,
         },
       });
       return Response.json(
