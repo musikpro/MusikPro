@@ -110,40 +110,42 @@ export default async function AdminLanguagesPage() {
           <p>Toute modification est répercutée dans les sélecteurs du tableau de bord client.</p>
         </div>
       </div>
-      <section className="admin-panel admin-language-detection">
-        <div className="admin-section-heading">
-          <div>
-            <h2>Détection automatique du pays</h2>
-            <p>
-              Country.is détecte le pays côté serveur. Le résultat est conservé 7 jours dans le cache Upstash et le
-              choix manuel du client reste prioritaire.
-            </p>
+      <div className="admin-language-top-row">
+        <section className="admin-panel admin-language-detection">
+          <div className="admin-section-heading">
+            <div>
+              <h2>Détection automatique du pays</h2>
+              <p>
+                Country.is détecte le pays côté serveur. Le résultat est conservé 7 jours dans le cache Upstash et le
+                choix manuel du client reste prioritaire.
+              </p>
+            </div>
+            <span className={`admin-status ${automaticDetectionEnabled ? "is-success" : "is-pending"}`}>
+              {automaticDetectionEnabled ? "Activée" : "Désactivée"}
+            </span>
           </div>
-          <span className={`admin-status ${automaticDetectionEnabled ? "is-success" : "is-pending"}`}>
-            {automaticDetectionEnabled ? "Activée" : "Désactivée"}
-          </span>
-        </div>
-        <form action={updateAutomaticLanguageDetection}>
-          <input type="hidden" name="enabled" value={String(!automaticDetectionEnabled)} />
-          <button className="admin-secondary-action" type="submit">
-            <Icon i={automaticDetectionEnabled ? "pause" : "play"} size={16} />
-            {automaticDetectionEnabled ? "Désactiver la détection" : "Activer la détection"}
-          </button>
-        </form>
-      </section>
-      <section className="admin-panel admin-language-detection">
-        <div className="admin-section-heading">
-          <div>
-            <h2>Traductions du catalogue</h2>
-            <p>
-              Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans
-              toutes les langues actives, pour que le parcours de création et les crédits s’affichent dans la
-              langue choisie par le client. Le contenu source en français n’est jamais modifié.
-            </p>
+          <form action={updateAutomaticLanguageDetection}>
+            <input type="hidden" name="enabled" value={String(!automaticDetectionEnabled)} />
+            <button className="admin-secondary-action" type="submit">
+              <Icon i={automaticDetectionEnabled ? "pause" : "play"} size={16} />
+              {automaticDetectionEnabled ? "Désactiver la détection" : "Activer la détection"}
+            </button>
+          </form>
+        </section>
+        <section className="admin-panel admin-language-detection">
+          <div className="admin-section-heading">
+            <div>
+              <h2>Traductions du catalogue</h2>
+              <p>
+                Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans
+                toutes les langues actives, pour que le parcours de création et les crédits s’affichent dans la
+                langue choisie par le client. Le contenu source en français n’est jamais modifié.
+              </p>
+            </div>
           </div>
-        </div>
-        <RefreshCatalogTranslationsButton />
-      </section>
+          <RefreshCatalogTranslationsButton />
+        </section>
+      </div>
       <LanguageSection
         title="Langues de l’interface"
         description="Langues proposées pour naviguer dans MusikPro. Les traductions éditoriales restent relues à partir du français de référence."

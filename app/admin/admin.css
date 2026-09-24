@@ -3865,6 +3865,19 @@ body:has(.admin-app),
   min-height: 46px;
 }
 
+.admin-language-top-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+@media (min-width: 900px) {
+  .admin-language-top-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .admin-language-detection-actions {
   margin-top: 18px;
 }
