@@ -190,6 +190,13 @@
       "when": 1790352064142,
       "tag": "0026_damp_vin_gonzales",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1790371081565,
+      "tag": "0027_sleepy_lester",
+      "breakpoints": true
     }
   ]
 }

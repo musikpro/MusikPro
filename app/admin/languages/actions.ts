@@ -43,7 +43,6 @@ const languageSchema = z
   });
 const idSchema = z.object({ id: z.string().trim().min(1).max(120) });
 const toggleSchema = idSchema.extend({ scope: z.enum(["interface", "lyrics"]) });
-const automaticDetectionSchema = z.object({ enabled: z.enum(["true", "false"]) });
 const countryLanguageSchema = z.object({
   countryCode: z
     .string()
@@ -167,27 +166,6 @@ export async function setDefaultLanguage(formData: FormData) {
     targetType: "localization_settings",
     targetId: "global",
     metadata: { code },
-  });
-  refresh();
-}
-
-export async function updateAutomaticLanguageDetection(formData: FormData) {
-  const session = await requireAdmin();
-  const { enabled } = automaticDetectionSchema.parse(Object.fromEntries(formData));
-  const automaticDetectionEnabled = enabled === "true";
-  await getServiceDb()
-    .insert(localizationSettings)
-    .values({ id: "global", automaticDetectionEnabled })
-    .onConflictDoUpdate({
-      target: localizationSettings.id,
-      set: { automaticDetectionEnabled, updatedAt: new Date() },
-    });
-  await writeAuditLog({
-    action: "localization.automatic_detection.changed",
-    actorId: session.user.id,
-    targetType: "localization_settings",
-    targetId: "global",
-    metadata: { automaticDetectionEnabled },
   });
   refresh();
 }

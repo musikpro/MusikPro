@@ -1,0 +1,1 @@
+ALTER TABLE "localization_settings" ADD COLUMN "fallback_country_code" text;

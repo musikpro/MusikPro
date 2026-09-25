@@ -267,6 +267,8 @@ export const localizationSettings = pgTable("localization_settings", {
   automaticDetectionEnabled: boolean("automatic_detection_enabled").notNull().default(true),
   defaultLanguageCode: text("default_language_code").notNull().default("fr"),
   countryCacheTtlSeconds: integer("country_cache_ttl_seconds").notNull().default(604800),
+  /** ISO 3166-1 alpha-2 country assumed when detection can't resolve one (IP/API failure). */
+  fallbackCountryCode: text("fallback_country_code"),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 

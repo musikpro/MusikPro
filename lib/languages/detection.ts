@@ -8,9 +8,11 @@ import { countryLanguages, localizationSettings } from "@/db/schema";
 import { cacheGet, cacheSet } from "@/lib/cache/upstash";
 import { requireEnv } from "@/lib/security/env";
 import type { LanguageOption } from "./catalog";
-import { resolveCountryLanguage } from "./country-language";
+import { extractVercelCountryHeader } from "./country-header";
+import { resolveLanguageForCountry } from "./country-language";
 
 export { languageCodeForCountry, resolveCountryLanguage } from "./country-language";
+export { extractVercelCountryHeader } from "./country-header";
 
 const COUNTRY_IS_URL = "https://api.country.is";
 const FALLBACK_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -70,6 +72,7 @@ export async function detectInterfaceLanguage(
   let enabled = true;
   let defaultLanguageCode = "fr";
   let ttlSeconds = FALLBACK_TTL_SECONDS;
+  let fallbackCountryCode: string | null = null;
   try {
     const [settings] = await db
       .select()
@@ -79,15 +82,23 @@ export async function detectInterfaceLanguage(
     enabled = settings?.automaticDetectionEnabled ?? true;
     defaultLanguageCode = settings?.defaultLanguageCode ?? "fr";
     ttlSeconds = settings?.countryCacheTtlSeconds ?? FALLBACK_TTL_SECONDS;
+    fallbackCountryCode = settings?.fallbackCountryCode ?? null;
   } catch {
     // Migration not yet applied: preserve a safe, usable default.
   }
   const fallback = activeLanguages.find((language) => language.code === defaultLanguageCode) ?? activeLanguages[0];
   if (!enabled) return fallback;
-  const ip = visitorIpFromHeaders(headersList);
-  if (!ip) return fallback;
-  const country = await lookupCountry(ip, ttlSeconds);
+
+  // Fast path: Vercel already resolved the visitor's country for this request, at no cost — skip
+  // the IP lookup, the cache round-trip and any call to country.is entirely when it's usable.
+  let country = extractVercelCountryHeader(headersList);
+  if (!country) {
+    const ip = visitorIpFromHeaders(headersList);
+    if (ip) country = await lookupCountry(ip, ttlSeconds);
+  }
+  if (!country) country = fallbackCountryCode;
   if (!country) return fallback;
+
   let override: string | undefined;
   try {
     const [row] = await db.select().from(countryLanguages).where(eq(countryLanguages.countryCode, country)).limit(1);
@@ -95,6 +106,5 @@ export async function detectInterfaceLanguage(
   } catch {
     // Migration not yet applied: fall back to the static heuristic mapping.
   }
-  const languageCode = resolveCountryLanguage(country, override ? { [country]: override } : {});
-  return activeLanguages.find((language) => language.code === languageCode) ?? fallback;
+  return resolveLanguageForCountry(country, override ? { [country]: override } : {}, activeLanguages, fallback);
 }

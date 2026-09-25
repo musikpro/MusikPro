@@ -5,16 +5,10 @@ import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
 import { getServiceDb } from "@/db";
-import { countryLanguages, languages, localizationSettings } from "@/db/schema";
+import { countryLanguages, languages } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
-import {
-  deleteLanguage,
-  removeCountryLanguage,
-  setCountryLanguage,
-  toggleLanguageScope,
-  updateAutomaticLanguageDetection,
-} from "./actions";
+import { deleteLanguage, removeCountryLanguage, setCountryLanguage, toggleLanguageScope } from "./actions";
 
 function LanguageSection({
   title,
@@ -189,12 +183,10 @@ function CountryLanguageSection({
 export default async function AdminLanguagesPage() {
   await requireAdmin();
   const serviceDb = getServiceDb();
-  const [rows, settingsRows, countryLanguageRows] = await Promise.all([
+  const [rows, countryLanguageRows] = await Promise.all([
     serviceDb.select().from(languages).orderBy(asc(languages.name)),
-    serviceDb.select().from(localizationSettings).limit(1),
     serviceDb.select().from(countryLanguages),
   ]);
-  const automaticDetectionEnabled = settingsRows[0]?.automaticDetectionEnabled ?? true;
   const mappedCodes = new Set(countryLanguageRows.map((row) => row.countryCode));
   const availableCountries = COUNTRIES_REFERENCE.filter((country) => !mappedCodes.has(country.code));
   const interfaceLanguages = rows.filter((language) => language.interfaceEnabled);
@@ -219,21 +211,15 @@ export default async function AdminLanguagesPage() {
             <div>
               <h2>Détection automatique du pays</h2>
               <p>
-                Country.is détecte le pays côté serveur. Le résultat est conservé 7 jours dans le cache Upstash et le
-                choix manuel du client reste prioritaire.
+                Activation, durée du cache, pays de secours et diagnostic Country.is se règlent désormais dans une
+                boîte dédiée des paramètres généraux.
               </p>
             </div>
-            <span className={`admin-status ${automaticDetectionEnabled ? "is-success" : "is-pending"}`}>
-              {automaticDetectionEnabled ? "Activée" : "Désactivée"}
-            </span>
           </div>
-          <form action={updateAutomaticLanguageDetection}>
-            <input type="hidden" name="enabled" value={String(!automaticDetectionEnabled)} />
-            <button className="admin-secondary-action" type="submit">
-              <Icon i={automaticDetectionEnabled ? "pause" : "play"} size={16} />
-              {automaticDetectionEnabled ? "Désactiver la détection" : "Activer la détection"}
-            </button>
-          </form>
+          <Link className="admin-secondary-action" href="/admin/settings">
+            <Icon i="settings" size={16} />
+            Ouvrir les réglages de détection
+          </Link>
         </section>
         <section className="admin-panel admin-language-detection">
           <div className="admin-section-heading">

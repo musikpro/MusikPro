@@ -1,3 +1,5 @@
+import type { LanguageOption } from "./catalog";
+
 const FRENCH_COUNTRIES = new Set([
   "BE",
   "BF",
@@ -56,6 +58,7 @@ const SPANISH_COUNTRIES = new Set([
   "UY",
   "VE",
 ]);
+
 const PORTUGUESE_COUNTRIES = new Set(["AO", "BR", "CV", "GW", "MZ", "PT", "ST", "TL"]);
 
 export function languageCodeForCountry(countryCode: string): "fr" | "en" | "es" | "pt" {
@@ -75,4 +78,20 @@ export function resolveCountryLanguage(countryCode: string, overrides: Record<st
   const override = overrides[country];
   if (override) return override;
   return languageCodeForCountry(country);
+}
+
+/**
+ * Resolves the interface language option for a detected (or configured fallback) country,
+ * falling back to `fallback` when no country is known, or when the resolved language isn't
+ * among the currently active interface languages.
+ */
+export function resolveLanguageForCountry(
+  country: string | null,
+  overrides: Record<string, string>,
+  activeLanguages: LanguageOption[],
+  fallback: LanguageOption,
+): LanguageOption {
+  if (!country) return fallback;
+  const languageCode = resolveCountryLanguage(country, overrides);
+  return activeLanguages.find((language) => language.code === languageCode) ?? fallback;
 }
