@@ -1,0 +1,1 @@
+ALTER TABLE "audio_provider_configs" ADD COLUMN "versions_per_generation" integer DEFAULT 2 NOT NULL;

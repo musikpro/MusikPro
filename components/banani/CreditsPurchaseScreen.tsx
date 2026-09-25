@@ -37,6 +37,10 @@ const transactionHistory = [
 export default function CreditsMobile() {
   const demo = useDemo();
   const availableGenerations = getGenerationCount(demo.balance);
+  const versionsLabel =
+    demo.versionsPerGeneration === 1
+      ? t("1 version")
+      : translateTemplate("{count} versions", { count: demo.versionsPerGeneration });
   const visibleHistory = demo.isDemo ? transactionHistory : [];
   return (
     <div className="bg-background flex flex-col">
@@ -99,7 +103,9 @@ export default function CreditsMobile() {
               <Icon i="coins" size={15} />
               <span>
                 {t("À chaque génération,")} <strong>{t("2 crédits")}</strong>{" "}
-                {t("sont débités de ton solde. Tu reçois deux versions de ta chanson.")}
+                {translateTemplate("sont débités de ton solde. Tu reçois {versionsLabel} de ta chanson.", {
+                  versionsLabel,
+                })}
               </span>
             </p>
           </div>
@@ -159,7 +165,7 @@ export default function CreditsMobile() {
                 <p className="pack-grid-credit-rule">
                   {translateTemplate("{count} générations · jusqu’à {versions} versions", {
                     count: getGenerationCount(pack.credits, pack.generationCost),
-                    versions: getVersionCount(pack.credits, pack.generationCost),
+                    versions: getVersionCount(pack.credits, pack.generationCost, demo.versionsPerGeneration),
                   })}
                 </p>
 
@@ -192,8 +198,9 @@ export default function CreditsMobile() {
             <div>
               <p className="text-sm font-semibold text-foreground mb-1">{t("Comment fonctionnent les crédits ?")}</p>
               <p className="text-xs text-muted-foreground">
-                {translateTemplate("Chaque génération consomme {count} crédits et produit deux versions musicales.", {
+                {translateTemplate("Chaque génération consomme {count} crédits et produit {versionsLabel}.", {
                   count: CREDITS_PER_GENERATION,
+                  versionsLabel,
                 })}
               </p>
             </div>

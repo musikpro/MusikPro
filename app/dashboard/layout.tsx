@@ -15,6 +15,7 @@ import { getPublishedLibraryCollections } from "@/lib/library-collections/server
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { detectInterfaceLanguage } from "@/lib/languages/detection";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
+import { getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
 import { headers } from "next/headers";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
@@ -38,6 +39,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
   const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
   const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
+  const versionsPerGeneration = await getMusicfulVersionsPerGeneration();
   const balance = demo
     ? 0
     : Number(
@@ -53,6 +55,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       mode={demo ? "demo" : "real"}
       initialBalance={balance}
       paymentBypassEnabled={paymentBypassEnabled}
+      versionsPerGeneration={versionsPerGeneration}
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
       initialMusicStyles={musicStyleOptions}

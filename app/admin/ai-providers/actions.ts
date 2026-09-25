@@ -246,6 +246,7 @@ export async function saveMusicfulSettings(formData: FormData) {
     maxGenerationsPerUserPerDay: parsed.maxGenerationsPerUserPerDay,
     maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
     maxConcurrentJobs: parsed.maxConcurrentJobs,
+    versionsPerGeneration: parsed.versionsPerGeneration,
     ...(encrypted
       ? {
           apiKeyCiphertext: encrypted.ciphertext,
@@ -263,7 +264,12 @@ export async function saveMusicfulSettings(formData: FormData) {
     actorId: session.user.id,
     targetType: "ai_provider",
     targetId: "musicful",
-    metadata: { enabled: values.enabled, model: values.defaultModel, keyReplaced: Boolean(encrypted) },
+    metadata: {
+      enabled: values.enabled,
+      model: values.defaultModel,
+      keyReplaced: Boolean(encrypted),
+      versionsPerGeneration: values.versionsPerGeneration,
+    },
   });
   revalidatePath("/admin/ai-providers");
   revalidatePath("/admin/ai-providers/audio");

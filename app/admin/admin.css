@@ -1427,6 +1427,44 @@
   gap: 8px;
 }
 
+.admin-tabs {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-tabs-list {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.admin-tabs-list::-webkit-scrollbar {
+  display: none;
+}
+
+.admin-tabs-trigger {
+  min-height: 40px;
+  flex: 0 0 auto;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 11px;
+  color: var(--admin-muted);
+  background: var(--admin-input);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-tabs-trigger.is-active {
+  color: white;
+  background: var(--admin-primary);
+}
+
+.admin-tabs-panel[hidden] {
+  display: none;
+}
+
 .admin-info-grid {
   display: grid;
   gap: 10px;

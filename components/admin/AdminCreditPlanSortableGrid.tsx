@@ -7,7 +7,13 @@ import { getGenerationCount, getVersionCount, type CreditPlanOption } from "@/li
 import AdminDeletePlanButton from "./AdminDeletePlanButton";
 import AdminSortableGrid from "./AdminSortableGrid";
 
-export default function AdminCreditPlanSortableGrid({ plans }: { plans: CreditPlanOption[] }) {
+export default function AdminCreditPlanSortableGrid({
+  plans,
+  versionsPerGeneration,
+}: {
+  plans: CreditPlanOption[];
+  versionsPerGeneration: number;
+}) {
   return (
     <AdminSortableGrid
       items={plans}
@@ -31,7 +37,8 @@ export default function AdminCreditPlanSortableGrid({ plans }: { plans: CreditPl
           <div className="admin-plan-credit-summary">
             <strong>{plan.credits} crédits</strong>
             <span>
-              {getGenerationCount(plan.credits)} générations · jusqu’à {getVersionCount(plan.credits)} versions
+              {getGenerationCount(plan.credits)} générations · jusqu’à{" "}
+              {getVersionCount(plan.credits, undefined, versionsPerGeneration)} versions
             </span>
           </div>
           <strong className="admin-credit-plan-price">{plan.priceValue.toLocaleString("fr-FR")} FCFA</strong>

@@ -28,6 +28,10 @@ export default function CreationPackScreen() {
   const [couponInput, setCouponInput] = useState("");
   const [couponPending, setCouponPending] = useState(false);
   const [couponError, setCouponError] = useState("");
+  const versionsLabel =
+    demo.versionsPerGeneration === 1
+      ? t("1 version")
+      : translateTemplate("{count} versions", { count: demo.versionsPerGeneration });
 
   const applyCoupon = async () => {
     const code = couponInput.trim();
@@ -73,7 +77,10 @@ export default function CreationPackScreen() {
           <div>
             <span className="creation-pack-kicker">
               <Icon i="music-2" size={16} />
-              {translateTemplate("{count} crédits · une génération · deux versions", { count: CREDITS_PER_GENERATION })}
+              {translateTemplate("{count} crédits · une génération · {versionsLabel}", {
+                count: CREDITS_PER_GENERATION,
+                versionsLabel,
+              })}
             </span>
             <h1>{t("Choisis tes crédits")}</h1>
             <p>{t("Sélectionne l’offre adaptée au nombre de générations souhaité.")}</p>
@@ -101,7 +108,15 @@ export default function CreationPackScreen() {
             </span>
             <div>
               <h2 id="creation-pack-panel-title">{t("Offres de crédits")}</h2>
-              <p>{t("Chaque génération musicale consomme 2 crédits et produit deux versions.")}</p>
+              <p>
+                {translateTemplate(
+                  "Chaque génération musicale consomme {credits} crédits et produit {versionsLabel}.",
+                  {
+                    credits: CREDITS_PER_GENERATION,
+                    versionsLabel,
+                  },
+                )}
+              </p>
             </div>
           </div>
 
@@ -148,7 +163,7 @@ export default function CreationPackScreen() {
                     <small>
                       {translateTemplate("{count} générations · {versions} versions", {
                         count: getGenerationCount(pack.credits, pack.generationCost),
-                        versions: getVersionCount(pack.credits, pack.generationCost),
+                        versions: getVersionCount(pack.credits, pack.generationCost, demo.versionsPerGeneration),
                       })}
                     </small>
                     <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>

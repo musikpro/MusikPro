@@ -91,6 +91,10 @@ export function getGenerationCount(credits: number, cost = CREDITS_PER_GENERATIO
   return Math.floor(credits / cost);
 }
 
-export function getVersionCount(credits: number, cost = CREDITS_PER_GENERATION) {
-  return getGenerationCount(credits, cost) * VERSIONS_PER_GENERATION;
+export function getVersionCount(
+  credits: number,
+  cost = CREDITS_PER_GENERATION,
+  versionsPerGeneration = VERSIONS_PER_GENERATION,
+) {
+  return getGenerationCount(credits, cost) * versionsPerGeneration;
 }

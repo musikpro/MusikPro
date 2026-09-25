@@ -80,6 +80,7 @@ function useDemoState(
   initialDetectedInterfaceLanguage: LanguageOption | null,
   persistenceId: string,
   paymentBypassEnabled: boolean,
+  versionsPerGeneration: number,
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -583,6 +584,7 @@ function useDemoState(
   return {
     isDemo,
     paymentBypassEnabled,
+    versionsPerGeneration,
     balance,
     pathname,
     href,
@@ -674,6 +676,7 @@ export function DemoProvider({
   initialDetectedInterfaceLanguage,
   persistenceId,
   paymentBypassEnabled = false,
+  versionsPerGeneration = 2,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
@@ -689,6 +692,7 @@ export function DemoProvider({
   initialDetectedInterfaceLanguage: LanguageOption | null;
   persistenceId: string;
   paymentBypassEnabled?: boolean;
+  versionsPerGeneration?: number;
 }) {
   const state = useDemoState(
     mode,
@@ -704,6 +708,7 @@ export function DemoProvider({
     initialDetectedInterfaceLanguage,
     persistenceId,
     paymentBypassEnabled,
+    versionsPerGeneration,
   );
   const [offline, setOffline] = useState(false);
   useEffect(() => {

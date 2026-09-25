@@ -113,6 +113,7 @@ export async function POST(request: Request) {
         instrumental: provider.defaultInstrumental ? 1 : 0,
       },
       provider.model,
+      provider.versionsPerGeneration,
     );
     if (succeeded === 0) {
       const refunded = bypassActive ? newBalance : await refundCredits(session.user.id, CREDITS_PER_GENERATION);

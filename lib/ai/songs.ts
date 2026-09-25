@@ -4,7 +4,6 @@ import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs } from "@/db/schema";
 import { createMusicJob, submitSongGroupJobs, pollMusicJob, MusicJobOwnershipError } from "./music-jobs";
-import { VERSIONS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 
 type JobRow = typeof musicGenerationJobs.$inferSelect;
 
@@ -102,10 +101,11 @@ export async function submitSongGeneration(
     instrumental?: 0 | 1;
   },
   model: string,
+  versionsPerGeneration: number,
 ) {
   const songGroupId = randomUUID();
   const jobs = await Promise.all(
-    Array.from({ length: VERSIONS_PER_GENERATION }, (_, index) =>
+    Array.from({ length: versionsPerGeneration }, (_, index) =>
       createMusicJob(
         userId,
         {

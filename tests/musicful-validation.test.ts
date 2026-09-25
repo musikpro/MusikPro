@@ -28,6 +28,7 @@ describe("Musicful settings validation", () => {
     maxGenerationsPerUserPerDay: "5",
     maxGenerationsPerUserPerHour: "2",
     maxConcurrentJobs: "2",
+    versionsPerGeneration: "2",
   };
 
   it("accepts an empty API key to preserve the encrypted key", () => {
@@ -44,6 +45,16 @@ describe("Musicful settings validation", () => {
 
   it("rejects an unsupported preferred audio format", () => {
     expect(musicfulSettingsSchema.safeParse({ ...validSettings, preferredAudioFormat: "mp4" }).success).toBe(false);
+  });
+
+  it("accepts a versions-per-generation setting between 1 and 3", () => {
+    expect(musicfulSettingsSchema.safeParse({ ...validSettings, versionsPerGeneration: "1" }).success).toBe(true);
+    expect(musicfulSettingsSchema.safeParse({ ...validSettings, versionsPerGeneration: "3" }).success).toBe(true);
+  });
+
+  it("rejects a versions-per-generation setting outside 1-3", () => {
+    expect(musicfulSettingsSchema.safeParse({ ...validSettings, versionsPerGeneration: "0" }).success).toBe(false);
+    expect(musicfulSettingsSchema.safeParse({ ...validSettings, versionsPerGeneration: "4" }).success).toBe(false);
   });
 });
 

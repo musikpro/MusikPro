@@ -446,6 +446,12 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
   maxGenerationsPerUserPerDay: integer("max_generations_per_user_per_day").notNull().default(5),
   maxGenerationsPerUserPerHour: integer("max_generations_per_user_per_hour").notNull().default(2),
   maxConcurrentJobs: integer("max_concurrent_jobs").notNull().default(2),
+  /**
+   * How many Musicful jobs (versions) a single generation request submits — see
+   * lib/ai/songs.ts's submitSongGeneration(). Independent from CREDITS_PER_GENERATION
+   * (lib/credit-plans/catalog.ts): changing this does not change what a generation costs.
+   */
+  versionsPerGeneration: integer("versions_per_generation").notNull().default(2),
   lastConnectionStatus: text("last_connection_status"),
   lastConnectionError: text("last_connection_error"),
   lastTestedAt: timestamp("last_tested_at"),
