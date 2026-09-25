@@ -9,12 +9,15 @@ import Icon from "./Icon";
 export const displayName = "Mobile Bottom Nav";
 export const shortDescription = "Fixed bottom navigation bar for mobile screens";
 
+// `key` is the canonical identifier shared with the desktop nav and lib/demo/navigation.ts's
+// demoDestination() lookup table; `label` is only what this bottom bar displays, so this tab can
+// read "Mes sons" here without touching routing or the label used anywhere else in the app.
 const items = [
-  { icon: "home", label: t("Accueil"), active: true },
-  { icon: "compass", label: t("Découvrir"), active: false },
-  { icon: "plus", label: t("Créer"), active: false, isCenter: true },
-  { icon: "music", label: t("Mes chansons"), active: false },
-  { icon: "coins", label: t("Crédits"), badge: true, active: false },
+  { icon: "home", key: "Accueil", label: t("Accueil"), active: true },
+  { icon: "compass", key: "Découvrir", label: t("Découvrir"), active: false },
+  { icon: "plus", key: "Créer", label: t("Créer"), active: false, isCenter: true },
+  { icon: "music", key: "Mes chansons", label: t("Mes sons"), active: false },
+  { icon: "coins", key: "Crédits", label: t("Crédits"), badge: true, active: false },
 ];
 
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
@@ -39,7 +42,7 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}
     >
       {items.map((item) => {
-        const isActive = item.label === currentTab;
+        const isActive = item.key === currentTab;
         if (item.isCenter) {
           return (
             <button
@@ -48,12 +51,12 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
               onClick={() => {
                 if (launching) return;
                 setLaunching(true);
-                window.setTimeout(() => demo.go(demoDestination(item.label)), 180);
+                window.setTimeout(() => demo.go(demoDestination(item.key)), 180);
               }}
               aria-label={item.label}
               aria-busy={launching}
               aria-current={isActive ? "page" : undefined}
-              key={item.label}
+              key={item.key}
               className={`mobile-create-launch flex flex-col items-center justify-center -mt-6 ${launching ? "is-launching" : ""}`}
             >
               <div
@@ -69,10 +72,10 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
           <button
             type="button"
             data-demo-ready
-            onClick={() => demo.go(demoDestination(item.label))}
+            onClick={() => demo.go(demoDestination(item.key))}
             aria-label={item.label}
             aria-current={isActive ? "page" : undefined}
-            key={item.label}
+            key={item.key}
             className="flex flex-col items-center gap-0.5 px-2 py-1 relative"
           >
             <Icon i={item.icon} size={22} className={isActive ? "text-primary" : "text-muted-foreground"} />
