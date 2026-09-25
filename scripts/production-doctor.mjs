@@ -59,7 +59,30 @@ const needsGoogleOAuth = Boolean(cfg?.googleAuth);
 add('google-oauth','Google Cloud OAuth',!needsGoogleOAuth?'PASS':googleOAuth?'PASS':'FAIL',!needsGoogleOAuth?'Désactivé par configuration':googleOAuth?'Client ID/secret présents':'GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET requis','google');
 const seoFiles = exists('app/sitemap.ts')&&exists('app/robots.ts')&&exists('app/opengraph-image.tsx')&&exists('lib/seo/metadata.ts');
 const needsSearchConsole = Boolean(cfg?.searchConsole);
-add('search-console','Google Search Console',!needsSearchConsole?'PASS':seoFiles?'UNVERIFIED':'FAIL',!needsSearchConsole?'Désactivé par configuration':seoFiles?'SEO technique + social preview présents; propriété Google à vérifier manuellement/DNS':'sitemap.ts ou robots.ts manquant','google');
+const scEnvVerified = Boolean(env.GOOGLE_SITE_VERIFICATION||process.env.GOOGLE_SITE_VERIFICATION);
+async function hasGoogleSiteVerificationTxt(appUrl) {
+  if (!appUrl) return false;
+  try {
+    const u = new URL(appUrl);
+    if (u.protocol!=='https:' || u.hostname==='localhost' || u.hostname==='127.0.0.1') return false;
+    const records = await Promise.race([
+      dns.resolveTxt(u.hostname),
+      new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),3000)),
+    ]);
+    return records.some((chunks)=>chunks.join('').includes('google-site-verification='));
+  } catch { return false; }
+}
+const scAppUrl = (env.NEXT_PUBLIC_APP_URL||env.APP_URL||process.env.NEXT_PUBLIC_APP_URL||process.env.APP_URL||'').replace(/\/$/,'');
+const scDnsVerified = needsSearchConsole && !scEnvVerified ? await hasGoogleSiteVerificationTxt(scAppUrl) : false;
+const scVerified = scEnvVerified || scDnsVerified;
+add('search-console','Google Search Console',
+  !needsSearchConsole?'PASS':scVerified?'PASS':seoFiles?'UNVERIFIED':'FAIL',
+  !needsSearchConsole?'Désactivé par configuration'
+    :scDnsVerified?'Propriété vérifiée : enregistrement TXT DNS google-site-verification détecté publiquement.'
+    :scEnvVerified?'Jeton de vérification (balise HTML) configuré; confirmer la vérification dans Search Console.'
+    :seoFiles?'SEO technique + social preview présents; propriété Google à vérifier manuellement/DNS'
+    :'sitemap.ts ou robots.ts manquant',
+  'google');
 
 const providerVars={
   fedapay:['FEDAPAY_SECRET_KEY','FEDAPAY_WEBHOOK_SECRET'], paydunya:['PAYDUNYA_MASTER_KEY','PAYDUNYA_PRIVATE_KEY','PAYDUNYA_TOKEN'], chariow:['CHARIOW_API_KEY','CHARIOW_WEBHOOK_SECRET'], flutterwave:['FLUTTERWAVE_SECRET_KEY','FLUTTERWAVE_WEBHOOK_SECRET'], moneroo:['MONEROO_API_KEY','MONEROO_WEBHOOK_SECRET'], paytech:['PAYTECH_API_KEY','PAYTECH_API_SECRET'], bictorys:['BICTORYS_API_KEY','BICTORYS_WEBHOOK_SECRET']

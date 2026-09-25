@@ -103,6 +103,22 @@ async function checkNgrok(): Promise<KitCheck> {
   }
 }
 
+async function hasGoogleSiteVerificationTxt(appUrl: string): Promise<boolean> {
+  if (!appUrl) return false;
+  try {
+    const { hostname, protocol } = new URL(appUrl);
+    if (protocol !== "https:" || hostname === "localhost" || hostname === "127.0.0.1") return false;
+    const dns = await import("node:dns/promises");
+    const records = await Promise.race([
+      dns.resolveTxt(hostname),
+      new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 3000)),
+    ]);
+    return records.some((chunks) => chunks.join("").includes("google-site-verification="));
+  } catch {
+    return false;
+  }
+}
+
 export function getMobileAppReadiness(): MobileAppReadiness {
   const config = readConfig();
   const mobile = config && typeof config === "object" ? ((config as KitConfig & { mobileAppEnabled?: boolean; mobileApp?: Record<string, unknown> }).mobileApp || {}) : {};
@@ -231,7 +247,23 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   checks.push({ id: "google", label: "Google OAuth", status: googleOk ? "ok" : googleRequired ? "missing" : "warning", detail: googleOk ? "Client ID + secret configurés." : googleRequired ? "Google OAuth activé mais identifiants incomplets." : "Non configuré — optionnel tant qu’un autre mode d’authentification valide est actif.", group: "Services" });
 
   const searchRequired = Boolean(config?.searchConsole);
-  checks.push({ id: "search-console", label: "Google Search Console", status: hasEnv("GOOGLE_SITE_VERIFICATION") ? "ok" : searchRequired ? "missing" : "warning", detail: hasEnv("GOOGLE_SITE_VERIFICATION") ? "Jeton de vérification configuré. La validation dans Search Console reste à confirmer." : searchRequired ? "Search Console prévu mais GOOGLE_SITE_VERIFICATION manque." : "Non configuré — optionnel.", group: "Services" });
+  const searchConsoleDnsVerified = searchRequired && !hasEnv("GOOGLE_SITE_VERIFICATION")
+    ? await hasGoogleSiteVerificationTxt(process.env.NEXT_PUBLIC_APP_URL || process.env.APP_URL || "")
+    : false;
+  const searchConsoleReady = hasEnv("GOOGLE_SITE_VERIFICATION") || searchConsoleDnsVerified;
+  checks.push({
+    id: "search-console",
+    label: "Google Search Console",
+    status: searchConsoleReady ? "ok" : searchRequired ? "missing" : "warning",
+    detail: searchConsoleDnsVerified
+      ? "Propriété vérifiée : enregistrement TXT DNS google-site-verification détecté publiquement."
+      : hasEnv("GOOGLE_SITE_VERIFICATION")
+        ? "Jeton de vérification (balise HTML) configuré. La validation dans Search Console reste à confirmer."
+        : searchRequired
+          ? "Search Console prévu mais ni GOOGLE_SITE_VERIFICATION ni TXT DNS google-site-verification détecté."
+          : "Non configuré — optionnel.",
+    group: "Services",
+  });
 
   const cloudinaryOk = hasEnv("CLOUDINARY_CLOUD_NAME") && hasEnv("CLOUDINARY_API_KEY") && hasEnv("CLOUDINARY_API_SECRET");
   checks.push({ id: "cloudinary", label: "Cloudinary images (optionnel)", status: cloudinaryOk ? "ok" : "warning", detail: cloudinaryOk ? "Variables Cloudinary présentes; un upload réel reste à tester." : "Non configuré. Valide pour un SaaS sans upload d’images; décision en Phase 18.", group: "Services" });
