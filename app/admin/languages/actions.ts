@@ -19,6 +19,9 @@ import { writeAuditLog } from "@/lib/security/audit";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
+import { actionErrorMessage } from "@/lib/admin/action-state";
+
+export type LanguageActionState = { ok: boolean; message: string } | null;
 
 const languageSchema = z
   .object({
@@ -70,7 +73,7 @@ const defaultLanguageSchema = z.object({
 function refresh() {
   ["/admin/languages", "/dashboard", "/dashboard/create/parameters", "/demo"].forEach((path) => revalidatePath(path));
 }
-export async function createLanguage(formData: FormData) {
+export async function createLanguage(_previous: LanguageActionState, formData: FormData): Promise<LanguageActionState> {
   const session = await requireAdmin();
   const parsed = languageSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
@@ -92,27 +95,31 @@ export async function createLanguage(formData: FormData) {
   refresh();
   redirect("/admin/languages");
 }
-export async function updateLanguage(formData: FormData) {
+export async function updateLanguage(_previous: LanguageActionState, formData: FormData): Promise<LanguageActionState> {
   const session = await requireAdmin();
-  const parsed = languageSchema.extend({ id: z.string().trim().min(1).max(120) }).parse(Object.fromEntries(formData));
-  await getServiceDb()
-    .update(languages)
-    .set({
-      ...parsed,
-      interfaceEnabled: parsed.interfaceEnabled === "true",
-      lyricsEnabled: parsed.lyricsEnabled === "true",
-      updatedAt: new Date(),
-    })
-    .where(eq(languages.id, parsed.id));
-  await writeAuditLog({
-    action: "language.updated",
-    actorId: session.user.id,
-    targetType: "language",
-    targetId: parsed.id,
-    metadata: { code: parsed.code },
-  });
-  refresh();
-  redirect("/admin/languages");
+  try {
+    const parsed = languageSchema.extend({ id: z.string().trim().min(1).max(120) }).parse(Object.fromEntries(formData));
+    await getServiceDb()
+      .update(languages)
+      .set({
+        ...parsed,
+        interfaceEnabled: parsed.interfaceEnabled === "true",
+        lyricsEnabled: parsed.lyricsEnabled === "true",
+        updatedAt: new Date(),
+      })
+      .where(eq(languages.id, parsed.id));
+    await writeAuditLog({
+      action: "language.updated",
+      actorId: session.user.id,
+      targetType: "language",
+      targetId: parsed.id,
+      metadata: { code: parsed.code },
+    });
+    refresh();
+    return { ok: true, message: "Langue enregistrée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette langue.") };
+  }
 }
 export async function toggleLanguageScope(formData: FormData) {
   const session = await requireAdmin();

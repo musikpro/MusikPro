@@ -1,7 +1,12 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminOccasionEmojiPicker from "@/components/admin/AdminOccasionEmojiPicker";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import type { OccasionActionState } from "@/app/admin/occasions/actions";
 
 type OccasionFormValues = {
   id?: string;
@@ -16,13 +21,15 @@ export default function AdminOccasionForm({
   action,
   values = {},
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (previous: OccasionActionState, formData: FormData) => Promise<OccasionActionState>;
   values?: OccasionFormValues;
 }) {
   const editing = Boolean(values.id);
+  const [state, formAction, pending] = useActionState<OccasionActionState, FormData>(action, null);
+  useAdminActionToast(state);
   return (
     <section className="admin-panel admin-editor-card">
-      <form action={action} className="admin-editor-grid admin-occasion-editor-grid">
+      <form action={formAction} className="admin-editor-grid admin-occasion-editor-grid">
         {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
         <label className="admin-editor-field">
           <span>Nom de l’occasion</span>
@@ -64,7 +71,7 @@ export default function AdminOccasionForm({
         </div>
         <div className="admin-editor-actions is-wide">
           <AdminBackLink href="/admin/occasions" label="Annuler" />
-          <button type="submit">
+          <button type="submit" disabled={pending}>
             <Icon i={editing ? "save" : "plus"} size={17} />
             {editing ? "Enregistrer les modifications" : "Enregistrer l’occasion"}
           </button>

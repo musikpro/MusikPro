@@ -5,29 +5,13 @@ import { getServiceDb } from "@/db";
 import { aiProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 
-export default async function OpenAiLyricsProviderPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function OpenAiLyricsProviderPage() {
   await requireAdmin();
   const [stored] = await getServiceDb()
     .select()
     .from(aiProviderConfigs)
     .where(eq(aiProviderConfigs.provider, "openai"))
     .limit(1);
-  const query = await searchParams;
-  const notice = query.saved
-    ? "Configuration OpenAI enregistrée."
-    : query.removed
-      ? "Clé OpenAI supprimée."
-      : query.test === "ok"
-        ? "Connexion OpenAI validée avec le modèle configuré."
-        : query.test === "failed"
-          ? "Échec de connexion : vérifie la clé, les crédits et le modèle OpenAI."
-          : query.test === "missing"
-            ? "Aucune clé OpenAI n’est disponible."
-            : undefined;
   return (
     <AdminPage>
       <AdminBackLink href="/admin/ai-providers/lyrics" label="Fournisseurs de paroles" />
@@ -48,8 +32,6 @@ export default async function OpenAiLyricsProviderPage({
           lyricsRewriteEnabled: stored?.lyricsRewriteEnabled ?? true,
           isDefaultForLyrics: stored?.isDefaultForLyrics ?? true,
         }}
-        notice={notice}
-        noticeTone={query.test === "failed" || query.test === "missing" ? "error" : query.removed ? "info" : "success"}
         encryptionReady={Boolean(process.env.APP_SECRETS_ENCRYPTION_KEY)}
       />
     </AdminPage>

@@ -10,6 +10,9 @@ import { plans } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 import { writeAuditLog } from "@/lib/security/audit";
+import { actionErrorMessage } from "@/lib/admin/action-state";
+
+export type PlanActionState = { ok: boolean; message: string } | null;
 
 const creditPlanFormSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -72,7 +75,7 @@ function planValues(parsed: z.infer<typeof creditPlanFormSchema>) {
   };
 }
 
-export async function createPlan(formData: FormData) {
+export async function createPlan(_previous: PlanActionState, formData: FormData): Promise<PlanActionState> {
   const session = await requireAdmin();
   const parsed = creditPlanFormSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
@@ -90,21 +93,25 @@ export async function createPlan(formData: FormData) {
   redirect("/admin/plans");
 }
 
-export async function updatePlan(formData: FormData) {
+export async function updatePlan(_previous: PlanActionState, formData: FormData): Promise<PlanActionState> {
   const session = await requireAdmin();
-  const parsed = creditPlanFormSchema
-    .extend({ id: z.string().trim().min(1).max(120) })
-    .parse(Object.fromEntries(formData));
-  await getServiceDb().update(plans).set(planValues(parsed)).where(eq(plans.id, parsed.id));
-  await writeAuditLog({
-    action: "plan.updated",
-    actorId: session.user.id,
-    targetType: "plan",
-    targetId: parsed.id,
-    metadata: { code: parsed.code, amount: parsed.amount, currency: "XOF", credits: parsed.credits },
-  });
-  revalidateCreditPlans();
-  redirect("/admin/plans");
+  try {
+    const parsed = creditPlanFormSchema
+      .extend({ id: z.string().trim().min(1).max(120) })
+      .parse(Object.fromEntries(formData));
+    await getServiceDb().update(plans).set(planValues(parsed)).where(eq(plans.id, parsed.id));
+    await writeAuditLog({
+      action: "plan.updated",
+      actorId: session.user.id,
+      targetType: "plan",
+      targetId: parsed.id,
+      metadata: { code: parsed.code, amount: parsed.amount, currency: "XOF", credits: parsed.credits },
+    });
+    revalidateCreditPlans();
+    return { ok: true, message: "Offre de crédits enregistrée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette offre.") };
+  }
 }
 
 export async function togglePlan(formData: FormData) {

@@ -1,7 +1,12 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { parseCollectionStyles } from "@/lib/library-collections/catalog";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import type { LibraryCollectionActionState } from "@/app/admin/library/actions";
 
 type Values = {
   id?: string;
@@ -17,15 +22,17 @@ export default function AdminLibraryCollectionForm({
   styleNames,
   values = {},
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (previous: LibraryCollectionActionState, formData: FormData) => Promise<LibraryCollectionActionState>;
   styleNames: string[];
   values?: Values;
 }) {
   const selected = new Set(parseCollectionStyles(values.styles));
   const editing = Boolean(values.id);
+  const [state, formAction, pending] = useActionState<LibraryCollectionActionState, FormData>(action, null);
+  useAdminActionToast(state);
   return (
     <section className="admin-panel admin-editor-card">
-      <form action={action} className="admin-editor-grid admin-library-editor-grid">
+      <form action={formAction} className="admin-editor-grid admin-library-editor-grid">
         {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
         <label className="admin-editor-field">
           <span>Nom de la collection</span>
@@ -102,7 +109,7 @@ export default function AdminLibraryCollectionForm({
         </div>
         <div className="admin-editor-actions is-wide">
           <AdminBackLink href="/admin/library" label="Annuler" />
-          <button type="submit">
+          <button type="submit" disabled={pending}>
             <Icon i={editing ? "save" : "plus"} size={17} />
             {editing ? "Enregistrer les modifications" : "Créer la collection"}
           </button>

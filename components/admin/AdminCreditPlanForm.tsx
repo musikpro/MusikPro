@@ -1,17 +1,24 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import type { CreditPlanOption } from "@/lib/credit-plans/catalog";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import type { PlanActionState } from "@/app/admin/plans/actions";
 
 export default function AdminCreditPlanForm({
   action,
   plan,
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (previous: PlanActionState, formData: FormData) => Promise<PlanActionState>;
   plan?: CreditPlanOption;
 }) {
+  const [state, formAction, pending] = useActionState<PlanActionState, FormData>(action, null);
+  useAdminActionToast(state);
   return (
-    <form action={action} className="admin-editor-grid">
+    <form action={formAction} className="admin-editor-grid">
       {plan ? <input type="hidden" name="id" value={plan.id} /> : null}
       <label className="admin-editor-field">
         <span>Nom de l’offre</span>
@@ -96,7 +103,7 @@ export default function AdminCreditPlanForm({
       </label>
       <div className="admin-editor-actions is-wide">
         <AdminBackLink href="/admin/plans" label="Annuler" />
-        <button type="submit">
+        <button type="submit" disabled={pending}>
           <Icon i={plan ? "save" : "plus"} size={17} />
           {plan ? "Enregistrer les modifications" : "Créer l’offre de crédits"}
         </button>

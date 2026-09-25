@@ -1,6 +1,11 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import type { RecipientRelationActionState } from "@/app/admin/recipient-relations/actions";
 
 type RecipientRelationFormValues = {
   id?: string;
@@ -13,13 +18,15 @@ export default function AdminRecipientRelationForm({
   action,
   values = {},
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (previous: RecipientRelationActionState, formData: FormData) => Promise<RecipientRelationActionState>;
   values?: RecipientRelationFormValues;
 }) {
   const editing = Boolean(values.id);
+  const [state, formAction, pending] = useActionState<RecipientRelationActionState, FormData>(action, null);
+  useAdminActionToast(state);
   return (
     <section className="admin-panel admin-editor-card">
-      <form action={action} className="admin-editor-grid admin-occasion-editor-grid">
+      <form action={formAction} className="admin-editor-grid admin-occasion-editor-grid">
         {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
         <label className="admin-editor-field">
           <span>Nom du lien</span>
@@ -50,7 +57,7 @@ export default function AdminRecipientRelationForm({
         </div>
         <div className="admin-editor-actions is-wide">
           <AdminBackLink href="/admin/recipient-relations" label="Annuler" />
-          <button type="submit">
+          <button type="submit" disabled={pending}>
             <Icon i={editing ? "save" : "plus"} size={17} />
             {editing ? "Enregistrer les modifications" : "Enregistrer le lien"}
           </button>

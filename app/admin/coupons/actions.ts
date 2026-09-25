@@ -9,6 +9,9 @@ import { coupons } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { couponCodeSchema } from "@/lib/validation/coupons";
 import { writeAuditLog } from "@/lib/security/audit";
+import { actionErrorMessage } from "@/lib/admin/action-state";
+
+export type CouponActionState = { ok: boolean; message: string } | null;
 
 const optionalPositiveInt = z
   .union([z.literal(""), z.coerce.number().int().positive().max(1_000_000)])
@@ -65,7 +68,7 @@ function couponValues(parsed: z.infer<typeof couponFormSchema>) {
   };
 }
 
-export async function createCoupon(formData: FormData) {
+export async function createCoupon(_previous: CouponActionState, formData: FormData): Promise<CouponActionState> {
   const session = await requireAdmin();
   const parsed = couponFormSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
@@ -82,22 +85,28 @@ export async function createCoupon(formData: FormData) {
   revalidateCoupons();
   redirect("/admin/coupons");
 }
-export async function updateCoupon(formData: FormData) {
+export async function updateCoupon(_previous: CouponActionState, formData: FormData): Promise<CouponActionState> {
   const session = await requireAdmin();
-  const parsed = couponFormSchema.extend({ id: z.string().trim().min(1).max(120) }).parse(Object.fromEntries(formData));
-  await getServiceDb()
-    .update(coupons)
-    .set({ ...couponValues(parsed), updatedAt: new Date() })
-    .where(eq(coupons.id, parsed.id));
-  await writeAuditLog({
-    action: "coupon.updated",
-    actorId: session.user.id,
-    targetType: "coupon",
-    targetId: parsed.id,
-    metadata: { code: parsed.code, type: parsed.type, value: parsed.value },
-  });
-  revalidateCoupons();
-  redirect("/admin/coupons");
+  try {
+    const parsed = couponFormSchema
+      .extend({ id: z.string().trim().min(1).max(120) })
+      .parse(Object.fromEntries(formData));
+    await getServiceDb()
+      .update(coupons)
+      .set({ ...couponValues(parsed), updatedAt: new Date() })
+      .where(eq(coupons.id, parsed.id));
+    await writeAuditLog({
+      action: "coupon.updated",
+      actorId: session.user.id,
+      targetType: "coupon",
+      targetId: parsed.id,
+      metadata: { code: parsed.code, type: parsed.type, value: parsed.value },
+    });
+    revalidateCoupons();
+    return { ok: true, message: "Code promo enregistré." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce code promo.") };
+  }
 }
 export async function toggleCoupon(formData: FormData) {
   const session = await requireAdmin();

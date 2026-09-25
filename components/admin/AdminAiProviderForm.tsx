@@ -1,7 +1,10 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminSecretField from "@/components/admin/AdminSecretField";
 import Icon from "@/components/banani/Icon";
-import AdminToast from "@/components/admin/AdminToast";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
 import {
   removeAnthropicKey,
   removeOpenAiKey,
@@ -9,6 +12,7 @@ import {
   saveOpenAiSettings,
   testAnthropicConnection,
   testOpenAiConnection,
+  type AiProviderActionState,
 } from "@/app/admin/ai-providers/actions";
 
 type Settings = {
@@ -44,22 +48,27 @@ function FieldLabel({ children, help }: { children: React.ReactNode; help: strin
 
 export default function AdminAiProviderForm({
   settings,
-  notice,
-  noticeTone,
   encryptionReady,
   provider = "openai",
 }: {
   settings: Settings;
-  notice?: string;
-  noticeTone?: "success" | "error" | "info";
   encryptionReady: boolean;
   provider?: "openai" | "anthropic";
 }) {
   const isAnthropic = provider === "anthropic";
-  const saveAction = isAnthropic ? saveAnthropicSettings : saveOpenAiSettings;
-  const testAction = isAnthropic ? testAnthropicConnection : testOpenAiConnection;
-  const removeAction = isAnthropic ? removeAnthropicKey : removeOpenAiKey;
+  const saveActionFn = isAnthropic ? saveAnthropicSettings : saveOpenAiSettings;
+  const testActionFn = isAnthropic ? testAnthropicConnection : testOpenAiConnection;
+  const removeActionFn = isAnthropic ? removeAnthropicKey : removeOpenAiKey;
   const providerName = isAnthropic ? "Claude / Anthropic" : "OpenAI";
+  const [saveState, saveAction, savePending] = useActionState<AiProviderActionState, FormData>(saveActionFn, null);
+  useAdminActionToast(saveState);
+  const [testState, testAction, testPending] = useActionState<AiProviderActionState, FormData>(testActionFn, null);
+  useAdminActionToast(testState);
+  const [removeState, removeAction, removePending] = useActionState<AiProviderActionState, FormData>(
+    removeActionFn,
+    null,
+  );
+  useAdminActionToast(removeState);
   return (
     <section className="admin-panel admin-editor-card">
       <div>
@@ -70,7 +79,6 @@ export default function AdminAiProviderForm({
           {settings.enabled ? "Actif" : "Inactif"}
         </span>
       </div>
-      {notice ? <AdminToast message={notice} tone={noticeTone} /> : null}
       {!encryptionReady ? (
         <div className="admin-secret-setup" role="status">
           <span className="admin-secret-setup-icon">
@@ -212,7 +220,7 @@ export default function AdminAiProviderForm({
           />
         </label>
         <div className="admin-editor-actions is-wide">
-          <button type="submit">
+          <button type="submit" disabled={savePending}>
             <Icon i="save" size={17} />
             Enregistrer
           </button>
@@ -220,14 +228,14 @@ export default function AdminAiProviderForm({
       </form>
       <div className="admin-editor-actions">
         <form action={testAction}>
-          <button type="submit">
+          <button type="submit" disabled={testPending}>
             <Icon i="activity" size={17} />
             Tester la connexion
           </button>
         </form>
         {settings.apiKeyLast4 ? (
           <form action={removeAction}>
-            <button type="submit" className="is-danger">
+            <button type="submit" className="is-danger" disabled={removePending}>
               <Icon i="trash-2" size={17} />
               Supprimer la clé
             </button>

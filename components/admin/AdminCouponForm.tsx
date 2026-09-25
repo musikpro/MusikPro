@@ -1,6 +1,11 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import type { CouponActionState } from "@/app/admin/coupons/actions";
 
 type CouponFormValues = {
   id?: string;
@@ -18,14 +23,16 @@ export default function AdminCouponForm({
   action,
   values = {},
 }: {
-  action: (formData: FormData) => Promise<void>;
+  action: (previous: CouponActionState, formData: FormData) => Promise<CouponActionState>;
   values?: CouponFormValues;
 }) {
   const editing = Boolean(values.id);
   const expiresAtDefault = values.expiresAt ? values.expiresAt.slice(0, 10) : "";
+  const [state, formAction, pending] = useActionState<CouponActionState, FormData>(action, null);
+  useAdminActionToast(state);
   return (
     <section className="admin-panel admin-editor-card">
-      <form action={action} className="admin-editor-grid admin-occasion-editor-grid">
+      <form action={formAction} className="admin-editor-grid admin-occasion-editor-grid">
         {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
         <label className="admin-editor-field">
           <span>Code</span>
@@ -107,7 +114,7 @@ export default function AdminCouponForm({
         </div>
         <div className="admin-editor-actions is-wide">
           <AdminBackLink href="/admin/coupons" label="Annuler" />
-          <button type="submit">
+          <button type="submit" disabled={pending}>
             <Icon i={editing ? "save" : "plus"} size={17} />
             {editing ? "Enregistrer les modifications" : "Enregistrer le code"}
           </button>

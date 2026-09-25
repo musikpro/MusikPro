@@ -8,6 +8,9 @@ import { getServiceDb } from "@/db";
 import { libraryCollections } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
+import { actionErrorMessage } from "@/lib/admin/action-state";
+
+export type LibraryCollectionActionState = { ok: boolean; message: string } | null;
 
 const baseSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -54,7 +57,10 @@ function refresh() {
   revalidatePath("/demo/discover");
 }
 
-export async function createLibraryCollection(formData: FormData) {
+export async function createLibraryCollection(
+  _previous: LibraryCollectionActionState,
+  formData: FormData,
+): Promise<LibraryCollectionActionState> {
   const session = await requireAdmin();
   const parsed = payload(formData);
   const id = randomUUID();
@@ -73,34 +79,41 @@ export async function createLibraryCollection(formData: FormData) {
   refresh();
   redirect("/admin/library");
 }
-export async function updateLibraryCollection(formData: FormData) {
+export async function updateLibraryCollection(
+  _previous: LibraryCollectionActionState,
+  formData: FormData,
+): Promise<LibraryCollectionActionState> {
   const session = await requireAdmin();
-  const id = idSchema.parse(Object.fromEntries(formData)).id;
-  const parsed = payload(formData);
-  const slug = slugify(parsed.name);
-  if (!slug) throw new Error("Le nom de la collection est invalide.");
-  await getServiceDb()
-    .update(libraryCollections)
-    .set({
-      name: parsed.name,
-      slug,
-      description: parsed.description,
-      access: parsed.access,
-      active: parsed.active === "true",
-      styles: parsed.styles,
-      sortOrder: parsed.sortOrder,
-      updatedAt: new Date(),
-    })
-    .where(eq(libraryCollections.id, id));
-  await writeAuditLog({
-    action: "library_collection.updated",
-    actorId: session.user.id,
-    targetType: "library_collection",
-    targetId: id,
-    metadata: { name: parsed.name, access: parsed.access },
-  });
-  refresh();
-  redirect("/admin/library");
+  try {
+    const id = idSchema.parse(Object.fromEntries(formData)).id;
+    const parsed = payload(formData);
+    const slug = slugify(parsed.name);
+    if (!slug) throw new Error("Le nom de la collection est invalide.");
+    await getServiceDb()
+      .update(libraryCollections)
+      .set({
+        name: parsed.name,
+        slug,
+        description: parsed.description,
+        access: parsed.access,
+        active: parsed.active === "true",
+        styles: parsed.styles,
+        sortOrder: parsed.sortOrder,
+        updatedAt: new Date(),
+      })
+      .where(eq(libraryCollections.id, id));
+    await writeAuditLog({
+      action: "library_collection.updated",
+      actorId: session.user.id,
+      targetType: "library_collection",
+      targetId: id,
+      metadata: { name: parsed.name, access: parsed.access },
+    });
+    refresh();
+    return { ok: true, message: "Collection enregistrée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette collection.") };
+  }
 }
 export async function toggleLibraryCollection(formData: FormData) {
   const session = await requireAdmin();

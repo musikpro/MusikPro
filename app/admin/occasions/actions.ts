@@ -9,6 +9,9 @@ import { occasions } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { isOccasionEmoji } from "@/lib/occasions/catalog";
 import { writeAuditLog } from "@/lib/security/audit";
+import { actionErrorMessage } from "@/lib/admin/action-state";
+
+export type OccasionActionState = { ok: boolean; message: string } | null;
 
 const occasionFormSchema = z.object({
   name: z.string().trim().min(2).max(60),
@@ -49,7 +52,7 @@ function revalidateOccasions() {
   revalidatePath("/demo/create");
 }
 
-export async function createOccasion(formData: FormData) {
+export async function createOccasion(_previous: OccasionActionState, formData: FormData): Promise<OccasionActionState> {
   const session = await requireAdmin();
   const parsed = occasionFormSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
@@ -68,34 +71,38 @@ export async function createOccasion(formData: FormData) {
   revalidateOccasions();
   redirect("/admin/occasions");
 }
-export async function updateOccasion(formData: FormData) {
+export async function updateOccasion(_previous: OccasionActionState, formData: FormData): Promise<OccasionActionState> {
   const session = await requireAdmin();
-  const parsed = occasionFormSchema
-    .extend({ id: z.string().trim().min(1).max(120) })
-    .parse(Object.fromEntries(formData));
-  const slug = slugify(parsed.name);
-  if (!slug) throw new Error("Le nom doit contenir au moins un caractère utilisable.");
-  await getServiceDb()
-    .update(occasions)
-    .set({
-      name: parsed.name,
-      slug,
-      description: parsed.description,
-      emoji: parsed.emoji,
-      active: parsed.active === "true",
-      sortOrder: parsed.sortOrder,
-      updatedAt: new Date(),
-    })
-    .where(eq(occasions.id, parsed.id));
-  await writeAuditLog({
-    action: "occasion.updated",
-    actorId: session.user.id,
-    targetType: "occasion",
-    targetId: parsed.id,
-    metadata: { name: parsed.name, slug },
-  });
-  revalidateOccasions();
-  redirect("/admin/occasions");
+  try {
+    const parsed = occasionFormSchema
+      .extend({ id: z.string().trim().min(1).max(120) })
+      .parse(Object.fromEntries(formData));
+    const slug = slugify(parsed.name);
+    if (!slug) throw new Error("Le nom doit contenir au moins un caractère utilisable.");
+    await getServiceDb()
+      .update(occasions)
+      .set({
+        name: parsed.name,
+        slug,
+        description: parsed.description,
+        emoji: parsed.emoji,
+        active: parsed.active === "true",
+        sortOrder: parsed.sortOrder,
+        updatedAt: new Date(),
+      })
+      .where(eq(occasions.id, parsed.id));
+    await writeAuditLog({
+      action: "occasion.updated",
+      actorId: session.user.id,
+      targetType: "occasion",
+      targetId: parsed.id,
+      metadata: { name: parsed.name, slug },
+    });
+    revalidateOccasions();
+    return { ok: true, message: "Occasion enregistrée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette occasion.") };
+  }
 }
 export async function toggleOccasion(formData: FormData) {
   const session = await requireAdmin();

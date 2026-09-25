@@ -8,6 +8,9 @@ import { getServiceDb } from "@/db";
 import { recipientRelations } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
+import { actionErrorMessage } from "@/lib/admin/action-state";
+
+export type RecipientRelationActionState = { ok: boolean; message: string } | null;
 
 const relationFormSchema = z.object({
   name: z.string().trim().min(2).max(60),
@@ -46,7 +49,10 @@ function revalidateRelations() {
   revalidatePath("/demo/create/recipient");
 }
 
-export async function createRecipientRelation(formData: FormData) {
+export async function createRecipientRelation(
+  _previous: RecipientRelationActionState,
+  formData: FormData,
+): Promise<RecipientRelationActionState> {
   const session = await requireAdmin();
   const parsed = relationFormSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
@@ -65,32 +71,39 @@ export async function createRecipientRelation(formData: FormData) {
   revalidateRelations();
   redirect("/admin/recipient-relations");
 }
-export async function updateRecipientRelation(formData: FormData) {
+export async function updateRecipientRelation(
+  _previous: RecipientRelationActionState,
+  formData: FormData,
+): Promise<RecipientRelationActionState> {
   const session = await requireAdmin();
-  const parsed = relationFormSchema
-    .extend({ id: z.string().trim().min(1).max(120) })
-    .parse(Object.fromEntries(formData));
-  const slug = slugify(parsed.name);
-  if (!slug) throw new Error("Le nom doit contenir au moins un caractère utilisable.");
-  await getServiceDb()
-    .update(recipientRelations)
-    .set({
-      name: parsed.name,
-      slug,
-      active: parsed.active === "true",
-      sortOrder: parsed.sortOrder,
-      updatedAt: new Date(),
-    })
-    .where(eq(recipientRelations.id, parsed.id));
-  await writeAuditLog({
-    action: "recipient_relation.updated",
-    actorId: session.user.id,
-    targetType: "recipient_relation",
-    targetId: parsed.id,
-    metadata: { name: parsed.name, slug },
-  });
-  revalidateRelations();
-  redirect("/admin/recipient-relations");
+  try {
+    const parsed = relationFormSchema
+      .extend({ id: z.string().trim().min(1).max(120) })
+      .parse(Object.fromEntries(formData));
+    const slug = slugify(parsed.name);
+    if (!slug) throw new Error("Le nom doit contenir au moins un caractère utilisable.");
+    await getServiceDb()
+      .update(recipientRelations)
+      .set({
+        name: parsed.name,
+        slug,
+        active: parsed.active === "true",
+        sortOrder: parsed.sortOrder,
+        updatedAt: new Date(),
+      })
+      .where(eq(recipientRelations.id, parsed.id));
+    await writeAuditLog({
+      action: "recipient_relation.updated",
+      actorId: session.user.id,
+      targetType: "recipient_relation",
+      targetId: parsed.id,
+      metadata: { name: parsed.name, slug },
+    });
+    revalidateRelations();
+    return { ok: true, message: "Lien destinataire enregistré." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce lien destinataire.") };
+  }
 }
 export async function toggleRecipientRelation(formData: FormData) {
   const session = await requireAdmin();

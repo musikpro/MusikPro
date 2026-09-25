@@ -2,13 +2,13 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { getServiceDb } from "@/db";
 import { aiProviderConfigs, audioProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { createOpenAiClient, getOpenAiProvider } from "@/lib/ai/provider";
 import { encryptSecret } from "@/lib/ai/secrets";
 import { writeAuditLog } from "@/lib/security/audit";
+import { actionErrorMessage } from "@/lib/admin/action-state";
 import {
   anthropicSettingsSchema,
   musicfulApiKeyInfoSchema,
@@ -19,103 +19,122 @@ import { createAnthropicClient } from "@/lib/ai/anthropic";
 import { getAnthropicProvider } from "@/lib/ai/provider";
 import { createMusicfulClient, getMusicfulProvider, MusicfulApiError } from "@/lib/ai/musicful";
 
-export async function saveOpenAiSettings(formData: FormData) {
+export type AiProviderActionState = { ok: boolean; message: string } | null;
+
+export async function saveOpenAiSettings(
+  _previous: AiProviderActionState,
+  formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
-  const parsed = openAiSettingsSchema.parse(Object.fromEntries(formData));
-  const database = getServiceDb();
-  const [current] = await database
-    .select()
-    .from(aiProviderConfigs)
-    .where(eq(aiProviderConfigs.provider, "openai"))
-    .limit(1);
-  const submittedApiKey = parsed.apiKey || undefined;
-  const encrypted = submittedApiKey ? encryptSecret(submittedApiKey) : null;
-  const values = {
-    enabled: parsed.enabled === "true",
-    defaultModel: parsed.defaultModel,
-    maxOutputTokens: parsed.maxOutputTokens,
-    requestsPerMinute: parsed.requestsPerMinute,
-    lyricsGenerationEnabled: parsed.lyricsGenerationEnabled === "true",
-    lyricsRewriteEnabled: parsed.lyricsRewriteEnabled === "true",
-    isDefaultForLyrics: parsed.isDefaultForLyrics === "true",
-    ...(encrypted
-      ? {
-          apiKeyCiphertext: encrypted.ciphertext,
-          apiKeyIv: encrypted.iv,
-          apiKeyAuthTag: encrypted.authTag,
-          apiKeyLast4: submittedApiKey!.slice(-4),
-        }
-      : {}),
-    updatedAt: new Date(),
-  };
-  if (values.isDefaultForLyrics) await database.update(aiProviderConfigs).set({ isDefaultForLyrics: false });
-  if (current) await database.update(aiProviderConfigs).set(values).where(eq(aiProviderConfigs.id, current.id));
-  else await database.insert(aiProviderConfigs).values({ id: randomUUID(), provider: "openai", ...values });
-  await writeAuditLog({
-    action: "ai.openai.settings.updated",
-    actorId: session.user.id,
-    targetType: "ai_provider",
-    targetId: "openai",
-    metadata: { enabled: values.enabled, model: values.defaultModel, keyReplaced: Boolean(encrypted) },
-  });
-  revalidatePath("/admin/ai-providers");
-  revalidatePath("/admin/ai-providers/lyrics");
-  redirect("/admin/ai-providers/lyrics?saved=1");
+  try {
+    const parsed = openAiSettingsSchema.parse(Object.fromEntries(formData));
+    const database = getServiceDb();
+    const [current] = await database
+      .select()
+      .from(aiProviderConfigs)
+      .where(eq(aiProviderConfigs.provider, "openai"))
+      .limit(1);
+    const submittedApiKey = parsed.apiKey || undefined;
+    const encrypted = submittedApiKey ? encryptSecret(submittedApiKey) : null;
+    const values = {
+      enabled: parsed.enabled === "true",
+      defaultModel: parsed.defaultModel,
+      maxOutputTokens: parsed.maxOutputTokens,
+      requestsPerMinute: parsed.requestsPerMinute,
+      lyricsGenerationEnabled: parsed.lyricsGenerationEnabled === "true",
+      lyricsRewriteEnabled: parsed.lyricsRewriteEnabled === "true",
+      isDefaultForLyrics: parsed.isDefaultForLyrics === "true",
+      ...(encrypted
+        ? {
+            apiKeyCiphertext: encrypted.ciphertext,
+            apiKeyIv: encrypted.iv,
+            apiKeyAuthTag: encrypted.authTag,
+            apiKeyLast4: submittedApiKey!.slice(-4),
+          }
+        : {}),
+      updatedAt: new Date(),
+    };
+    if (values.isDefaultForLyrics) await database.update(aiProviderConfigs).set({ isDefaultForLyrics: false });
+    if (current) await database.update(aiProviderConfigs).set(values).where(eq(aiProviderConfigs.id, current.id));
+    else await database.insert(aiProviderConfigs).values({ id: randomUUID(), provider: "openai", ...values });
+    await writeAuditLog({
+      action: "ai.openai.settings.updated",
+      actorId: session.user.id,
+      targetType: "ai_provider",
+      targetId: "openai",
+      metadata: { enabled: values.enabled, model: values.defaultModel, keyReplaced: Boolean(encrypted) },
+    });
+    revalidatePath("/admin/ai-providers");
+    revalidatePath("/admin/ai-providers/lyrics");
+    return { ok: true, message: "Réglages OpenAI enregistrés." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer les réglages OpenAI.") };
+  }
 }
 
-export async function saveAnthropicSettings(formData: FormData) {
+export async function saveAnthropicSettings(
+  _previous: AiProviderActionState,
+  formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
-  const parsed = anthropicSettingsSchema.parse(Object.fromEntries(formData));
-  const database = getServiceDb();
-  const [current] = await database
-    .select()
-    .from(aiProviderConfigs)
-    .where(eq(aiProviderConfigs.provider, "anthropic"))
-    .limit(1);
-  const submittedApiKey = parsed.apiKey || undefined;
-  const encrypted = submittedApiKey ? encryptSecret(submittedApiKey) : null;
-  const values = {
-    enabled: parsed.enabled === "true",
-    isDefaultForLyrics: parsed.isDefaultForLyrics === "true",
-    defaultModel: parsed.defaultModel,
-    maxOutputTokens: parsed.maxOutputTokens,
-    requestsPerMinute: parsed.requestsPerMinute,
-    lyricsGenerationEnabled: parsed.lyricsGenerationEnabled === "true",
-    lyricsRewriteEnabled: parsed.lyricsRewriteEnabled === "true",
-    ...(encrypted
-      ? {
-          apiKeyCiphertext: encrypted.ciphertext,
-          apiKeyIv: encrypted.iv,
-          apiKeyAuthTag: encrypted.authTag,
-          apiKeyLast4: submittedApiKey!.slice(-4),
-        }
-      : {}),
-    updatedAt: new Date(),
-  };
-  if (values.isDefaultForLyrics) await database.update(aiProviderConfigs).set({ isDefaultForLyrics: false });
-  if (current) await database.update(aiProviderConfigs).set(values).where(eq(aiProviderConfigs.id, current.id));
-  else await database.insert(aiProviderConfigs).values({ id: randomUUID(), provider: "anthropic", ...values });
-  await writeAuditLog({
-    action: "ai.anthropic.settings.updated",
-    actorId: session.user.id,
-    targetType: "ai_provider",
-    targetId: "anthropic",
-    metadata: {
-      enabled: values.enabled,
-      model: values.defaultModel,
-      keyReplaced: Boolean(encrypted),
-      isDefaultForLyrics: values.isDefaultForLyrics,
-    },
-  });
-  revalidatePath("/admin/ai-providers");
-  revalidatePath("/admin/ai-providers/lyrics");
-  redirect("/admin/ai-providers/lyrics/anthropic?saved=1");
+  try {
+    const parsed = anthropicSettingsSchema.parse(Object.fromEntries(formData));
+    const database = getServiceDb();
+    const [current] = await database
+      .select()
+      .from(aiProviderConfigs)
+      .where(eq(aiProviderConfigs.provider, "anthropic"))
+      .limit(1);
+    const submittedApiKey = parsed.apiKey || undefined;
+    const encrypted = submittedApiKey ? encryptSecret(submittedApiKey) : null;
+    const values = {
+      enabled: parsed.enabled === "true",
+      isDefaultForLyrics: parsed.isDefaultForLyrics === "true",
+      defaultModel: parsed.defaultModel,
+      maxOutputTokens: parsed.maxOutputTokens,
+      requestsPerMinute: parsed.requestsPerMinute,
+      lyricsGenerationEnabled: parsed.lyricsGenerationEnabled === "true",
+      lyricsRewriteEnabled: parsed.lyricsRewriteEnabled === "true",
+      ...(encrypted
+        ? {
+            apiKeyCiphertext: encrypted.ciphertext,
+            apiKeyIv: encrypted.iv,
+            apiKeyAuthTag: encrypted.authTag,
+            apiKeyLast4: submittedApiKey!.slice(-4),
+          }
+        : {}),
+      updatedAt: new Date(),
+    };
+    if (values.isDefaultForLyrics) await database.update(aiProviderConfigs).set({ isDefaultForLyrics: false });
+    if (current) await database.update(aiProviderConfigs).set(values).where(eq(aiProviderConfigs.id, current.id));
+    else await database.insert(aiProviderConfigs).values({ id: randomUUID(), provider: "anthropic", ...values });
+    await writeAuditLog({
+      action: "ai.anthropic.settings.updated",
+      actorId: session.user.id,
+      targetType: "ai_provider",
+      targetId: "anthropic",
+      metadata: {
+        enabled: values.enabled,
+        model: values.defaultModel,
+        keyReplaced: Boolean(encrypted),
+        isDefaultForLyrics: values.isDefaultForLyrics,
+      },
+    });
+    revalidatePath("/admin/ai-providers");
+    revalidatePath("/admin/ai-providers/lyrics");
+    return { ok: true, message: "Réglages Claude / Anthropic enregistrés." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer les réglages Anthropic.") };
+  }
 }
 
-export async function testAnthropicConnection() {
+export async function testAnthropicConnection(
+  _previous: AiProviderActionState,
+  _formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
   const provider = await getAnthropicProvider();
-  if (!provider.apiKey) redirect("/admin/ai-providers/lyrics/anthropic?test=missing");
+  if (!provider.apiKey) return { ok: false, message: "Aucune clé Anthropic n’est configurée." };
   try {
     await createAnthropicClient(provider.apiKey).messages.create({
       model: provider.model,
@@ -129,13 +148,23 @@ export async function testAnthropicConnection() {
       targetId: "anthropic",
       metadata: { success: true, model: provider.model },
     });
+    return { ok: true, message: "Connexion Anthropic validée." };
   } catch {
-    redirect("/admin/ai-providers/lyrics/anthropic?test=failed");
+    await writeAuditLog({
+      action: "ai.anthropic.connection.tested",
+      actorId: session.user.id,
+      targetType: "ai_provider",
+      targetId: "anthropic",
+      metadata: { success: false },
+    });
+    return { ok: false, message: "Échec de connexion : vérifie la clé et la disponibilité d’Anthropic." };
   }
-  redirect("/admin/ai-providers/lyrics/anthropic?test=ok");
 }
 
-export async function removeAnthropicKey() {
+export async function removeAnthropicKey(
+  _previous: AiProviderActionState,
+  _formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
   await getServiceDb()
     .update(aiProviderConfigs)
@@ -157,13 +186,16 @@ export async function removeAnthropicKey() {
   });
   revalidatePath("/admin/ai-providers");
   revalidatePath("/admin/ai-providers/lyrics");
-  redirect("/admin/ai-providers/lyrics/anthropic?removed=1");
+  return { ok: true, message: "Clé Anthropic supprimée." };
 }
 
-export async function testOpenAiConnection() {
+export async function testOpenAiConnection(
+  _previous: AiProviderActionState,
+  _formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
   const provider = await getOpenAiProvider();
-  if (!provider.apiKey) redirect("/admin/ai-providers/lyrics?test=missing");
+  if (!provider.apiKey) return { ok: false, message: "Aucune clé OpenAI n’est configurée." };
   try {
     await createOpenAiClient(provider.apiKey).models.retrieve(provider.model);
     await writeAuditLog({
@@ -173,13 +205,23 @@ export async function testOpenAiConnection() {
       targetId: "openai",
       metadata: { success: true, model: provider.model },
     });
+    return { ok: true, message: "Connexion OpenAI validée." };
   } catch {
-    redirect("/admin/ai-providers/lyrics?test=failed");
+    await writeAuditLog({
+      action: "ai.openai.connection.tested",
+      actorId: session.user.id,
+      targetType: "ai_provider",
+      targetId: "openai",
+      metadata: { success: false },
+    });
+    return { ok: false, message: "Échec de connexion : vérifie la clé et la disponibilité d’OpenAI." };
   }
-  redirect("/admin/ai-providers/lyrics?test=ok");
 }
 
-export async function removeOpenAiKey() {
+export async function removeOpenAiKey(
+  _previous: AiProviderActionState,
+  _formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
   await getServiceDb()
     .update(aiProviderConfigs)
@@ -200,86 +242,96 @@ export async function removeOpenAiKey() {
   });
   revalidatePath("/admin/ai-providers");
   revalidatePath("/admin/ai-providers/lyrics");
-  redirect("/admin/ai-providers/lyrics?removed=1");
+  return { ok: true, message: "Clé OpenAI supprimée." };
 }
 
-export async function saveMusicfulSettings(formData: FormData) {
+export async function saveMusicfulSettings(
+  _previous: AiProviderActionState,
+  formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
-  const parsed = musicfulSettingsSchema.parse({
-    ...Object.fromEntries(formData),
-    allowTextToMusic: formData.get("allowTextToMusic") === "on",
-    allowLyricsToMusic: formData.get("allowLyricsToMusic") === "on",
-    allowInstrumental: formData.get("allowInstrumental") === "on",
-    allowLyricsGenerator: formData.get("allowLyricsGenerator") === "on",
-    allowVibe: formData.get("allowVibe") === "on",
-    allowWavConversion: formData.get("allowWavConversion") === "on",
-    strictStyleAdherence: formData.get("strictStyleAdherence") === "on",
-  });
-  const database = getServiceDb();
-  const [current] = await database
-    .select()
-    .from(audioProviderConfigs)
-    .where(eq(audioProviderConfigs.provider, "musicful"))
-    .limit(1);
-  const submittedApiKey = parsed.apiKey || undefined;
-  const encrypted = submittedApiKey ? encryptSecret(submittedApiKey) : null;
-  const hasKey = Boolean(encrypted || current?.apiKeyCiphertext);
-  const enabled = parsed.enabled === "true";
-  if (enabled && !hasKey) throw new Error("Ajoute la clé API Musicful avant d'activer ce fournisseur.");
-  const values = {
-    enabled,
-    defaultModel: parsed.defaultModel,
-    defaultInstrumental: parsed.defaultInstrumental === "true",
-    defaultGender: parsed.defaultGender || null,
-    requestTimeoutMs: parsed.requestTimeoutMs,
-    pollingIntervalMs: parsed.pollingIntervalMs,
-    maxPollingMinutes: parsed.maxPollingMinutes,
-    maxRetries: parsed.maxRetries,
-    allowTextToMusic: parsed.allowTextToMusic,
-    allowLyricsToMusic: parsed.allowLyricsToMusic,
-    allowInstrumental: parsed.allowInstrumental,
-    allowLyricsGenerator: parsed.allowLyricsGenerator,
-    allowVibe: parsed.allowVibe,
-    allowWavConversion: parsed.allowWavConversion,
-    preferredAudioFormat: parsed.preferredAudioFormat,
-    strictStyleAdherence: parsed.strictStyleAdherence,
-    maxGenerationsPerUserPerDay: parsed.maxGenerationsPerUserPerDay,
-    maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
-    maxConcurrentJobs: parsed.maxConcurrentJobs,
-    versionsPerGeneration: parsed.versionsPerGeneration,
-    ...(encrypted
-      ? {
-          apiKeyCiphertext: encrypted.ciphertext,
-          apiKeyIv: encrypted.iv,
-          apiKeyAuthTag: encrypted.authTag,
-          apiKeyLast4: submittedApiKey!.slice(-4),
-        }
-      : {}),
-    updatedAt: new Date(),
-  };
-  if (current) await database.update(audioProviderConfigs).set(values).where(eq(audioProviderConfigs.id, current.id));
-  else await database.insert(audioProviderConfigs).values({ id: randomUUID(), provider: "musicful", ...values });
-  await writeAuditLog({
-    action: "ai.musicful.settings.updated",
-    actorId: session.user.id,
-    targetType: "ai_provider",
-    targetId: "musicful",
-    metadata: {
-      enabled: values.enabled,
-      model: values.defaultModel,
-      keyReplaced: Boolean(encrypted),
-      versionsPerGeneration: values.versionsPerGeneration,
-    },
-  });
-  revalidatePath("/admin/ai-providers");
-  revalidatePath("/admin/ai-providers/audio");
-  redirect("/admin/ai-providers/audio?saved=1");
+  try {
+    const parsed = musicfulSettingsSchema.parse({
+      ...Object.fromEntries(formData),
+      allowTextToMusic: formData.get("allowTextToMusic") === "on",
+      allowLyricsToMusic: formData.get("allowLyricsToMusic") === "on",
+      allowInstrumental: formData.get("allowInstrumental") === "on",
+      allowLyricsGenerator: formData.get("allowLyricsGenerator") === "on",
+      allowVibe: formData.get("allowVibe") === "on",
+      allowWavConversion: formData.get("allowWavConversion") === "on",
+      strictStyleAdherence: formData.get("strictStyleAdherence") === "on",
+    });
+    const database = getServiceDb();
+    const [current] = await database
+      .select()
+      .from(audioProviderConfigs)
+      .where(eq(audioProviderConfigs.provider, "musicful"))
+      .limit(1);
+    const submittedApiKey = parsed.apiKey || undefined;
+    const encrypted = submittedApiKey ? encryptSecret(submittedApiKey) : null;
+    const hasKey = Boolean(encrypted || current?.apiKeyCiphertext);
+    const enabled = parsed.enabled === "true";
+    if (enabled && !hasKey) throw new Error("Ajoute la clé API Musicful avant d'activer ce fournisseur.");
+    const values = {
+      enabled,
+      defaultModel: parsed.defaultModel,
+      defaultInstrumental: parsed.defaultInstrumental === "true",
+      defaultGender: parsed.defaultGender || null,
+      requestTimeoutMs: parsed.requestTimeoutMs,
+      pollingIntervalMs: parsed.pollingIntervalMs,
+      maxPollingMinutes: parsed.maxPollingMinutes,
+      maxRetries: parsed.maxRetries,
+      allowTextToMusic: parsed.allowTextToMusic,
+      allowLyricsToMusic: parsed.allowLyricsToMusic,
+      allowInstrumental: parsed.allowInstrumental,
+      allowLyricsGenerator: parsed.allowLyricsGenerator,
+      allowVibe: parsed.allowVibe,
+      allowWavConversion: parsed.allowWavConversion,
+      preferredAudioFormat: parsed.preferredAudioFormat,
+      strictStyleAdherence: parsed.strictStyleAdherence,
+      maxGenerationsPerUserPerDay: parsed.maxGenerationsPerUserPerDay,
+      maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
+      maxConcurrentJobs: parsed.maxConcurrentJobs,
+      versionsPerGeneration: parsed.versionsPerGeneration,
+      ...(encrypted
+        ? {
+            apiKeyCiphertext: encrypted.ciphertext,
+            apiKeyIv: encrypted.iv,
+            apiKeyAuthTag: encrypted.authTag,
+            apiKeyLast4: submittedApiKey!.slice(-4),
+          }
+        : {}),
+      updatedAt: new Date(),
+    };
+    if (current) await database.update(audioProviderConfigs).set(values).where(eq(audioProviderConfigs.id, current.id));
+    else await database.insert(audioProviderConfigs).values({ id: randomUUID(), provider: "musicful", ...values });
+    await writeAuditLog({
+      action: "ai.musicful.settings.updated",
+      actorId: session.user.id,
+      targetType: "ai_provider",
+      targetId: "musicful",
+      metadata: {
+        enabled: values.enabled,
+        model: values.defaultModel,
+        keyReplaced: Boolean(encrypted),
+        versionsPerGeneration: values.versionsPerGeneration,
+      },
+    });
+    revalidatePath("/admin/ai-providers");
+    revalidatePath("/admin/ai-providers/audio");
+    return { ok: true, message: "Configuration Musicful enregistrée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer la configuration Musicful.") };
+  }
 }
 
-export async function testMusicfulConnection() {
+export async function testMusicfulConnection(
+  _previous: AiProviderActionState,
+  _formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
   const provider = await getMusicfulProvider();
-  if (!provider.apiKey) redirect("/admin/ai-providers/audio?test=missing");
+  if (!provider.apiKey) return { ok: false, message: "Aucune clé Musicful n’est disponible." };
   const database = getServiceDb();
   try {
     const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
@@ -309,6 +361,8 @@ export async function testMusicfulConnection() {
       targetId: "musicful",
       metadata: { success: true, keyStatus: info.key_status },
     });
+    revalidatePath("/admin/ai-providers/audio");
+    return { ok: true, message: "Connexion Musicful validée." };
   } catch (error) {
     if (provider.config) {
       await database
@@ -328,13 +382,15 @@ export async function testMusicfulConnection() {
       targetId: "musicful",
       metadata: { success: false },
     });
-    redirect("/admin/ai-providers/audio?test=failed");
+    revalidatePath("/admin/ai-providers/audio");
+    return { ok: false, message: "Échec de connexion : vérifie la clé et la disponibilité de Musicful." };
   }
-  revalidatePath("/admin/ai-providers/audio");
-  redirect("/admin/ai-providers/audio?test=ok");
 }
 
-export async function removeMusicfulKey() {
+export async function removeMusicfulKey(
+  _previous: AiProviderActionState,
+  _formData: FormData,
+): Promise<AiProviderActionState> {
   const session = await requireAdmin();
   await getServiceDb()
     .update(audioProviderConfigs)
@@ -364,5 +420,5 @@ export async function removeMusicfulKey() {
   });
   revalidatePath("/admin/ai-providers");
   revalidatePath("/admin/ai-providers/audio");
-  redirect("/admin/ai-providers/audio?removed=1");
+  return { ok: true, message: "Clé Musicful supprimée." };
 }

@@ -1,6 +1,11 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import type { LanguageActionState } from "@/app/admin/languages/actions";
 
 type Values = {
   id?: string;
@@ -17,13 +22,15 @@ export default function AdminLanguageForm({
   action,
   values = {},
 }: {
-  action: (data: FormData) => Promise<void>;
+  action: (previous: LanguageActionState, data: FormData) => Promise<LanguageActionState>;
   values?: Values;
 }) {
   const editing = Boolean(values.id);
+  const [state, formAction, pending] = useActionState<LanguageActionState, FormData>(action, null);
+  useAdminActionToast(state);
   return (
     <section className="admin-panel admin-editor-card">
-      <form action={action} className="admin-editor-grid">
+      <form action={formAction} className="admin-editor-grid">
         {values.id && <input type="hidden" name="id" value={values.id} />}
         <label className="admin-editor-field">
           <span>Nom en français</span>
@@ -102,7 +109,7 @@ export default function AdminLanguageForm({
         </label>
         <div className="admin-editor-actions is-wide">
           <AdminBackLink href="/admin/languages" label="Annuler" />
-          <button type="submit">
+          <button type="submit" disabled={pending}>
             <Icon i={editing ? "save" : "plus"} size={17} />
             {editing ? "Enregistrer les modifications" : "Ajouter la langue"}
           </button>

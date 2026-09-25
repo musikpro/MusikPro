@@ -6,29 +6,13 @@ import { audioProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { isCloudinaryConfigured } from "@/lib/storage/cloudinary";
 
-export default async function AdminAudioProviderPage({
-  searchParams,
-}: {
-  searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function AdminAudioProviderPage() {
   await requireAdmin();
   const [stored] = await getServiceDb()
     .select()
     .from(audioProviderConfigs)
     .where(eq(audioProviderConfigs.provider, "musicful"))
     .limit(1);
-  const query = await searchParams;
-  const notice = query.saved
-    ? "Configuration Musicful enregistrée."
-    : query.removed
-      ? "Clé Musicful supprimée."
-      : query.test === "ok"
-        ? "Connexion Musicful validée."
-        : query.test === "failed"
-          ? "Échec de connexion : vérifie la clé et la disponibilité de Musicful."
-          : query.test === "missing"
-            ? "Aucune clé Musicful n’est disponible."
-            : undefined;
   return (
     <AdminPage>
       <AdminBackLink href="/admin/ai-providers" label="Toutes les capacités IA" />
@@ -74,8 +58,6 @@ export default async function AdminAudioProviderPage({
           providerKeyCreatedAt: stored?.providerKeyCreatedAt ?? null,
           providerLastUsedAt: stored?.providerLastUsedAt ?? null,
         }}
-        notice={notice}
-        noticeTone={query.test === "failed" || query.test === "missing" ? "error" : query.removed ? "info" : "success"}
         encryptionReady={Boolean(process.env.APP_SECRETS_ENCRYPTION_KEY)}
         mp3TranscodingReady={isCloudinaryConfigured()}
       />

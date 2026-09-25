@@ -1,9 +1,17 @@
+"use client";
+
+import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminSecretField from "@/components/admin/AdminSecretField";
 import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
 import Icon from "@/components/banani/Icon";
-import AdminToast from "@/components/admin/AdminToast";
-import { removeMusicfulKey, saveMusicfulSettings, testMusicfulConnection } from "@/app/admin/ai-providers/actions";
+import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
+import {
+  removeMusicfulKey,
+  saveMusicfulSettings,
+  testMusicfulConnection,
+  type AiProviderActionState,
+} from "@/app/admin/ai-providers/actions";
 
 type MusicfulSettings = {
   enabled: boolean;
@@ -71,18 +79,29 @@ const boolOptions = (onLabel: string, offLabel: string) => [
 export default function AdminMusicfulProviderForm({
   settings,
   account,
-  notice,
-  noticeTone,
   encryptionReady,
   mp3TranscodingReady,
 }: {
   settings: MusicfulSettings;
   account: MusicfulAccountInfo;
-  notice?: string;
-  noticeTone?: "success" | "error" | "info";
   encryptionReady: boolean;
   mp3TranscodingReady: boolean;
 }) {
+  const [saveState, saveAction, savePending] = useActionState<AiProviderActionState, FormData>(
+    saveMusicfulSettings,
+    null,
+  );
+  useAdminActionToast(saveState);
+  const [testState, testAction, testPending] = useActionState<AiProviderActionState, FormData>(
+    testMusicfulConnection,
+    null,
+  );
+  useAdminActionToast(testState);
+  const [removeState, removeAction, removePending] = useActionState<AiProviderActionState, FormData>(
+    removeMusicfulKey,
+    null,
+  );
+  useAdminActionToast(removeState);
   return (
     <section className="admin-panel admin-editor-card">
       <div>
@@ -93,7 +112,6 @@ export default function AdminMusicfulProviderForm({
           {settings.enabled && settings.apiKeyLast4 ? "Actif" : "Inactif"}
         </span>
       </div>
-      {notice ? <AdminToast message={notice} tone={noticeTone} /> : null}
 
       <dl className="admin-info-grid">
         <div>
@@ -172,7 +190,7 @@ export default function AdminMusicfulProviderForm({
         </dl>
       ) : null}
 
-      <form action={saveMusicfulSettings} className="admin-editor-grid">
+      <form action={saveAction} className="admin-editor-grid">
         <AdminTabs
           ariaLabel="Sections de configuration Musicful"
           tabs={[
@@ -418,22 +436,22 @@ export default function AdminMusicfulProviderForm({
         </AdminTabs>
 
         <div className="admin-editor-actions is-wide">
-          <button type="submit">
+          <button type="submit" disabled={savePending}>
             <Icon i="save" size={17} />
             Enregistrer
           </button>
         </div>
       </form>
       <div className="admin-editor-actions">
-        <form action={testMusicfulConnection}>
-          <button type="submit">
+        <form action={testAction}>
+          <button type="submit" disabled={testPending}>
             <Icon i="activity" size={17} />
             Tester la connexion
           </button>
         </form>
         {settings.apiKeyLast4 ? (
-          <form action={removeMusicfulKey}>
-            <button type="submit" className="is-danger">
+          <form action={removeAction}>
+            <button type="submit" className="is-danger" disabled={removePending}>
               <Icon i="trash-2" size={17} />
               Supprimer la clé
             </button>
