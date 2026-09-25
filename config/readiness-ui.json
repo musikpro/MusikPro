@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "description": "Contrôles qui doivent toujours être visibles sous forme de cartes avec voyant dans l'état de préparation / état production.",
+  "setupDashboard": [
+    "owner-production-state",
+    "csp-nonce",
+    "turnstile",
+    "upstash",
+    "playwright"
+  ],
+  "productionDoctor": [
+    "owner-production-state",
+    "csp-hardening",
+    "turnstile",
+    "upstash",
+    "playwright"
+  ]
+}

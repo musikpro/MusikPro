@@ -59,7 +59,7 @@ if (exists("package.json")) {
 // Git hygiene / secrets files
 if (exists(".gitignore")) {
   const lines = new Set(read(".gitignore").split(/\r?\n/).map(x => x.trim()));
-  for (const item of [".env", ".env.local", ".env.production", ".env.development", ".env.test", ".africa-saas/", ".codex/config.toml"]) {
+  for (const item of [".env", ".env.local", ".env.production", ".env.development", ".env.test", ".africa-saas/", ".codex/config.toml", ".claude/settings.local.json"]) {
     lines.has(item) ? ok(`gitignore: ${item}`) : fail(`.gitignore ne couvre pas explicitement ${item}`);
   }
 }
@@ -90,7 +90,7 @@ if (staleChangelog.length) fail(`Anciens changelogs versionnés à la racine: ${
 // Core AI workflow coherence
 if (exists(".agents/skills/setup-saas/SKILL.md")) {
   const wf = read(".agents/skills/setup-saas/SKILL.md");
-  for (const phrase of ["21 phases", "Computer Use", "Upstash", "Paiements", "Cloudflare", "Cloudinary", "conformity:check", "banani:prepare", ".codex/config.toml"]) {
+  for (const phrase of ["21 phases", "Computer Use", "Claude Code", "Upstash", "Paiements", "Cloudflare", "Cloudinary", "conformity:check", "banani:prepare", ".codex/config.toml"]) {
     wf.includes(phrase) ? ok(`Workflow contient: ${phrase}`) : fail(`Workflow /setup-saas incomplet: ${phrase}`);
   }
 }

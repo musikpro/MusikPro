@@ -1,7 +1,15 @@
-# Africa SaaS Kit V0.10.7
+# Africa SaaS Kit V0.10.9
 
-> **Version : V0.10.7 — Refactorisation générale + test d’intégrité complet**
+> **Version : V0.10.9 — Refactorisation générale, certification d’intégrité et installation guidée**
 
+
+## V0.10.9 — Certification d’intégrité et installation guidée
+
+`npm run kit:full-test` détaille désormais séparément les contrôles statiques (dont le nouveau contrôle **Readiness UI / voyants**) et les tests dynamiques (format, lint, TypeScript, Vitest, build Next.js, audit des dépendances production), plutôt qu’un unique `verify:code` consolidé. Ajout de `npm run install:check` : diagnostic non destructif de l’environnement d’installation (Node/npm/git, lockfile, dépendances, configuration, `.env.local`) avec la prochaine action recommandée, générant `generated/installation-readiness.{md,json}`. Le contrôle d’intégrité protège désormais ce script d’installation guidée comme fichier critique. Aucune fonctionnalité existante supprimée.
+
+## V0.10.8 — Voyants de préparation garantis
+
+Nouveau composant partagé `ReadinessCheckCard` qui homogénéise les voyants rouge/orange/vert entre l’écran **État de préparation du kit** (`/setup`) et **État production** (`/admin/production-doctor`). Ajout de `config/readiness-ui.json`, un registre minimal des contrôles qui doivent toujours apparaître à l’écran (État production propriétaire, CSP nonces, Turnstile, Upstash, Playwright), et de `npm run readiness:ui-check` qui échoue si l’un de ces contrôles est présent dans le diagnostic mais oublié de l’interface. Les modules optionnels (Upstash, Playwright) restent visibles avec un badge **Optionnel** sans bloquer le score global. `kit:full-test` exécute aussi ce contrôle d’interface.
 
 ## V0.10.7 — Refactorisation générale + intégrité complète
 

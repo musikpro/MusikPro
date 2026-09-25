@@ -1,8 +1,9 @@
 import Link from "next/link";
 import type { KitCheck, MobileAppReadiness } from "@/lib/setup/kit-dashboard";
 import type { SecuritySaasReport } from "@/lib/security/security-saas-report";
+import { ReadinessCheckCard } from "@/components/readiness-check-card";
 
-const groups: KitCheck["group"][] = ["Base", "Services", "Paiements", "Qualité"];
+const groups: KitCheck["group"][] = ["Base", "Services", "Paiements", "Sécurité", "Performance", "Qualité"];
 
 function StatusDot({ status }: { status: KitCheck["status"] }) {
   return <span className={`kit-dot kit-dot-${status}`} aria-hidden="true" />;
@@ -12,7 +13,9 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
   const ok = checks.filter((c) => c.status === "ok").length;
   const warnings = checks.filter((c) => c.status === "warning").length;
   const missing = checks.filter((c) => c.status === "missing").length;
-  const score = checks.length ? Math.round(((ok + warnings) / checks.length) * 100) : 0;
+  const blockingChecks = checks.filter((c) => !c.optional);
+  const blockingReady = blockingChecks.filter((c) => c.status === "ok" || c.status === "warning").length;
+  const score = blockingChecks.length ? Math.round((blockingReady / blockingChecks.length) * 100) : 0;
 
   return (
     <main className="shell kit-home">
@@ -20,11 +23,11 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
         <div>
           <p className="kit-eyebrow">Africa SaaS Kit</p>
           <h1>État de préparation du kit</h1>
-          <p className="muted">Aucune inscription n’est requise pour démarrer le starter. Configure les éléments rouges, puis demande <code>/setup-saas</code> à l’IA d’Antigravity pour être guidé pas à pas.</p>
+          <p className="muted">Aucune inscription n’est requise pour démarrer le starter. Les voyants rouges signalent ce qui n’est pas encore installé/configuré; les verts confirment ce qui est prêt. Les modules explicitement optionnels restent visibles en rouge lorsqu’ils sont absents mais ne bloquent pas le score de préparation.</p>
         </div>
         <div className="kit-score" aria-label={`${score}% prêt`}>
           <strong>{score}%</strong>
-          <span>{ok} prêts · {warnings} optionnels/à revoir · {missing} à configurer</span>
+          <span>{ok} verts · {warnings} à revoir · {missing} rouges · optionnels non bloquants</span>
         </div>
       </section>
 
@@ -58,7 +61,7 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
 
       <section className="card kit-next">
         <h2>Audit intégrité du kit</h2>
-        <p className="muted">Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes, runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:verify</code> ajoute automatiquement les contrôles dynamiques dès que les dépendances sont installées. <code>npm run kit:full-test</code> orchestre l&apos;ensemble des contrôles du kit et génère un rapport consolidé dans <code>generated/full-integrity-report.md</code>.</p>
+        <p className="muted">Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes, runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:full-test</code> produit en plus un rapport consolidé et ajoute automatiquement lint, typecheck et tests dès que les dépendances sont installées.</p>
         <div className="kit-actions">
           <code>npm run kit:audit</code>
           <code>npm run kit:verify</code>
@@ -97,13 +100,13 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
             <h2>{group}</h2>
             <div className="kit-check-grid">
               {items.map((item) => (
-                <article className={`kit-check ${item.status}`} key={item.id}>
-                  <span className="kit-dot" aria-hidden="true" />
-                  <div>
-                    <strong>{item.label}</strong>
-                    <p>{item.detail}</p>
-                  </div>
-                </article>
+                <ReadinessCheckCard
+                  key={item.id}
+                  label={item.label}
+                  detail={item.detail}
+                  status={item.status}
+                  optional={item.optional}
+                />
               ))}
             </div>
           </section>

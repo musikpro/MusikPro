@@ -2,6 +2,7 @@ import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
 import { readDoctorReport } from "@/lib/doctor/read-report";
+import { ReadinessCheckCard } from "@/components/readiness-check-card";
 
 export default async function ProductionDoctorPage() {
   await requireAdmin();
@@ -39,21 +40,15 @@ export default async function ProductionDoctorPage() {
           </section>
           <section className="admin-check-list">
             {report.results.map((result) => (
-              <article className="admin-panel" key={result.id}>
-                <span className={`admin-check-icon is-${result.status.toLowerCase()}`}>
-                  <Icon
-                    i={
-                      result.status === "PASS" ? "circle-check" : result.status === "FAIL" ? "circle-x" : "circle-alert"
-                    }
-                    size={18}
-                  />
-                </span>
-                <div>
-                  <h2>{result.label}</h2>
-                  <p>{result.detail}</p>
-                  <small>{result.category}</small>
-                </div>
-              </article>
+              <ReadinessCheckCard
+                key={result.id}
+                label={result.label}
+                detail={result.detail}
+                status={result.status}
+                category={result.category}
+                optional={Boolean(result.optional)}
+                variant="production"
+              />
             ))}
           </section>
         </>

@@ -8,7 +8,7 @@ const root = process.cwd();
 const generated = path.join(root, "generated");
 fs.mkdirSync(generated, { recursive: true });
 
-const checks = [
+const staticChecks = [
   ["Intégrité fichiers critiques", process.execPath, ["scripts/kit-integrity-check.mjs"]],
   ["Audit statique global", process.execPath, ["scripts/kit-audit.mjs"]],
   ["Conformité structurelle", process.execPath, ["scripts/conformity-check.mjs"]],
@@ -22,48 +22,66 @@ const checks = [
   ["Déploiement", process.execPath, ["scripts/deployment-check.mjs"]],
   ["Staging Gate", process.execPath, ["scripts/staging-check.mjs"]],
   ["Claude Code", process.execPath, ["scripts/claude-code-check.mjs"]],
+  ["Readiness UI / voyants", process.execPath, ["scripts/readiness-ui-check.mjs"]],
+  ["Préparation installation", process.execPath, ["scripts/installation-readiness-check.mjs"]],
+];
+
+const dynamicChecks = [
+  ["Format", "npm", ["run", "format:check"]],
+  ["Lint", "npm", ["run", "lint"]],
+  ["TypeScript", "npm", ["run", "typecheck"]],
+  ["Tests Vitest", "npm", ["run", "test"]],
+  ["Build Next.js", "npm", ["run", "build"]],
+  ["Audit dépendances production", "npm", ["run", "audit:prod"]],
 ];
 
 const results = [];
-function run(label, command, args, dynamic = false) {
+function run(label, command, args, dynamic = false, blocking = true) {
   process.stdout.write(`\n=== ${label} ===\n`);
   const started = Date.now();
   const r = spawnSync(command, args, { cwd: root, encoding: "utf8", env: process.env });
   if (r.stdout) process.stdout.write(r.stdout);
   if (r.stderr) process.stderr.write(r.stderr);
-  const status = r.status === 0 ? "PASS" : "FAIL";
-  results.push({ label, status, exitCode: r.status ?? 1, dynamic, durationMs: Date.now() - started });
+  const status = r.status === 0 ? "PASS" : blocking ? "FAIL" : "WARN";
+  results.push({ label, status, exitCode: r.status ?? 1, dynamic, blocking, durationMs: Date.now() - started });
   return r.status === 0;
 }
 
 console.log(`Africa SaaS Kit ${kitVersionLabel} — Test d'intégrité complet`);
-console.log("Objectif : vérifier les fonctionnalités du kit sans modifier la configuration du SaaS.");
+console.log("Objectif : vérifier les fonctions du kit sans modifier la configuration du SaaS.");
 
-for (const [label, command, args] of checks) run(label, command, args, false);
+for (const [label, command, args] of staticChecks) {
+  const blocking = label !== "Préparation installation";
+  run(label, command, args, false, blocking);
+}
 
 const hasLock = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock"].some((f) => fs.existsSync(path.join(root, f)));
 const hasModules = fs.existsSync(path.join(root, "node_modules"));
 let dynamicState = "PENDING";
 if (hasLock && hasModules) {
-  const ok = run("Tests dynamiques (lint + typecheck + tests)", "npm", ["run", "verify:code"], true);
-  dynamicState = ok ? "PASS" : "FAIL";
+  let dynamicOk = true;
+  for (const [label, command, args] of dynamicChecks) {
+    if (!run(label, command, args, true, true)) dynamicOk = false;
+  }
+  dynamicState = dynamicOk ? "PASS" : "FAIL";
 } else {
   console.log("\n=== Tests dynamiques ===");
   console.log("PENDING — dépendances non installées dans cette copie du kit.");
   if (!hasLock) console.log("○ lockfile absent");
   if (!hasModules) console.log("○ node_modules absent");
   console.log("→ Après npm install, relancer : npm run kit:full-test");
-  results.push({ label: "Tests dynamiques (lint + typecheck + tests)", status: "PENDING", exitCode: null, dynamic: true, durationMs: 0 });
+  for (const [label] of dynamicChecks) results.push({ label, status: "PENDING", exitCode: null, dynamic: true, blocking: true, durationMs: 0 });
 }
 
 const failures = results.filter((r) => r.status === "FAIL");
+const warnings = results.filter((r) => r.status === "WARN");
 const passes = results.filter((r) => r.status === "PASS").length;
 const pending = results.filter((r) => r.status === "PENDING").length;
 const report = {
   version: kitVersion,
   generatedAt: new Date().toISOString(),
-  status: failures.length ? "FAIL" : dynamicState === "PENDING" ? "STATIC_PASS_DYNAMIC_PENDING" : "PASS",
-  summary: { pass: passes, fail: failures.length, pending },
+  status: failures.length ? "FAIL" : dynamicState === "PENDING" ? "STATIC_PASS_DYNAMIC_PENDING" : warnings.length ? "PASS_WITH_WARNINGS" : "PASS",
+  summary: { pass: passes, warn: warnings.length, fail: failures.length, pending },
   results,
 };
 
@@ -74,6 +92,7 @@ const md = [
   `- Version : ${kitVersionLabel}`,
   `- Statut : **${report.status}**`,
   `- PASS : ${passes}`,
+  `- WARN : ${warnings.length}`,
   `- FAIL : ${failures.length}`,
   `- PENDING : ${pending}`,
   ``,
@@ -81,7 +100,9 @@ const md = [
   `|---|---|---|`,
   ...results.map((r) => `| ${r.label} | ${r.status} | ${r.dynamic ? "dynamique" : "statique"} |`),
   ``,
-  failures.length ? `## Échecs\n${failures.map((r) => `- ${r.label}`).join("\n")}` : `## Échecs\nAucun échec détecté.`,
+  failures.length ? `## Échecs\n${failures.map((r) => `- ${r.label}`).join("\n")}` : `## Échecs\nAucun échec bloquant détecté.`,
+  ``,
+  warnings.length ? `## Avertissements\n${warnings.map((r) => `- ${r.label}`).join("\n")}` : `## Avertissements\nAucun avertissement de contrôle.`,
   ``,
   `> Les tests dynamiques nécessitent les dépendances installées. Le rapport statique vérifie la structure et les garde-fous du kit, mais ne remplace pas les tests sandbox fournisseurs, Neon réel et staging.`,
   ``,
@@ -97,4 +118,4 @@ if (dynamicState === "PENDING") {
   console.log(`Test d'intégrité complet : STATIC PASS · DYNAMIC PENDING`);
   process.exit(0);
 }
-console.log(`Test d'intégrité complet : PASS — tous les contrôles statiques et dynamiques ont réussi.`);
+console.log(`Test d'intégrité complet : ${warnings.length ? "PASS WITH WARNINGS" : "PASS"} — tous les contrôles exécutables ont réussi.`);

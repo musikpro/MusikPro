@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-export type DoctorResult = { id:string; label:string; status:"PASS"|"WARN"|"FAIL"|"UNVERIFIED"; detail:string; category:string };
+export type DoctorResult = { id:string; label:string; status:"PASS"|"WARN"|"FAIL"|"UNVERIFIED"; detail:string; category:string; optional?:boolean };
 export type DoctorReport = { version:string; online:boolean; score:number; verdict:string; generatedAt:string; results:DoctorResult[] };
 
 export function readDoctorReport(): DoctorReport | null {

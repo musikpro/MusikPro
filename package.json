@@ -1,6 +1,6 @@
 {
   "name": "africa-saas-kit",
-  "version": "0.10.7",
+  "version": "0.10.9",
   "private": true,
   "engines": {
     "node": ">=20.9.0"
@@ -94,6 +94,8 @@
     "kit:audit": "node scripts/kit-audit.mjs",
     "kit:verify": "node scripts/kit-verify.mjs",
     "kit:full-test": "node scripts/full-integrity-check.mjs",
+    "readiness:ui-check": "node scripts/readiness-ui-check.mjs",
+    "install:check": "node scripts/installation-readiness-check.mjs",
     "clients:crud:generate": "node scripts/prisma-clients.mjs generate",
     "clients:crud:migrate": "node scripts/prisma-clients.mjs migrate",
     "clients:crud:check": "node scripts/clients-crud-check.mjs",

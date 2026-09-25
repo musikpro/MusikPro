@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { neon } from "@neondatabase/serverless";
 import providersCatalog from "@/config/providers.json";
 
@@ -21,7 +22,8 @@ export type KitCheck = {
   label: string;
   status: KitStatus;
   detail: string;
-  group: "Base" | "Services" | "Paiements" | "Qualité";
+  group: "Base" | "Services" | "Paiements" | "Sécurité" | "Performance" | "Qualité";
+  optional?: boolean;
 };
 
 type KitConfig = {
@@ -55,15 +57,16 @@ function hasEnv(name: string) {
   return Boolean(process.env[name]?.trim());
 }
 
-function phaseWasValidated(phase: number) {
+function readText(rel: string) {
+  try { return fs.readFileSync(path.join(process.cwd(), rel), "utf8"); } catch { return ""; }
+}
+
+function packageMap() {
   try {
-    const progress = JSON.parse(
-      fs.readFileSync(path.join(process.cwd(), ".africa-saas/setup-progress.json"), "utf8"),
-    ) as { phases?: Record<string, { status?: string; note?: string }> };
-    const entry = progress.phases?.[String(phase)];
-    return entry?.status === "passed" ? entry : null;
+    const pkg = JSON.parse(readText("package.json")) as { dependencies?: Record<string,string>; devDependencies?: Record<string,string> };
+    return { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
   } catch {
-    return null;
+    return {} as Record<string,string>;
   }
 }
 
@@ -163,12 +166,34 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   checks.push({ id: "node", label: "Node.js", status: nodeOk ? "ok" : "missing", detail: `Version active : ${process.versions.node} (>=20.9.0 requis).`, group: "Base" });
   checks.push({ id: "lockfile", label: "package-lock.json", status: exists("package-lock.json") ? "ok" : "missing", detail: exists("package-lock.json") ? "Lockfile présent." : "Exécute npm install puis conserve package-lock.json dans Git.", group: "Base" });
   checks.push({ id: "config", label: "Configuration du kit", status: config ? "ok" : "missing", detail: config ? "africa-saas.config.json présent." : "Lance /setup-saas ou npm run setup pour créer la configuration.", group: "Base" });
-  let computerUseVerified = false;
+  let openAiComputerUseVerified = false;
+  let claudeComputerUseVerified = false;
   try {
     const state = JSON.parse(fs.readFileSync(path.join(process.cwd(), ".africa-saas/computer-use.json"), "utf8")) as { status?: string };
-    computerUseVerified = state.status === "verified";
+    openAiComputerUseVerified = state.status === "verified";
   } catch {}
-  checks.push({ id: "computer-use", label: "Computer Use / Browser Tools", status: computerUseVerified ? "ok" : "missing", detail: computerUseVerified ? "Browser Subagent vérifié par un test réel." : "NON VÉRIFIÉ — exécute /computer-use ou npm run computer-use:check puis teste le Browser Subagent.", group: "Base" });
+  try {
+    const state = JSON.parse(fs.readFileSync(path.join(process.cwd(), ".africa-saas/computer-use-claude.json"), "utf8")) as { status?: string };
+    claudeComputerUseVerified = state.status === "verified";
+  } catch {}
+  const claudeCli = spawnSync("claude", ["--version"], { encoding: "utf8", timeout: 1200 });
+  const claudeInstalled = claudeCli.status === 0;
+  const claudeProjectReady = exists("CLAUDE.md") && exists(".claude/settings.json");
+  checks.push({ id: "computer-use-openai", label: "Computer Use — ChatGPT / OpenAI", status: openAiComputerUseVerified ? "ok" : "missing", detail: openAiComputerUseVerified ? "Voyant vert : Browser/Computer Use vérifié par un test réel." : "NON VÉRIFIÉ — exécute /computer-use ou npm run computer-use:openai:check, puis marque la preuve après un vrai test.", group: "Base" });
+  checks.push({ id: "claude-code", label: "Claude Code — compatibilité du kit", status: claudeInstalled && claudeProjectReady ? "ok" : claudeProjectReady ? "warning" : "missing", detail: claudeInstalled && claudeProjectReady ? "Claude Code détecté et fichiers projet prêts." : claudeProjectReady ? "Fichiers Claude Code prêts; CLI claude non détecté dans ce shell." : "Exécute npm run claude-code:prepare puis npm run claude-code:check.", group: "Base" });
+  checks.push({ id: "computer-use-claude", label: "Computer Use — Claude Code / Anthropic", status: claudeComputerUseVerified ? "ok" : claudeInstalled ? "warning" : "missing", detail: claudeComputerUseVerified ? "Voyant vert : Computer Use/Browser Claude Code vérifié par un test réel." : claudeInstalled ? "Claude Code détecté, mais Computer Use/Browser n’est pas encore vérifié. Lance npm run computer-use:claude:check." : "Claude Code non détecté et Computer Use non vérifié. Installe/ouvre Claude Code, puis lance npm run computer-use:claude:check.", group: "Base" });
+  const ownerAdminLayoutText = readText("app/admin/layout.tsx") + "\n" + readText("components/admin/AdminShell.tsx");
+  const ownerProductionStateReady = exists("app/admin/production-doctor/page.tsx") && /href[:=]\s*["']\/admin\/production-doctor["']/.test(ownerAdminLayoutText) && ownerAdminLayoutText.includes("État production");
+  checks.push({
+    id: "owner-production-state",
+    label: "État production — tableau de bord propriétaire",
+    status: ownerProductionStateReady ? "ok" : "missing",
+    detail: ownerProductionStateReady
+      ? "Voyant vert : le menu propriétaire et la page de diagnostic production sont installés."
+      : "Voyant rouge : ajouter le menu « État production » et la route /admin/production-doctor au tableau de bord propriétaire.",
+    group: "Base",
+  });
+
   checks.push({ id: "auth", label: "Better Auth", status: hasEnv("BETTER_AUTH_SECRET") ? "ok" : "missing", detail: hasEnv("BETTER_AUTH_SECRET") ? "Secret Better Auth configuré." : "BETTER_AUTH_SECRET manquant.", group: "Services" });
   const emailPasswordMode = process.env.AUTH_EMAIL_PASSWORD_ENABLED !== "false";
   checks.push({ id: "auth-mode", label: "Mode d’authentification", status: emailPasswordMode || (hasEnv("GOOGLE_CLIENT_ID") && hasEnv("GOOGLE_CLIENT_SECRET")) ? "ok" : "missing", detail: emailPasswordMode ? "Email/mot de passe activé (Resend requis en production)." : "Email/mot de passe désactivé : Google OAuth doit être configuré.", group: "Services" });
@@ -188,20 +213,17 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   });
 
   const upstashParts = [hasEnv("UPSTASH_REDIS_REST_URL"), hasEnv("UPSTASH_REDIS_REST_TOKEN")];
-  const upstashValidation = phaseWasValidated(16);
-  const upstashConfigured = upstashParts.every(Boolean) || Boolean(upstashValidation);
   checks.push({
     id: "upstash",
-    label: "Upstash Redis (optionnel)",
-    status: upstashConfigured ? "ok" : upstashParts.some(Boolean) ? "missing" : "warning",
+    label: "Cache / rate limiting distribué — Upstash (optionnel)",
+    status: upstashParts.every(Boolean) ? "ok" : "missing",
     detail: upstashParts.every(Boolean)
-      ? "URL + token présents; /api/readyz effectuera une sonde Redis."
-      : upstashValidation
-        ? "Validé en Preview et Production : /api/readyz confirme Redis opérationnel."
-        : upstashParts.some(Boolean)
-          ? "Configuration Upstash partielle."
-          : "Non configuré — optionnel pour rate limiting/cache avancé.",
-    group: "Services",
+      ? "Voyant vert : Upstash est configuré pour cache TTL / rate limiting distribué; Neon reste la source de vérité."
+      : upstashParts.some(Boolean)
+        ? "Voyant rouge : configuration Upstash incomplète. Renseigne URL + token ou désactive ce module optionnel."
+        : "Voyant rouge : non installé/configuré. Optionnel — le SaaS continue avec Neon comme source de vérité et sans cache distribué.",
+    group: "Performance",
+    optional: true,
   });
 
   const googleRequired = Boolean(config?.googleAuth);
@@ -235,6 +257,60 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     checks.push({ id: "webhook-base", label: "URL webhooks", status: hasEnv("PAYMENT_WEBHOOK_BASE_URL") ? "ok" : "missing", detail: hasEnv("PAYMENT_WEBHOOK_BASE_URL") ? `PAYMENT_WEBHOOK_BASE_URL configurée.` : "Manquante. En local, utilise ngrok + npm run payments:local:apply.", group: "Paiements" });
     checks.push(await checkNgrok());
   }
+
+  const headersText = readText("lib/security/headers.ts");
+  const proxyText = readText("proxy.ts");
+  const cspPresent = /Content-Security-Policy/i.test(headersText) || /Content-Security-Policy/i.test(proxyText);
+  // Seule la directive script-src compte ici : style-src conserve légitimement 'unsafe-inline'
+  // (pas d'équivalent nonce pour l'attribut HTML style="...", utilisé via React style={{}}).
+  const scriptSrcLine = headersText.split("\n").find((l) => /script-src/i.test(l) && !/^\s*(\*|\/\/)/.test(l)) || "";
+  const cspHasUnsafeInline = /unsafe-inline/i.test(scriptSrcLine);
+  const nonceSources = [headersText, proxyText, readText("middleware.ts")].join("\n");
+  const cspHasNonce = /nonce|x-nonce|nonce-/i.test(nonceSources);
+  checks.push({
+    id: "csp-nonce",
+    label: "CSP sans unsafe-inline — nonces",
+    status: cspPresent && !cspHasUnsafeInline && cspHasNonce ? "ok" : "missing",
+    detail: cspPresent && !cspHasUnsafeInline && cspHasNonce
+      ? "Voyant vert : CSP renforcée avec stratégie nonce et sans unsafe-inline."
+      : cspPresent
+        ? "Voyant rouge : CSP présente mais encore permissive. Passer scripts/styles à une stratégie de nonces Next.js avant le niveau sécurité maximum."
+        : "Voyant rouge : CSP non détectée. Ajouter une Content-Security-Policy compatible Next.js puis migrer vers les nonces.",
+    group: "Sécurité",
+  });
+
+  const turnstileFiles = exists("components/turnstile-widget.tsx") && exists("lib/security/turnstile.ts");
+  const turnstileEnv = hasEnv("TURNSTILE_SECRET_KEY") && (hasEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY") || hasEnv("TURNSTILE_SITE_KEY"));
+  const turnstileClientText = readText("components/auth-form.tsx") + "\n" + readText("components/forgot-password-form.tsx");
+  const turnstileServerText = readText("lib/security/turnstile.ts");
+  const publicFormProtected = /TurnstileWidget/.test(turnstileClientText) && /siteverify/.test(turnstileServerText);
+  checks.push({
+    id: "turnstile",
+    label: "Cloudflare Turnstile — formulaires publics",
+    status: turnstileFiles && turnstileEnv && publicFormProtected ? "ok" : "missing",
+    detail: turnstileFiles && turnstileEnv && publicFormProtected
+      ? "Voyant vert : Turnstile est câblé et les clés sont configurées pour l'inscription/formulaires publics."
+      : turnstileFiles
+        ? "Voyant rouge : module Turnstile présent mais configuration/protection publique incomplète. Configure les clés et vérifie inscription + formulaires exposés."
+        : "Voyant rouge : Turnstile n'est pas installé. Ajouter le widget + vérification serveur avant production publique.",
+    group: "Sécurité",
+  });
+
+  const deps = packageMap();
+  const playwrightPkg = Boolean(deps["@playwright/test"] || deps["playwright"] || deps["playwright-core"]);
+  const playwrightConfig = ["playwright.config.ts", "playwright.config.mts", "playwright.config.js", "playwright.config.mjs"].some(exists);
+  const claudeMcpText = readText(".claude/settings.json") + "\n" + readText(".codex/config.toml") + "\n" + readText(".mcp.json");
+  const playwrightMcp = /playwright/i.test(claudeMcpText);
+  checks.push({
+    id: "playwright",
+    label: "Playwright — tests navigateur / MCP",
+    status: playwrightPkg || playwrightConfig || playwrightMcp ? "ok" : "missing",
+    detail: playwrightPkg || playwrightConfig || playwrightMcp
+      ? `Voyant vert : Playwright détecté${playwrightMcp ? " via configuration MCP" : playwrightConfig ? " via configuration du projet" : " dans les dépendances"}.`
+      : "Voyant rouge : Playwright non détecté dans le projet ni dans les configurations MCP connues. Optionnel mais recommandé pour les tests E2E/browser.",
+    group: "Qualité",
+    optional: true,
+  });
 
   checks.push({ id: "health", label: "API health / readiness", status: exists("app/api/health/route.ts") && exists("app/api/readyz/route.ts") ? "ok" : "missing", detail: "Sondes /api/health et /api/readyz présentes.", group: "Qualité" });
   checks.push({ id: "runtime", label: "Runtime API Node.js", status: exists("scripts/runtime-check.mjs") ? "ok" : "missing", detail: "Gate runtime:check présent pour empêcher un passage accidentel en Edge.", group: "Qualité" });
