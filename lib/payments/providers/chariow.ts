@@ -1,12 +1,6 @@
-import {
-  chariowPayloadSchema,
-  chariowProductsPayloadSchema,
-} from "@/lib/validation/payment-providers";
+import { chariowPayloadSchema, chariowProductsPayloadSchema } from "@/lib/validation/payment-providers";
 import { timingSafeEqual } from "node:crypto";
-import {
-  parsePhoneNumberFromString,
-  type CountryCode,
-} from "libphonenumber-js";
+import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { HttpPaymentProvider, PaymentProviderHttpError } from "../provider-base";
 import type { CheckoutInput, CheckoutResult } from "../types";
 import { getChariowConfiguration } from "@/lib/payments/chariow-config";
@@ -35,11 +29,7 @@ function mapStatus(value: unknown): CheckoutResult["status"] {
   return "pending";
 }
 
-function resolvePhone(
-  rawPhone: string | undefined,
-  country: string | undefined,
-  localPhone?: string,
-) {
+function resolvePhone(rawPhone: string | undefined, country: string | undefined, localPhone?: string) {
   if (!rawPhone) throw new Error("Chariow checkout requires customer phone");
   const cc = (country || "CI").toUpperCase() as CountryCode;
   const preferred = localPhone?.trim() || rawPhone.trim();
@@ -63,15 +53,9 @@ export class ChariowProvider extends HttpPaymentProvider {
   }
   id = "chariow" as const;
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
-    const productId = String(
-      input.providerContext?.externalProductId ||
-        input.metadata?.chariowProductId ||
-        "",
-    );
-    if (!productId)
-      throw new Error("Chariow requires a product mapping for this plan");
-    if (!input.customer.email)
-      throw new Error("Chariow checkout requires customer email");
+    const productId = String(input.providerContext?.externalProductId || input.metadata?.chariowProductId || "");
+    if (!productId) throw new Error("Chariow requires a product mapping for this plan");
+    if (!input.customer.email) throw new Error("Chariow checkout requires customer email");
     const names = (input.customer.name || "Client SaaS").trim().split(/\s+/);
     const phone = resolvePhone(
       input.customer.phone,
@@ -102,27 +86,23 @@ export class ChariowProvider extends HttpPaymentProvider {
     const currency = String(data.purchase?.amount?.currency || "");
     const id = String(data.purchase?.id || data.payment?.transaction_id || "");
     const checkoutUrl = data.payment?.checkout_url || undefined;
-    if (!id || !checkoutUrl)
-      throw new Error("Chariow returned an incomplete checkout response");
+    if (!id || !checkoutUrl) throw new Error("Chariow returned an incomplete checkout response");
     return {
       provider: this.id,
       externalId: id,
       status: mapStatus(
-        typeof data.purchase?.status === "object"
-          ? data.purchase.status.value
-          : data.purchase?.status || data.step,
+        typeof data.purchase?.status === "object" ? data.purchase.status.value : data.purchase?.status || data.step,
       ),
       checkoutUrl,
-      money:
-        Number.isFinite(amount) && currency ? { amount, currency } : undefined,
+      money: Number.isFinite(amount) && currency ? { amount, currency } : undefined,
       raw: body,
     };
   }
   async verifyPayment(externalId: string): Promise<CheckoutResult> {
-    const body = await this.json(
-      `${BASE}/sales/${encodeURIComponent(externalId)}`,
-      { headers: await headers(), cache: "no-store" },
-    );
+    const body = await this.json(`${BASE}/sales/${encodeURIComponent(externalId)}`, {
+      headers: await headers(),
+      cache: "no-store",
+    });
     const sale = body.data || body;
     const detail = typeof sale.amount === "object" ? sale.amount : undefined;
     const amount = Number(detail?.value ?? sale.amount);
@@ -130,11 +110,8 @@ export class ChariowProvider extends HttpPaymentProvider {
     return {
       provider: this.id,
       externalId,
-      status: mapStatus(
-        typeof sale.status === "object" ? sale.status.value : sale.status,
-      ),
-      money:
-        Number.isFinite(amount) && currency ? { amount, currency } : undefined,
+      status: mapStatus(typeof sale.status === "object" ? sale.status.value : sale.status),
+      money: Number.isFinite(amount) && currency ? { amount, currency } : undefined,
       raw: body,
     };
   }
@@ -145,16 +122,12 @@ export class ChariowProvider extends HttpPaymentProvider {
   }
   async parseWebhook(request: Request) {
     const deliveryId = request.headers.get("x-pulse-delivery-id");
-    const payload = chariowPayloadSchema.parse(
-      JSON.parse(await request.text()),
-    );
+    const payload = chariowPayloadSchema.parse(JSON.parse(await request.text()));
     const entity = payload.sale || payload.license || payload.affiliate || {};
     const id = String(entity.id || payload.data?.id || "");
     if (!id) throw new Error("Chariow Pulse missing sale id");
     return {
-      id: deliveryId
-        ? `chariow:${deliveryId}`
-        : `chariow:${payload.event || "unknown"}:${id}`,
+      id: deliveryId ? `chariow:${deliveryId}` : `chariow:${payload.event || "unknown"}:${id}`,
       type: String(payload.event || "unknown"),
       payload: { ...payload, transaction: { id } },
     };
@@ -172,9 +145,7 @@ export async function listChariowProducts(): Promise<ChariowProductOption[]> {
     cache: "no-store",
   });
   if (!response.ok) throw new PaymentProviderHttpError(response.status);
-  const body = chariowProductsPayloadSchema.parse(
-    await response.json().catch(() => ({})),
-  );
+  const body = chariowProductsPayloadSchema.parse(await response.json().catch(() => ({})));
   const items = body.data ?? body.products ?? [];
   const options: ChariowProductOption[] = [];
   for (const item of items) {

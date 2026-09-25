@@ -69,7 +69,9 @@ export async function createCoupon(formData: FormData) {
   const session = await requireAdmin();
   const parsed = couponFormSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
-  await getServiceDb().insert(coupons).values({ id, ...couponValues(parsed) });
+  await getServiceDb()
+    .insert(coupons)
+    .values({ id, ...couponValues(parsed) });
   await writeAuditLog({
     action: "coupon.created",
     actorId: session.user.id,

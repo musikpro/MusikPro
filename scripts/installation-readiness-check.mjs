@@ -13,28 +13,89 @@ const add = (id, label, status, detail, action = "") => checks.push({ id, label,
 
 const [major, minor] = process.versions.node.split(".").map(Number);
 const nodeOk = major > 20 || (major === 20 && minor >= 9);
-add("node", "Node.js", nodeOk ? "PASS" : "FAIL", `Version active : ${process.versions.node} (>=20.9.0 requis).`, nodeOk ? "" : "Installer Node.js 20.9+ puis relancer npm run install:check.");
+add(
+  "node",
+  "Node.js",
+  nodeOk ? "PASS" : "FAIL",
+  `Version active : ${process.versions.node} (>=20.9.0 requis).`,
+  nodeOk ? "" : "Installer Node.js 20.9+ puis relancer npm run install:check.",
+);
 
 const npmResult = spawnSync("npm", ["--version"], { cwd: root, encoding: "utf8" });
 const npmOk = npmResult.status === 0;
-add("npm", "npm", npmOk ? "PASS" : "FAIL", npmOk ? `Version active : ${(npmResult.stdout || "").trim()}.` : "npm introuvable dans le PATH.", npmOk ? "" : "Installer npm avec Node.js.");
+add(
+  "npm",
+  "npm",
+  npmOk ? "PASS" : "FAIL",
+  npmOk ? `Version active : ${(npmResult.stdout || "").trim()}.` : "npm introuvable dans le PATH.",
+  npmOk ? "" : "Installer npm avec Node.js.",
+);
 
 const gitResult = spawnSync("git", ["--version"], { cwd: root, encoding: "utf8" });
-add("git", "Git", gitResult.status === 0 ? "PASS" : "WARN", gitResult.status === 0 ? (gitResult.stdout || "").trim() : "Git non détecté; utile pour GitHub et le staging.", gitResult.status === 0 ? "" : "Installer Git avant les workflows GitHub.");
+add(
+  "git",
+  "Git",
+  gitResult.status === 0 ? "PASS" : "WARN",
+  gitResult.status === 0 ? (gitResult.stdout || "").trim() : "Git non détecté; utile pour GitHub et le staging.",
+  gitResult.status === 0 ? "" : "Installer Git avant les workflows GitHub.",
+);
 
-add("package-json", "package.json", exists("package.json") ? "PASS" : "FAIL", exists("package.json") ? "Manifeste npm présent." : "package.json absent.", "");
-add("lockfile", "Lockfile npm", exists("package-lock.json") ? "PASS" : "WARN", exists("package-lock.json") ? "package-lock.json présent; npm ci reproductible." : "package-lock.json absent dans le starter.", exists("package-lock.json") ? "" : "Lancer npm install une première fois puis conserver package-lock.json.");
-add("dependencies", "Dépendances Node", exists("node_modules") ? "PASS" : "WARN", exists("node_modules") ? "node_modules présent." : "Dépendances non installées dans cette copie.", exists("node_modules") ? "" : "Lancer npm install.");
-add("config", "Configuration du kit", exists("africa-saas.config.json") ? "PASS" : "WARN", exists("africa-saas.config.json") ? "africa-saas.config.json présent." : "Configuration projet non encore générée.", exists("africa-saas.config.json") ? "" : "Lancer npm run setup puis npm run setup-saas.");
-add("env", "Variables locales", exists(".env.local") ? "PASS" : "WARN", exists(".env.local") ? ".env.local présent (contenu non affiché)." : ".env.local absent; normal avant le setup.", exists(".env.local") ? "" : "Lancer npm run setup pour générer le contrat local.");
-add("readiness-ui", "État production / voyants", exists("config/readiness-ui.json") && exists("scripts/readiness-ui-check.mjs") && exists("components/readiness-check-card.tsx") ? "PASS" : "FAIL", "Registre, test UI et composant de voyant requis.", "");
+add(
+  "package-json",
+  "package.json",
+  exists("package.json") ? "PASS" : "FAIL",
+  exists("package.json") ? "Manifeste npm présent." : "package.json absent.",
+  "",
+);
+add(
+  "lockfile",
+  "Lockfile npm",
+  exists("package-lock.json") ? "PASS" : "WARN",
+  exists("package-lock.json")
+    ? "package-lock.json présent; npm ci reproductible."
+    : "package-lock.json absent dans le starter.",
+  exists("package-lock.json") ? "" : "Lancer npm install une première fois puis conserver package-lock.json.",
+);
+add(
+  "dependencies",
+  "Dépendances Node",
+  exists("node_modules") ? "PASS" : "WARN",
+  exists("node_modules") ? "node_modules présent." : "Dépendances non installées dans cette copie.",
+  exists("node_modules") ? "" : "Lancer npm install.",
+);
+add(
+  "config",
+  "Configuration du kit",
+  exists("africa-saas.config.json") ? "PASS" : "WARN",
+  exists("africa-saas.config.json") ? "africa-saas.config.json présent." : "Configuration projet non encore générée.",
+  exists("africa-saas.config.json") ? "" : "Lancer npm run setup puis npm run setup-saas.",
+);
+add(
+  "env",
+  "Variables locales",
+  exists(".env.local") ? "PASS" : "WARN",
+  exists(".env.local") ? ".env.local présent (contenu non affiché)." : ".env.local absent; normal avant le setup.",
+  exists(".env.local") ? "" : "Lancer npm run setup pour générer le contrat local.",
+);
+add(
+  "readiness-ui",
+  "État production / voyants",
+  exists("config/readiness-ui.json") &&
+    exists("scripts/readiness-ui-check.mjs") &&
+    exists("components/readiness-check-card.tsx")
+    ? "PASS"
+    : "FAIL",
+  "Registre, test UI et composant de voyant requis.",
+  "",
+);
 
 const fail = checks.filter((c) => c.status === "FAIL");
 const warn = checks.filter((c) => c.status === "WARN");
 let nextAction = "npm run kit:full-test";
 if (!nodeOk || !npmOk) nextAction = "Installer/corriger Node.js et npm, puis relancer npm run install:check";
 else if (!exists("node_modules") || !exists("package-lock.json")) nextAction = "npm install";
-else if (!exists("africa-saas.config.json") || !exists(".env.local")) nextAction = "npm run setup && npm run setup-saas";
+else if (!exists("africa-saas.config.json") || !exists(".env.local"))
+  nextAction = "npm run setup && npm run setup-saas";
 
 const report = {
   version: kitVersion,
@@ -54,7 +115,10 @@ const md = [
   "",
   "| Contrôle | Statut | Détail | Action |",
   "|---|---|---|---|",
-  ...checks.map((c) => `| ${c.label} | ${c.status} | ${c.detail.replaceAll("|", "\\|")} | ${(c.action || "—").replaceAll("|", "\\|")} |`),
+  ...checks.map(
+    (c) =>
+      `| ${c.label} | ${c.status} | ${c.detail.replaceAll("|", "\\|")} | ${(c.action || "—").replaceAll("|", "\\|")} |`,
+  ),
   "",
 ].join("\n");
 fs.writeFileSync(path.join(generated, "installation-readiness.md"), md);

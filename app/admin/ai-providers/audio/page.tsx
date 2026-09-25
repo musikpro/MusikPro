@@ -6,9 +6,17 @@ import { audioProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { isCloudinaryConfigured } from "@/lib/storage/cloudinary";
 
-export default async function AdminAudioProviderPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function AdminAudioProviderPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   await requireAdmin();
-  const [stored] = await getServiceDb().select().from(audioProviderConfigs).where(eq(audioProviderConfigs.provider, "musicful")).limit(1);
+  const [stored] = await getServiceDb()
+    .select()
+    .from(audioProviderConfigs)
+    .where(eq(audioProviderConfigs.provider, "musicful"))
+    .limit(1);
   const query = await searchParams;
   const notice = query.saved
     ? "Configuration Musicful enregistrée."

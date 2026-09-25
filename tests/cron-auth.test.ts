@@ -21,8 +21,6 @@ describe("verifyCronRequest", () => {
   it("fails closed in production when no secret is configured", () => {
     vi.stubEnv("NODE_ENV", "production");
     delete process.env.CRON_SECRET;
-    expect(
-      verifyCronRequest(new Request("https://example.test/api/cron/x")),
-    ).toBe(false);
+    expect(verifyCronRequest(new Request("https://example.test/api/cron/x"))).toBe(false);
   });
 });

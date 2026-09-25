@@ -1,6 +1,10 @@
 "use client";
 import Link from "next/link";
-import { deleteRecipientRelation, reorderRecipientRelations, toggleRecipientRelation } from "@/app/admin/recipient-relations/actions";
+import {
+  deleteRecipientRelation,
+  reorderRecipientRelations,
+  toggleRecipientRelation,
+} from "@/app/admin/recipient-relations/actions";
 import Icon from "@/components/banani/Icon";
 import AdminDeleteRecipientRelationButton from "./AdminDeleteRecipientRelationButton";
 import AdminSortableGrid from "./AdminSortableGrid";
@@ -32,7 +36,10 @@ export default function AdminRecipientRelationSortableGrid({ relations }: { rela
           <h2>{relation.name}</h2>
           <small>Ordre {context.index + 1}</small>
           <footer className="admin-style-actions">
-            <Link className="admin-secondary-action admin-style-edit" href={`/admin/recipient-relations/${relation.id}`}>
+            <Link
+              className="admin-secondary-action admin-style-edit"
+              href={`/admin/recipient-relations/${relation.id}`}
+            >
               <Icon i="pencil" size={15} /> Modifier
             </Link>
             <form action={toggleRecipientRelation}>

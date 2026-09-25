@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { musicfulGenerateRequestSchema, musicfulSettingsSchema, musicfulTaskSchema, musicfulTasksSchema } from "@/lib/validation/ai";
+import {
+  musicfulGenerateRequestSchema,
+  musicfulSettingsSchema,
+  musicfulTaskSchema,
+  musicfulTasksSchema,
+} from "@/lib/validation/ai";
 
 describe("Musicful settings validation", () => {
   const validSettings = {

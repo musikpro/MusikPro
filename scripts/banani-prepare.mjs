@@ -16,7 +16,9 @@ if (fs.existsSync(file)) {
   console.log("✓ Created empty .codex/config.toml");
 }
 
-try { fs.chmodSync(file, 0o600); } catch {}
+try {
+  fs.chmodSync(file, 0o600);
+} catch {}
 
 console.log("\nNext:");
 console.log("1. Open .codex/config.toml");

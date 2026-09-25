@@ -2699,7 +2699,9 @@
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, 4px);
-  transition: opacity 140ms ease, transform 140ms ease;
+  transition:
+    opacity 140ms ease,
+    transform 140ms ease;
 }
 
 .admin-info-tip:is(:hover, :focus-visible) > [role="tooltip"] {
@@ -2803,8 +2805,15 @@
   display: block;
 }
 
-.admin-webhook-box strong { font-size: 10px; }
-.admin-webhook-box code { margin-top: 7px; overflow-wrap: anywhere; color: var(--admin-muted); font-size: 9px; }
+.admin-webhook-box strong {
+  font-size: 10px;
+}
+.admin-webhook-box code {
+  margin-top: 7px;
+  overflow-wrap: anywhere;
+  color: var(--admin-muted);
+  font-size: 9px;
+}
 
 .admin-chariow-products {
   min-width: 0;
@@ -2845,7 +2854,9 @@
   font-size: 9px;
 }
 
-.admin-product-plan strong { color: var(--admin-foreground); }
+.admin-product-plan strong {
+  color: var(--admin-foreground);
+}
 
 .admin-product-actions {
   display: grid;

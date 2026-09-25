@@ -1,29 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { matchesSongSearch } from "../lib/demo/search";
-import {
-  DEFAULT_CREDIT_PLANS,
-  getGenerationCount,
-  getVersionCount,
-} from "../lib/credit-plans/catalog";
+import { DEFAULT_CREDIT_PLANS, getGenerationCount, getVersionCount } from "../lib/credit-plans/catalog";
 import { convertFromXof, creditCurrencies, formatCreditPrice } from "../lib/credit-plans/currency";
 describe("Recherche MusikPro", () => {
   it("ignore les accents et la casse", () =>
-    expect(matchesSongSearch(" GLOIRE a toi ", "Gloire à Toi", "Gospel")).toBe(
-      true,
-    ));
+    expect(matchesSongSearch(" GLOIRE a toi ", "Gloire à Toi", "Gospel")).toBe(true));
   it("combine les mots entre titre, style et occasion", () =>
-    expect(
-      matchesSongSearch(
-        "amapiano mariage",
-        "Mon mariage",
-        "Amapiano",
-        "Mariage",
-      ),
-    ).toBe(true));
+    expect(matchesSongSearch("amapiano mariage", "Mon mariage", "Amapiano", "Mariage")).toBe(true));
   it("refuse un mot absent", () =>
-    expect(
-      matchesSongSearch("afrobeat mariage", "Mon mariage", "Amapiano"),
-    ).toBe(false));
+    expect(matchesSongSearch("afrobeat mariage", "Mon mariage", "Amapiano")).toBe(false));
   it("affiche tous les titres quand la recherche est effacée", () =>
     expect(matchesSongSearch("", "Mama Africa")).toBe(true));
   it("applique la règle de deux crédits par génération", () => {

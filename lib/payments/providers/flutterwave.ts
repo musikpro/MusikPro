@@ -4,9 +4,7 @@ import { HttpPaymentProvider } from "../provider-base";
 import type { CheckoutInput, CheckoutResult } from "../types";
 import { requireEnv } from "@/lib/security/env";
 const base = () =>
-  process.env.FLUTTERWAVE_ENVIRONMENT === "live"
-    ? "https://api.flutterwave.com/v3"
-    : "https://api.flutterwave.com/v3";
+  process.env.FLUTTERWAVE_ENVIRONMENT === "live" ? "https://api.flutterwave.com/v3" : "https://api.flutterwave.com/v3";
 const headers = () => ({
   Authorization: `Bearer ${requireEnv("FLUTTERWAVE_SECRET_KEY")}`,
   "Content-Type": "application/json",
@@ -28,8 +26,7 @@ export class FlutterwaveProvider extends HttpPaymentProvider {
   }
   id = "flutterwave" as const;
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
-    if (!input.customer.email)
-      throw new Error("Flutterwave checkout requires email");
+    if (!input.customer.email) throw new Error("Flutterwave checkout requires email");
     const body = await this.json(`${base()}/payments`, {
       method: "POST",
       headers: headers(),
@@ -60,10 +57,10 @@ export class FlutterwaveProvider extends HttpPaymentProvider {
     };
   }
   async verifyPayment(externalId: string): Promise<CheckoutResult> {
-    const body = await this.json(
-      `${base()}/transactions/${encodeURIComponent(externalId)}/verify`,
-      { headers: headers(), cache: "no-store" },
-    );
+    const body = await this.json(`${base()}/transactions/${encodeURIComponent(externalId)}/verify`, {
+      headers: headers(),
+      cache: "no-store",
+    });
     const data = body.data || body;
     const amount = Number(data.amount);
     const currency = String(data.currency || "");
@@ -71,8 +68,7 @@ export class FlutterwaveProvider extends HttpPaymentProvider {
       provider: this.id,
       externalId: String(data.id || externalId),
       status: map(data.status),
-      money:
-        Number.isFinite(amount) && currency ? { amount, currency } : undefined,
+      money: Number.isFinite(amount) && currency ? { amount, currency } : undefined,
       raw: body,
     };
   }
@@ -80,20 +76,13 @@ export class FlutterwaveProvider extends HttpPaymentProvider {
     const sig = request.headers.get("flutterwave-signature");
     if (!sig) return false;
     const raw = await request.text();
-    const expected = createHmac(
-      "sha256",
-      requireEnv("FLUTTERWAVE_WEBHOOK_SECRET"),
-    )
-      .update(raw)
-      .digest("base64");
+    const expected = createHmac("sha256", requireEnv("FLUTTERWAVE_WEBHOOK_SECRET")).update(raw).digest("base64");
     return safe(sig, expected);
   }
   async parseWebhook(request: Request) {
     const p = flutterwavePayloadSchema.parse(JSON.parse(await request.text()));
     return {
-      id: String(
-        p.id || p.webhook_id || `${p.type}:${p.data?.id || "unknown"}`,
-      ),
+      id: String(p.id || p.webhook_id || `${p.type}:${p.data?.id || "unknown"}`),
       type: String(p.type || p.event || "unknown"),
       payload: p,
     };

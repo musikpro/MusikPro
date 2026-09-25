@@ -26,28 +26,53 @@ export async function POST(request: Request) {
 
   const provider = await getMusicfulProvider();
   if (!provider.enabled || !provider.apiKey) {
-    return NextResponse.json({ error: "La génération audio n’est pas encore configurée.", code: "MUSICFUL_NOT_CONFIGURED" }, { status: 503 });
+    return NextResponse.json(
+      { error: "La génération audio n’est pas encore configurée.", code: "MUSICFUL_NOT_CONFIGURED" },
+      { status: 503 },
+    );
   }
 
-  const limit = await rateLimit(`music:generate:${session.user.id}:${clientIp(request)}`, provider.maxGenerationsPerUserPerHour, 3600);
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
-  if (!limit.success) return NextResponse.json({ error: "Trop de générations audio. Réessaie plus tard." }, { status: 429 });
+  const limit = await rateLimit(
+    `music:generate:${session.user.id}:${clientIp(request)}`,
+    provider.maxGenerationsPerUserPerHour,
+    3600,
+  );
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
+  if (!limit.success)
+    return NextResponse.json({ error: "Trop de générations audio. Réessaie plus tard." }, { status: 429 });
 
   const parsed = musicfulGenerateRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Paramètres de génération invalides.", details: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json(
+      { error: "Paramètres de génération invalides.", details: parsed.error.flatten() },
+      { status: 400 },
+    );
 
   const input = parsed.data;
   if (input.instrumental === 1 && !provider.allowInstrumental) {
-    return NextResponse.json({ error: "La génération instrumentale est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" }, { status: 403 });
+    return NextResponse.json(
+      { error: "La génération instrumentale est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" },
+      { status: 403 },
+    );
   }
   if (!input.instrumental && input.lyrics && !provider.allowLyricsToMusic) {
-    return NextResponse.json({ error: "La génération à partir de paroles est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" }, { status: 403 });
+    return NextResponse.json(
+      { error: "La génération à partir de paroles est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" },
+      { status: 403 },
+    );
   }
   if (!input.lyrics && !provider.allowTextToMusic) {
-    return NextResponse.json({ error: "La génération à partir d’un style/texte est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" }, { status: 403 });
+    return NextResponse.json(
+      { error: "La génération à partir d’un style/texte est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" },
+      { status: 403 },
+    );
   }
   if (!input.prompt && !input.lyrics && !input.style) {
-    return NextResponse.json({ error: "Ajoute un style, une invite ou des paroles pour générer une chanson." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Ajoute un style, une invite ou des paroles pour générer une chanson." },
+      { status: 400 },
+    );
   }
 
   const model = input.model || provider.model;
@@ -73,7 +98,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ jobId: submitted.id, status: submitted.status });
   } catch (error) {
     const failure = classifyMusicfulError(error);
-    logger.error("Musicful generation submit failed", { jobId: job.id, code: failure.code, providerStatus: failure.providerStatus });
+    logger.error("Musicful generation submit failed", {
+      jobId: job.id,
+      code: failure.code,
+      providerStatus: failure.providerStatus,
+    });
     return NextResponse.json({ error: failure.message, code: failure.code, jobId: job.id }, { status: failure.status });
   }
 }

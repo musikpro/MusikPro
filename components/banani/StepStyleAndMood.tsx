@@ -63,8 +63,12 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
                   <Icon i={genre.icon} size={20} />
                 </span>
                 <div className="min-w-0">
-                  <p className="font-semibold text-sm text-foreground">{localizeField(genre.name, genre.translations, "name")}</p>
-                  <p className="text-xs text-muted-foreground">{localizeField(genre.description, genre.translations, "description")}</p>
+                  <p className="font-semibold text-sm text-foreground">
+                    {localizeField(genre.name, genre.translations, "name")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {localizeField(genre.description, genre.translations, "description")}
+                  </p>
                 </div>
               </button>
             ))}

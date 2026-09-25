@@ -1,9 +1,11 @@
 # Africa SaaS Kit V0.10.0 — Refactorisation Staging
 
 ## Objectif
+
 Imposer un passage par une Vercel Preview/Staging avant tout déploiement Production.
 
 ## Garde-fous ajoutés
+
 - `staging:check` vérifie la structure du pipeline.
 - `staging:deploy` crée une Preview Vercel (sans `--prod`).
 - `staging:test` teste la racine, `/api/health` et `/api/readyz`.

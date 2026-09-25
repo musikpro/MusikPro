@@ -1,6 +1,7 @@
 # PayTech Reference
 
 Sources:
+
 - Official docs: https://docs.intech.sn/doc_paytech.php
 - Dashboard: https://paytech.sn
 
@@ -10,10 +11,10 @@ The integration in this skill drives a hosted-checkout flow with IPN (Instant Pa
 
 ## Endpoints
 
-| Purpose          | Method | URL                                                  |
-| ---------------- | ------ | ---------------------------------------------------- |
-| Initiate payment | POST   | `https://paytech.sn/api/payment/request-payment`     |
-| Check status     | GET    | `https://paytech.sn/api/payment/get-status?token_payment=<token>` |
+| Purpose          | Method | URL                                                                               |
+| ---------------- | ------ | --------------------------------------------------------------------------------- |
+| Initiate payment | POST   | `https://paytech.sn/api/payment/request-payment`                                  |
+| Check status     | GET    | `https://paytech.sn/api/payment/get-status?token_payment=<token>`                 |
 | Refund           | POST   | `https://paytech.sn/api/payment/refund` (manual via dashboard recommended for V1) |
 
 There is **one URL for both sandbox and prod**. The mode is selected per-request via the `env` field in the body (`"test"` or `"prod"`). This is unusual — Moneroo and Bictorys use different keys/URLs per environment, PayTech does not.
@@ -35,17 +36,17 @@ Two custom headers, **both required, both uppercase with underscore** (`API_KEY`
 
 ```jsonc
 {
-  "item_name": "Order #1234",                    // shown at top of hosted page
-  "item_price": 5000,                            // integer in XOF
-  "currency": "XOF",                             // PayTech XOF only
-  "ref_command": "<your_payment_uuid>",          // your DB row UUID
-  "command_name": "Payment for order 1234",      // sub-label on hosted page
-  "env": "test",                                 // "test" | "prod"
+  "item_name": "Order #1234", // shown at top of hosted page
+  "item_price": 5000, // integer in XOF
+  "currency": "XOF", // PayTech XOF only
+  "ref_command": "<your_payment_uuid>", // your DB row UUID
+  "command_name": "Payment for order 1234", // sub-label on hosted page
+  "env": "test", // "test" | "prod"
   "ipn_url": "https://yourapp.com/api/webhooks/paytech",
   "success_url": "https://yourapp.com/paid?ref=<uuid>",
   "cancel_url": "https://yourapp.com/cancelled?ref=<uuid>",
   "custom_field": "{\"order_id\":\"abc\",\"customer_id\":\"123\"}",
-  "target_payment": "Wave"                       // optional, see below
+  "target_payment": "Wave", // optional, see below
 }
 ```
 
@@ -66,12 +67,12 @@ Two custom headers, **both required, both uppercase with underscore** (`API_KEY`
 
 The four values below are confirmed by the PayTech client adapter we ship with this skill. PayTech may accept additional operator names — consult the PayTech dashboard / docs before adding others.
 
-| Operator     | String              | Notes                            |
-| ------------ | ------------------- | -------------------------------- |
-| Orange Money | `"Orange Money"`    | All PayTech-covered countries    |
-| Wave         | `"Wave"`            | Where Wave is operationally live |
-| Free Money   | `"Free Money"`      | Senegal                          |
-| Card         | `"Carte Bancaire"`  | Worldwide buyer                  |
+| Operator     | String             | Notes                            |
+| ------------ | ------------------ | -------------------------------- |
+| Orange Money | `"Orange Money"`   | All PayTech-covered countries    |
+| Wave         | `"Wave"`           | Where Wave is operationally live |
+| Free Money   | `"Free Money"`     | Senegal                          |
+| Card         | `"Carte Bancaire"` | Worldwide buyer                  |
 
 In practice, **most integrations omit `target_payment` entirely** — the hosted page picks operators automatically based on the buyer's country, which is what you want unless you have a strong UX reason to pre-select one (e.g. a Wave-only landing page).
 
@@ -107,6 +108,7 @@ API_SECRET: ...
 ```
 
 Returns the current state of the payment. Useful for:
+
 - Defense-in-depth in the webhook (verify the IPN with a server-to-server call before granting).
 - Reconciliation cron jobs that scan stuck `pending` rows older than ~30 minutes.
 
@@ -135,20 +137,20 @@ if (contentType.includes("application/x-www-form-urlencoded")) {
 
 ```jsonc
 {
-  "type_event": "sale_complete",       // or "sale_canceled" | "refund_complete"
+  "type_event": "sale_complete", // or "sale_canceled" | "refund_complete"
   "ref_command": "<your_payment_uuid>",
   "item_name": "Order #1234",
-  "item_price": "5000",                // STRING when form-encoded, NUMBER when JSON
+  "item_price": "5000", // STRING when form-encoded, NUMBER when JSON
   "currency": "XOF",
   "command_name": "Payment for order 1234",
   "token": "T_64c5b4...",
   "env": "prod",
-  "payment_method": "Wave",            // operator that buyer used
+  "payment_method": "Wave", // operator that buyer used
   "client_phone": "221770000000",
   "custom_field": "{\"order_id\":\"abc\",\"customer_id\":\"123\"}",
   "api_key_sha256": "<sha256(apiKey)>",
   "api_secret_sha256": "<sha256(apiSecret)>",
-  "hmac_compute": "<HMAC-SHA256(...)>" // present iff HMAC mode is on in dashboard
+  "hmac_compute": "<HMAC-SHA256(...)>", // present iff HMAC mode is on in dashboard
 }
 ```
 
@@ -189,7 +191,7 @@ function verify(payload: PaytechIPNPayload, creds: PaytechCredentials) {
     if (timingSafeEqual(exp, payload.hmac_compute)) return { ok: true, method: "hmac" };
     // fall through — sometimes both are present
   }
-  const k = sha256Hex(creds.apiKey)    === payload.api_key_sha256;
+  const k = sha256Hex(creds.apiKey) === payload.api_key_sha256;
   const s = sha256Hex(creds.apiSecret) === payload.api_secret_sha256;
   return k && s ? { ok: true, method: "sha256-keys" } : { ok: false };
 }
@@ -199,11 +201,11 @@ See `examples/paytech.ts:verifyPaytechIPN` for the full implementation with cons
 
 ### Event-type mapping
 
-| `type_event`      | Map to status        | Source row state required |
-| ----------------- | -------------------- | ------------------------- |
-| `sale_complete`   | `"completed"`        | `pending`                 |
-| `sale_canceled`   | `"failed"`           | `pending`                 |
-| `refund_complete` | `"refunded"`         | `completed`               |
+| `type_event`      | Map to status | Source row state required |
+| ----------------- | ------------- | ------------------------- |
+| `sale_complete`   | `"completed"` | `pending`                 |
+| `sale_canceled`   | `"failed"`    | `pending`                 |
+| `refund_complete` | `"refunded"`  | `completed`               |
 
 Use atomic `UPDATE … WHERE status = '<expected>'` to enforce the source-state check. If the update affects 0 rows, you've already processed this event (or the row was in a different state) — respond 200 with `{ deduped: true }`.
 
@@ -236,19 +238,20 @@ if (got < minAccepted) {
 
 The `get-status` endpoint returns a free-form `status` string. The adapter normalizes it:
 
-| Raw `status` substring | Normalized            |
-| ---------------------- | --------------------- |
-| `complete` / `success` | `completed`           |
-| `cancel`               | `cancelled`           |
-| `refund`               | `refunded`            |
-| `fail`                 | `failed`              |
-| anything else          | `pending`             |
+| Raw `status` substring | Normalized  |
+| ---------------------- | ----------- |
+| `complete` / `success` | `completed` |
+| `cancel`               | `cancelled` |
+| `refund`               | `refunded`  |
+| `fail`                 | `failed`    |
+| anything else          | `pending`   |
 
 Don't trust `status` alone — also check `payment_status` and `data.status`, since the envelope shape varies.
 
 ## Refunds
 
 Refunds via API exist (`POST /payment/refund`), but the UX is poor:
+
 - The endpoint is partially documented and sometimes 500s on partial refunds.
 - The IPN for `refund_complete` arrives ~1-3 minutes after the dashboard refund button is clicked.
 
@@ -256,26 +259,26 @@ For V1, do refunds manually from the PayTech dashboard, then mark the row `statu
 
 ## Common errors
 
-| `success=0` `message`                        | Cause                              | Fix                                                    |
-| -------------------------------------------- | ---------------------------------- | ------------------------------------------------------ |
-| `Invalid item_price`                          | Sent decimal or string             | Send integer XOF only.                                 |
-| `Invalid currency`                            | Sent `"XAF"` or `"USD"`            | PayTech is XOF-only.                                   |
-| `ipn_url is invalid`                          | HTTP scheme or localhost           | Use HTTPS public URL (ngrok in dev).                   |
-| `Authorization failed`                        | Wrong / swapped API_KEY / API_SECRET | Re-paste both, mind the casing.                       |
-| `Wrong env`                                   | `env: "prod"` with sandbox keys    | Match `env` to the key set you have.                   |
-| `target_payment not available in country`     | Buyer not in supported country     | Drop `target_payment` to let PayTech pick.             |
-| 401 / 403 HTML                                | Header dropped by some proxies     | Confirm headers reach paytech.sn unaltered.            |
+| `success=0` `message`                     | Cause                                | Fix                                         |
+| ----------------------------------------- | ------------------------------------ | ------------------------------------------- |
+| `Invalid item_price`                      | Sent decimal or string               | Send integer XOF only.                      |
+| `Invalid currency`                        | Sent `"XAF"` or `"USD"`              | PayTech is XOF-only.                        |
+| `ipn_url is invalid`                      | HTTP scheme or localhost             | Use HTTPS public URL (ngrok in dev).        |
+| `Authorization failed`                    | Wrong / swapped API_KEY / API_SECRET | Re-paste both, mind the casing.             |
+| `Wrong env`                               | `env: "prod"` with sandbox keys      | Match `env` to the key set you have.        |
+| `target_payment not available in country` | Buyer not in supported country       | Drop `target_payment` to let PayTech pick.  |
+| 401 / 403 HTML                            | Header dropped by some proxies       | Confirm headers reach paytech.sn unaltered. |
 
 ## Country coverage
 
 PayTech mobile-money is **partial UEMOA — confirmed for SN, CI, ML, BJ** (per the PayTech FAQ at the time of writing). Burkina Faso is not covered. Togo coverage is unverified — check the PayTech dashboard for your account before enabling it.
 
-| Country       | ISO | PayTech mobile money | Card |
-| ------------- | --- | -------------------- | ---- |
-| Sénégal       | SN  | ✓                    | ✓    |
-| Côte d'Ivoire | CI  | ✓                    | ✓    |
-| Mali          | ML  | ✓                    | ✓    |
-| Bénin         | BJ  | ✓                    | ✓    |
+| Country       | ISO | PayTech mobile money | Card                            |
+| ------------- | --- | -------------------- | ------------------------------- |
+| Sénégal       | SN  | ✓                    | ✓                               |
+| Côte d'Ivoire | CI  | ✓                    | ✓                               |
+| Mali          | ML  | ✓                    | ✓                               |
+| Bénin         | BJ  | ✓                    | ✓                               |
 | Burkina Faso  | BF  | —                    | ✓ (via Bictorys card / Moneroo) |
 | Togo          | TG  | (not enabled)        | ✓ (via Bictorys card / Moneroo) |
 

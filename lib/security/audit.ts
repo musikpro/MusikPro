@@ -18,9 +18,7 @@ export type AuditEvent = {
 export async function writeAuditLog(event: AuditEvent) {
   try {
     const db = getServiceDb();
-    await db
-      .insert(auditLogs)
-      .values({ id: randomUUID(), ...event, metadata: event.metadata ?? {} });
+    await db.insert(auditLogs).values({ id: randomUUID(), ...event, metadata: event.metadata ?? {} });
   } catch (error) {
     log.error("Audit write failed", {
       action: event.action,

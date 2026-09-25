@@ -10,9 +10,8 @@ export const clientCreateSchema = z.object({
   notes: optionalText(2000),
 });
 
-export const clientUpdateSchema = clientCreateSchema.partial().refine(
-  (value) => Object.keys(value).length > 0,
-  { message: "At least one field is required" },
-);
+export const clientUpdateSchema = clientCreateSchema
+  .partial()
+  .refine((value) => Object.keys(value).length > 0, { message: "At least one field is required" });
 
 export const clientIdSchema = z.string().trim().min(1).max(64);

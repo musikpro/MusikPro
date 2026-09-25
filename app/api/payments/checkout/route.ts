@@ -3,12 +3,7 @@ import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { getServiceDb } from "@/db";
-import {
-  paymentAttempts,
-  payments,
-  plans,
-  planProviderMappings,
-} from "@/db/schema";
+import { paymentAttempts, payments, plans, planProviderMappings } from "@/db/schema";
 import { getPaymentProvider } from "@/lib/payments";
 import { isSafeProviderFallbackError } from "@/lib/payments/provider-base";
 import { rankProviders } from "@/lib/payments/routing";
@@ -20,11 +15,7 @@ import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { getSecurityLevel, securityPolicy } from "@/lib/security/config";
 import { writeAuditLog } from "@/lib/security/audit";
 import { publicCheckoutResult } from "@/lib/payments/public-result";
-import {
-  rejectCrossSiteMutation,
-  rejectOversizedRequest,
-  requireContentType,
-} from "@/lib/security/request-guards";
+import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
 
 export const runtime = "nodejs";
 
@@ -53,7 +44,11 @@ const schema = z.object({
   successUrl: z.string().url(),
   cancelUrl: z.string().url(),
   phone: z.string().min(6).max(30).optional(),
-  phoneCountry: z.string().regex(/^[A-Za-z]{2}$/).transform((v) => v.toUpperCase()).optional(),
+  phoneCountry: z
+    .string()
+    .regex(/^[A-Za-z]{2}$/)
+    .transform((v) => v.toUpperCase())
+    .optional(),
   phoneLocal: z.string().min(4).max(30).optional(),
   couponCode: couponCodeSchema.optional(),
 });
@@ -67,54 +62,29 @@ export async function POST(request: Request) {
   if (typeFailure) return typeFailure;
 
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user)
-    return Response.json({ error: "Authentication required" }, { status: 401 });
+  if (!session?.user) return Response.json({ error: "Authentication required" }, { status: 401 });
   const db = getServiceDb();
   const level = getSecurityLevel();
   const ip = clientIp(request);
-  const limit = await rateLimit(
-    `checkout:${session.user.id}:${ip}`,
-    securityPolicy[level].apiPerMinute,
-  );
+  const limit = await rateLimit(`checkout:${session.user.id}:${ip}`, securityPolicy[level].apiPerMinute);
   if (limit.backend === "unavailable")
-    return Response.json(
-      { error: "Security rate-limit backend unavailable" },
-      { status: 503 },
-    );
-  if (!limit.success)
-    return Response.json({ error: "Too many requests" }, { status: 429 });
+    return Response.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
+  if (!limit.success) return Response.json({ error: "Too many requests" }, { status: 429 });
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
-    return Response.json(
-      { error: "Invalid request", details: parsed.error.flatten() },
-      { status: 400 },
-    );
+    return Response.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
   const body = parsed.data;
   const country = body.country ?? process.env.DEFAULT_COUNTRY?.toUpperCase();
   const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (process.env.NODE_ENV === "production" && !configuredAppUrl)
-    return Response.json(
-      { error: "Application URL is not configured" },
-      { status: 503 },
-    );
+    return Response.json({ error: "Application URL is not configured" }, { status: 503 });
   const appOrigin = new URL(configuredAppUrl || "http://localhost:3000").origin;
-  if (
-    new URL(body.successUrl).origin !== appOrigin ||
-    new URL(body.cancelUrl).origin !== appOrigin
-  )
-    return Response.json(
-      { error: "Redirect URLs must use the application origin" },
-      { status: 400 },
-    );
+  if (new URL(body.successUrl).origin !== appOrigin || new URL(body.cancelUrl).origin !== appOrigin)
+    return Response.json({ error: "Redirect URLs must use the application origin" }, { status: 400 });
 
-  const [plan] = await db
-    .select()
-    .from(plans)
-    .where(eq(plans.id, body.planId))
-    .limit(1);
-  if (!plan?.active)
-    return Response.json({ error: "Plan unavailable" }, { status: 404 });
+  const [plan] = await db.select().from(plans).where(eq(plans.id, body.planId)).limit(1);
+  if (!plan?.active) return Response.json({ error: "Plan unavailable" }, { status: 404 });
 
   // Never trust a client-supplied discount: the coupon is re-resolved and re-validated here,
   // from scratch, against the plan's real amount — exactly like reconcilePayment re-pulls
@@ -124,8 +94,7 @@ export async function POST(request: Request) {
   let discountAmount = 0;
   if (body.couponCode) {
     const coupon = await findActiveCouponByCode(body.couponCode);
-    if (!coupon)
-      return Response.json({ error: "Ce code n’existe pas ou n’est plus actif." }, { status: 400 });
+    if (!coupon) return Response.json({ error: "Ce code n’existe pas ou n’est plus actif." }, { status: 400 });
     const eligibility = checkCouponEligibility(coupon);
     if (!eligibility.ok) return Response.json({ error: eligibility.reason }, { status: 400 });
     couponId = coupon.id;
@@ -135,14 +104,10 @@ export async function POST(request: Request) {
   const chargedAmount = plan.amount - discountAmount;
 
   let ranked = await rankProviders(country, body.method, plan.currency);
-  if (body.provider)
-    ranked = ranked.filter((x) => x.provider === body.provider);
+  if (body.provider) ranked = ranked.filter((x) => x.provider === body.provider);
   ranked = ranked.filter((x) => !x.degraded);
   if (!ranked.length)
-    return Response.json(
-      { error: "No healthy compatible payment provider available" },
-      { status: 503 },
-    );
+    return Response.json({ error: "No healthy compatible payment provider available" }, { status: 503 });
 
   const paymentId = randomUUID();
   const reference = `ask_${randomUUID()}`;
@@ -191,19 +156,13 @@ export async function POST(request: Request) {
       const [mapping] = await db
         .select()
         .from(planProviderMappings)
-        .where(
-          and(
-            eq(planProviderMappings.planId, plan.id),
-            eq(planProviderMappings.provider, providerId),
-          ),
-        )
+        .where(and(eq(planProviderMappings.planId, plan.id), eq(planProviderMappings.provider, providerId)))
         .limit(1);
       const result = await getPaymentProvider(providerId).createCheckout({
         reference,
         money: {
           amount: chargedAmount,
-          currency:
-            plan.currency as import("@/lib/payments/types").Money["currency"],
+          currency: plan.currency as import("@/lib/payments/types").Money["currency"],
         },
         customer: {
           id: session.user.id,
@@ -266,8 +225,7 @@ export async function POST(request: Request) {
         { headers: { "Cache-Control": "no-store" } },
       );
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "unknown provider error";
+      const message = error instanceof Error ? error.message : "unknown provider error";
       const safeFallback = isSafeProviderFallbackError(error);
       failures.push({ provider: providerId, message });
       await db

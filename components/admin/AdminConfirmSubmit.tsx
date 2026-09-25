@@ -17,7 +17,12 @@ const VARIANT_CLASS: Record<AdminButtonVariant, string> = {
 };
 
 /** Submit button for a Server Action form that asks a native confirm() before letting the submit through — shares the same self-contained button classes as AdminButton. */
-export default function AdminConfirmSubmit({ confirmMessage, variant = "secondary", className = "", children }: AdminConfirmSubmitProps) {
+export default function AdminConfirmSubmit({
+  confirmMessage,
+  variant = "secondary",
+  className = "",
+  children,
+}: AdminConfirmSubmitProps) {
   return (
     <button
       type="submit"

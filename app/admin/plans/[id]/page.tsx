@@ -32,7 +32,11 @@ export default async function AdminEditCreditPlanPage({ params }: { params: Prom
   return (
     <AdminPage>
       <AdminBackLink href="/admin/plans" />
-      <AdminPageHeader eyebrow="Crédits & tarifs" title={`Modifier ${plan.name}`} description="Les modifications seront visibles dans les espaces client réel et démo." />
+      <AdminPageHeader
+        eyebrow="Crédits & tarifs"
+        title={`Modifier ${plan.name}`}
+        description="Les modifications seront visibles dans les espaces client réel et démo."
+      />
       <section className="admin-panel admin-editor-card">
         <AdminCreditPlanForm action={updatePlan} plan={plan} />
       </section>

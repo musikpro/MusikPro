@@ -5,7 +5,9 @@ import { db } from "@/db";
 import { recipientRelations } from "@/db/schema";
 import { DEFAULT_RECIPIENT_RELATIONS, type RecipientRelationOption } from "./catalog";
 
-export async function getActiveRecipientRelations(options: { demo?: boolean } = {}): Promise<RecipientRelationOption[]> {
+export async function getActiveRecipientRelations(
+  options: { demo?: boolean } = {},
+): Promise<RecipientRelationOption[]> {
   try {
     const rows = await db
       .select()

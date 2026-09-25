@@ -3,6 +3,7 @@
 Zod est le contrat de validation obligatoire pour les entrées structurées de première partie.
 
 ## Règle fondamentale
+
 - **Client** : valider avec `safeParse` pour fournir un retour immédiat et éviter les requêtes manifestement invalides.
 - **Serveur** : **revalider systématiquement**. Le navigateur est non fiable et la validation client ne constitue jamais une barrière de sécurité.
 - Les Server Actions doivent utiliser Zod avant toute écriture, appel privilégié ou mutation.
@@ -13,9 +14,11 @@ Zod est le contrat de validation obligatoire pour les entrées structurées de p
 - Après validation, n'utiliser que `parsed.data`, jamais l'objet brut d'origine.
 
 ## Exceptions
+
 Les payloads bruts dont les octets doivent rester identiques pour vérifier une signature (webhooks) peuvent être exemptés au niveau route. Leur adaptateur doit ensuite vérifier/signaturer et normaliser les données avant usage métier. Les frameworks d'authentification qui possèdent leur propre contrat peuvent également être exemptés explicitement.
 
 ## Commandes
+
 - `npm run validation:zod-check`
 - `npm run verify:code`
 - `npm run verify:production`

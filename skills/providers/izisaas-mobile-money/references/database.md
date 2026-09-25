@@ -17,22 +17,9 @@ Stores encrypted credentials for each merchant × provider pair.
 ### Drizzle (TypeScript)
 
 ```ts
-import {
-  pgTable,
-  pgEnum,
-  text,
-  jsonb,
-  boolean,
-  timestamp,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, pgEnum, text, jsonb, boolean, timestamp, index } from "drizzle-orm/pg-core";
 
-export const paymentProviderEnum = pgEnum("payment_provider", [
-  "stripe",
-  "bictorys",
-  "moneroo",
-  "paytech",
-]);
+export const paymentProviderEnum = pgEnum("payment_provider", ["stripe", "bictorys", "moneroo", "paytech"]);
 
 type EncryptedPayload = {
   ciphertext: string;
@@ -58,19 +45,13 @@ export const paymentConnections = pgTable(
     merchantId: text("merchant_id").notNull(),
     provider: paymentProviderEnum("provider").notNull(),
     displayName: text("display_name").notNull(),
-    credentialsEncrypted: jsonb("credentials_encrypted")
-      .$type<EncryptedPayload>()
-      .notNull(),
+    credentialsEncrypted: jsonb("credentials_encrypted").$type<EncryptedPayload>().notNull(),
     config: jsonb("config").$type<ProviderConfig>(),
     isEnabled: boolean("is_enabled").default(true).notNull(),
     lastVerifiedAt: timestamp("last_verified_at", { withTimezone: true }),
     lastVerificationError: text("last_verification_error"),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
     merchantIdx: index("payment_connections_merchant_idx").on(table.merchantId),
@@ -107,14 +88,7 @@ The pending → completed state machine. One row per checkout attempt.
 ### Drizzle (TypeScript)
 
 ```ts
-import {
-  pgTable,
-  text,
-  integer,
-  jsonb,
-  timestamp,
-  index,
-} from "drizzle-orm/pg-core";
+import { pgTable, text, integer, jsonb, timestamp, index } from "drizzle-orm/pg-core";
 
 export const payments = pgTable(
   "payments",
@@ -144,21 +118,12 @@ export const payments = pgTable(
     customerName: text("customer_name"),
     customerPhone: text("customer_phone"),
     metadata: jsonb("metadata"), // { paymentConnectionId, originalReturnUrl, ... }
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    updatedAt: timestamp("updated_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
-    providerTxIdx: index("payments_provider_tx_idx").on(
-      table.providerTransactionId,
-    ),
-    referenceIdx: index("payments_reference_idx").on(
-      table.referenceId,
-      table.referenceType,
-    ),
+    providerTxIdx: index("payments_provider_tx_idx").on(table.providerTransactionId),
+    referenceIdx: index("payments_reference_idx").on(table.referenceId, table.referenceType),
     payerIdx: index("payments_payer_idx").on(table.payerId),
     statusIdx: index("payments_status_idx").on(table.status),
   }),
@@ -230,15 +195,11 @@ export const processedEvents = pgTable(
   {
     provider: text("provider").notNull(),
     eventId: text("event_id").notNull(),
-    processedAt: timestamp("processed_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
+    processedAt: timestamp("processed_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
     pk: primaryKey({ columns: [table.provider, table.eventId] }),
-    processedAtIdx: index("processed_events_processed_at_idx").on(
-      table.processedAt,
-    ),
+    processedAtIdx: index("processed_events_processed_at_idx").on(table.processedAt),
   }),
 );
 ```

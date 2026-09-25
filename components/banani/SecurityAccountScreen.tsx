@@ -61,7 +61,9 @@ export default function SecurityAccountScreen({
           </article>
           {isOwner && (
             <article className={twoFactorAvailable && twoFactorEnabled ? "is-secure" : "is-warning"}>
-              <span><Icon i="smartphone" size={19} /></span>
+              <span>
+                <Icon i="smartphone" size={19} />
+              </span>
               <div>
                 <small>Double facteur propriétaire</small>
                 <strong>
@@ -72,22 +74,25 @@ export default function SecurityAccountScreen({
           )}
         </div>
 
-        {isOwner && twoFactorAvailable && <section className="security-panel">
-          <div className="security-panel-heading">
-            <span>
-              <Icon i="key-round" size={20} />
-            </span>
-            <div>
-              <h2>Authentification renforcée</h2>
-              <p>Utilise une application comme Google Authenticator pour protéger la connexion.</p>
+        {isOwner && twoFactorAvailable && (
+          <section className="security-panel">
+            <div className="security-panel-heading">
+              <span>
+                <Icon i="key-round" size={20} />
+              </span>
+              <div>
+                <h2>Authentification renforcée</h2>
+                <p>Utilise une application comme Google Authenticator pour protéger la connexion.</p>
+              </div>
             </div>
-          </div>
-          <TwoFactorSetup enabled={twoFactorEnabled} />
-        </section>}
+            <TwoFactorSetup enabled={twoFactorEnabled} />
+          </section>
+        )}
 
         {isOwner && !twoFactorAvailable && (
           <InlineNotice tone="info">
-            Le double facteur propriétaire est temporairement désactivé. Tu peux accéder à l’administration avec ton compte habituel.
+            Le double facteur propriétaire est temporairement désactivé. Tu peux accéder à l’administration avec ton
+            compte habituel.
           </InlineNotice>
         )}
 

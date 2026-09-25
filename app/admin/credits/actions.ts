@@ -15,11 +15,7 @@ export async function setCredits(formData: FormData) {
   const session = await requireAdmin();
   const db = getServiceDb();
   const parsed = creditsSchema.parse(Object.fromEntries(formData));
-  const [target] = await db
-    .select()
-    .from(user)
-    .where(eq(user.email, parsed.email))
-    .limit(1);
+  const [target] = await db.select().from(user).where(eq(user.email, parsed.email)).limit(1);
   if (!target) throw new Error("Utilisateur introuvable");
   await db
     .insert(credits)

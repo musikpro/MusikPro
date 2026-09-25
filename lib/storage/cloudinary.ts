@@ -3,7 +3,6 @@ import crypto from "node:crypto";
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
 
-
 function startsWith(bytes: Uint8Array, signature: number[]) {
   return signature.every((value, index) => bytes[index] === value);
 }
@@ -24,7 +23,9 @@ function requireCloudinaryEnv() {
   const apiKey = process.env.CLOUDINARY_API_KEY?.trim();
   const apiSecret = process.env.CLOUDINARY_API_SECRET?.trim();
   if (!cloudName || !apiKey || !apiSecret) {
-    throw new Error("Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET.");
+    throw new Error(
+      "Cloudinary is not configured. Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET.",
+    );
   }
   return { cloudName, apiKey, apiSecret };
 }
@@ -42,7 +43,7 @@ export function isCloudinaryConfigured() {
   return Boolean(
     process.env.CLOUDINARY_CLOUD_NAME?.trim() &&
     process.env.CLOUDINARY_API_KEY?.trim() &&
-    process.env.CLOUDINARY_API_SECRET?.trim()
+    process.env.CLOUDINARY_API_SECRET?.trim(),
   );
 }
 
@@ -50,11 +51,15 @@ export async function uploadImageToCloudinary(file: File, options?: { folder?: s
   if (!ALLOWED_TYPES.has(file.type)) throw new Error("Unsupported image type");
   if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) throw new Error("Image must be between 1 byte and 10 MB");
   const detectedType = await detectImageType(file);
-  if (!detectedType || detectedType !== file.type) throw new Error("Image content does not match its declared MIME type");
+  if (!detectedType || detectedType !== file.type)
+    throw new Error("Image content does not match its declared MIME type");
 
   const { cloudName, apiKey, apiSecret } = requireCloudinaryEnv();
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = (options?.folder || process.env.CLOUDINARY_FOLDER || "africa-saas-kit").replace(/[^a-zA-Z0-9_\-/]/g, "-");
+  const folder = (options?.folder || process.env.CLOUDINARY_FOLDER || "africa-saas-kit").replace(
+    /[^a-zA-Z0-9_\-/]/g,
+    "-",
+  );
   const params = { folder, timestamp };
   const signature = signParams(params, apiSecret);
   const form = new FormData();
@@ -69,7 +74,7 @@ export async function uploadImageToCloudinary(file: File, options?: { folder?: s
     body: form,
   });
   if (!response.ok) throw new Error(`Cloudinary upload failed with HTTP ${response.status}`);
-  const data = await response.json() as {
+  const data = (await response.json()) as {
     public_id?: string;
     secure_url?: string;
     width?: number;
@@ -100,9 +105,17 @@ export async function transcodeRemoteAudioToMp3(remoteUrl: string, options?: { f
   if (!/^https:\/\//i.test(remoteUrl)) throw new Error("Only https remote URLs can be transcoded");
   const { cloudName, apiKey, apiSecret } = requireCloudinaryEnv();
   const timestamp = Math.floor(Date.now() / 1000);
-  const folder = (options?.folder || `${process.env.CLOUDINARY_FOLDER || "africa-saas-kit"}/musicful-audio`).replace(/[^a-zA-Z0-9_\-/]/g, "-");
+  const folder = (options?.folder || `${process.env.CLOUDINARY_FOLDER || "africa-saas-kit"}/musicful-audio`).replace(
+    /[^a-zA-Z0-9_\-/]/g,
+    "-",
+  );
   const publicId = options?.publicId ? options.publicId.replace(/[^a-zA-Z0-9_\-/]/g, "-") : undefined;
-  const params: Record<string, string | number> = { folder, format: "mp3", timestamp, ...(publicId ? { public_id: publicId } : {}) };
+  const params: Record<string, string | number> = {
+    folder,
+    format: "mp3",
+    timestamp,
+    ...(publicId ? { public_id: publicId } : {}),
+  };
   const signature = signParams(params, apiSecret);
 
   const form = new FormData();
@@ -119,12 +132,13 @@ export async function transcodeRemoteAudioToMp3(remoteUrl: string, options?: { f
     body: form,
   });
   if (!response.ok) {
-    const body = await response.json().catch(() => null) as { error?: { message?: string } } | null;
+    const body = (await response.json().catch(() => null)) as { error?: { message?: string } } | null;
     const detail = body?.error?.message ? `: ${body.error.message}` : "";
     throw new Error(`Cloudinary audio transcode failed with HTTP ${response.status}${detail}`);
   }
   const data = (await response.json()) as { secure_url?: string; format?: string; bytes?: number };
   if (!data.secure_url) throw new Error("Cloudinary returned an incomplete transcode response");
-  if (data.format && data.format.toLowerCase() !== "mp3") throw new Error(`Cloudinary returned unexpected format: ${data.format}`);
+  if (data.format && data.format.toLowerCase() !== "mp3")
+    throw new Error(`Cloudinary returned unexpected format: ${data.format}`);
   return { url: data.secure_url, bytes: data.bytes ?? null };
 }

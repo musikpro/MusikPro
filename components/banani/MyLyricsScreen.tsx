@@ -86,7 +86,11 @@ export default function MyLyricsScreen() {
                     <span className="text-xs text-muted-foreground">· {song.date}</span>
                   </div>
                 </div>
-                <Icon i={isOpen ? "chevron-up" : "chevron-down"} size={18} className="text-muted-foreground ml-2 mt-0.5" />
+                <Icon
+                  i={isOpen ? "chevron-up" : "chevron-down"}
+                  size={18}
+                  className="text-muted-foreground ml-2 mt-0.5"
+                />
               </button>
               {isOpen && (
                 <>

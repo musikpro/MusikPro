@@ -7,16 +7,7 @@ const nextConfig: NextConfig = {
   // Both `dir/**` and `dir/**/*` are listed: some glob matchers only match
   // nested paths with `**/*` and miss direct children like `.codex/config.toml`.
   outputFileTracingExcludes: {
-    "/*": [
-      ".codex/**",
-      ".codex/**/*",
-      ".agents/**",
-      ".agents/**/*",
-      ".git/**",
-      ".git/**/*",
-      ".env*",
-      ".mcp.json",
-    ],
+    "/*": [".codex/**", ".codex/**/*", ".agents/**", ".agents/**/*", ".git/**", ".git/**/*", ".env*", ".mcp.json"],
   },
   async headers() {
     return [{ source: "/(.*)", headers: securityHeaders }];

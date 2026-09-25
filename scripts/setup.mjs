@@ -7,9 +7,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { kitVersion, kitVersionLabel } from "./lib/version.mjs";
 
 const root = process.cwd();
-const countries = JSON.parse(
-  fs.readFileSync(path.join(root, "config/countries.json"), "utf8"),
-);
+const countries = JSON.parse(fs.readFileSync(path.join(root, "config/countries.json"), "utf8"));
 const args = Object.fromEntries(
   process.argv.slice(2).map((arg, i, all) => {
     if (!arg.startsWith("--")) return [arg, true];
@@ -24,9 +22,7 @@ const rl = nonInteractive ? null : readline.createInterface({ input, output });
 
 async function ask(label, fallback) {
   if (!rl) return fallback;
-  const v = (
-    await rl.question(`${label}${fallback ? ` [${fallback}]` : ""}: `)
-  ).trim();
+  const v = (await rl.question(`${label}${fallback ? ` [${fallback}]` : ""}: `)).trim();
   return v || fallback;
 }
 function envEscape(v) {
@@ -40,41 +36,22 @@ try {
   );
   const countryFallback = String(args.country || "CI").toUpperCase();
   const country = String(
-    await ask(
-      `Primary country (${Object.keys(countries).join("/")})`,
-      countryFallback,
-    ),
+    await ask(`Primary country (${Object.keys(countries).join("/")})`, countryFallback),
   ).toUpperCase();
-  if (!countries[country])
-    throw new Error(`Unsupported preset country: ${country}`);
+  if (!countries[country]) throw new Error(`Unsupported preset country: ${country}`);
   const preset = countries[country];
-  const appName = await ask(
-    "Application name",
-    String(args.name || "My Africa SaaS"),
-  );
-  const appUrl = await ask(
-    "Application URL",
-    String(args.url || "http://localhost:3000"),
-  );
+  const appName = await ask("Application name", String(args.name || "My Africa SaaS"));
+  const appUrl = await ask("Application URL", String(args.url || "http://localhost:3000"));
   const securityLevel = String(
-    await ask(
-      "Security level (standard/high/maximum)",
-      String(args.security || "high"),
-    ),
+    await ask("Security level (standard/high/maximum)", String(args.security || "high")),
   ).toLowerCase();
-  if (!["standard", "high", "maximum"].includes(securityLevel))
-    throw new Error("Invalid security level");
-  const email = String(
-    await ask("Email provider (resend/none)", String(args.email || "resend")),
-  ).toLowerCase();
+  if (!["standard", "high", "maximum"].includes(securityLevel)) throw new Error("Invalid security level");
+  const email = String(await ask("Email provider (resend/none)", String(args.email || "resend"))).toLowerCase();
   const storage = "none";
   const boolArg = (value, fallback = true) =>
-    value === undefined
-      ? fallback
-      : !["false", "0", "no", "off"].includes(String(value).toLowerCase());
+    value === undefined ? fallback : !["false", "0", "no", "off"].includes(String(value).toLowerCase());
   const googleAuth = boolArg(args["google-auth"], true);
-  if (!["resend", "none"].includes(email))
-    throw new Error("Email provider must be resend or none");
+  if (!["resend", "none"].includes(email)) throw new Error("Email provider must be resend or none");
   if (email === "none" && !googleAuth)
     throw new Error(
       "email=none requires Google OAuth (or another auth provider you add yourself) because email/password recovery would be unavailable",
@@ -117,17 +94,11 @@ try {
     defaultProvider: null,
     methods: [],
   };
-  fs.writeFileSync(
-    path.join(root, "africa-saas.config.json"),
-    JSON.stringify(config, null, 2) + "\n",
-    { mode: 0o600 },
-  );
+  fs.writeFileSync(path.join(root, "africa-saas.config.json"), JSON.stringify(config, null, 2) + "\n", { mode: 0o600 });
 
   const existingEnv = path.join(root, ".env.local");
   if (fs.existsSync(existingEnv) && !args.force) {
-    throw new Error(
-      ".env.local already exists. Re-run with --force only if you intentionally want to regenerate it.",
-    );
+    throw new Error(".env.local already exists. Re-run with --force only if you intentionally want to regenerate it.");
   }
   const secret = crypto.randomBytes(48).toString("base64url");
   const cronSecret = crypto.randomBytes(48).toString("base64url");
@@ -193,13 +164,8 @@ try {
   console.log("\nNext steps:");
   console.log("1. Add DATABASE_URL from Neon to .env.local");
   if (email === "resend")
-    console.log(
-      "2. Add RESEND_API_KEY and verify EMAIL_FROM (required for email/password auth in production)",
-    );
-  else
-    console.log(
-      "2. Email/password auth disabled; configure Google OAuth before production.",
-    );
+    console.log("2. Add RESEND_API_KEY and verify EMAIL_FROM (required for email/password auth in production)");
+  else console.log("2. Email/password auth disabled; configure Google OAuth before production.");
   console.log("3. Run: npm run setup:check");
   console.log("4. Run: npm run db:generate && npm run db:migrate");
   console.log(

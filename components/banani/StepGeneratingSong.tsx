@@ -58,13 +58,18 @@ export default function StepGeneratingSong() {
     const maxProgress = demo.isDemo ? 100 : 92;
     const messageStepMs = demo.isDemo ? DEMO_DURATION_MS / encouragementMessages.length : 20_000;
 
-    const tick = window.setInterval(() => {
-      if (!active) return;
-      const elapsed = Date.now() - startedAt;
-      setProgress((prev) => (prev >= 100 ? prev : Math.min(maxProgress, Math.round((elapsed / durationMs) * maxProgress))));
-      setElapsedSeconds(Math.floor(elapsed / 1000));
-      setMessageIndex(Math.min(encouragementMessages.length - 1, Math.floor(elapsed / messageStepMs)));
-    }, demo.isDemo ? 100 : 1000);
+    const tick = window.setInterval(
+      () => {
+        if (!active) return;
+        const elapsed = Date.now() - startedAt;
+        setProgress((prev) =>
+          prev >= 100 ? prev : Math.min(maxProgress, Math.round((elapsed / durationMs) * maxProgress)),
+        );
+        setElapsedSeconds(Math.floor(elapsed / 1000));
+        setMessageIndex(Math.min(encouragementMessages.length - 1, Math.floor(elapsed / messageStepMs)));
+      },
+      demo.isDemo ? 100 : 1000,
+    );
 
     const finish = (destination: "/dashboard/songs" | "/dashboard/songs/player") => {
       if (finished.current) return;
@@ -83,7 +88,9 @@ export default function StepGeneratingSong() {
         await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
         if (!active || skipRequested.current) break;
         try {
-          const result = await apiFetch<{ song: { status: string } }>(`/api/songs/${submission.songGroupId}`, { timeoutMs: 20_000 });
+          const result = await apiFetch<{ song: { status: string } }>(`/api/songs/${submission.songGroupId}`, {
+            timeoutMs: 20_000,
+          });
           if (result.song.status === "completed" || result.song.status === "failed") {
             resolvedStatus = result.song.status;
             break;
@@ -158,7 +165,10 @@ export default function StepGeneratingSong() {
           <div className="absolute w-28 h-28 rounded-full border-2 border-primary/35 animate-pulse" />
           <div
             className="w-20 h-20 rounded-2xl flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg,#f26522,#f4845f)", boxShadow: "0 8px 32px rgba(242,101,34,0.45)" }}
+            style={{
+              background: "linear-gradient(135deg,#f26522,#f4845f)",
+              boxShadow: "0 8px 32px rgba(242,101,34,0.45)",
+            }}
           >
             <Icon i="music-2" size={34} className="text-primary-foreground" />
           </div>
@@ -189,7 +199,11 @@ export default function StepGeneratingSong() {
           <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
             <div
               className="h-full rounded-full"
-              style={{ width: `${progress}%`, background: "linear-gradient(90deg,#f26522,#f4845f)", transition: "width 120ms linear" }}
+              style={{
+                width: `${progress}%`,
+                background: "linear-gradient(90deg,#f26522,#f4845f)",
+                transition: "width 120ms linear",
+              }}
             />
           </div>
         </div>
@@ -202,7 +216,9 @@ export default function StepGeneratingSong() {
             <div>
               <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">{t("Le saviez-vous ?")}</p>
               <p className="text-sm text-foreground leading-relaxed">
-                {t("Chaque chanson MusikPro est unique — les paroles sont générées spécialement pour toi et ta personne.")}
+                {t(
+                  "Chaque chanson MusikPro est unique — les paroles sont générées spécialement pour toi et ta personne.",
+                )}
               </p>
             </div>
           </div>
@@ -228,12 +244,23 @@ export default function StepGeneratingSong() {
               <span className={`text-sm font-medium ${i === messageIndex ? "text-primary" : "text-muted-foreground"}`}>
                 {t(msg.text)}
               </span>
-              {i < messageIndex ? <Icon i="circle-check-big" size={14} className="text-primary ml-auto flex-shrink-0" /> : null}
+              {i < messageIndex ? (
+                <Icon i="circle-check-big" size={14} className="text-primary ml-auto flex-shrink-0" />
+              ) : null}
               {i === messageIndex ? (
                 <div className="ml-auto flex items-center gap-1 flex-shrink-0">
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0s" }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.15s" }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce" style={{ animationDelay: "0.3s" }} />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"
+                    style={{ animationDelay: "0s" }}
+                  />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"
+                    style={{ animationDelay: "0.15s" }}
+                  />
+                  <div
+                    className="w-1.5 h-1.5 rounded-full bg-primary animate-bounce"
+                    style={{ animationDelay: "0.3s" }}
+                  />
                 </div>
               ) : null}
             </div>

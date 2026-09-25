@@ -83,7 +83,9 @@ export default async function AdminRolesPage() {
             <div className="admin-record-list">
               {admins.map((entry) => (
                 <div className="admin-record" key={entry.id}>
-                  <span className="admin-user-initial" aria-hidden="true">{getNameInitials(entry.name)}</span>
+                  <span className="admin-user-initial" aria-hidden="true">
+                    {getNameInitials(entry.name)}
+                  </span>
                   <div>
                     <strong>{entry.name}</strong>
                     <small>{entry.email}</small>

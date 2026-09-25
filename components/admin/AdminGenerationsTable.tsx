@@ -151,14 +151,20 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
                 </td>
                 <td data-label="Durée">{formatDuration(row.durationSeconds)}</td>
                 <td data-label="Statut">
-                  <span className={`admin-status ${statusTone(row.status)}`}>{STATUS_LABELS[row.status] ?? row.status}</span>
+                  <span className={`admin-status ${statusTone(row.status)}`}>
+                    {STATUS_LABELS[row.status] ?? row.status}
+                  </span>
                 </td>
                 <td data-label="Écoute">
                   <button
                     type="button"
                     disabled={!row.audioUrl}
                     onClick={() => playRow(row)}
-                    aria-label={playingId === row.id ? `Mettre en pause ${row.title ?? "cette version"}` : `Écouter ${row.title ?? "cette version"}`}
+                    aria-label={
+                      playingId === row.id
+                        ? `Mettre en pause ${row.title ?? "cette version"}`
+                        : `Écouter ${row.title ?? "cette version"}`
+                    }
                     aria-pressed={playingId === row.id}
                     className="admin-generation-play"
                   >

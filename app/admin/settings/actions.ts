@@ -52,7 +52,11 @@ export async function setPreferredAudioFormat(formData: FormData) {
   const parsed = audioFormatSchema.parse({ preferredAudioFormat: formData.get("preferredAudioFormat") });
   const db = getServiceDb();
   const fields = { preferredAudioFormat: parsed.preferredAudioFormat, updatedAt: new Date() };
-  const [current] = await db.select({ id: audioProviderConfigs.id }).from(audioProviderConfigs).where(eq(audioProviderConfigs.provider, "musicful")).limit(1);
+  const [current] = await db
+    .select({ id: audioProviderConfigs.id })
+    .from(audioProviderConfigs)
+    .where(eq(audioProviderConfigs.provider, "musicful"))
+    .limit(1);
   if (current) await db.update(audioProviderConfigs).set(fields).where(eq(audioProviderConfigs.id, current.id));
   else await db.insert(audioProviderConfigs).values({ id: randomUUID(), provider: "musicful", ...fields });
   await writeAuditLog({

@@ -20,6 +20,11 @@ const VARIANT_CLASS: Record<AdminButtonVariant, string> = {
  * (which is what previously made "Enregistrer" render as a giant icon-only button, then as a
  * plain unstyled one, on the same page).
  */
-export default function AdminButton({ variant = "primary", className = "", type = "button", ...props }: AdminButtonProps) {
+export default function AdminButton({
+  variant = "primary",
+  className = "",
+  type = "button",
+  ...props
+}: AdminButtonProps) {
   return <button type={type} className={`admin-btn ${VARIANT_CLASS[variant]} ${className}`.trim()} {...props} />;
 }

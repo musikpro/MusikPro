@@ -4,11 +4,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { and, eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import {
-  paymentCountryRoutes,
-  paymentProviderConfigs,
-  planProviderMappings,
-} from "@/db/schema";
+import { paymentCountryRoutes, paymentProviderConfigs, planProviderMappings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { providerCapabilities } from "@/lib/payments/capabilities";
 import type { PaymentProviderId } from "@/lib/payments/types";
@@ -16,10 +12,7 @@ import { writeAuditLog } from "@/lib/security/audit";
 import { encryptSecret } from "@/lib/ai/secrets";
 import type { ChariowStoredConfig } from "@/lib/payments/chariow-config";
 
-const providerIds = Object.keys(providerCapabilities) as [
-  PaymentProviderId,
-  ...PaymentProviderId[],
-];
+const providerIds = Object.keys(providerCapabilities) as [PaymentProviderId, ...PaymentProviderId[]];
 const providerSchema = z.object({
   provider: z.enum(providerIds),
   enabled: z.boolean(),
@@ -63,21 +56,10 @@ export async function saveProvider(formData: FormData) {
     mode: String(formData.get("mode") || "sandbox"),
   });
   const capability = providerCapabilities[parsed.provider];
-  if (
-    parsed.enabled &&
-    ["scaffold", "merchant-validation"].includes(capability.readiness)
-  )
-    throw new Error(
-      "This adapter cannot be enabled until its merchant integration is validated",
-    );
-  if (
-    parsed.enabled &&
-    parsed.mode === "live" &&
-    capability.readiness === "beta"
-  )
-    throw new Error(
-      "Beta providers are sandbox-only until merchant validation is complete",
-    );
+  if (parsed.enabled && ["scaffold", "merchant-validation"].includes(capability.readiness))
+    throw new Error("This adapter cannot be enabled until its merchant integration is validated");
+  if (parsed.enabled && parsed.mode === "live" && capability.readiness === "beta")
+    throw new Error("Beta providers are sandbox-only until merchant validation is complete");
   await db
     .insert(paymentProviderConfigs)
     .values({ id: randomUUID(), ...parsed })
@@ -130,15 +112,12 @@ export async function saveChariowProvider(formData: FormData) {
   const previous = (existing?.config || {}) as ChariowStoredConfig;
   const webhookSecret = parsed.webhookSecret || (!previous.webhookSecret ? randomBytes(32).toString("hex") : "");
   const config: ChariowStoredConfig = {
-    apiKey: parsed.apiKey
-      ? { ...encryptSecret(parsed.apiKey), last4: parsed.apiKey.slice(-4) }
-      : previous.apiKey,
+    apiKey: parsed.apiKey ? { ...encryptSecret(parsed.apiKey), last4: parsed.apiKey.slice(-4) } : previous.apiKey,
     webhookSecret: webhookSecret
       ? { ...encryptSecret(webhookSecret), last4: webhookSecret.slice(-4) }
       : previous.webhookSecret,
   };
-  if (parsed.enabled && !config.apiKey)
-    throw new Error("Ajoute la clé API Chariow avant d'activer la passerelle.");
+  if (parsed.enabled && !config.apiKey) throw new Error("Ajoute la clé API Chariow avant d'activer la passerelle.");
   await db
     .insert(paymentProviderConfigs)
     .values({
@@ -158,7 +137,12 @@ export async function saveChariowProvider(formData: FormData) {
     actorId: session.user.id,
     targetType: "payment_provider",
     targetId: "chariow",
-    metadata: { enabled: parsed.enabled, priority: parsed.priority, mode: parsed.mode, apiKeyUpdated: Boolean(parsed.apiKey) },
+    metadata: {
+      enabled: parsed.enabled,
+      priority: parsed.priority,
+      mode: parsed.mode,
+      apiKeyUpdated: Boolean(parsed.apiKey),
+    },
   });
   revalidatePath("/admin/payment-providers");
   revalidatePath("/admin/payment-providers/chariow");
@@ -183,14 +167,8 @@ export async function saveCountryRoute(formData: FormData) {
     methods,
     currencies,
   });
-  if (
-    ["scaffold", "merchant-validation"].includes(
-      providerCapabilities[parsed.provider].readiness,
-    )
-  )
-    throw new Error(
-      "This adapter cannot be routed until merchant validation is complete",
-    );
+  if (["scaffold", "merchant-validation"].includes(providerCapabilities[parsed.provider].readiness))
+    throw new Error("This adapter cannot be routed until merchant validation is complete");
   await db
     .insert(paymentCountryRoutes)
     .values({ id: randomUUID(), ...parsed })
@@ -272,10 +250,9 @@ export async function deletePlanMapping(formData: FormData) {
     planId: String(formData.get("planId") || ""),
     provider: String(formData.get("provider") || ""),
   });
-  await db.delete(planProviderMappings).where(and(
-    eq(planProviderMappings.planId, parsed.planId),
-    eq(planProviderMappings.provider, parsed.provider),
-  ));
+  await db
+    .delete(planProviderMappings)
+    .where(and(eq(planProviderMappings.planId, parsed.planId), eq(planProviderMappings.provider, parsed.provider)));
   await writeAuditLog({
     action: "payment.plan_mapping.deleted",
     actorId: session.user.id,

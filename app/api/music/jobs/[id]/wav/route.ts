@@ -24,18 +24,27 @@ export async function POST(request: Request, ctx: Ctx) {
   if (!parsedId.success) return NextResponse.json({ error: "Identifiant invalide." }, { status: 400 });
 
   const provider = await getMusicfulProvider();
-  if (!provider.allowWavConversion) return NextResponse.json({ error: "La conversion WAV est désactivée." }, { status: 403 });
+  if (!provider.allowWavConversion)
+    return NextResponse.json({ error: "La conversion WAV est désactivée." }, { status: 403 });
 
   const limit = await rateLimit(`music:wav:${session.user.id}:${clientIp(request)}`, 10);
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
-  if (!limit.success) return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
+  if (!limit.success)
+    return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
 
   try {
     const job = await requestWavConversion(parsedId.data, session.user.id);
-    await writeAuditLog({ action: "musicful.wav.requested", actorId: session.user.id, targetType: "music_generation_job", targetId: job.id });
+    await writeAuditLog({
+      action: "musicful.wav.requested",
+      actorId: session.user.id,
+      targetType: "music_generation_job",
+      targetId: job.id,
+    });
     return NextResponse.json({ jobId: job.id, wavUrl: job.wavUrl });
   } catch (error) {
-    if (error instanceof MusicJobOwnershipError) return NextResponse.json({ error: "Génération introuvable." }, { status: 404 });
+    if (error instanceof MusicJobOwnershipError)
+      return NextResponse.json({ error: "Génération introuvable." }, { status: 404 });
     if (error instanceof Error && error.message === "MUSIC_JOB_NOT_READY") {
       return NextResponse.json({ error: "La chanson doit d’abord être générée avec succès." }, { status: 409 });
     }

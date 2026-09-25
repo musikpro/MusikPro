@@ -37,6 +37,7 @@ Membre               Backend (app)               Chariow                Backend 
   > ses propres produits/crédits utilise au contraire **un compte plateforme unique**
   > (clé chiffrée au niveau app). Tout le reste de la doc — checkout, statuts,
   > réconciliation, webhook — s'applique à l'identique dans les deux cas.
+
 - **Trois chemins de crédit**, tous idempotents, tous convergent vers `reconcile.ts` :
   1. retour utilisateur (`/checkout/success` → `POST /payments/mobile-money/verify-checkout`, poll 3 s) ;
   2. webhook « Pulse » (`POST /payments/webhooks/mobile-money/chariow?secret=…`) ;
@@ -49,18 +50,18 @@ Membre               Backend (app)               Chariow                Backend 
 > repo, les liens sont morts : servez-vous du tableau comme d'une carte des rôles
 > à couvrir, pas comme de liens cliquables.
 
-| Fichier | Rôle |
-|---|---|
-| [backend/src/modules/payments/mobilemoney/chariow.ts](../../backend/src/modules/payments/mobilemoney/chariow.ts) | Adapter Chariow : createCheckout, getPaymentStatus, parse webhook, listProducts/Discounts, téléphone |
-| [backend/src/modules/payments/mobilemoney/checkout.ts](../../backend/src/modules/payments/mobilemoney/checkout.ts) | Orchestration checkout Mobile Money (agnostique provider) → `Payment` PENDING |
-| [backend/src/modules/payments/mobilemoney/reconcile.ts](../../backend/src/modules/payments/mobilemoney/reconcile.ts) | **Cœur du fulfilment** : pull statut, anti-fraude, crédit idempotent |
-| [backend/src/modules/payments/mobilemoney/chariow.webhook.ts](../../backend/src/modules/payments/mobilemoney/chariow.webhook.ts) | Route webhook « Pulse » (raw body, secret dans l'URL) |
-| [backend/src/modules/payments/mobilemoney/cancelPending.ts](../../backend/src/modules/payments/mobilemoney/cancelPending.ts) | Expiration des PENDING (2 h), anti-doublons, annulation manuelle |
-| [backend/src/scripts/reconcile_mobilemoney_cron.ts](../../backend/src/scripts/reconcile_mobilemoney_cron.ts) | Cron 5 min : réconcilie PENDING + **FAILED ≤ 14 j** |
-| [backend/src/modules/payments/mobilemoney/registry.ts](../../backend/src/modules/payments/mobilemoney/registry.ts) | Résolution de l'adapter (`MAKETOU` \| `CHARIOW`) |
-| [backend/src/modules/payments/shared/offer.service.ts](../../backend/src/modules/payments/shared/offer.service.ts) | Offres à durée limitée (remise réelle / prix d'ancrage), `providerDiscountCode` |
-| [frontend/src/components/wizard/monetization/steps.tsx](../../frontend/src/components/wizard/monetization/steps.tsx) | Config admin : clé API, produit, webhook (secret auto + URL copiable) |
-| [frontend/src/components/payments/CheckoutSuccessView.tsx](../../frontend/src/components/payments/CheckoutSuccessView.tsx) | Page de retour : poll verify-checkout, états activé/lent/échoué |
+| Fichier                                                                                                                          | Rôle                                                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [backend/src/modules/payments/mobilemoney/chariow.ts](../../backend/src/modules/payments/mobilemoney/chariow.ts)                 | Adapter Chariow : createCheckout, getPaymentStatus, parse webhook, listProducts/Discounts, téléphone |
+| [backend/src/modules/payments/mobilemoney/checkout.ts](../../backend/src/modules/payments/mobilemoney/checkout.ts)               | Orchestration checkout Mobile Money (agnostique provider) → `Payment` PENDING                        |
+| [backend/src/modules/payments/mobilemoney/reconcile.ts](../../backend/src/modules/payments/mobilemoney/reconcile.ts)             | **Cœur du fulfilment** : pull statut, anti-fraude, crédit idempotent                                 |
+| [backend/src/modules/payments/mobilemoney/chariow.webhook.ts](../../backend/src/modules/payments/mobilemoney/chariow.webhook.ts) | Route webhook « Pulse » (raw body, secret dans l'URL)                                                |
+| [backend/src/modules/payments/mobilemoney/cancelPending.ts](../../backend/src/modules/payments/mobilemoney/cancelPending.ts)     | Expiration des PENDING (2 h), anti-doublons, annulation manuelle                                     |
+| [backend/src/scripts/reconcile_mobilemoney_cron.ts](../../backend/src/scripts/reconcile_mobilemoney_cron.ts)                     | Cron 5 min : réconcilie PENDING + **FAILED ≤ 14 j**                                                  |
+| [backend/src/modules/payments/mobilemoney/registry.ts](../../backend/src/modules/payments/mobilemoney/registry.ts)               | Résolution de l'adapter (`MAKETOU` \| `CHARIOW`)                                                     |
+| [backend/src/modules/payments/shared/offer.service.ts](../../backend/src/modules/payments/shared/offer.service.ts)               | Offres à durée limitée (remise réelle / prix d'ancrage), `providerDiscountCode`                      |
+| [frontend/src/components/wizard/monetization/steps.tsx](../../frontend/src/components/wizard/monetization/steps.tsx)             | Config admin : clé API, produit, webhook (secret auto + URL copiable)                                |
+| [frontend/src/components/payments/CheckoutSuccessView.tsx](../../frontend/src/components/payments/CheckoutSuccessView.tsx)       | Page de retour : poll verify-checkout, états activé/lent/échoué                                      |
 
 ## 3. Contrat HTTP Chariow (formes réelles)
 
@@ -96,12 +97,12 @@ Renvoie `status`, `amount { value, currency }` et des dates (`settled_at` / `pai
 
 ### 3.3 — Statuts Chariow → statuts normalisés (`mapChariowStatus`)
 
-| Statut Chariow (regex) | Normalisé | Note |
-|---|---|---|
+| Statut Chariow (regex)                  | Normalisé   | Note                                                                                               |
+| --------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
 | `settle`, `complete`, `paid`, `success` | `succeeded` | **« settled » (Réglé, fonds encaissés) = PAYÉ** — l'oublier a déjà coûté une vente jamais créditée |
-| `failed`, `error` | `failed` | |
-| `cancel`, `abandon`, `refund` | `abandoned` | |
-| autre | `pending` | |
+| `failed`, `error`                       | `failed`    |                                                                                                    |
+| `cancel`, `abandon`, `refund`           | `abandoned` |                                                                                                    |
+| autre                                   | `pending`   |                                                                                                    |
 
 > ⚠️ **L'ordre des tests compte.** Traitez `unpaid` → `pending` en tout premier,
 > puis les échecs/annulations, et seulement ensuite les succès : « unpaid »
@@ -139,16 +140,18 @@ Le formulaire de paiement doit utiliser un **sélecteur de pays + champ numéro 
 
 ```jsonc
 {
-  "phone": "+33763627155",     // E.164 complet (requis — sert aussi de repli de parsing)
-  "phoneCountry": "FR",        // ISO2 du sélecteur de pays
-  "phoneLocal": "763627155",   // numéro NATIONAL validé (libphonenumber .nationalNumber)
-  "firstName": "Ruth", "lastName": "THIALA",   // optionnels (repli: fullName/email)
-  "provider": "CHARIOW",       // optionnel si un seul compte Mobile Money actif
-  "promoCode": "…"             // optionnel
+  "phone": "+33763627155", // E.164 complet (requis — sert aussi de repli de parsing)
+  "phoneCountry": "FR", // ISO2 du sélecteur de pays
+  "phoneLocal": "763627155", // numéro NATIONAL validé (libphonenumber .nationalNumber)
+  "firstName": "Ruth",
+  "lastName": "THIALA", // optionnels (repli: fullName/email)
+  "provider": "CHARIOW", // optionnel si un seul compte Mobile Money actif
+  "promoCode": "…", // optionnel
 }
 ```
 
 Règles front :
+
 1. Valider avec **libphonenumber** (`parsePhoneNumberFromString(local, iso2)`), et envoyer
    `parsed.number` (E.164) + `parsed.nationalNumber` (local) + l'ISO2 du sélecteur.
 2. **Toujours** envoyer `phoneCountry` quand on le connaît : le repli serveur ne sait
@@ -161,12 +164,12 @@ Règles front :
 
 Quatre tentatives, dans l'ordre, la première qui valide gagne :
 
-| # | Entrée | Méthode | Exemple |
-|---|---|---|---|
-| 1 | `phoneCountry` + `phoneLocal` | libphonenumber (retire le 0 national, valide) | `FR` + `0763627155` → `{ 763627155, FR }` |
-| 2 | `phone` (E.164) | libphonenumber (déduit pays + national) | `+221771234567` → `{ 771234567, SN }` |
-| 3 | `phoneCountry` + chiffres bruts | repli sans validation stricte | `BJ` + `97000000` → `{ 97000000, BJ }` |
-| 4 | indicatifs **africains** en dur (`splitChariowPhone`) | dernier recours | `0022890000000` → `{ 90000000, TG }` |
+| #   | Entrée                                                | Méthode                                       | Exemple                                   |
+| --- | ----------------------------------------------------- | --------------------------------------------- | ----------------------------------------- |
+| 1   | `phoneCountry` + `phoneLocal`                         | libphonenumber (retire le 0 national, valide) | `FR` + `0763627155` → `{ 763627155, FR }` |
+| 2   | `phone` (E.164)                                       | libphonenumber (déduit pays + national)       | `+221771234567` → `{ 771234567, SN }`     |
+| 3   | `phoneCountry` + chiffres bruts                       | repli sans validation stricte                 | `BJ` + `97000000` → `{ 97000000, BJ }`    |
+| 4   | indicatifs **africains** en dur (`splitChariowPhone`) | dernier recours                               | `0022890000000` → `{ 90000000, TG }`      |
 
 > Conséquence : un numéro **africain** passe même sans `phoneCountry` (étape 4) ; un
 > numéro **européen/US** a BESOIN de `phoneCountry` ou d'un E.164 valide (étapes 1–2).
@@ -273,6 +276,7 @@ dans `redirect_url` pour rediriger même sans réconciliation immédiate.
 ## 9. Configuration
 
 ### Admin (créateur) — Admin → Monétisation → Chariow
+
 1. **Clé API** (dashboard Chariow → API) — validée par un GET authentifié à l'enregistrement.
 2. **Produit** : choisi dans la liste (`GET /products`) ou id collé à la main ; son prix
    doit correspondre au prix de la commu.
@@ -280,27 +284,28 @@ dans `redirect_url` pour rediriger même sans réconciliation immédiate.
 4. Options : « encaisse aussi la carte » (`handlesCards`), « carte uniquement » (`cardOnly`).
 
 ### Environnement (backend)
-| Variable | Rôle |
-|---|---|
-| `CHARIOW_API_URL` | Base API (défaut `https://api.chariow.com/v1`) |
-| `PUBLIC_API_URL` | Base de l'URL webhook renvoyée à l'admin (ex. `https://api.votre-domaine.com`) |
-| `PRODENV` | **Doit valoir `PROD` en prod** — sinon toutes les transactions sont taguées sandbox et masquées des Recettes |
-| `MOBILE_MONEY_EXPIRE_HOURS` | Expiration des PENDING (défaut 2) |
-| `USD_TO_EUR_RATE` | Taux anti-fraude USD→EUR (défaut 0.92) |
-| `MOBILE_MONEY_CRON_*` | Fenêtres/batch du cron de réconciliation |
+
+| Variable                    | Rôle                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `CHARIOW_API_URL`           | Base API (défaut `https://api.chariow.com/v1`)                                                               |
+| `PUBLIC_API_URL`            | Base de l'URL webhook renvoyée à l'admin (ex. `https://api.votre-domaine.com`)                               |
+| `PRODENV`                   | **Doit valoir `PROD` en prod** — sinon toutes les transactions sont taguées sandbox et masquées des Recettes |
+| `MOBILE_MONEY_EXPIRE_HOURS` | Expiration des PENDING (défaut 2)                                                                            |
+| `USD_TO_EUR_RATE`           | Taux anti-fraude USD→EUR (défaut 0.92)                                                                       |
+| `MOBILE_MONEY_CRON_*`       | Fenêtres/batch du cron de réconciliation                                                                     |
 
 ## 10. Debug / incidents connus
 
-| Symptôme | Cause | Où regarder |
-|---|---|---|
-| Vente « Réglé » chez Chariow mais Échoué chez nous | statut `settled` non mappé (corrigé) OU anti-fraude devise (corrigé) — le cron rattrape les FAILED ≤ 14 j | logs `[MobileMoney]`, `mapChariowStatus` |
-| Montant local absurde (« 9 F CFA ») | `localCurrency` figée XOF alors que boutique USD (corrigé ; historique réparable en relisant `GET /sales/{id}`) | `Payment.localAmount/localCurrency` |
-| Vente créditée datée « aujourd'hui » | `succeededAt = new Date()` au rattrapage (corrigé : date provider sinon `createdAt`) | `reconcile.ts` |
-| 400 « Invalid phone number » | téléphone envoyé en E.164 au lieu de `{ local, ISO2 }` | `resolveChariowPhone` |
-| 422 au checkout | `discount_code` invalide/expiré côté Chariow | admin Offres |
-| Webhook 401 | `?secret=` ≠ secret stocké de la commu | Admin → Monétisation → Webhook |
-| Rien ne se crédite jamais | clé API retirée par le créateur (`apiKeyEnc` absent) → la réconciliation saute la commu | `MobileMoneyAccount` |
-| Transactions invisibles des Recettes | `PRODENV` ≠ `PROD` → tag sandbox | env prod |
+| Symptôme                                           | Cause                                                                                                           | Où regarder                              |
+| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Vente « Réglé » chez Chariow mais Échoué chez nous | statut `settled` non mappé (corrigé) OU anti-fraude devise (corrigé) — le cron rattrape les FAILED ≤ 14 j       | logs `[MobileMoney]`, `mapChariowStatus` |
+| Montant local absurde (« 9 F CFA »)                | `localCurrency` figée XOF alors que boutique USD (corrigé ; historique réparable en relisant `GET /sales/{id}`) | `Payment.localAmount/localCurrency`      |
+| Vente créditée datée « aujourd'hui »               | `succeededAt = new Date()` au rattrapage (corrigé : date provider sinon `createdAt`)                            | `reconcile.ts`                           |
+| 400 « Invalid phone number »                       | téléphone envoyé en E.164 au lieu de `{ local, ISO2 }`                                                          | `resolveChariowPhone`                    |
+| 422 au checkout                                    | `discount_code` invalide/expiré côté Chariow                                                                    | admin Offres                             |
+| Webhook 401                                        | `?secret=` ≠ secret stocké de la commu                                                                          | Admin → Monétisation → Webhook           |
+| Rien ne se crédite jamais                          | clé API retirée par le créateur (`apiKeyEnc` absent) → la réconciliation saute la commu                         | `MobileMoneyAccount`                     |
+| Transactions invisibles des Recettes               | `PRODENV` ≠ `PROD` → tag sandbox                                                                                | env prod                                 |
 
 ## 11. Pièges à ne jamais réintroduire
 

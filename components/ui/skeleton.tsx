@@ -7,12 +7,7 @@ type SkeletonProps = HTMLAttributes<HTMLDivElement> & {
 
 export function Skeleton({ className = "", width, height, style, ...props }: SkeletonProps) {
   return (
-    <div
-      aria-hidden="true"
-      className={`skeleton ${className}`.trim()}
-      style={{ width, height, ...style }}
-      {...props}
-    />
+    <div aria-hidden="true" className={`skeleton ${className}`.trim()} style={{ width, height, ...style }} {...props} />
   );
 }
 
@@ -58,13 +53,21 @@ export function SkeletonTable({ rows = 6, columns = 5 }: { rows?: number; column
     <div className="table-wrap skeleton-table-wrap" aria-hidden="true">
       <table className="table skeleton-table">
         <thead>
-          <tr>{Array.from({ length: columns }, (_, i) => <th key={i}><Skeleton className="skeleton-table-head" /></th>)}</tr>
+          <tr>
+            {Array.from({ length: columns }, (_, i) => (
+              <th key={i}>
+                <Skeleton className="skeleton-table-head" />
+              </th>
+            ))}
+          </tr>
         </thead>
         <tbody>
           {Array.from({ length: rows }, (_, row) => (
             <tr key={row}>
               {Array.from({ length: columns }, (_, column) => (
-                <td key={column}><Skeleton className="skeleton-table-cell" /></td>
+                <td key={column}>
+                  <Skeleton className="skeleton-table-cell" />
+                </td>
               ))}
             </tr>
           ))}
@@ -78,7 +81,9 @@ export function DashboardSkeleton({ admin = false }: { admin?: boolean }) {
   return (
     <main className="shell skeleton-page" aria-busy="true" aria-label="Chargement de la page">
       <div className="skeleton-nav" aria-hidden="true">
-        {Array.from({ length: admin ? 6 : 4 }, (_, i) => <Skeleton key={i} className="skeleton-nav-item" />)}
+        {Array.from({ length: admin ? 6 : 4 }, (_, i) => (
+          <Skeleton key={i} className="skeleton-nav-item" />
+        ))}
       </div>
       <Skeleton className="skeleton-page-title" />
       <SkeletonKpiGrid count={admin ? 4 : 3} />
@@ -89,14 +94,24 @@ export function DashboardSkeleton({ admin = false }: { admin?: boolean }) {
   );
 }
 
-export function AdminTableSkeleton({ columns = 5, rows = 7, withForm = false }: { columns?: number; rows?: number; withForm?: boolean }) {
+export function AdminTableSkeleton({
+  columns = 5,
+  rows = 7,
+  withForm = false,
+}: {
+  columns?: number;
+  rows?: number;
+  withForm?: boolean;
+}) {
   return (
     <main className="shell skeleton-page" aria-busy="true" aria-label="Chargement de la page d’administration">
       <Skeleton className="skeleton-page-title" />
       {withForm ? (
         <div className="card skeleton-form-card" aria-hidden="true">
           <div className="grid">
-            {Array.from({ length: 6 }, (_, i) => <Skeleton key={i} className="skeleton-field" />)}
+            {Array.from({ length: 6 }, (_, i) => (
+              <Skeleton key={i} className="skeleton-field" />
+            ))}
           </div>
           <Skeleton className="skeleton-button" />
         </div>

@@ -8,12 +8,20 @@ export default async function AdminAIProvidersPage() {
   await requireAdmin();
   const database = getServiceDb();
   const [lyricsProvider] = await database
-    .select({ enabled: aiProviderConfigs.enabled, model: aiProviderConfigs.defaultModel, provider: aiProviderConfigs.provider })
+    .select({
+      enabled: aiProviderConfigs.enabled,
+      model: aiProviderConfigs.defaultModel,
+      provider: aiProviderConfigs.provider,
+    })
     .from(aiProviderConfigs)
     .where(eq(aiProviderConfigs.isDefaultForLyrics, true))
     .limit(1);
   const [audioProvider] = await database
-    .select({ enabled: audioProviderConfigs.enabled, model: audioProviderConfigs.defaultModel, apiKeyLast4: audioProviderConfigs.apiKeyLast4 })
+    .select({
+      enabled: audioProviderConfigs.enabled,
+      model: audioProviderConfigs.defaultModel,
+      apiKeyLast4: audioProviderConfigs.apiKeyLast4,
+    })
     .from(audioProviderConfigs)
     .where(eq(audioProviderConfigs.provider, "musicful"))
     .limit(1);
@@ -30,7 +38,9 @@ export default async function AdminAIProvidersPage() {
           id: "lyrics",
           title: "Génération des paroles",
           subtitle: "Création, révision et rallongement des paroles",
-          meta: lyricsProvider ? `${lyricsProvider.provider === "anthropic" ? "Claude" : "OpenAI"} · ${lyricsProvider.model}` : "OpenAI ou Claude à configurer",
+          meta: lyricsProvider
+            ? `${lyricsProvider.provider === "anthropic" ? "Claude" : "OpenAI"} · ${lyricsProvider.model}`
+            : "OpenAI ou Claude à configurer",
           status: lyricsProvider?.enabled ? "active" : "inactive",
           icon: "file-music",
           href: "/admin/ai-providers/lyrics",

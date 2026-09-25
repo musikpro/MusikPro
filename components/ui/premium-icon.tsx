@@ -1,13 +1,6 @@
 import type { ReactNode, SVGProps } from "react";
 
-export type PremiumIconName =
-  | "home"
-  | "dashboard"
-  | "billing"
-  | "security"
-  | "music"
-  | "plus"
-  | "headphones";
+export type PremiumIconName = "home" | "dashboard" | "billing" | "security" | "music" | "plus" | "headphones";
 
 type PremiumIconProps = SVGProps<SVGSVGElement> & {
   name: PremiumIconName;

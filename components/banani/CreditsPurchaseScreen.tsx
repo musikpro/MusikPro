@@ -244,7 +244,9 @@ export default function CreditsMobile() {
             <div className="px-5 py-7 text-center">
               <Icon i="receipt-text" size={24} className="mx-auto mb-2 text-primary" />
               <p className="font-semibold text-foreground">{t("Aucune opération")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">{t("Les achats et utilisations réels apparaîtront ici.")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("Les achats et utilisations réels apparaîtront ici.")}
+              </p>
             </div>
           )}
           {visibleHistory.map((tx, i) => (

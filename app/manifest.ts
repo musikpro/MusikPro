@@ -10,8 +10,6 @@ export default function manifest(): MetadataRoute.Manifest {
     display: "standalone",
     background_color: "#ffffff",
     theme_color: "#0b1020",
-    icons: [
-      { src: "/musikpro-favicon.png", sizes: "512x512", type: "image/png" },
-    ],
+    icons: [{ src: "/musikpro-favicon.png", sizes: "512x512", type: "image/png" }],
   };
 }

@@ -27,19 +27,21 @@ const routeTable = screens
   .join("\n");
 
 const screenDetails = screens
-  .map((s, i) => [
-    `### ${i + 1}. ${s.name || s.id}`,
-    `- Route: \`${s.route || "TBD"}\``,
-    `- Accès: ${s.auth || "TBD"}`,
-    `- But: ${s.purpose || "À préciser"}`,
-    `- États à implémenter: ${(s.states || ["default"]).join(", ")}`,
-    `- Notes Banani: ${s.notes || "Aucune"}`,
-    "- Critères de validation: rendu responsive, loading skeleton, empty/error si applicables, aucune donnée sensible dans les props client, permissions serveur testées.",
-    s.auth === "public"
-      ? "- SEO: title unique, description, canonical, index/noindex, sitemap, social preview 1200×630."
-      : "- SEO: route privée noindex et hors sitemap.",
-    "",
-  ].join("\n"))
+  .map((s, i) =>
+    [
+      `### ${i + 1}. ${s.name || s.id}`,
+      `- Route: \`${s.route || "TBD"}\``,
+      `- Accès: ${s.auth || "TBD"}`,
+      `- But: ${s.purpose || "À préciser"}`,
+      `- États à implémenter: ${(s.states || ["default"]).join(", ")}`,
+      `- Notes Banani: ${s.notes || "Aucune"}`,
+      "- Critères de validation: rendu responsive, loading skeleton, empty/error si applicables, aucune donnée sensible dans les props client, permissions serveur testées.",
+      s.auth === "public"
+        ? "- SEO: title unique, description, canonical, index/noindex, sitemap, social preview 1200×630."
+        : "- SEO: route privée noindex et hors sitemap.",
+      "",
+    ].join("\n"),
+  )
   .join("\n");
 
 const publicList = publicScreens.length
@@ -50,7 +52,7 @@ const protectedList = protectedScreens.length
   : "Aucun écran protégé déclaré.";
 
 const sections = [
-`# Plan d'implémentation SaaS — généré depuis Banani
+  `# Plan d'implémentation SaaS — généré depuis Banani
 
 > Ce fichier est un plan de travail. L'IA doit le lire AVANT de modifier le code et avancer phase par phase. Elle ne doit pas déclarer une phase terminée sans vérifier ses critères.
 
@@ -66,9 +68,9 @@ const sections = [
 | # | Écran | Route | Accès | Objectif |
 |---:|---|---|---|---|
 ${routeTable}`,
-`## 1bis. Comparaison Banani → Starter
+  `## 1bis. Comparaison Banani → Starter
 ${bananiGap ? `- RÉUTILISER: ${bananiGap.counts?.["RÉUTILISER"] ?? 0}\n- ADAPTER: ${bananiGap.counts?.ADAPTER ?? 0}\n- CRÉER: ${bananiGap.counts?.["CRÉER"] ?? 0}\n- À CONFIRMER: ${bananiGap.counts?.["À CONFIRMER"] ?? 0}\n\nVoir \`generated/banani-gap-analysis.md\` avant toute implémentation.` : "Gap analysis Banani non disponible. Exécuter /import-banani puis npm run import-banani:analyze."}`,
-`## 2. Ordre obligatoire d'implémentation
+  `## 2. Ordre obligatoire d'implémentation
 
 ### Phase A — Compréhension avant code
 1. Lire \`DESIGN.md\`, ce plan et \`design/banani/screens.json\`.
@@ -180,10 +182,10 @@ Pour chaque écran protégé :
 5. Backups et procédure incident confirmés.
 6. Search Console et social previews réellement testés sur l'URL HTTPS publique.
 7. Déploiement progressif puis vérification post-déploiement.`,
-`## 3. Détail par écran
+  `## 3. Détail par écran
 
 ${screenDetails}`,
-`## 4. Règle pour l'IA
+  `## 4. Règle pour l'IA
 À chaque phase, l'IA doit répondre avec :
 1. ce qu'elle va implémenter ;
 2. les fichiers concernés ;
@@ -192,7 +194,7 @@ ${screenDetails}`,
 5. les tests à exécuter ;
 6. le statut du gate avant de passer à la phase suivante.
 
-Elle ne doit jamais sauter directement de l'import Banani au code complet du SaaS.`
+Elle ne doit jamais sauter directement de l'import Banani au code complet du SaaS.`,
 ];
 
 fs.mkdirSync(path.dirname(outputPath), { recursive: true });

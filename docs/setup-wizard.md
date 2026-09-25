@@ -33,10 +33,10 @@ npm run payments:setup -- --none
 
 Puis la phase peut être marquée `skipped`.
 
-
 ## Phase 18 — Cloudflare optionnel
+
 Cloudflare n’est proposé qu’à la fin du setup. Le SaaS reste valide sans Cloudflare. Cette phase concerne le domaine/DNS et non R2.
 
-
 ## Phase 16 — Upstash optionnel
+
 Upstash Redis n’est jamais requis par le wizard principal. Le choix se fait plus tard avec `npm run upstash:setup` ou `npm run upstash:setup -- --none`.

@@ -135,9 +135,43 @@ export function classifyMusicfulError(error: unknown): PublicAiError {
 
 export function classifyAnthropicError(error: unknown): PublicAiError {
   const provider = error && typeof error === "object" ? (error as OpenAiLikeError) : {};
-  if (provider.status === 401) return { status: 503, code: "CLAUDE_AUTHENTICATION_FAILED", message: "La clé API Claude n’est plus valide. Le propriétaire doit la remplacer.", providerStatus: provider.status, providerRequestId: provider.request_id };
-  if (provider.status === 404) return { status: 503, code: "CLAUDE_MODEL_NOT_AVAILABLE", message: "Le modèle Claude configuré n’est pas accessible avec cette clé.", providerStatus: provider.status, providerRequestId: provider.request_id };
-  if (provider.status === 429) return { status: 429, code: "CLAUDE_RATE_LIMITED", message: "Claude reçoit trop de demandes. Réessaie dans quelques instants.", providerStatus: provider.status, providerRequestId: provider.request_id };
-  if (provider.status === 400) return { status: 502, code: "CLAUDE_BAD_REQUEST", message: "Claude a refusé les paramètres de génération configurés.", providerStatus: provider.status, providerRequestId: provider.request_id };
-  return { status: 502, code: "CLAUDE_UPSTREAM_ERROR", message: "La génération Claude a échoué. Vérifie la connexion Anthropic dans l’espace propriétaire.", providerStatus: provider.status, providerRequestId: provider.request_id };
+  if (provider.status === 401)
+    return {
+      status: 503,
+      code: "CLAUDE_AUTHENTICATION_FAILED",
+      message: "La clé API Claude n’est plus valide. Le propriétaire doit la remplacer.",
+      providerStatus: provider.status,
+      providerRequestId: provider.request_id,
+    };
+  if (provider.status === 404)
+    return {
+      status: 503,
+      code: "CLAUDE_MODEL_NOT_AVAILABLE",
+      message: "Le modèle Claude configuré n’est pas accessible avec cette clé.",
+      providerStatus: provider.status,
+      providerRequestId: provider.request_id,
+    };
+  if (provider.status === 429)
+    return {
+      status: 429,
+      code: "CLAUDE_RATE_LIMITED",
+      message: "Claude reçoit trop de demandes. Réessaie dans quelques instants.",
+      providerStatus: provider.status,
+      providerRequestId: provider.request_id,
+    };
+  if (provider.status === 400)
+    return {
+      status: 502,
+      code: "CLAUDE_BAD_REQUEST",
+      message: "Claude a refusé les paramètres de génération configurés.",
+      providerStatus: provider.status,
+      providerRequestId: provider.request_id,
+    };
+  return {
+    status: 502,
+    code: "CLAUDE_UPSTREAM_ERROR",
+    message: "La génération Claude a échoué. Vérifie la connexion Anthropic dans l’espace propriétaire.",
+    providerStatus: provider.status,
+    providerRequestId: provider.request_id,
+  };
 }

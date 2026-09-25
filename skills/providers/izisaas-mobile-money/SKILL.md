@@ -39,15 +39,16 @@ Use case?
 └── Other African MoMo countries ──────► Moneroo
 ```
 
-| Provider          | Currency           | MoMo Coverage              | Subscription | Card | Hosted page | Inline (Elements) | Auth                             |
-| ----------------- | ------------------ | -------------------------- | ------------ | ---- | ----------- | ----------------- | -------------------------------- |
-| **Stripe**        | USD/EUR/XOF/XAF/...| —                          | ✓ first-class| ✓    | ✓ (Checkout)| ✓ (Elements / PI) | `Authorization: Bearer sk_*`     |
-| **Moneroo**       | XOF/XAF/USD/EUR    | All Africa MoMo + card     | —            | ✓    | ✓           | —                 | `Authorization: Bearer <key>`    |
-| **Bictorys MoMo** | XOF                | UEMOA strict (6 countries) | —            | —    | ✓           | —                 | `X-Api-Key` header               |
-| **Bictorys Card** | XOF/XAF            | —                          | —            | ✓    | ✓ (worldwide buyer) | —          | `X-Api-Key` header               |
-| **PayTech**       | XOF                | SN, CI, ML, BJ (partial)   | —            | ✓    | ✓           | —                 | `API_KEY` + `API_SECRET` headers |
+| Provider          | Currency            | MoMo Coverage              | Subscription  | Card | Hosted page         | Inline (Elements) | Auth                             |
+| ----------------- | ------------------- | -------------------------- | ------------- | ---- | ------------------- | ----------------- | -------------------------------- |
+| **Stripe**        | USD/EUR/XOF/XAF/... | —                          | ✓ first-class | ✓    | ✓ (Checkout)        | ✓ (Elements / PI) | `Authorization: Bearer sk_*`     |
+| **Moneroo**       | XOF/XAF/USD/EUR     | All Africa MoMo + card     | —             | ✓    | ✓                   | —                 | `Authorization: Bearer <key>`    |
+| **Bictorys MoMo** | XOF                 | UEMOA strict (6 countries) | —             | —    | ✓                   | —                 | `X-Api-Key` header               |
+| **Bictorys Card** | XOF/XAF             | —                          | —             | ✓    | ✓ (worldwide buyer) | —                 | `X-Api-Key` header               |
+| **PayTech**       | XOF                 | SN, CI, ML, BJ (partial)   | —             | ✓    | ✓                   | —                 | `API_KEY` + `API_SECRET` headers |
 
 **Default routing for V1**:
+
 - **Subscriptions** → Stripe (only adapter here with first-class recurring billing).
 - **One-shot card** → Stripe for international buyers, Bictorys card if your merchant entity is UEMOA-registered and you want lower fees on local cards.
 - **Mobile money** → Bictorys for SN/CI, PayTech for ML/BJ, Moneroo for BF/TG and CEMAC. The country-based router lives in your `getMobileProviderForCountry()` helper.
@@ -173,7 +174,7 @@ In Next.js App Router:
 ```ts
 export const runtime = "nodejs";
 export async function POST(req: Request) {
-  const rawBody = await req.text();             // ← .text() not .json()
+  const rawBody = await req.text(); // ← .text() not .json()
   const sig = req.headers.get("stripe-signature")!;
   const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
 }
@@ -244,14 +245,14 @@ A common defensive pattern is to rewrite `http://` → `https://` before submiss
 
 ### Webhook header conventions differ per provider
 
-| Provider    | Signature header(s)                                       | Algorithm                                                                   |
-| ----------- | --------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Provider    | Signature header(s)                                       | Algorithm                                                                                      |
+| ----------- | --------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | Stripe      | `Stripe-Signature` (timestamp + scheme + signature)       | Use `stripe.webhooks.constructEvent` — handles HMAC-SHA256 + 5-min replay tolerance internally |
-| Moneroo     | `X-Moneroo-Signature`                                     | `hex(HMAC_SHA256(rawBody, webhookSecret))`                                  |
-| Bictorys    | `X-Webhook-Signature` + `X-Webhook-Timestamp` (HMAC mode) | `hex(HMAC_SHA256(\`${ts}.${rawBody}\`, ws))`                                |
-| Bictorys    | `X-Secret-Key` (legacy / fallback mode)                   | constant-time string compare with secret                                    |
-| PayTech (1) | `hmac_compute` IN BODY (not header) — HMAC mode           | `hex(HMAC_SHA256(\`${item_price}\|${ref_command}\|${apiKey}\`, apiSecret))` |
-| PayTech (2) | `api_key_sha256` + `api_secret_sha256` IN BODY — fallback | `sha256(apiKey)` and `sha256(apiSecret)` echo                               |
+| Moneroo     | `X-Moneroo-Signature`                                     | `hex(HMAC_SHA256(rawBody, webhookSecret))`                                                     |
+| Bictorys    | `X-Webhook-Signature` + `X-Webhook-Timestamp` (HMAC mode) | `hex(HMAC_SHA256(\`${ts}.${rawBody}\`, ws))`                                                   |
+| Bictorys    | `X-Secret-Key` (legacy / fallback mode)                   | constant-time string compare with secret                                                       |
+| PayTech (1) | `hmac_compute` IN BODY (not header) — HMAC mode           | `hex(HMAC_SHA256(\`${item_price}\|${ref_command}\|${apiKey}\`, apiSecret))`                    |
+| PayTech (2) | `api_key_sha256` + `api_secret_sha256` IN BODY — fallback | `sha256(apiKey)` and `sha256(apiSecret)` echo                                                  |
 
 Bictorys ships with the static `X-Secret-Key` mode by default. HMAC mode must be explicitly turned on in the dashboard. **Support both.** The HMAC timestamp tolerance is ±5 minutes and timestamps may arrive in seconds OR milliseconds — auto-detect: if `parseInt(ts) < 10_000_000_000` it's seconds, multiply by 1000.
 
@@ -298,13 +299,13 @@ Hardcoded mapping (UEMOA/CEMAC are the only relevant zones for these providers):
 const currency: "XOF" | "XAF" = merchant.country === "CM" ? "XAF" : "XOF";
 ```
 
-| Provider      | XOF | XAF | Other           |
-| ------------- | --- | --- | --------------- |
+| Provider      | XOF | XAF | Other                                                        |
+| ------------- | --- | --- | ------------------------------------------------------------ |
 | Stripe        | ✓   | ✓   | USD, EUR, GBP + ~135 others (zero-decimal handling required) |
-| Moneroo       | ✓   | ✓   | USD, EUR (card) |
-| Bictorys MoMo | ✓   | —   | —               |
-| Bictorys Card | ✓   | ✓   | —               |
-| PayTech       | ✓   | —   | —               |
+| Moneroo       | ✓   | ✓   | USD, EUR (card)                                              |
+| Bictorys MoMo | ✓   | —   | —                                                            |
+| Bictorys Card | ✓   | ✓   | —                                                            |
+| PayTech       | ✓   | —   | —                                                            |
 
 Bictorys mobile money is **UEMOA only** (XOF, 6 countries). PayTech is XOF only (no XAF). Moneroo covers both XOF and XAF. Stripe is the fallback for non-CFA / international customers.
 
@@ -348,27 +349,21 @@ The merchant gives you their key(s). Validate with Zod, encrypt with AES-256-GCM
 await db.insert(paymentConnections).values({
   merchantId,
   provider: "moneroo",
-  credentialsEncrypted: encryptCredentials(
-    monerooCredentialsSchema.parse(input),
-  ),
+  credentialsEncrypted: encryptCredentials(monerooCredentialsSchema.parse(input)),
 });
 
 // Bictorys: api key + (optional) webhook secret
 await db.insert(paymentConnections).values({
   merchantId,
   provider: "bictorys",
-  credentialsEncrypted: encryptCredentials(
-    bictorysCredentialsSchema.parse(input),
-  ),
+  credentialsEncrypted: encryptCredentials(bictorysCredentialsSchema.parse(input)),
 });
 
 // PayTech: two keys (API_KEY and API_SECRET)
 await db.insert(paymentConnections).values({
   merchantId,
   provider: "paytech",
-  credentialsEncrypted: encryptCredentials(
-    paytechCredentialsSchema.parse(input),
-  ),
+  credentialsEncrypted: encryptCredentials(paytechCredentialsSchema.parse(input)),
 });
 ```
 
@@ -384,12 +379,7 @@ if (!probe.ok) return res.status(400).json({ error: probe.error });
 ### 4. Initiate checkout
 
 ```ts
-const adapter =
-  provider === "moneroo"
-    ? monerooAdapter
-    : provider === "bictorys"
-      ? bictorysAdapter
-      : paytechAdapter;
+const adapter = provider === "moneroo" ? monerooAdapter : provider === "bictorys" ? bictorysAdapter : paytechAdapter;
 
 const result = await adapter.initiatePayment(
   {
@@ -443,13 +433,7 @@ router.post("/webhooks/byok/:connectionId", async (req, res) => {
     body = req.body;
   }
 
-  const verified = verifyWebhookSignature(
-    conn.provider,
-    req,
-    rawBody,
-    body,
-    credentials,
-  );
+  const verified = verifyWebhookSignature(conn.provider, req, rawBody, body, credentials);
   if (!verified.ok) return res.status(401).json({ error: verified.error });
   // ... dedup, re-query (Moneroo/PayTech), fulfill
   res.json({ received: true });
@@ -490,32 +474,32 @@ See [`examples/webhook-handler.ts`](examples/webhook-handler.ts) for the full im
 
 ## Common mistakes & fixes
 
-| Mistake                                  | Symptom                                                  | Fix                                                                              |
-| ---------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| Did not pin Stripe `apiVersion`          | Sudden breakage when Stripe rotates default              | Pin `apiVersion: "<date>.<channel>"` explicitly in adapter constructor.          |
-| Reused `cus_…` from test in live key context | `resource_missing`                                   | Mirror IDs in `*Test` columns, pick by env. Adapter signals `testLiveMismatch`.  |
-| Hardcoded `* 100` for Stripe amounts     | Charged 100x for XOF / XAF / JPY                         | Use `toStripeAmount(amountMajor, currency)` — handles zero-decimal currencies.   |
-| Used `request.json()` on Stripe webhook  | `Webhook signature verification failed`                  | `request.text()` (Next.js) or `express.raw({type:'application/json'})` (Express). |
-| Granted entitlement on Stripe `success_url` | Replay attack / out-of-order webhook = double-grant   | Wait for `checkout.session.completed` / `invoice.paid` webhook.                  |
-| Acted on `invoice.paid` only on first cycle | Renewals fail to extend access                        | Branch on `billing_reason === "subscription_create"` vs `"subscription_cycle"`.  |
-| Used `JSON.stringify(req.body)` for HMAC | Webhook signature always fails                           | Use the raw `Buffer` captured by middleware.                                     |
-| Sent `cancel_url` to Moneroo             | Moneroo ignores it (only `return_url`)                   | Encode cancel state in `return_url` query params if needed.                      |
-| Used Node `fetch` for Bictorys           | `403 Forbidden` HTML response                            | Spawn `curl` subprocess.                                                         |
-| Sent `errorRedirectUrl` only (camelCase) | 4xx from Bictorys, no clear error                        | Send both casings: `errorRedirectUrl` + `ErrorRedirectUrl`.                      |
-| Sent `Authorization: Bearer` to PayTech  | 401 Unauthorized                                         | PayTech needs `API_KEY` + `API_SECRET` headers (uppercase).                      |
-| Parsed PayTech IPN as JSON only          | All IPNs fail with `Cannot read properties of undefined` | Branch on `Content-Type` to support form-encoded bodies.                         |
-| Compared PayTech HMAC with `===`         | Timing attack vector                                     | `crypto.timingSafeEqual` with length check first.                                |
-| Ignored PayTech's SHA256-of-keys mode    | Default-mode IPNs all rejected as "no signature"         | Implement BOTH methods, prefer HMAC if `hmac_compute` present.                   |
-| Sent decimal `item_price` to PayTech     | `success: 0`, `Invalid item_price`                       | Integer XOF only. `Math.floor()` if needed.                                      |
-| `ipn_url` set to localhost               | PayTech 4xx at submission                                | Use HTTPS public URL (ngrok in dev).                                             |
-| Stored API key in plaintext              | Compliance violation, security audit fail                | Use `encryptCredentials()` from `examples/encryption.ts`.                        |
-| No idempotent UPDATE                     | Member granted entitlement twice on retry                | `UPDATE … WHERE id=? AND status='pending'`.                                      |
-| Forgot to dedup events                   | Webhook replay creates duplicate notifications           | Hash raw body, store 24h.                                                        |
-| Trusted webhook amount blindly           | Tampering risk                                           | Compare event amount to row's `amountTotal` (allow ±5% for PayTech fees).        |
-| Skipped re-query                         | Webhook spoofing if HMAC ever leaks                      | `verifyPayment()` against the provider before granting (Moneroo + PayTech only). |
-| Used Bictorys `country: "buyer-country"` | 400 / 422 from API                                       | Hardcode to merchant's country (`"SN"` for V1).                                  |
-| Routed BF mobile money to PayTech        | "target_payment not available in country"                | BF → Moneroo. PayTech does not cover BF mobile money.                            |
-| Hit PayTech with `currency: "XAF"`       | `Invalid currency`                                       | PayTech is XOF-only. Route XAF to Moneroo.                                       |
+| Mistake                                      | Symptom                                                  | Fix                                                                               |
+| -------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Did not pin Stripe `apiVersion`              | Sudden breakage when Stripe rotates default              | Pin `apiVersion: "<date>.<channel>"` explicitly in adapter constructor.           |
+| Reused `cus_…` from test in live key context | `resource_missing`                                       | Mirror IDs in `*Test` columns, pick by env. Adapter signals `testLiveMismatch`.   |
+| Hardcoded `* 100` for Stripe amounts         | Charged 100x for XOF / XAF / JPY                         | Use `toStripeAmount(amountMajor, currency)` — handles zero-decimal currencies.    |
+| Used `request.json()` on Stripe webhook      | `Webhook signature verification failed`                  | `request.text()` (Next.js) or `express.raw({type:'application/json'})` (Express). |
+| Granted entitlement on Stripe `success_url`  | Replay attack / out-of-order webhook = double-grant      | Wait for `checkout.session.completed` / `invoice.paid` webhook.                   |
+| Acted on `invoice.paid` only on first cycle  | Renewals fail to extend access                           | Branch on `billing_reason === "subscription_create"` vs `"subscription_cycle"`.   |
+| Used `JSON.stringify(req.body)` for HMAC     | Webhook signature always fails                           | Use the raw `Buffer` captured by middleware.                                      |
+| Sent `cancel_url` to Moneroo                 | Moneroo ignores it (only `return_url`)                   | Encode cancel state in `return_url` query params if needed.                       |
+| Used Node `fetch` for Bictorys               | `403 Forbidden` HTML response                            | Spawn `curl` subprocess.                                                          |
+| Sent `errorRedirectUrl` only (camelCase)     | 4xx from Bictorys, no clear error                        | Send both casings: `errorRedirectUrl` + `ErrorRedirectUrl`.                       |
+| Sent `Authorization: Bearer` to PayTech      | 401 Unauthorized                                         | PayTech needs `API_KEY` + `API_SECRET` headers (uppercase).                       |
+| Parsed PayTech IPN as JSON only              | All IPNs fail with `Cannot read properties of undefined` | Branch on `Content-Type` to support form-encoded bodies.                          |
+| Compared PayTech HMAC with `===`             | Timing attack vector                                     | `crypto.timingSafeEqual` with length check first.                                 |
+| Ignored PayTech's SHA256-of-keys mode        | Default-mode IPNs all rejected as "no signature"         | Implement BOTH methods, prefer HMAC if `hmac_compute` present.                    |
+| Sent decimal `item_price` to PayTech         | `success: 0`, `Invalid item_price`                       | Integer XOF only. `Math.floor()` if needed.                                       |
+| `ipn_url` set to localhost                   | PayTech 4xx at submission                                | Use HTTPS public URL (ngrok in dev).                                              |
+| Stored API key in plaintext                  | Compliance violation, security audit fail                | Use `encryptCredentials()` from `examples/encryption.ts`.                         |
+| No idempotent UPDATE                         | Member granted entitlement twice on retry                | `UPDATE … WHERE id=? AND status='pending'`.                                       |
+| Forgot to dedup events                       | Webhook replay creates duplicate notifications           | Hash raw body, store 24h.                                                         |
+| Trusted webhook amount blindly               | Tampering risk                                           | Compare event amount to row's `amountTotal` (allow ±5% for PayTech fees).         |
+| Skipped re-query                             | Webhook spoofing if HMAC ever leaks                      | `verifyPayment()` against the provider before granting (Moneroo + PayTech only).  |
+| Used Bictorys `country: "buyer-country"`     | 400 / 422 from API                                       | Hardcode to merchant's country (`"SN"` for V1).                                   |
+| Routed BF mobile money to PayTech            | "target_payment not available in country"                | BF → Moneroo. PayTech does not cover BF mobile money.                             |
+| Hit PayTech with `currency: "XAF"`           | `Invalid currency`                                       | PayTech is XOF-only. Route XAF to Moneroo.                                        |
 
 ## Real-world impact
 

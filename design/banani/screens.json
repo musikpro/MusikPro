@@ -9,9 +9,7 @@
       "route": "/dashboard/support",
       "auth": "authenticated",
       "purpose": "Nous sommes ici pour vous aider ; Nous pouvons aussi vous contacter",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -34,9 +32,7 @@
         "Envoyer mon message",
         "Annuler"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -48,9 +44,7 @@
       "route": "/dashboard/payment-preview/confirmed",
       "auth": "authenticated",
       "purpose": "Paiement confirmé !",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran mobile réobservé via Banani MCP. Son contenu confirme un paiement puis annonce une redirection vers la génération. Route /dashboard/payment-preview/confirmed déjà présente ; destination finale exacte À CONFIRMER.",
       "viewport": "mobile",
       "keyElements": [
@@ -76,9 +70,7 @@
       "route": "/dashboard/help",
       "auth": "authenticated",
       "purpose": "Questions fréquemment posées ; Vous n'avez pas trouvé votre réponse ?",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -105,9 +97,7 @@
       "route": "/dashboard/songs",
       "auth": "authenticated",
       "purpose": "Mes chansons",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -122,9 +112,7 @@
         "Modifier paroles",
         "Regénérer"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -136,19 +124,11 @@
       "route": "/dashboard/notifications",
       "auth": "authenticated",
       "purpose": "Centre de notifications",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
-      "keyElements": [
-        "Retour",
-        "Notifications",
-        "Marquer tout"
-      ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "keyElements": ["Retour", "Notifications", "Marquer tout"],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -160,9 +140,7 @@
       "route": "/dashboard/payment-preview/chariow",
       "auth": "authenticated",
       "purpose": "Redirection en cours…",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran mobile réobservé via Banani MCP. Route /dashboard/payment-preview/chariow déjà présente dans la démonstration. À relier au parcours de création en mode fictif tant que le paiement reste désactivé.",
       "viewport": "mobile",
       "keyElements": [
@@ -187,9 +165,7 @@
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
-      "integrations": [
-        "Chariow nommé visuellement ; connexion fournisseur NON VÉRIFIÉE"
-      ]
+      "integrations": ["Chariow nommé visuellement ; connexion fournisseur NON VÉRIFIÉE"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/UserProfileScreen_next1.jsx",
@@ -197,9 +173,7 @@
       "route": "/dashboard/profile/next",
       "auth": "authenticated",
       "purpose": "Kofi Mensah ; Plan actuel ; Compte ; Support",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -222,9 +196,7 @@
         "Contacter le support",
         "Se déconnecter"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -236,9 +208,7 @@
       "route": "/dashboard/credits",
       "auth": "authenticated",
       "purpose": "Crédits ; Acheter des crédits ; Historique",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -265,9 +235,7 @@
         "Acheter maintenant",
         "Profil"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -279,9 +247,7 @@
       "route": "/dashboard/discover",
       "auth": "authenticated",
       "purpose": "Découvrir la bibliothèque",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -290,9 +256,7 @@
         "Rechercher une chanson...",
         "Découvrir"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -304,9 +268,7 @@
       "route": "/dashboard/create/lyrics/edit",
       "auth": "authenticated",
       "purpose": "Édite tes paroles",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -322,9 +284,7 @@
         "Copier",
         "Enregistrer"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -336,9 +296,7 @@
       "route": "/dashboard/profile/edit",
       "auth": "authenticated",
       "purpose": "Éditer le profil",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -353,9 +311,7 @@
         "Enregistrer les modifications",
         "Annuler"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -367,9 +323,7 @@
       "route": "/dashboard/create/confirm",
       "auth": "authenticated",
       "purpose": "Prêt à générer",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -391,9 +345,7 @@
         "Si tu n'as pas encore payé, tu seras redirigé vers la page de paiement.",
         "Générer votre chanson"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -405,19 +357,11 @@
       "route": "/dashboard/favorites",
       "auth": "authenticated",
       "purpose": "Mes Favoris",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
-      "keyElements": [
-        "Mes Favoris",
-        "4 chansons · 5 heures de musique",
-        "Profil"
-      ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "keyElements": ["Mes Favoris", "4 chansons · 5 heures de musique", "Profil"],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -429,19 +373,11 @@
       "route": "/dashboard/songs/overview",
       "auth": "authenticated",
       "purpose": "Mes chansons",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
-      "keyElements": [
-        "Mes chansons",
-        "Gérez vos créations musicales",
-        "Trier"
-      ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "keyElements": ["Mes chansons", "Gérez vos créations musicales", "Trier"],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -453,9 +389,7 @@
       "route": "/dashboard/settings/notifications",
       "auth": "authenticated",
       "purpose": "Vos chansons ; Communauté ; Système",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -473,9 +407,7 @@
         "Alertes de sécurité",
         "Vous pouvez modifier ces paramètres à tout moment. Vos préférences seront sauvegardées automatiquement."
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -487,9 +419,7 @@
       "route": "/dashboard/payment-preview",
       "auth": "authenticated",
       "purpose": "Finalisez votre paiement ; Vos informations ; Résumé de commande",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran mobile réobservé via Banani MCP. Route /dashboard/payment-preview déjà présente dans la démonstration. L’intégration au parcours de création est demandée par l’utilisateur ; paiement réel désactivé et logique fournisseur À CONFIRMER.",
       "viewport": "mobile",
       "keyElements": [
@@ -523,9 +453,7 @@
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
-      "integrations": [
-        "Mobile Money mentionné visuellement ; fournisseur et envoi SMS NON VÉRIFIÉS"
-      ]
+      "integrations": ["Mobile Money mentionné visuellement ; fournisseur et envoi SMS NON VÉRIFIÉS"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/ReviewLyricsScreen.jsx",
@@ -533,9 +461,7 @@
       "route": "/dashboard/create/lyrics",
       "auth": "authenticated",
       "purpose": "Révise les paroles",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -555,9 +481,7 @@
         "Les paroles peuvent être éditées librement. Elles seront utilisées pour la génération musicale finale.",
         "Continuer"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -569,9 +493,7 @@
       "route": "/dashboard/settings",
       "auth": "authenticated",
       "purpose": "Paramètres ; Apparence ; Langue ; Audio ; Données ; À propos",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -602,9 +524,7 @@
         "42 MB",
         "Assistant de téléchargement"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -616,9 +536,7 @@
       "route": "/dashboard/create/genre",
       "auth": "authenticated",
       "purpose": "Créer une Chanson ; Quel est ton genre préféré ?",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "desktop",
       "keyElements": [
@@ -648,9 +566,7 @@
         "Retour",
         "Continuer"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -662,9 +578,7 @@
       "route": "/dashboard/create",
       "auth": "authenticated",
       "purpose": "Quelle est l'occasion ?",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -674,9 +588,7 @@
         "Choisis le thème de ta chanson",
         "Continuer"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -688,21 +600,11 @@
       "route": "/dashboard/songs/player",
       "auth": "authenticated",
       "purpose": "Lecteur de chanson",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
-      "keyElements": [
-        "En écoute",
-        "Partager",
-        "Télécharger",
-        "Suivant",
-        "Découvrir"
-      ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "keyElements": ["En écoute", "Partager", "Télécharger", "Suivant", "Découvrir"],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -714,9 +616,7 @@
       "route": "/dashboard/create/parameters",
       "auth": "authenticated",
       "purpose": "Paramètres additionnels",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -739,9 +639,7 @@
         "Générer les paroles",
         "Cela utilisera 1 crédit"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -753,9 +651,7 @@
       "route": "/dashboard/create/lyrics/generating",
       "auth": "authenticated",
       "purpose": "Génération en cours...",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -768,9 +664,7 @@
         "Étape 5 sur 7 — Génération",
         "Les paroles seront personnalisées pour ton moment spécial"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -782,9 +676,7 @@
       "route": "/dashboard/create/story",
       "auth": "authenticated",
       "purpose": "Raconte ton histoire",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -803,9 +695,7 @@
         "Continuer",
         "Minimum 10 caractères"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -817,9 +707,7 @@
       "route": "/dashboard/create/style",
       "auth": "authenticated",
       "purpose": "Choisis le style et l'ambiance ; Genre musical ; Ambiance",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -846,9 +734,7 @@
         "Continuer",
         "Sélectionne au moins un genre et une ambiance"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -860,9 +746,7 @@
       "route": "/dashboard/menu",
       "auth": "authenticated",
       "purpose": "Menu ; Kofi Mensah",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -890,9 +774,7 @@
         "Déconnexion",
         "Profil"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -904,9 +786,7 @@
       "route": "/dashboard/profile",
       "auth": "authenticated",
       "purpose": "Kofi Mensah ; Plan actuel ; Compte ; Support",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -929,9 +809,7 @@
         "Contacter le support",
         "Se déconnecter"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -943,9 +821,7 @@
       "route": "/dashboard",
       "auth": "authenticated",
       "purpose": "Bonjour Kofi 👋 ; Mes chansons ; Témoignages ; Tendances ; Activité récente",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "desktop",
       "keyElements": [
@@ -976,9 +852,7 @@
         "Se termine le 31 juillet · 50 000 FCFA",
         "Participer"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -990,9 +864,7 @@
       "route": "/dashboard",
       "auth": "authenticated",
       "purpose": "Bonjour Kofi 👋 ; Mes chansons ; Tendances ; Télécharger l'application ; Témoignages",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Route proposée pour la démonstration, non fournie par Banani. Données fictives autorisées. Auth réutilisée via le layout dashboard ; aucune nouvelle permission métier. Loading/empty/error/offline non importés. Aucun paiement, email, upload ou service musical réel à activer.",
       "viewport": "mobile",
       "keyElements": [
@@ -1013,9 +885,7 @@
         "App Store",
         "Accueil"
       ],
-      "interactions": [
-        "Contrôles affichés ; liens et handlers métier non démontrés dans l'export"
-      ],
+      "interactions": ["Contrôles affichés ; liens et handlers métier non démontrés dans l'export"],
       "dataNeeds": [
         "Valeurs et collections fictives présentes dans le JSX importé ; futur branchement réel À CONFIRMER"
       ],
@@ -1027,9 +897,7 @@
       "route": "/forgot-password",
       "auth": "public",
       "purpose": "Demander un lien de réinitialisation de mot de passe",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
       "viewport": "mobile",
       "keyElements": [
@@ -1048,9 +916,7 @@
       "interactions": [
         "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
       ],
-      "dataNeeds": [
-        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
-      ],
+      "dataNeeds": ["Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"],
       "integrations": [
         "Google Authenticator — option visible; enrôlement et validation NON VÉRIFIÉS dans Banani",
         "E-mail transactionnel — intention visible; fournisseur et livraison NON VÉRIFIÉS dans Banani"
@@ -1062,9 +928,7 @@
       "route": "/login",
       "auth": "public",
       "purpose": "Connexion au compte MusikPro — variante mobile",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
       "viewport": "mobile",
       "keyElements": [
@@ -1085,12 +949,8 @@
       "interactions": [
         "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
       ],
-      "dataNeeds": [
-        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
-      ],
-      "integrations": [
-        "Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"
-      ]
+      "dataNeeds": ["Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"],
+      "integrations": ["Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/SignupPageMobile.jsx",
@@ -1098,9 +958,7 @@
       "route": "/register",
       "auth": "public",
       "purpose": "Création d’un compte MusikPro — variante mobile",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
       "viewport": "mobile",
       "keyElements": [
@@ -1124,12 +982,8 @@
       "interactions": [
         "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
       ],
-      "dataNeeds": [
-        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
-      ],
-      "integrations": [
-        "Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"
-      ]
+      "dataNeeds": ["Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"],
+      "integrations": ["Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/TwoFactorAuth.jsx",
@@ -1137,9 +991,7 @@
       "route": "/two-factor",
       "auth": "admin",
       "purpose": "Vérifier le second facteur du propriétaire du SaaS après sa connexion et avant l’accès au tableau de bord administrateur",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran mobile réellement sélectionné et observé via Banani MCP. L’utilisateur confirme qu’il est réservé au propriétaire du SaaS et qu’il doit précéder l’accès au tableau de bord /admin. La variante desktop doit être adaptée avec le même design system orange/ivoire. Les états erreur, expiration, renvoi, chargement, succès, offline et la méthode e-mail restent NON VÉRIFIÉS tant que leur contrat backend n’est pas démontré.",
       "viewport": "mobile",
       "keyElements": [
@@ -1178,9 +1030,7 @@
       "route": "/login",
       "auth": "public",
       "purpose": "Connexion au compte MusikPro — variante bureau",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Écran réellement sélectionné et observé via Banani MCP le 19 septembre 2026. Route proposée par correspondance avec l’auth existante du starter. Textes « Musika » observés dans certains écrans à adapter vers MusikPro. Loading, erreurs serveur, succès, offline, responsive hors viewport déclaré et règles métier restent NON VÉRIFIÉS.",
       "viewport": "desktop",
       "keyElements": [
@@ -1201,12 +1051,8 @@
       "interactions": [
         "Boutons, champs, liens et sélections visibles; navigation, validation, erreurs et soumission non démontrées par l’export statique"
       ],
-      "dataNeeds": [
-        "Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"
-      ],
-      "integrations": [
-        "Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"
-      ]
+      "dataNeeds": ["Compte utilisateur, session et états de formulaire; contrats serveur et persistance À CONFIRMER"],
+      "integrations": ["Google OAuth — contrôle visible; exécution backend NON VÉRIFIÉE dans Banani"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/AdminConfigureLanguage.jsx",
@@ -1214,10 +1060,7 @@
       "route": "/admin/languages/fr",
       "auth": "admin",
       "purpose": "Configurer l’activation et le niveau de traduction d’une langue",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1260,9 +1103,7 @@
         "Actions par boutons visibles",
         "Ouverture d’un détail ou d’une modification visible"
       ],
-      "dataNeeds": [
-        "Langues, régions, activation et progression des traductions ; données fictives"
-      ],
+      "dataNeeds": ["Langues, régions, activation et progression des traductions ; données fictives"],
       "integrations": []
     },
     {
@@ -1271,10 +1112,7 @@
       "route": "/admin/languages/new",
       "auth": "admin",
       "purpose": "Rechercher et ajouter une langue à la plateforme",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1305,13 +1143,8 @@
         "Mandarin",
         "中文"
       ],
-      "interactions": [
-        "Saisie ou recherche visible",
-        "Actions par boutons visibles"
-      ],
-      "dataNeeds": [
-        "Langues, régions, activation et progression des traductions ; données fictives"
-      ],
+      "interactions": ["Saisie ou recherche visible", "Actions par boutons visibles"],
+      "dataNeeds": ["Langues, régions, activation et progression des traductions ; données fictives"],
       "integrations": []
     },
     {
@@ -1320,12 +1153,7 @@
       "route": "/admin/contests",
       "auth": "admin",
       "purpose": "Lister et administrer les concours",
-      "states": [
-        "default",
-        "active",
-        "pending",
-        "coming"
-      ],
+      "states": ["default", "active", "pending", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1359,9 +1187,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Concours, périodes, prix, participants et statuts ; données fictives"
-      ],
+      "dataNeeds": ["Concours, périodes, prix, participants et statuts ; données fictives"],
       "integrations": []
     },
     {
@@ -1370,10 +1196,7 @@
       "route": "/admin/library/new",
       "auth": "admin",
       "purpose": "Créer une collection pour la bibliothèque musicale",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1399,14 +1222,8 @@
         "Afro-Pop",
         "Folklore"
       ],
-      "interactions": [
-        "Saisie ou recherche visible",
-        "Cases à cocher visibles",
-        "Actions par boutons visibles"
-      ],
-      "dataNeeds": [
-        "Collections, chansons, styles et visibilité ; données fictives"
-      ],
+      "interactions": ["Saisie ou recherche visible", "Cases à cocher visibles", "Actions par boutons visibles"],
+      "dataNeeds": ["Collections, chansons, styles et visibilité ; données fictives"],
       "integrations": []
     },
     {
@@ -1415,12 +1232,7 @@
       "route": "/admin",
       "auth": "admin",
       "purpose": "Piloter l’activité, les revenus, les générations et la conversion",
-      "states": [
-        "default",
-        "active",
-        "pending",
-        "error"
-      ],
+      "states": ["default", "active", "pending", "error"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1457,13 +1269,8 @@
         "Générations récentes",
         "Paiements récents"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Filtrage ou sélection de période visible"
-      ],
-      "dataNeeds": [
-        "Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"
-      ],
+      "interactions": ["Actions par boutons visibles", "Filtrage ou sélection de période visible"],
+      "dataNeeds": ["Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"],
       "integrations": []
     },
     {
@@ -1472,12 +1279,7 @@
       "route": "/admin/generations",
       "auth": "admin",
       "purpose": "Suivre et contrôler les générations de chansons",
-      "states": [
-        "default",
-        "active",
-        "pending",
-        "error"
-      ],
+      "states": ["default", "active", "pending", "error"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1509,9 +1311,7 @@
         "Tableau de données visible",
         "Filtrage ou sélection de période visible"
       ],
-      "dataNeeds": [
-        "Générations, utilisateurs, titres, durée, qualité et statuts ; données fictives"
-      ],
+      "dataNeeds": ["Générations, utilisateurs, titres, durée, qualité et statuts ; données fictives"],
       "integrations": []
     },
     {
@@ -1520,11 +1320,7 @@
       "route": "/admin/languages",
       "auth": "admin",
       "purpose": "Administrer les langues proposées sur la plateforme",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1554,9 +1350,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Langues, régions, activation et progression des traductions ; données fictives"
-      ],
+      "dataNeeds": ["Langues, régions, activation et progression des traductions ; données fictives"],
       "integrations": []
     },
     {
@@ -1565,11 +1359,7 @@
       "route": "/admin/library",
       "auth": "admin",
       "purpose": "Administrer les collections de la bibliothèque",
-      "states": [
-        "default",
-        "active",
-        "inactive"
-      ],
+      "states": ["default", "active", "inactive"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1601,9 +1391,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Collections, chansons, styles et visibilité ; données fictives"
-      ],
+      "dataNeeds": ["Collections, chansons, styles et visibilité ; données fictives"],
       "integrations": []
     },
     {
@@ -1612,10 +1400,7 @@
       "route": "/admin/music-styles",
       "auth": "admin",
       "purpose": "Administrer les styles musicaux",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1647,9 +1432,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Styles ou occasions, descriptions, volumes et statuts ; données fictives"
-      ],
+      "dataNeeds": ["Styles ou occasions, descriptions, volumes et statuts ; données fictives"],
       "integrations": []
     },
     {
@@ -1658,11 +1441,7 @@
       "route": "/admin/occasions",
       "auth": "admin",
       "purpose": "Administrer les occasions de création",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1694,9 +1473,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Styles ou occasions, descriptions, volumes et statuts ; données fictives"
-      ],
+      "dataNeeds": ["Styles ou occasions, descriptions, volumes et statuts ; données fictives"],
       "integrations": []
     },
     {
@@ -1705,10 +1482,7 @@
       "route": "/admin/music-styles/new",
       "auth": "admin",
       "purpose": "Créer un nouveau style musical",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1740,9 +1514,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Styles ou occasions, descriptions, volumes et statuts ; données fictives"
-      ],
+      "dataNeeds": ["Styles ou occasions, descriptions, volumes et statuts ; données fictives"],
       "integrations": []
     },
     {
@@ -1751,11 +1523,7 @@
       "route": "/admin/plans",
       "auth": "admin",
       "purpose": "Administrer les packs et tarifs",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1793,11 +1561,7 @@
       "route": "/admin/plans",
       "auth": "admin",
       "purpose": "Variante sélectionnée de l’administration des packs et tarifs",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Variante visuellement dupliquée dans Banani ; conserver dans l’inventaire, mais ne pas créer une route ou une feature en double. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1835,11 +1599,7 @@
       "route": "/admin/plans",
       "auth": "admin",
       "purpose": "Variante sélectionnée de l’administration des packs et tarifs",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Variante visuellement dupliquée dans Banani ; conserver dans l’inventaire, mais ne pas créer une route ou une feature en double. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1877,11 +1637,7 @@
       "route": "/admin/plans",
       "auth": "admin",
       "purpose": "Variante sélectionnée de l’administration des packs et tarifs",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Variante visuellement dupliquée dans Banani ; conserver dans l’inventaire, mais ne pas créer une route ou une feature en double. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1919,10 +1675,7 @@
       "route": "/admin/phone-prefixes",
       "auth": "admin",
       "purpose": "Administrer les préfixes téléphoniques disponibles",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1953,9 +1706,7 @@
         "Actions par boutons visibles",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Pays, indicatifs, activation et valeur par défaut ; données fictives"
-      ],
+      "dataNeeds": ["Pays, indicatifs, activation et valeur par défaut ; données fictives"],
       "integrations": []
     },
     {
@@ -1964,11 +1715,7 @@
       "route": "/admin/users",
       "auth": "admin",
       "purpose": "Rechercher et administrer les utilisateurs",
-      "states": [
-        "default",
-        "active",
-        "inactive"
-      ],
+      "states": ["default", "active", "inactive"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -1998,9 +1745,7 @@
         "Tableau de données visible",
         "Ouverture d’un détail ou d’une modification visible"
       ],
-      "dataNeeds": [
-        "Utilisateurs, statuts, activité et volumes ; permissions/PII à limiter côté serveur"
-      ],
+      "dataNeeds": ["Utilisateurs, statuts, activité et volumes ; permissions/PII à limiter côté serveur"],
       "integrations": []
     },
     {
@@ -2009,11 +1754,7 @@
       "route": "/admin/ai-providers",
       "auth": "admin",
       "purpose": "Présenter et configurer les fournisseurs IA",
-      "states": [
-        "default",
-        "active",
-        "coming"
-      ],
+      "states": ["default", "active", "coming"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2044,9 +1785,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Fournisseurs, modèles, statut et uptime ; aucune intégration réelle démontrée"
-      ],
+      "dataNeeds": ["Fournisseurs, modèles, statut et uptime ; aucune intégration réelle démontrée"],
       "integrations": [
         "Noms OpenAI, Google DeepMind, Meta AI, Stable Audio, Anthropic, Hugging Face et ByteDance visibles ; connexions réelles NON VÉRIFIÉES"
       ]
@@ -2057,10 +1796,7 @@
       "route": "/admin/branding",
       "auth": "admin",
       "purpose": "Administrer les ressources et règles de marque",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2085,9 +1821,7 @@
         "Typographie principale",
         "Favicon"
       ],
-      "interactions": [
-        "Actions par boutons visibles"
-      ],
+      "interactions": ["Actions par boutons visibles"],
       "dataNeeds": [
         "Assets, couleurs et typographies ; valeurs bleues/Inter propres à la maquette et divergentes du design system actuel"
       ],
@@ -2099,12 +1833,7 @@
       "route": "/admin",
       "auth": "admin",
       "purpose": "Version mobile du tableau de bord propriétaire",
-      "states": [
-        "default",
-        "pending",
-        "error",
-        "mobile"
-      ],
+      "states": ["default", "pending", "error", "mobile"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "mobile",
       "keyElements": [
@@ -2141,13 +1870,8 @@
         "Générations",
         "Paiements"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Ouverture d’un détail ou d’une modification visible"
-      ],
-      "dataNeeds": [
-        "Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"
-      ],
+      "interactions": ["Actions par boutons visibles", "Ouverture d’un détail ou d’une modification visible"],
+      "dataNeeds": ["Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"],
       "integrations": []
     },
     {
@@ -2156,11 +1880,7 @@
       "route": "/admin/funnel",
       "auth": "admin",
       "purpose": "Analyser le parcours de conversion et les abandons",
-      "states": [
-        "default",
-        "active",
-        "error"
-      ],
+      "states": ["default", "active", "error"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2190,13 +1910,8 @@
         "Autre",
         "Paiement refusé"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Filtrage ou sélection de période visible"
-      ],
-      "dataNeeds": [
-        "Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"
-      ],
+      "interactions": ["Actions par boutons visibles", "Filtrage ou sélection de période visible"],
+      "dataNeeds": ["Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"],
       "integrations": []
     },
     {
@@ -2205,11 +1920,7 @@
       "route": "/admin/funnel",
       "auth": "admin",
       "purpose": "Variante sélectionnée de l’entonnoir de conversion",
-      "states": [
-        "default",
-        "active",
-        "error"
-      ],
+      "states": ["default", "active", "error"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Variante visuellement dupliquée dans Banani ; conserver dans l’inventaire, mais ne pas créer une route ou une feature en double. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2239,13 +1950,8 @@
         "Autre",
         "Paiement refusé"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Filtrage ou sélection de période visible"
-      ],
-      "dataNeeds": [
-        "Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"
-      ],
+      "interactions": ["Actions par boutons visibles", "Filtrage ou sélection de période visible"],
+      "dataNeeds": ["Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"],
       "integrations": []
     },
     {
@@ -2254,10 +1960,7 @@
       "route": "/admin/menu",
       "auth": "admin",
       "purpose": "Navigation mobile du tableau de bord propriétaire",
-      "states": [
-        "default",
-        "mobile"
-      ],
+      "states": ["default", "mobile"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "mobile",
       "keyElements": [
@@ -2286,12 +1989,8 @@
         "Système",
         "Déconnexion"
       ],
-      "interactions": [
-        "Actions par boutons visibles"
-      ],
-      "dataNeeds": [
-        "Données affichées par Banani ; source réelle À CONFIRMER"
-      ],
+      "interactions": ["Actions par boutons visibles"],
+      "dataNeeds": ["Données affichées par Banani ; source réelle À CONFIRMER"],
       "integrations": []
     },
     {
@@ -2300,12 +1999,7 @@
       "route": "/admin/mobile-apps",
       "auth": "admin",
       "purpose": "Suivre les versions et métriques des applications mobiles",
-      "states": [
-        "default",
-        "active",
-        "beta",
-        "mobile"
-      ],
+      "states": ["default", "active", "beta", "mobile"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2338,16 +2032,9 @@
         "PWA Web",
         "Web App"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Ouverture d’un détail ou d’une modification visible"
-      ],
-      "dataNeeds": [
-        "Versions, plateformes, téléchargements et notes ; publication réelle NON VÉRIFIÉE"
-      ],
-      "integrations": [
-        "App Store, Google Play, TestFlight et PWA visibles ; publications réelles NON VÉRIFIÉES"
-      ]
+      "interactions": ["Actions par boutons visibles", "Ouverture d’un détail ou d’une modification visible"],
+      "dataNeeds": ["Versions, plateformes, téléchargements et notes ; publication réelle NON VÉRIFIÉE"],
+      "integrations": ["App Store, Google Play, TestFlight et PWA visibles ; publications réelles NON VÉRIFIÉES"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/AdminPayments.jsx",
@@ -2355,12 +2042,7 @@
       "route": "/admin/payments",
       "auth": "admin",
       "purpose": "Suivre les transactions et leurs statuts",
-      "states": [
-        "default",
-        "active",
-        "pending",
-        "error"
-      ],
+      "states": ["default", "active", "pending", "error"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2381,16 +2063,9 @@
         "Elite",
         "Famille"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Ouverture d’un détail ou d’une modification visible"
-      ],
-      "dataNeeds": [
-        "Transactions, montants, méthodes et statuts ; valeurs Banani fictives"
-      ],
-      "integrations": [
-        "Carte Visa et Mobile Money visibles ; aucun provider ou flux réel démontré par l’écran"
-      ]
+      "interactions": ["Actions par boutons visibles", "Ouverture d’un détail ou d’une modification visible"],
+      "dataNeeds": ["Transactions, montants, méthodes et statuts ; valeurs Banani fictives"],
+      "integrations": ["Carte Visa et Mobile Money visibles ; aucun provider ou flux réel démontré par l’écran"]
     },
     {
       "id": "QMj5OQRWpKXU/screens/AdminRolesAccess.jsx",
@@ -2398,10 +2073,7 @@
       "route": "/admin/roles",
       "auth": "admin",
       "purpose": "Administrer les rôles, membres et permissions",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2444,9 +2116,7 @@
         "Ouverture d’un détail ou d’une modification visible",
         "Action destructive visible ; confirmation et règles serveur NON VÉRIFIÉES"
       ],
-      "dataNeeds": [
-        "Rôles, membres et matrice de permissions ; règles d’autorisation à confirmer"
-      ],
+      "dataNeeds": ["Rôles, membres et matrice de permissions ; règles d’autorisation à confirmer"],
       "integrations": []
     },
     {
@@ -2455,10 +2125,7 @@
       "route": "/admin/analytics",
       "auth": "admin",
       "purpose": "Analyser les métriques clés de la plateforme",
-      "states": [
-        "default",
-        "active"
-      ],
+      "states": ["default", "active"],
       "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Données, compteurs, dates, identités et statuts sont des fixtures de maquette. Les règles métier, mutations, confirmations, permissions fines, loading/empty/offline et erreurs serveur restent À CONFIRMER.",
       "viewport": "desktop",
       "keyElements": [
@@ -2491,13 +2158,8 @@
         "Abonnements actifs",
         "Taux de rétention"
       ],
-      "interactions": [
-        "Actions par boutons visibles",
-        "Filtrage ou sélection de période visible"
-      ],
-      "dataNeeds": [
-        "Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"
-      ],
+      "interactions": ["Actions par boutons visibles", "Filtrage ou sélection de période visible"],
+      "dataNeeds": ["Agrégats propriétaires, séries temporelles et statistiques ; valeurs Banani fictives"],
       "integrations": []
     },
     {
@@ -2506,9 +2168,7 @@
       "route": "TBD",
       "auth": "authenticated",
       "purpose": "Afficher une animation pendant la création de la chanson puis annoncer une redirection automatique vers le résultat une fois prêt",
-      "states": [
-        "default"
-      ],
+      "states": ["default"],
       "notes": "Nouvel écran sélectionné par l'utilisateur le 23 septembre 2026, à insérer dans le flow creation-payment-preview juste après GeneratingScreen.jsx (paiement confirmé). Le produit actuel ne dispose d'aucun moteur de génération audio réel (confirmé par app/admin/generations : « Le schéma Neon ne contient pas encore de table de générations musicales »). demo.generateSong() existant est synchrone et instantané, et crée déjà 2 versions avant de rediriger vers /dashboard/songs. Durée réelle de l'animation, et légitimité d'un délai borné pour l'expérience utilisateur (vs. règle « jamais de délai artificiel » du Skeleton Loader Gate), restent À CONFIRMER avant implémentation.",
       "viewport": "mobile",
       "keyElements": [

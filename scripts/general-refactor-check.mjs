@@ -37,8 +37,10 @@ if (!adminLayoutCode.includes("requireAdmin") || !/\bawait\s+requireAdmin\(\);/.
 
 // 2) Browser responses must never expose raw payment-provider responses.
 const checkoutRoute = read("app/api/payments/checkout/route.ts");
-if (!checkoutRoute.includes("publicCheckoutResult(result)")) fail("checkout response must pass through publicCheckoutResult");
-if (/Response\.json\(\{\s*\.\.\.result\b/.test(checkoutRoute)) fail("checkout route must not spread raw provider result into a browser response");
+if (!checkoutRoute.includes("publicCheckoutResult(result)"))
+  fail("checkout response must pass through publicCheckoutResult");
+if (/Response\.json\(\{\s*\.\.\.result\b/.test(checkoutRoute))
+  fail("checkout route must not spread raw provider result into a browser response");
 const publicResult = read("lib/payments/public-result.ts");
 if (publicResult.includes("raw: result.raw") || /\braw\b\s*[:,]/.test(publicResult.replace(/\/\*[\s\S]*?\*\//g, ""))) {
   fail("publicCheckoutResult must not expose CheckoutResult.raw");
@@ -57,12 +59,14 @@ for (const rel of [...walk("app"), ...walk("lib"), ...walk("db"), ...walk("scrip
   if (!/\.(?:ts|tsx|js|mjs|cjs)$/.test(rel)) continue;
   if (rel === "scripts/general-refactor-check.mjs") continue;
   const text = read(rel);
-  if (text.includes("Math.random(")) fail(`${rel}: Math.random() is forbidden for kit-generated identifiers/tokens; use node:crypto`);
+  if (text.includes("Math.random("))
+    fail(`${rel}: Math.random() is forbidden for kit-generated identifiers/tokens; use node:crypto`);
 }
 
 // 5) Production-only HTTPS controls must not break local HTTP development.
 const headers = read("lib/security/headers.ts");
-if (!headers.includes('...(production ? ["upgrade-insecure-requests"] : [])')) fail("CSP upgrade-insecure-requests must be production-only");
+if (!headers.includes('...(production ? ["upgrade-insecure-requests"] : [])'))
+  fail("CSP upgrade-insecure-requests must be production-only");
 if (!headers.includes('...(production ? [{ key: "Strict-Transport-Security"')) fail("HSTS must be production-only");
 
 // 6) Permanent gates must remain wired into all principal delivery workflows.
@@ -73,12 +77,15 @@ for (const gate of ["verify:code", "verify:production", "ci:check"]) {
     if (!script.includes(required)) fail(`${gate}: missing permanent gate ${required}`);
   }
 }
-if (!String(pkg.scripts?.["security:release"] || "").includes("refactor:check")) fail("security:release must include refactor:check");
-if (!String(pkg.scripts?.["security:release"] || "").includes("security:versions")) fail("security:release must include security:versions");
+if (!String(pkg.scripts?.["security:release"] || "").includes("refactor:check"))
+  fail("security:release must include refactor:check");
+if (!String(pkg.scripts?.["security:release"] || "").includes("security:versions"))
+  fail("security:release must include security:versions");
 
 // 7) CI must use the canonical gate instead of silently drifting from local checks.
 const ci = read(".github/workflows/ci.yml");
-if (!ci.includes("npm run ci:check")) fail(".github/workflows/ci.yml must call npm run ci:check as the canonical CI gate");
+if (!ci.includes("npm run ci:check"))
+  fail(".github/workflows/ci.yml must call npm run ci:check as the canonical CI gate");
 const guard = read(".github/workflows/security-guard.yml");
 if (!guard.includes("npm run security:release")) fail("security-guard workflow must call npm run security:release");
 
@@ -87,11 +94,15 @@ for (const rel of [...walk("app"), ...walk("lib"), ...walk("components")]) {
   if (!/\.(?:ts|tsx|js|mjs|cjs)$/.test(rel)) continue;
   const text = read(rel);
   if (/\beval\s*\(|new\s+Function\s*\(/.test(text)) fail(`${rel}: dynamic code execution detected`);
-  if (/console\.(?:log|info|debug)\([^\n]*(password|secret|token|authorization|cookie)/i.test(text)) fail(`${rel}: possible sensitive logging`);
+  if (/console\.(?:log|info|debug)\([^\n]*(password|secret|token|authorization|cookie)/i.test(text))
+    fail(`${rel}: possible sensitive logging`);
 }
 
 // 9) Lockfile remains a production blocker, but not a static-refactor blocker in source-only workspaces.
-if (!exists("package-lock.json")) warn("package-lock.json absent — dependency audit/build reproducibility remains unverified until npm install succeeds");
+if (!exists("package-lock.json"))
+  warn(
+    "package-lock.json absent — dependency audit/build reproducibility remains unverified until npm install succeeds",
+  );
 
 if (warnings.length) for (const item of warnings) console.warn(`WARNING: ${item}`);
 if (errors.length) {
@@ -99,4 +110,6 @@ if (errors.length) {
   for (const item of errors) console.error(`- ${item}`);
   process.exit(1);
 }
-console.log("General refactor gate: PASS — auth boundaries, request guards, payment response hygiene, crypto IDs, headers and CI wiring verified.");
+console.log(
+  "General refactor gate: PASS — auth boundaries, request guards, payment response hygiene, crypto IDs, headers and CI wiring verified.",
+);

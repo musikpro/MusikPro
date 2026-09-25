@@ -21,13 +21,8 @@ const SERVER_ONLY_PREFIXES = [
 
 export function assertServerOnlyEnv() {
   for (const name of Object.keys(process.env)) {
-    if (
-      name.startsWith("NEXT_PUBLIC_") &&
-      SERVER_ONLY_PREFIXES.some((p) => name.includes(p))
-    ) {
-      throw new Error(
-        `Security error: secret-like variable must not be public: ${name}`,
-      );
+    if (name.startsWith("NEXT_PUBLIC_") && SERVER_ONLY_PREFIXES.some((p) => name.includes(p))) {
+      throw new Error(`Security error: secret-like variable must not be public: ${name}`);
     }
   }
 }

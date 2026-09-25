@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useActionState, useEffect } from "react";
-import { deleteMusicStyle, reorderMusicStyles, toggleMusicStyle, type MusicStyleActionState } from "@/app/admin/music-styles/actions";
+import {
+  deleteMusicStyle,
+  reorderMusicStyles,
+  toggleMusicStyle,
+  type MusicStyleActionState,
+} from "@/app/admin/music-styles/actions";
 import Icon from "@/components/banani/Icon";
 import { useAdminToast } from "./AdminToastProvider";
 import AdminDeleteMusicStyleButton from "./AdminDeleteMusicStyleButton";
@@ -61,7 +66,9 @@ export default function AdminMusicStyleSortableGrid({ styles }: { styles: Sortab
       className="admin-music-style-grid"
       itemLabel={(style) => style.name}
       renderItem={(style, context) => (
-        <article className={`admin-catalog-card admin-music-style-card ${style.active ? "is-active" : ""} ${context.dragging ? "is-dragging" : ""} ${context.dropTarget ? "is-drop-target" : ""}`}>
+        <article
+          className={`admin-catalog-card admin-music-style-card ${style.active ? "is-active" : ""} ${context.dragging ? "is-dragging" : ""} ${context.dropTarget ? "is-drop-target" : ""}`}
+        >
           <div className="admin-catalog-card-head">
             <span className={`admin-catalog-icon genre-choice-icon-${style.tone}`}>
               <Icon i={style.icon} size={21} />

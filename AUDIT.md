@@ -88,7 +88,6 @@ La comparaison du dépôt de référence a identifié des pratiques utiles déj�
 
 Les éléments non ajoutés volontairement sont une migration globale vers Prisma, JWT/CSRF maison, circuit breaker in-memory, outbox/email queue et Sentry/OTel forcés. Ils seraient soit incompatibles avec la stack Better Auth/Drizzle, soit redondants avec le Smart Router, soit prématurés sans side-effects durables ou installation de dépendances réellement testée.
 
-
 ### Dépendances de test
 
 Vitest est fixé à **4.1.11** pour rester compatible avec Better Auth 1.7.3. Une montée vers Vitest 5 doit être précédée d’une vérification des peer-dependencies et d’un `npm install` propre.
@@ -97,18 +96,17 @@ Vitest est fixé à **4.1.11** pour rester compatible avec Better Auth 1.7.3. Un
 
 La connexion Banani est déplacée vers `.codex/config.toml`, livré vide et ignoré par Git. Aucun token n'est généré, injecté ou affiché par le kit. Les contrôles `banani:prepare` / `banani:check` garantissent la présence du fichier, sa protection Git et la forme minimale de la configuration sans journaliser le bearer token.
 
-
 ## V0.8.20 — Tests de régression
+
 La préparation Banani a été testée avec fichier vide, préservation d'une configuration existante, non-divulgation du bearer token et protection Git. Le contrôle de conformité distingue désormais l'archive starter du workspace local configuré.
 
-
 ## V0.8.21 — Import Banani et comparaison anti-doublons
+
 - `/import-banani` utilise le MCP Banani déjà configuré et ne stocke aucun secret dans les snapshots.
 - Le snapshot réel est validé avant analyse.
 - Le gap analysis compare routes/pages/composants/features avant toute création.
 - Les décisions sont classées RÉUTILISER / ADAPTER / CRÉER / À CONFIRMER.
 - Le plan d’implémentation est généré après la comparaison, jamais directement depuis un écran isolé.
-
 
 ## V0.8.22 — Batterie de tests et corrections
 
@@ -119,8 +117,8 @@ La préparation Banani a été testée avec fichier vide, préservation d'une co
 - Correction: la Phase 19 exige désormais un verdict Production Doctor `READY`, pas seulement la présence d’un rapport.
 - `npm install` reste non vérifié dans cet environnement à cause d’un timeout réseau vers le registre npm.
 
-
 ## V0.8.24 — Upstash optionnel
+
 - Upstash isolé dans une phase optionnelle dédiée.
 - Cache helper avec TTL et fallback Neon.
 - Check online PING sans exposition du token.
@@ -135,7 +133,6 @@ Le seul échec structurel restant est l'absence de `package-lock.json`; il reste
 ## V0.9.0 — Web / Mobile App Pipeline optionnel
 
 La V0.9.0 sépare explicitement le SaaS Web obligatoire du pipeline Android/iOS optionnel. Capacitor n'est installé qu'après opt-in, la Phase 21 arrive après la production Web, et les composants natifs sont isolés afin de préserver les fonctionnalités existantes. Voir `docs/audit/mobile-app-refactor-v0.9.0.md`.
-
 
 ## Audit CRUD Clients V0.9.8
 

@@ -1,11 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  DEMO_STORY_MAX_CHARACTERS,
-  DEMO_STORY_MAX_WORDS,
-  demoStorySchema,
-} from "@/lib/validation/musikpro-demo";
+import { DEMO_STORY_MAX_CHARACTERS, DEMO_STORY_MAX_WORDS, demoStorySchema } from "@/lib/validation/musikpro-demo";
 import CreationTopNav from "./CreationTopNav";
 import DemoField from "./DemoField";
 import { useDemo } from "./DemoProvider";
@@ -117,7 +113,9 @@ export default function StepStory() {
           <p className="text-sm text-foreground leading-relaxed">
             <Icon i="lightbulb" size={16} className="inline-block text-primary mr-1" />
             <span className="font-semibold">{t("Astuce :")}</span>{" "}
-            {t("Plus tu donnes de détails, plus ta chanson sera personnalisée. Mentionne les souvenirs et les traits de caractère importants.")}
+            {t(
+              "Plus tu donnes de détails, plus ta chanson sera personnalisée. Mentionne les souvenirs et les traits de caractère importants.",
+            )}
           </p>
         </div>
       </div>

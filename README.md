@@ -2,7 +2,6 @@
 
 > **Version : V0.10.9 — Refactorisation générale, certification d’intégrité et installation guidée**
 
-
 ## V0.10.9 — Certification d’intégrité et installation guidée
 
 `npm run kit:full-test` détaille désormais séparément les contrôles statiques (dont le nouveau contrôle **Readiness UI / voyants**) et les tests dynamiques (format, lint, TypeScript, Vitest, build Next.js, audit des dépendances production), plutôt qu’un unique `verify:code` consolidé. Ajout de `npm run install:check` : diagnostic non destructif de l’environnement d’installation (Node/npm/git, lockfile, dépendances, configuration, `.env.local`) avec la prochaine action recommandée, générant `generated/installation-readiness.{md,json}`. Le contrôle d’intégrité protège désormais ce script d’installation guidée comme fichier critique. Aucune fonctionnalité existante supprimée.
@@ -86,7 +85,6 @@ Dans Antigravity, utilisez **`/security-saas`** à tout moment pour auditer les 
 
 Le contrôle couvre notamment `.env.local`/Git, secrets et clés API, RLS/policies, validation côté serveur, Zod, middleware/auth, vérification email, rate limiting, webhooks, planchers de versions sensibles et `npm audit`. Le dashboard local affiche le dernier rapport généré.
 
-
 ## V0.9.3 — correctif dashboard (`root` non défini)
 
 - Corrige le `Runtime ReferenceError: root is not defined` dans `lib/setup/kit-dashboard.ts`.
@@ -112,7 +110,6 @@ Le kit possède maintenant un contrôle global permanent avec `npm run refactor:
 
 Voir `docs/audit/general-refactor-v0.8.28.md`.
 
-
 ## Zod Validation Gate — validation client + serveur obligatoire
 
 Zod est maintenant un garde-fou permanent. Les formulaires sensibles valident les entrées côté client avec `safeParse`, puis les données sont **revalidées côté serveur** avant toute mutation. Les Server Actions et routes API mutantes de première partie qui ne respectent pas ce contrat bloquent la CI. Commande : `npm run validation:zod-check`. Voir `docs/security/zod-validation-gate.md`.
@@ -122,7 +119,6 @@ Zod est maintenant un garde-fou permanent. Les formulaires sensibles valident le
 Le kit applique désormais un contrôle visuel permanent : les composants/pages sous `app/` et `components/` sont scannés afin d’empêcher le retour d’icônes Sparkle/Sparkles, baguettes scintillantes et glyphes décoratifs génériques associés aux interfaces IA. Utiliser des pictogrammes sémantiques cohérents via `components/ui/premium-icon.tsx` ou une bibliothèque professionnelle auditée.
 
 Commande dédiée : `npm run ui:icons-check`. Le gate fait partie de `verify:code`, `verify:production` et `ci:check`, donc les nouvelles pages sont contrôlées elles aussi. Voir `docs/ui/premium-icons.md`.
-
 
 ## Computer Use / Browser Tools (Antigravity)
 
@@ -139,11 +135,9 @@ Le statut local est stocké dans `.africa-saas/` (ignoré par Git). Une preuve B
 
 Starter Next.js + Neon + Better Auth conçu pour construire des SaaS adaptés aux réalités africaines : Mobile Money, XOF/XAF, paiements asynchrones, sécurité intégrée et routage multi-gateway.
 
-
 ## V0.8.16 — revue sélective izikit, sans duplication
 
 Cette revue a aussi détecté une **impasse auth/e-mail** : un SaaS ne doit jamais garder email/mot de passe actif en production si aucun service ne peut livrer les e-mails de vérification et de récupération. Le setup lie maintenant explicitement ce choix à Resend ; sans Resend, il faut désactiver email/mot de passe et utiliser un autre provider d’auth.
-
 
 Cette version compare les idées utiles du dépôt de référence avec les briques déjà présentes dans Africa SaaS Kit. Elle **n’ajoute pas une deuxième implémentation** lorsqu’une fonction existe déjà.
 
@@ -175,11 +169,9 @@ Le starter expose maintenant :
 
 Les migrations sous `db/migrations/` doivent être versionnées dans Git. Voir `docs/architecture/starter-capabilities.md` et `docs/operations/health-readiness.md`.
 
-
 ## V0.8.13 — Setup pédagogique + routeur de skills providers
 
 La V0.8.13 conserve le handoff GitHub/Vercel, SEO, ngrok, skeleton loaders, mobile-first, les phases pédagogiques et le contrôle final de conformité. Elle ajoute `/provider`, le routeur officiel permettant de découvrir et charger les skills ou références disponibles pour chaque fournisseur de paiement.
-
 
 ### Test final de conformité
 
@@ -222,7 +214,6 @@ Le kit démarre maintenant directement sur un tableau de préparation local : au
 `http://localhost:3000/` et `/setup` affichent en lecture seule l’état du kit avec voyants verts/rouges. La configuration n’est plus écrite par une API web.
 
 En production, `/setup` est désactivé et le tableau interne du kit n’est pas exposé. Utilisez les variables d’environnement de l’hébergeur pour la production.
-
 
 ```bash
 npm run doctor:kit
@@ -327,17 +318,17 @@ abonnement activé
 
 ## Providers
 
-| Provider | Statut du kit |
-|---|---|
-| FedaPay | production après tests marchand |
-| Chariow | production après tests/mapping |
-| PayDunya | production après tests marchand |
-| Flutterwave | beta |
-| Djomy | merchant-validation — bloqué par le wizard |
-| Moneroo | production après tests marchand |
-| PayTech | beta |
-| Bictorys | beta |
-| Stripe | scaffold — bloqué |
+| Provider    | Statut du kit                              |
+| ----------- | ------------------------------------------ |
+| FedaPay     | production après tests marchand            |
+| Chariow     | production après tests/mapping             |
+| PayDunya    | production après tests marchand            |
+| Flutterwave | beta                                       |
+| Djomy       | merchant-validation — bloqué par le wizard |
+| Moneroo     | production après tests marchand            |
+| PayTech     | beta                                       |
+| Bictorys    | beta                                       |
+| Stripe      | scaffold — bloqué                          |
 
 Le wizard refuse volontairement les providers `scaffold` ou `merchant-validation`. Les providers `beta` restent activables uniquement pour sandbox/tests contrôlés.
 
@@ -517,7 +508,6 @@ Le Doctor contrôle notamment configuration, env, Better Auth, Neon, Resend, ét
 
 Un score élevé n'est pas une preuve absolue de sécurité : `npm run security:audit`, les tests à deux comptes, si des paiements sont activés, leurs tests sandbox et la réconciliation restent obligatoires.
 
-
 ## Skeleton loaders V0.8.3
 
 Toute page data-driven doit fournir un `loading.tsx` ou un fallback `Suspense` basé sur `components/ui/skeleton.tsx`. Les skeletons imitent la structure finale, sont mobile-first, respectent `prefers-reduced-motion` et sont contrôlés par `npm run ui:loading-check`.
@@ -556,7 +546,6 @@ npm run doctor:production:online
 
 Le kit optimise la préparation technique SEO mais ne promet jamais une position Google : la qualité et la pertinence du contenu, la performance, les liens et la concurrence restent déterminants.
 
-
 ## V0.8.6 — Deployment & Environment Handoff
 
 Avant GitHub/Vercel, lance :
@@ -567,15 +556,12 @@ npm run deploy:handoff
 
 Puis suis `generated/deployment-handoff.md`. Le rapport liste les variables, services, webhooks et callbacks à configurer sans jamais révéler les valeurs secrètes. L’IA doit avancer gate par gate jusqu’au Production Doctor final.
 
-
 ## Documentation de version
 
 - `AUDIT.md` : dernier audit consolidé du kit.
 - `CHANGELOG.md` : changements de la version courante.
 
 Les anciens fichiers `AUDIT-V...` et `CHANGELOG-V...` ne sont pas livrés dans le starter afin de garder la racine propre. L’historique détaillé doit vivre dans Git/GitHub.
-
-
 
 ## Paiements optionnels — configurés seulement avant mise en ligne
 
@@ -617,10 +603,9 @@ L’agent doit lire `.agents/skills/setup-saas/SKILL.md`, exécuter `npm run set
 npm run setup-saas
 ```
 
-
 ## Cloudflare (optionnel, Phase 18)
-Le kit peut guider l’achat/gestion du domaine et la configuration DNS via Cloudflare, mais Cloudflare n’est jamais requis. Utiliser `npm run cloudflare:setup` seulement en Phase 18. Sans Cloudflare, exécuter `npm run cloudflare:setup -- --none` puis marquer la phase `skipped`. Cette option domaine/DNS est distincte de Cloudflare R2, qui reste non intégré.
 
+Le kit peut guider l’achat/gestion du domaine et la configuration DNS via Cloudflare, mais Cloudflare n’est jamais requis. Utiliser `npm run cloudflare:setup` seulement en Phase 18. Sans Cloudflare, exécuter `npm run cloudflare:setup -- --none` puis marquer la phase `skipped`. Cette option domaine/DNS est distincte de Cloudflare R2, qui reste non intégré.
 
 ## Cloudinary (optionnel)
 
@@ -674,7 +659,6 @@ npm run provider
 npm run provider -- chariow
 ```
 
-
 ## Compatibilité de tests
 
 Le starter fixe **Vitest 4.1.11** avec Better Auth 1.7.3. Ne remplacez pas automatiquement Vitest par la major 5 sans vérifier les peer-dependencies. Évitez `npm install --force` et `--legacy-peer-deps` : corrigez les versions à la source.
@@ -689,8 +673,8 @@ Cette protection est volontairement limitée au `<body>` : elle ne masque pas le
 npm run ui:hydration-check
 ```
 
-
 ## Import Banani après connexion MCP
+
 Après `npm run banani:check`, utilise `/import-banani` dans Antigravity/Codex. L’agent récupère les écrans accessibles via Banani MCP, écrit un snapshot sans secret, compare avec les routes/composants/features du starter puis génère un gap analysis et le plan d’implémentation avant le code. Voir `docs/design/import-banani.md`.
 
 ## Upstash Redis (optionnel)
@@ -709,11 +693,9 @@ Pour ne pas l’utiliser :
 npm run upstash:setup -- --none
 ```
 
-
-
 ### Dependency security floor
-`npm run security:versions` bloque les régressions sous les versions minimales de sécurité revues pour Next.js, React, Drizzle ORM et Better Auth. Ce contrôle complète `npm audit`; il ne le remplace pas.
 
+`npm run security:versions` bloque les régressions sous les versions minimales de sécurité revues pour Next.js, React, Drizzle ORM et Better Auth. Ce contrôle complète `npm audit`; il ne le remplace pas.
 
 ## Staging Vercel obligatoire
 

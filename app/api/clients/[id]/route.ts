@@ -21,7 +21,8 @@ async function requestContext(request: Request, ctx: Ctx) {
   if (!parsedId.success) return { error: NextResponse.json({ error: "Invalid client id" }, { status: 400 }) } as const;
   const level = getSecurityLevel();
   const limit = await rateLimit(`clients:${user.id}:${clientIp(request)}`, securityPolicy[level].apiPerMinute);
-  if (limit.backend === "unavailable") return { error: NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 }) } as const;
+  if (limit.backend === "unavailable")
+    return { error: NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 }) } as const;
   if (!limit.success) return { error: NextResponse.json({ error: "Too many requests" }, { status: 429 }) } as const;
   return { user, id: parsedId.data } as const;
 }
@@ -43,7 +44,8 @@ export async function PATCH(request: Request, ctx: Ctx) {
   const checked = await requestContext(request, ctx);
   if ("error" in checked) return checked.error;
   const parsed = clientUpdateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid client", details: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json({ error: "Invalid client", details: parsed.error.flatten() }, { status: 400 });
   const client = await updateClient(checked.user.id, checked.id, parsed.data);
   return client ? NextResponse.json({ client }) : NextResponse.json({ error: "Not found" }, { status: 404 });
 }

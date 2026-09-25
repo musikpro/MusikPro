@@ -10,8 +10,7 @@ import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
 
 assertServerOnlyEnv();
 
-const emailPasswordEnabled =
-  process.env.AUTH_EMAIL_PASSWORD_ENABLED !== "false";
+const emailPasswordEnabled = process.env.AUTH_EMAIL_PASSWORD_ENABLED !== "false";
 const requireEmailVerification =
   emailPasswordEnabled &&
   (process.env.NODE_ENV === "production"
@@ -93,11 +92,7 @@ export const auth = betterAuth({
           captcha({
             provider: "cloudflare-turnstile",
             secretKey: process.env.TURNSTILE_SECRET_KEY,
-            endpoints: [
-              "/sign-up/email",
-              "/sign-in/email",
-              "/request-password-reset",
-            ],
+            endpoints: ["/sign-up/email", "/sign-in/email", "/request-password-reset"],
           }),
         ]
       : []),

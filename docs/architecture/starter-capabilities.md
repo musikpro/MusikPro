@@ -1,6 +1,7 @@
 # Ce que le starter embarque
 
 ## Backend / application
+
 - Next.js App Router + Route Handlers
 - Neon PostgreSQL + Drizzle ORM
 - Better Auth (auth, organisations, rôles, 2FA)
@@ -9,6 +10,7 @@
 - Admin, paiements, webhooks, uploads Cloudinary optionnels et cron de réconciliation
 
 ## Qualité
+
 - TypeScript `typecheck`
 - ESLint + règles Next.js Core Web Vitals
 - Prettier en mode `format:check`
@@ -18,9 +20,11 @@
 - contrôles sécurité/mobile/skeleton/SEO/conformité du kit
 
 ## Base de données
+
 Les migrations du socle sont **Drizzle**. Prisma est utilisé uniquement par la brique optionnelle CRUD Clients post-Banani. Après génération, les fichiers sous `db/migrations/` doivent être versionnés dans Git. `DATABASE_URL_DIRECT` peut être utilisée par Drizzle Kit pour les migrations; l'application continue d'utiliser `DATABASE_URL`.
 
 ## Fournisseurs optionnels
+
 Les fournisseurs absents restent inertes. Paiements, Cloudflare et Cloudinary ne sont jamais obligatoires pour un SaaS qui n'en a pas besoin.
 
 ## Robustesse V0.8.16

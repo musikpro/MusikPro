@@ -129,6 +129,7 @@ npm install @prisma/client
 ```
 
 Le projet peut réutiliser son système existant pour :
+
 - authentification ;
 - rate limiting ;
 - chiffrement ;
@@ -290,6 +291,7 @@ Boutons :
 - Supprimer la clé
 
 Après sauvegarde :
+
 - vider le champ ;
 - ne jamais réinjecter la clé complète dans le DOM ;
 - afficher uniquement le suffixe connu (`••••ABCD`).
@@ -338,33 +340,15 @@ Toggles :
 import { z } from "zod";
 
 export const openAiSettingsSchema = z.object({
-  apiKey: z
-    .string()
-    .trim()
-    .min(20)
-    .max(500)
-    .optional(),
+  apiKey: z.string().trim().min(20).max(500).optional(),
 
   enabled: z.boolean(),
 
-  defaultModel: z
-    .string()
-    .trim()
-    .min(1)
-    .max(100),
+  defaultModel: z.string().trim().min(1).max(100),
 
-  maxOutputTokens: z
-    .number()
-    .int()
-    .min(100)
-    .max(128000),
+  maxOutputTokens: z.number().int().min(100).max(128000),
 
-  monthlyTokenLimit: z
-    .number()
-    .int()
-    .positive()
-    .nullable()
-    .optional(),
+  monthlyTokenLimit: z.number().int().positive().nullable().optional(),
 });
 ```
 
@@ -431,6 +415,7 @@ export async function generateText({
 ```
 
 Toutes les fonctionnalités du SaaS doivent passer par un service commun de ce type afin de centraliser :
+
 - sécurité ;
 - modèle ;
 - quotas ;
@@ -712,6 +697,7 @@ Créer une expérience de type studio.
 ## Zone principale
 
 Éditeur des paroles avec :
+
 - génération en streaming si activée ;
 - sélection d’un passage ;
 - actions IA sur la sélection ;
@@ -777,6 +763,7 @@ Fonctions :
 Le système ne doit pas inventer de sources ou de références bibliographiques.
 
 Si l’utilisateur demande des citations, références ou faits académiques :
+
 - exiger des sources fournies ;
 - ou utiliser une fonction de recherche distincte si le SaaS en possède une ;
 - identifier clairement les informations non vérifiées.
@@ -806,6 +793,7 @@ model AiPromptTemplate {
 ```
 
 Le frontend transmet seulement :
+
 - le slug ;
 - les entrées utilisateur.
 
@@ -915,6 +903,7 @@ model AiGeneration {
 Par défaut, ne pas enregistrer les prompts/paroles complets dans les logs techniques.
 
 Si le produit a besoin d’un historique de création :
+
 - le stocker dans une table métier séparée ;
 - appliquer les règles de confidentialité du produit ;
 - permettre la suppression par l’utilisateur si nécessaire.
@@ -1017,11 +1006,13 @@ Dans l’administration, fournir un message plus précis sans divulguer de secre
 Ajouter un timeout serveur.
 
 Retry uniquement pour les erreurs temporaires :
+
 - timeout ;
 - surcharge ;
 - erreurs 5xx appropriées.
 
 Ne pas retry automatiquement :
+
 - clé invalide ;
 - requête invalide ;
 - quota épuisé ;
@@ -1054,6 +1045,7 @@ Prévoir :
 L’interface doit expliquer clairement quand du contenu est envoyé au fournisseur IA.
 
 Éviter d’envoyer :
+
 - secrets ;
 - mots de passe ;
 - clés API ;
@@ -1091,6 +1083,7 @@ ai.usage.read
 ```
 
 Un utilisateur standard ne doit jamais pouvoir :
+
 - lire la clé API ;
 - modifier le fournisseur ;
 - modifier le modèle global ;
@@ -1192,6 +1185,7 @@ Cela facilite les tests A/B et le diagnostic.
 Ne pas mettre en cache aveuglément les générations personnalisées.
 
 Cache possible pour :
+
 - listes de genres ;
 - listes de langues ;
 - configuration non secrète ;
@@ -1245,6 +1239,7 @@ Ne jamais stocker la clé API dans un cache frontend.
 ## Sécurité
 
 Vérifier que la clé n’apparaît jamais dans :
+
 - source HTML ;
 - bundle Next.js client ;
 - Network response ;
@@ -1462,6 +1457,7 @@ Ne pas écraser silencieusement une version que l’utilisateur souhaite conserv
 Considérer tout texte utilisateur comme non fiable.
 
 Le contenu utilisateur ne doit pas pouvoir :
+
 - modifier les permissions serveur ;
 - demander la clé API ;
 - désactiver les quotas ;

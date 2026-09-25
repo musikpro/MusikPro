@@ -11,7 +11,7 @@ export type ModerationVerdict = {
 const MAX_MODERATION_INPUT_CHARS = 6_000;
 
 const INSTRUCTIONS =
-  'Tu es le classificateur de sécurité de contenu de MusikPro, un service qui génère des chansons personnalisées. ' +
+  "Tu es le classificateur de sécurité de contenu de MusikPro, un service qui génère des chansons personnalisées. " +
   "Analyse UNIQUEMENT le texte fourni et signale-le seulement s'il contient : violence grave ou explicite, contenu " +
   "sexuel impliquant des mineurs, incitation à la haine, harcèlement grave, apologie du terrorisme, ou instructions " +
   "dangereuses (fabrication d'armes, de drogues, automutilation). Le contenu émotionnel normal d'une chanson " +
@@ -28,7 +28,9 @@ function parseVerdict(raw: string): ModerationVerdict {
     return {
       flagged: Boolean(record.flagged),
       reason: typeof record.reason === "string" && record.reason ? record.reason : null,
-      categories: Array.isArray(record.categories) ? record.categories.filter((c): c is string => typeof c === "string") : [],
+      categories: Array.isArray(record.categories)
+        ? record.categories.filter((c): c is string => typeof c === "string")
+        : [],
     };
   } catch {
     // A malformed classifier response must never silently let unmoderated content through —

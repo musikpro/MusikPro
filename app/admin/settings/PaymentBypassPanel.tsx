@@ -8,25 +8,25 @@ export default function PaymentBypassPanel({ status }: { status: PaymentBypassSt
   return (
     <section className={`admin-panel admin-bypass-panel ${enabled ? "is-active" : ""}`}>
       <div className="admin-provider-heading">
-        <span className="admin-catalog-icon"><Icon i="flask-conical" size={20} /></span>
+        <span className="admin-catalog-icon">
+          <Icon i="flask-conical" size={20} />
+        </span>
         <div>
           <h2>Mode test — génération sans paiement</h2>
           <p>
-            Réservé aux comptes propriétaires (rôle admin) : autorise ces comptes à générer une chanson sans crédits
-            et sans passerelle active, pour travailler sur le reste du produit avant de régler les paiements. Les
-            comptes clients ne sont jamais concernés, même actif, et n’affichent aucune bannière. Aucun crédit réel
-            n’est débité tant que ce mode est actif.
+            Réservé aux comptes propriétaires (rôle admin) : autorise ces comptes à générer une chanson sans crédits et
+            sans passerelle active, pour travailler sur le reste du produit avant de régler les paiements. Les comptes
+            clients ne sont jamais concernés, même actif, et n’affichent aucune bannière. Aucun crédit réel n’est débité
+            tant que ce mode est actif.
           </p>
         </div>
-        <span className={`admin-status ${enabled ? "is-success" : "is-pending"}`}>
-          {enabled ? "Actif" : "Inactif"}
-        </span>
+        <span className={`admin-status ${enabled ? "is-success" : "is-pending"}`}>{enabled ? "Actif" : "Inactif"}</span>
       </div>
       {enabled ? (
         <p className="admin-bypass-warning">
           <Icon i="triangle-alert" size={14} />
-          Actif{enabledAt ? ` depuis le ${enabledAt.toLocaleDateString("fr-FR")}` : ""}. Désactive-le avant la mise
-          en ligne réelle : les comptes propriétaires génèrent gratuitement tant qu’il reste actif.
+          Actif{enabledAt ? ` depuis le ${enabledAt.toLocaleDateString("fr-FR")}` : ""}. Désactive-le avant la mise en
+          ligne réelle : les comptes propriétaires génèrent gratuitement tant qu’il reste actif.
         </p>
       ) : null}
       <form action={setPaymentBypass}>

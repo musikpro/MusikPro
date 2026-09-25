@@ -121,7 +121,9 @@ export default function AdminSortableGrid<T extends SortableItem>({
     const handlePointerMove = (pointerEvent: PointerEvent) => {
       if (pointerDrag.current?.pointerId !== pointerEvent.pointerId) return;
       pointerEvent.preventDefault();
-      setDragPreview((current) => current ? { ...current, x: pointerEvent.clientX, y: pointerEvent.clientY } : current);
+      setDragPreview((current) =>
+        current ? { ...current, x: pointerEvent.clientX, y: pointerEvent.clientY } : current,
+      );
       const nextTargetId = document
         .elementFromPoint(pointerEvent.clientX, pointerEvent.clientY)
         ?.closest<HTMLElement>("[data-sortable-id]")?.dataset.sortableId;
@@ -140,9 +142,10 @@ export default function AdminSortableGrid<T extends SortableItem>({
       const releaseTarget = document
         .elementFromPoint(pointerEvent.clientX, pointerEvent.clientY)
         ?.closest<HTMLElement>("[data-sortable-id]")?.dataset.sortableId;
-      const next = releaseTarget && releaseTarget !== drag.id
-        ? moveItem(itemsRef.current, drag.id, releaseTarget)
-        : itemsRef.current;
+      const next =
+        releaseTarget && releaseTarget !== drag.id
+          ? moveItem(itemsRef.current, drag.id, releaseTarget)
+          : itemsRef.current;
       const changed = next.some((current, index) => current.id !== drag.previous[index]?.id);
       cleanup();
       itemsRef.current = next;
@@ -172,7 +175,15 @@ export default function AdminSortableGrid<T extends SortableItem>({
     <>
       <div className="admin-sort-status" aria-live="polite">
         <Icon i="grip-vertical" size={15} />
-        <span>{isPending ? "Enregistrement du nouvel ordre…" : saveError ? "L’ordre n’a pas pu être enregistré. La liste précédente a été restaurée." : saved ? "Nouvel ordre enregistré" : "Saisis une carte par sa poignée pour changer l’ordre."}</span>
+        <span>
+          {isPending
+            ? "Enregistrement du nouvel ordre…"
+            : saveError
+              ? "L’ordre n’a pas pu être enregistré. La liste précédente a été restaurée."
+              : saved
+                ? "Nouvel ordre enregistré"
+                : "Saisis une carte par sa poignée pour changer l’ordre."}
+        </span>
       </div>
       <section className={`admin-catalog-grid ${className} ${isPending ? "is-saving" : ""}`}>
         {items.map((item, index) => (
@@ -204,7 +215,17 @@ export default function AdminSortableGrid<T extends SortableItem>({
         ))}
       </section>
       {dragPreview ? (
-        <div className="admin-style-drag-preview" aria-hidden="true" style={{ left: dragPreview.x - dragPreview.offsetX, top: dragPreview.y - dragPreview.offsetY, width: dragPreview.width } as CSSProperties}>
+        <div
+          className="admin-style-drag-preview"
+          aria-hidden="true"
+          style={
+            {
+              left: dragPreview.x - dragPreview.offsetX,
+              top: dragPreview.y - dragPreview.offsetY,
+              width: dragPreview.width,
+            } as CSSProperties
+          }
+        >
           {renderPreview(dragPreview.item)}
         </div>
       ) : null}

@@ -1,8 +1,5 @@
 export function getNameInitials(name: string, fallback = "MP") {
-  const parts = name
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const parts = name.trim().split(/\s+/).filter(Boolean);
 
   if (parts.length >= 2) {
     return `${Array.from(parts[0])[0] ?? ""}${Array.from(parts[1])[0] ?? ""}`.toLocaleUpperCase("fr-FR");

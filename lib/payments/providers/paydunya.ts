@@ -51,9 +51,7 @@ export class PaydunyaProvider extends HttpPaymentProvider {
       body: JSON.stringify({
         invoice: {
           total_amount: input.money.amount,
-          description: String(
-            input.metadata?.description ?? `Paiement ${input.reference}`,
-          ),
+          description: String(input.metadata?.description ?? `Paiement ${input.reference}`),
           customer: {
             name: input.customer.name,
             email: input.customer.email,
@@ -78,14 +76,8 @@ export class PaydunyaProvider extends HttpPaymentProvider {
         },
       }),
     });
-    if (
-      String(body.response_code) !== "00" ||
-      !body.token ||
-      !body.response_text
-    )
-      throw new Error(
-        `PayDunya checkout rejected: ${body.description || body.response_text || "unknown"}`,
-      );
+    if (String(body.response_code) !== "00" || !body.token || !body.response_text)
+      throw new Error(`PayDunya checkout rejected: ${body.description || body.response_text || "unknown"}`);
     return {
       provider: this.id,
       externalId: String(body.token),
@@ -96,15 +88,11 @@ export class PaydunyaProvider extends HttpPaymentProvider {
   }
 
   async verifyPayment(externalId: string): Promise<CheckoutResult> {
-    if (!/^[A-Za-z0-9_-]{6,200}$/.test(externalId))
-      throw new Error("Invalid PayDunya invoice token");
-    const body = await this.json(
-      `${baseUrl()}/checkout-invoice/confirm/${encodeURIComponent(externalId)}`,
-      {
-        headers: this.headers(),
-        cache: "no-store",
-      },
-    );
+    if (!/^[A-Za-z0-9_-]{6,200}$/.test(externalId)) throw new Error("Invalid PayDunya invoice token");
+    const body = await this.json(`${baseUrl()}/checkout-invoice/confirm/${encodeURIComponent(externalId)}`, {
+      headers: this.headers(),
+      cache: "no-store",
+    });
     const custom = body.custom_data || body.customData || {};
     const normalized = {
       ...body,
@@ -127,8 +115,7 @@ export class PaydunyaProvider extends HttpPaymentProvider {
 
   private async payload(request: Request) {
     const contentType = request.headers.get("content-type") || "";
-    if (contentType.includes("application/json"))
-      return paydunyaPayloadSchema.parse(await request.json());
+    if (contentType.includes("application/json")) return paydunyaPayloadSchema.parse(await request.json());
     const form = await request.formData();
     const obj: Record<string, unknown> = {};
     for (const [key, value] of form.entries()) obj[key] = value;
@@ -148,9 +135,7 @@ export class PaydunyaProvider extends HttpPaymentProvider {
       const data = payload?.data ?? payload;
       const received = String(data?.hash ?? payload?.hash ?? "");
       if (!received) return false;
-      const expected = createHash("sha512")
-        .update(requireEnv("PAYDUNYA_MASTER_KEY"))
-        .digest("hex");
+      const expected = createHash("sha512").update(requireEnv("PAYDUNYA_MASTER_KEY")).digest("hex");
       return safeEqual(received, expected);
     } catch {
       return false;
@@ -160,9 +145,7 @@ export class PaydunyaProvider extends HttpPaymentProvider {
   async parseWebhook(request: Request) {
     const payload = await this.payload(request);
     const data = payload?.data ?? payload;
-    const token = String(
-      data?.invoice?.token ?? data?.token ?? data?.invoice_token ?? "",
-    );
+    const token = String(data?.invoice?.token ?? data?.token ?? data?.invoice_token ?? "");
     if (!token) throw new Error("PayDunya IPN missing invoice token");
     const status = String(data?.status ?? "unknown");
     return {

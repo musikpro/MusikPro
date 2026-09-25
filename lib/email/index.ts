@@ -14,8 +14,7 @@ export async function sendAuthEmail(input: {
 }) {
   const resend = resendClient();
   if (!resend) {
-    if (process.env.NODE_ENV === "production")
-      throw new Error("Transactional email is not configured in production");
+    if (process.env.NODE_ENV === "production") throw new Error("Transactional email is not configured in production");
     console.info("[EMAIL DEV]", {
       to: input.to,
       subject: input.subject,
@@ -26,8 +25,7 @@ export async function sendAuthEmail(input: {
   }
   const from = process.env.EMAIL_FROM;
   if (!from || /@example\.(com|org|net)$/i.test(from)) {
-    if (process.env.NODE_ENV === "production")
-      throw new Error("EMAIL_FROM is not configured with a verified sender");
+    if (process.env.NODE_ENV === "production") throw new Error("EMAIL_FROM is not configured with a verified sender");
   }
   const result = await resend.emails.send({
     from: from ?? "noreply@example.com",
@@ -44,8 +42,7 @@ export async function sendAuthEmail(input: {
 export async function sendTwoFactorEmail(input: { to: string; code: string }) {
   const resend = resendClient();
   if (!resend) {
-    if (process.env.NODE_ENV === "production")
-      throw new Error("Transactional email is not configured in production");
+    if (process.env.NODE_ENV === "production") throw new Error("Transactional email is not configured in production");
     console.info("[EMAIL DEV]", {
       to: input.to,
       subject: "Votre code de vérification",
@@ -55,8 +52,7 @@ export async function sendTwoFactorEmail(input: { to: string; code: string }) {
   }
   const from = process.env.EMAIL_FROM;
   if (!from || /@example\.(com|org|net)$/i.test(from)) {
-    if (process.env.NODE_ENV === "production")
-      throw new Error("EMAIL_FROM is not configured with a verified sender");
+    if (process.env.NODE_ENV === "production") throw new Error("EMAIL_FROM is not configured with a verified sender");
   }
   const appName = process.env.APP_NAME ?? "MusikPro";
   const result = await resend.emails.send({
@@ -96,9 +92,6 @@ export async function sendSupportEmail(input: {
 function escapeHtml(value: string) {
   return value.replace(
     /[&<>'"]/g,
-    (char) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[
-        char
-      ]!,
+    (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]!,
   );
 }

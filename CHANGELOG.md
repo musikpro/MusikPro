@@ -32,18 +32,19 @@
 - Exige de préserver les fonctionnalités existantes, privilégier les changements additifs/réversibles et relancer les gates pertinents après modification.
 
 ## 0.10.3 — French-first AI instructions
+
 - Ajoute une règle globale : réponses utilisateur toujours en français pour ChatGPT/Codex/Antigravity et Claude Code.
 - Propage la règle dans `AGENTS.md`, `CLAUDE.md`, `.claude/README.md` et tous les skills officiels.
 - Renforce `kit:integrity` pour détecter la disparition de cette règle lors d’une future refactorisation.
 - Les commandes, chemins, identifiants et extraits de code gardent leur syntaxe technique d’origine.
 
 ## 0.10.2 — Claude Code + Computer Use multi-agent
+
 - Ajout de `CLAUDE.md` et `.claude/commands/` pour Claude Code.
 - Ajout de `claude-code:check` / `claude-code:prepare`.
 - Deux voyants indépendants Computer Use: OpenAI et Claude Code.
 - Ajout des commandes `computer-use:claude:check` et `computer-use:claude:mark`.
 - Renforcement des gates d’intégrité et d’audit pour protéger l’intégration Claude.
-
 
 ## 0.10.1 — Integrity refactor + guided first run
 
@@ -54,11 +55,11 @@
 - Keeps staging, `/security-saas`, Banani, Clients CRUD and Mobile WebView behavior unchanged.
 
 ## 0.10.0 — Mandatory Vercel Staging Gate
+
 - Ajoute un staging Vercel Preview obligatoire avant Production.
 - Ajoute staging:check/deploy/test/approve et deploy:production:check/deploy.
 - Sépare explicitement les variables Preview et Production et bloque la production si le commit a changé après approbation.
 - Ajoute la section staging au dashboard et renforce la Phase 15 de /setup-saas.
-
 
 ## 0.9.9 — Integrity Refactor & Smart Verify
 
@@ -107,6 +108,7 @@
 - Nettoie les rapports générés/transitoires avant distribution.
 
 ## 0.9.4 — Hosted WebView Mobile Pipeline
+
 - Mobile App Phase 21 standardized on Capacitor WebView loading the deployed HTTPS SaaS.
 - Added dedicated Android/iPhone readiness panel below Quality without affecting the Web readiness score.
 - Added tool/service, step and visual-asset reminders.
@@ -144,8 +146,8 @@
 - Phase 21 optionnelle après la production Web.
 - Conservation des gates Zod, sécurité et mobile-first Web avant toute préparation native.
 
-
 ## 0.8.28 — General Refactor & Security/Quality Gate
+
 - ajout de `refactor:check`, garde-fou global permanent branché sur les principaux pipelines de livraison ;
 - protection serveur héritée de toutes les pages `/dashboard/*` via `requireUser()` dans le layout ;
 - suppression de l’exposition navigateur des payloads `raw` des passerelles de paiement ;
@@ -156,8 +158,8 @@
 - Zod Gate renforcé pour vérifier aussi l’autorisation serveur des Server Actions admin/dashboard ;
 - ajout de tests Vitest ciblés pour les request guards et la non-exposition des données brutes de paiement.
 
-
 ## V0.8.26 — Security Baseline Gate
+
 - Ajout d’un garde-fou permanent issu de la checklist sécurité: `.env.local`, secrets, RLS/policies, validation serveur, middleware auth, vérification email, rate limiting et audit npm.
 - Toute nouvelle route API doit désormais être classifiée pour auth/validation/rate-limit.
 - Toute nouvelle table DB doit être classifiée RLS ou exemption justifiée.
@@ -174,13 +176,13 @@
 - Documentation de la politique d’icônes dans `docs/ui/premium-icons.md` et règle persistante ajoutée à `AGENTS.md`.
 
 ## 0.8.24
+
 - Ajout d’une phase Upstash Redis **optionnelle** dans `/setup-saas`.
 - Ajout de `npm run upstash:setup`, `upstash:check` et `upstash:check:online`.
 - Ajout d’un helper de cache Redis REST (`lib/cache/upstash.ts`) avec TTL et fallback direct vers Neon.
 - Upstash est séparé de la phase sécurité pour éviter les doublons : il sert au cache, rate limiting distribué et états temporaires.
 - Paiements/Cloudflare/Cloudinary/Production sont décalés aux phases 17/18/19/20.
 - Nettoyage de l’artefact `tsconfig.tsbuildinfo`.
-
 
 ## 0.8.23
 
@@ -200,8 +202,8 @@
 - Phase 18: un rapport Production Doctor `NOT_READY`/`NEEDS_REVIEW` ne peut plus être considéré comme validé.
 - Régression testée: Banani MCP local, import Banani/gap analysis, SaaS sans paiement, paiements tardifs optionnels, Cloudflare/Cloudinary optionnels, handoff Vercel.
 
-
 ## 0.8.21
+
 - Ajout du vrai workflow `/import-banani` après connexion MCP.
 - Snapshot design sans secret dans `design/banani/imported-design.json`.
 - Gap analysis automatique RÉUTILISER / ADAPTER / CRÉER / À CONFIRMER.
@@ -214,7 +216,6 @@
 - Ajout de `npm run ui:hydration-check` et intégration dans les gates de vérification.
 - La protection reste localisée au body afin de ne pas masquer les vraies erreurs d’hydratation dans les composants de l’application.
 
-
 ## V0.8.17 — Compatibility fix: Better Auth / Vitest
 
 - Downgrade volontaire de Vitest `5.0.0` vers `4.1.11` pour respecter la plage de peer-dependency attendue par Better Auth 1.7.3 et éviter une installation npm incohérente.
@@ -222,6 +223,7 @@
 - Les scripts `test` et `test:watch` restent inchangés (`vitest run`, `vitest`).
 
 ## V0.8.15 — Health, tests et CI de qualité
+
 - Ajout de `/api/health` et `/api/readyz`.
 - Ajout de Vitest et de tests unitaires sur les garde-fous de paiement/providers.
 - Ajout ESLint Next.js, Prettier et contrôle d’hygiène de format.
@@ -232,6 +234,7 @@
 - Correction du `security-check` : les erreurs ajoutées dans la seconde moitié du script sont désormais réellement bloquantes.
 
 ## V0.8.12 — Phase Explanations + Final Conformity Check
+
 - `/setup-saas` explique désormais le rôle de chaque phase et ce qu’elle apporte au SaaS avant les étapes techniques.
 - La roadmap affiche une description courte sous chacune des 18 phases.
 - La phase courante affiche : rôle, bénéfice, objectif, état, actions et validation.
@@ -239,8 +242,8 @@
 - Rapport final `generated/conformity-report.md/json` pour vérifier fichiers requis, JSON, scripts npm, hygiène Git/env, invariants sécurité/paiement, SEO et lockfile.
 - La Phase 18 exige le contrôle de conformité avant de déclarer le parcours terminé.
 
-
 ## 0.8.7
+
 - Démarrage local direct sur un dashboard de readiness, sans inscription ni connexion.
 - `/setup` devient lecture seule ; suppression de l’ancienne API web d’écriture de configuration.
 - Ajout du point d’entrée IA `/setup-saas` et de `npm run setup-saas`.
@@ -265,6 +268,7 @@
 - Webhook request bodies are now streamed with a hard 1 MB application limit even when `Content-Length` is missing.
 
 ## Consolidation finale V0.8.6
+
 - Safe fallback des paiements : arrêt sur état fournisseur ambigu.
 - Filtrage readiness/runtime corrigé sans pays.
 - Comparaison monétaire normalisée par devise.
@@ -272,6 +276,7 @@
 - Catalogue providers aligné et anciennes notes versionnées supprimées.
 
 ## V0.8.8 — Guided Setup Phases
+
 - `/setup-saas` devient un assistant guidé en 16 phases.
 - La commande `npm run setup-saas` génère un rapport Markdown et JSON avec roadmap complète, statut de chaque phase et première phase à traiter.
 - Le workflow Antigravity affiche la liste complète puis accompagne une seule phase à la fois.
@@ -280,6 +285,7 @@
 - Distinction explicite CONFIGURÉ / TESTÉ / NON VÉRIFIÉ.
 
 ## V0.8.9 — Optional Payments Late Setup
+
 - Les providers de paiement deviennent totalement optionnels.
 - Le wizard principal ne demande plus aucun provider et génère `providers: []`, `defaultProvider: null`.
 - Les paiements sont déplacés en Phase 15, juste avant la mise en ligne.
@@ -287,16 +293,16 @@
 - Une Phase 15 non applicable peut être marquée `skipped` pour les SaaS sans paiement.
 - Le Local Payment Lab, les routes de paiement, le Production Doctor et le handoff Vercel ne pénalisent plus un SaaS sans paiement.
 
-
 ## V0.8.10 — Optional Cloudflare Domain/DNS Phase
+
 - Ajout d’une Phase 16 Cloudflare optionnelle pour domaine/DNS.
 - La finalisation production/Search Console passe en Phase 17.
 - Ajout de `npm run cloudflare:setup` et d’un guide généré sans secrets.
 - Cloudflare n’est jamais bloquant et peut être marqué `skipped`.
 - Distinction explicite entre Cloudflare domaine/DNS et Cloudflare R2 (toujours non intégré).
 
-
 ## V0.8.11
+
 - Cloudinary ajouté comme provider optionnel pour les uploads d’images.
 - Nouvelle Phase 17 optionnelle; production déplacée en Phase 18.
 - Upload serveur signé, authentifié, limité à 10 MB et SVG refusé par défaut.
@@ -331,6 +337,7 @@
 - aucune migration vers Prisma/JWT maison, aucun circuit breaker dupliqué, aucun Sentry/OTel forcé sans dépendances vérifiées.
 
 ### V0.8.16 — Auth/email fail-closed
+
 - Email/password devient explicitement configurable.
 - Vérification e-mail explicite via `AUTH_REQUIRE_EMAIL_VERIFICATION`.
 - Resend devient une dépendance conditionnelle de l’auth email/password, pas une dépendance globale du SaaS.
@@ -347,13 +354,14 @@
 - Phase 8 `/setup-saas` mise à jour ;
 - documentation sécurité ajoutée pour la rotation des tokens exposés.
 
-
 ## V0.8.20 — Validation Banani + conformité workspace
+
 - `banani:check` exige désormais HTTPS et avertit si le host n'est pas `app.banani.co`, sans afficher le token.
 - `conformity:check` accepte `.env.local` après setup si le fichier est ignoré/non suivi par Git.
 - Batterie de tests V0.8.19 relancée avant packaging.
 
 ## 0.8.27 — Zod Validation Gate
+
 - Zod devient un garde-fou permanent de validation des entrées de première partie.
 - Validation client ajoutée aux flux connexion, inscription, mot de passe oublié/réinitialisation et 2FA.
 - Revalidation serveur obligatoire pour les Server Actions et routes API mutantes, avec exceptions documentées pour contrats framework/raw-signature.

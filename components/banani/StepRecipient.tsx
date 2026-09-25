@@ -113,8 +113,12 @@ export default function StepRecipient() {
       </div>
 
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("À qui est destinée la chanson ?")}</h1>
-        <p className="text-sm text-muted-foreground">{t("Aide MusikPro à personnaliser les paroles et la prononciation.")}</p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
+          {t("À qui est destinée la chanson ?")}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          {t("Aide MusikPro à personnaliser les paroles et la prononciation.")}
+        </p>
       </div>
 
       <div className="recipient-form-shell px-4">

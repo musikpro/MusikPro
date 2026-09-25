@@ -20,8 +20,7 @@ const safe = (a: string, b: string) => {
 const statusOf = (v: unknown): CheckoutResult["status"] => {
   const s = String(v || "").toLowerCase();
   if (s.includes("complete") || s.includes("success")) return "paid";
-  if (s.includes("fail") || s.includes("cancel") || s.includes("refund"))
-    return "failed";
+  if (s.includes("fail") || s.includes("cancel") || s.includes("refund")) return "failed";
   return "pending";
 };
 
@@ -31,8 +30,7 @@ export class PaytechProvider extends HttpPaymentProvider {
   }
   id = "paytech" as const;
   async createCheckout(input: CheckoutInput): Promise<CheckoutResult> {
-    if (input.money.currency !== "XOF")
-      throw new Error("PayTech adapter currently accepts XOF only");
+    if (input.money.currency !== "XOF") throw new Error("PayTech adapter currently accepts XOF only");
     const ipnUrl = paymentWebhookUrl("paytech");
     if (process.env.NODE_ENV === "production" && !ipnUrl.startsWith("https://"))
       throw new Error("PayTech IPN must use HTTPS in production");
@@ -41,15 +39,11 @@ export class PaytechProvider extends HttpPaymentProvider {
       headers: headers(),
       cache: "no-store",
       body: JSON.stringify({
-        item_name: String(
-          input.metadata?.description || "Africa SaaS plan",
-        ).slice(0, 120),
+        item_name: String(input.metadata?.description || "Africa SaaS plan").slice(0, 120),
         item_price: input.money.amount,
         currency: "XOF",
         ref_command: input.reference,
-        command_name: String(
-          input.metadata?.description || `Payment ${input.reference}`,
-        ).slice(0, 200),
+        command_name: String(input.metadata?.description || `Payment ${input.reference}`).slice(0, 200),
         env: process.env.PAYTECH_ENVIRONMENT === "prod" ? "prod" : "test",
         ipn_url: ipnUrl,
         success_url: input.successUrl,
@@ -63,9 +57,7 @@ export class PaytechProvider extends HttpPaymentProvider {
       }),
     });
     if (Number(body.success) !== 1 || !body.token)
-      throw new Error(
-        `PayTech checkout rejected: ${body.message || "unknown"}`,
-      );
+      throw new Error(`PayTech checkout rejected: ${body.message || "unknown"}`);
     const checkoutUrl = body.redirect_url || body.redirectUrl;
     if (!checkoutUrl) throw new Error("PayTech response missing redirect_url");
     return {
@@ -78,15 +70,12 @@ export class PaytechProvider extends HttpPaymentProvider {
     };
   }
   async verifyPayment(token: string): Promise<CheckoutResult> {
-    const response = await fetch(
-      `${BASE}/payment/get-status?token_payment=${encodeURIComponent(token)}`,
-      { headers: headers(), cache: "no-store" },
-    );
-    const body = paytechPayloadSchema.parse(
-      await response.json().catch(() => ({})),
-    );
-    if (!response.ok)
-      throw new Error(`PayTech verify error ${response.status}`);
+    const response = await fetch(`${BASE}/payment/get-status?token_payment=${encodeURIComponent(token)}`, {
+      headers: headers(),
+      cache: "no-store",
+    });
+    const body = paytechPayloadSchema.parse(await response.json().catch(() => ({})));
+    if (!response.ok) throw new Error(`PayTech verify error ${response.status}`);
     const rawStatus = body.status || body.payment_status || body.data?.status;
     const amount = Number(body.item_price ?? body.amount ?? body.data?.amount);
     const currency = String(body.currency ?? body.data?.currency ?? "XOF");
@@ -100,8 +89,7 @@ export class PaytechProvider extends HttpPaymentProvider {
   }
   private async payload(request: Request) {
     const type = request.headers.get("content-type") || "";
-    if (type.includes("application/json"))
-      return paytechPayloadSchema.parse(await request.json());
+    if (type.includes("application/json")) return paytechPayloadSchema.parse(await request.json());
     const form = await request.formData();
     const out: Record<string, string> = {};
     for (const [k, v] of form.entries()) out[k] = String(v);
@@ -113,17 +101,12 @@ export class PaytechProvider extends HttpPaymentProvider {
       const key = requireEnv("PAYTECH_API_KEY");
       const secret = requireEnv("PAYTECH_API_SECRET");
       if (p.hmac_compute) {
-        const expected = createHmac("sha256", secret)
-          .update(`${p.item_price}|${p.ref_command}|${key}`)
-          .digest("hex");
+        const expected = createHmac("sha256", secret).update(`${p.item_price}|${p.ref_command}|${key}`).digest("hex");
         if (safe(String(p.hmac_compute), expected)) return true;
       }
       const kh = createHash("sha256").update(key).digest("hex");
       const sh = createHash("sha256").update(secret).digest("hex");
-      return (
-        safe(String(p.api_key_sha256 || ""), kh) &&
-        safe(String(p.api_secret_sha256 || ""), sh)
-      );
+      return safe(String(p.api_key_sha256 || ""), kh) && safe(String(p.api_secret_sha256 || ""), sh);
     } catch {
       return false;
     }

@@ -6,6 +6,9 @@
     "react": { "min": "19.2.1", "reason": "React Server Components security floor for the 19.2 line" },
     "react-dom": { "min": "19.2.1", "reason": "Keep React DOM aligned with the patched React line" },
     "drizzle-orm": { "min": "0.45.2", "reason": "Fixes CVE-2026-39356 / GHSA-gpj5-g38j-94v9" },
-    "better-auth": { "min": "1.7.3", "reason": "Kit-reviewed Better Auth release; project policy follows the currently supported release line" }
+    "better-auth": {
+      "min": "1.7.3",
+      "reason": "Kit-reviewed Better Auth release; project policy follows the currently supported release line"
+    }
   }
 }

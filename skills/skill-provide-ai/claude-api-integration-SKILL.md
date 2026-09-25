@@ -136,11 +136,7 @@ Prévoir une configuration administrateur `defaultModel`.
 Exemples de modèles Claude actuels pouvant être proposés dans une liste configurable :
 
 ```ts
-export const CLAUDE_MODELS = [
-  "claude-sonnet-5",
-  "claude-opus-5",
-  "claude-haiku-4-5-20251001",
-] as const;
+export const CLAUDE_MODELS = ["claude-sonnet-5", "claude-opus-5", "claude-haiku-4-5-20251001"] as const;
 ```
 
 Recommandation fonctionnelle pour ce SaaS :
@@ -258,12 +254,7 @@ Réponse d'exemple :
 import { z } from "zod";
 
 export const claudeSettingsSchema = z.object({
-  apiKey: z
-    .string()
-    .trim()
-    .min(20)
-    .max(500)
-    .optional(),
+  apiKey: z.string().trim().min(20).max(500).optional(),
   enabled: z.boolean(),
   defaultModel: z.string().trim().min(3).max(150),
   maxTokens: z.number().int().min(64).max(128000),
@@ -357,10 +348,7 @@ export function encryptSecret(value: string) {
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv(ALGORITHM, getEncryptionKey(), iv);
 
-  const encrypted = Buffer.concat([
-    cipher.update(value, "utf8"),
-    cipher.final(),
-  ]);
+  const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
 
   const authTag = cipher.getAuthTag();
 
@@ -371,23 +359,12 @@ export function encryptSecret(value: string) {
   };
 }
 
-export function decryptSecret(data: {
-  encrypted: string;
-  iv: string;
-  authTag: string;
-}) {
-  const decipher = crypto.createDecipheriv(
-    ALGORITHM,
-    getEncryptionKey(),
-    Buffer.from(data.iv, "base64")
-  );
+export function decryptSecret(data: { encrypted: string; iv: string; authTag: string }) {
+  const decipher = crypto.createDecipheriv(ALGORITHM, getEncryptionKey(), Buffer.from(data.iv, "base64"));
 
   decipher.setAuthTag(Buffer.from(data.authTag, "base64"));
 
-  const decrypted = Buffer.concat([
-    decipher.update(Buffer.from(data.encrypted, "base64")),
-    decipher.final(),
-  ]);
+  const decrypted = Buffer.concat([decipher.update(Buffer.from(data.encrypted, "base64")), decipher.final()]);
 
   return decrypted.toString("utf8");
 }
@@ -427,9 +404,7 @@ Ne pas exporter ce module vers des composants client.
 La propriété `content` d'une réponse Claude est composée de blocs.
 
 ```ts
-export function extractClaudeText(
-  message: Awaited<ReturnType<Anthropic["messages"]["create"]>>
-) {
+export function extractClaudeText(message: Awaited<ReturnType<Anthropic["messages"]["create"]>>) {
   return message.content
     .filter((block) => block.type === "text")
     .map((block) => block.text)
@@ -584,10 +559,7 @@ export async function POST(request: Request) {
     const config = await getClaudeConfigForCurrentTenant();
 
     if (!config?.enabled) {
-      return NextResponse.json(
-        { error: "CLAUDE_DISABLED" },
-        { status: 503 }
-      );
+      return NextResponse.json({ error: "CLAUDE_DISABLED" }, { status: 503 });
     }
 
     // 5. Déchiffrer la clé UNIQUEMENT ici, côté serveur
@@ -886,10 +858,7 @@ répétés et volumineux.
 Si le projet possède aussi OpenAI, Grok ou d'autres fournisseurs, créer une abstraction.
 
 ```ts
-export type AiProvider =
-  | "openai"
-  | "anthropic"
-  | "xai";
+export type AiProvider = "openai" | "anthropic" | "xai";
 
 export interface GenerateTextInput {
   task: string;

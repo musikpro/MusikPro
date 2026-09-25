@@ -18,9 +18,7 @@ export class StripeProvider extends HttpPaymentProvider {
     return false;
   }
 
-  async parseWebhook(
-    _request: Request,
-  ): Promise<{ id: string; type: string; payload: unknown }> {
+  async parseWebhook(_request: Request): Promise<{ id: string; type: string; payload: unknown }> {
     throw new Error("stripe webhook parser not configured yet.");
   }
 }

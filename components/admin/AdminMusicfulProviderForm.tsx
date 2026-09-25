@@ -133,7 +133,11 @@ export default function AdminMusicfulProviderForm({
         <dl className="admin-info-grid">
           <div>
             <dt>Statut de connexion</dt>
-            <dd>{account.lastConnectionStatus === "connected" ? "Connecté" : `Erreur${account.lastConnectionError ? ` (${account.lastConnectionError})` : ""}`}</dd>
+            <dd>
+              {account.lastConnectionStatus === "connected"
+                ? "Connecté"
+                : `Erreur${account.lastConnectionError ? ` (${account.lastConnectionError})` : ""}`}
+            </dd>
           </div>
           {account.providerCredits ? (
             <div>
@@ -174,7 +178,11 @@ export default function AdminMusicfulProviderForm({
           <AdminSecretField
             name="apiKey"
             configured={Boolean(settings.apiKeyLast4)}
-            placeholder={settings.apiKeyLast4 ? `Clé enregistrée ••••${settings.apiKeyLast4} — laisser vide pour conserver` : "Saisir la clé API Musicful"}
+            placeholder={
+              settings.apiKeyLast4
+                ? `Clé enregistrée ••••${settings.apiKeyLast4} — laisser vide pour conserver`
+                : "Saisir la clé API Musicful"
+            }
           />
           <small>
             {encryptionReady
@@ -186,7 +194,12 @@ export default function AdminMusicfulProviderForm({
           <FieldLabel help="Activé autorise MusikPro à appeler Musicful pour générer des chansons. Désactivé conserve les réglages mais bloque les appels.">
             État du fournisseur
           </FieldLabel>
-          <AdminSelect name="enabled" defaultValue={String(settings.enabled)} ariaLabel="État Musicful" options={boolOptions("Activé", "Désactivé")} />
+          <AdminSelect
+            name="enabled"
+            defaultValue={String(settings.enabled)}
+            ariaLabel="État Musicful"
+            options={boolOptions("Activé", "Désactivé")}
+          />
         </label>
         <label className="admin-editor-field">
           <FieldLabel help="Modèle Musicful utilisé par défaut pour les nouvelles générations. MFV3.0 est la version recommandée.">
@@ -218,7 +231,12 @@ export default function AdminMusicfulProviderForm({
           <FieldLabel help="Génère une version instrumentale par défaut (sans paroles chantées) plutôt qu’une version avec voix.">
             Instrumental par défaut
           </FieldLabel>
-          <AdminSelect name="defaultInstrumental" defaultValue={String(settings.defaultInstrumental)} ariaLabel="Instrumental par défaut" options={boolOptions("Instrumental", "Avec voix/paroles")} />
+          <AdminSelect
+            name="defaultInstrumental"
+            defaultValue={String(settings.defaultInstrumental)}
+            ariaLabel="Instrumental par défaut"
+            options={boolOptions("Instrumental", "Avec voix/paroles")}
+          />
         </label>
         <label className="admin-editor-field">
           <FieldLabel help="MusikPro est un site 100% musique et n’expose jamais que du MP3 à l’utilisateur final : Musicful ne propose aucun réglage pour demander directement de l’audio à la génération — le fichier natif peut arriver en MP3 ou en MP4/vidéo selon la chanson, mais il est toujours vérifié puis transcodé en MP3 si nécessaire avant d’être présenté. « Automatique » privilégie le MP3 natif quand Musicful le renvoie déjà. « WAV » force d’abord une conversion en audio WAV qualité studio (source intermédiaire plus riche), qui est ensuite elle aussi transcodée en MP3 avant d’être servie — fichiers de traitement plus lourds, mais résultat final identique : un MP3.">
@@ -238,19 +256,42 @@ export default function AdminMusicfulProviderForm({
           <FieldLabel help="Délai maximal (en millisecondes) accordé à chaque appel HTTP vers Musicful avant abandon.">
             Timeout de requête (ms)
           </FieldLabel>
-          <input name="requestTimeoutMs" type="number" min="5000" max="120000" step="1000" defaultValue={settings.requestTimeoutMs} required />
+          <input
+            name="requestTimeoutMs"
+            type="number"
+            min="5000"
+            max="120000"
+            step="1000"
+            defaultValue={settings.requestTimeoutMs}
+            required
+          />
         </label>
         <label className="admin-editor-field">
           <FieldLabel help="Fréquence à laquelle MusikPro interroge Musicful pour connaître l’avancement d’une génération en cours.">
             Intervalle de sondage (ms)
           </FieldLabel>
-          <input name="pollingIntervalMs" type="number" min="2000" max="30000" step="500" defaultValue={settings.pollingIntervalMs} required />
+          <input
+            name="pollingIntervalMs"
+            type="number"
+            min="2000"
+            max="30000"
+            step="500"
+            defaultValue={settings.pollingIntervalMs}
+            required
+          />
         </label>
         <label className="admin-editor-field">
           <FieldLabel help="Durée maximale d’attente avant qu’une génération soit considérée comme bloquée.">
             Attente maximale (min)
           </FieldLabel>
-          <input name="maxPollingMinutes" type="number" min="1" max="60" defaultValue={settings.maxPollingMinutes} required />
+          <input
+            name="maxPollingMinutes"
+            type="number"
+            min="1"
+            max="60"
+            defaultValue={settings.maxPollingMinutes}
+            required
+          />
         </label>
         <label className="admin-editor-field">
           <FieldLabel help="Nombre de nouvelles tentatives automatiques pour une erreur réseau ou serveur temporaire (429, 500, 502, 503, 504).">
@@ -259,16 +300,43 @@ export default function AdminMusicfulProviderForm({
           <input name="maxRetries" type="number" min="0" max="5" defaultValue={settings.maxRetries} required />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="Nombre maximal de chansons qu’un même utilisateur peut générer par jour.">Générations max/jour/utilisateur</FieldLabel>
-          <input name="maxGenerationsPerUserPerDay" type="number" min="1" max="1000" defaultValue={settings.maxGenerationsPerUserPerDay} required />
+          <FieldLabel help="Nombre maximal de chansons qu’un même utilisateur peut générer par jour.">
+            Générations max/jour/utilisateur
+          </FieldLabel>
+          <input
+            name="maxGenerationsPerUserPerDay"
+            type="number"
+            min="1"
+            max="1000"
+            defaultValue={settings.maxGenerationsPerUserPerDay}
+            required
+          />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="Nombre maximal de chansons qu’un même utilisateur peut générer par heure.">Générations max/heure/utilisateur</FieldLabel>
-          <input name="maxGenerationsPerUserPerHour" type="number" min="1" max="1000" defaultValue={settings.maxGenerationsPerUserPerHour} required />
+          <FieldLabel help="Nombre maximal de chansons qu’un même utilisateur peut générer par heure.">
+            Générations max/heure/utilisateur
+          </FieldLabel>
+          <input
+            name="maxGenerationsPerUserPerHour"
+            type="number"
+            min="1"
+            max="1000"
+            defaultValue={settings.maxGenerationsPerUserPerHour}
+            required
+          />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help="Nombre maximal de générations Musicful pouvant être en cours simultanément pour l’ensemble du SaaS.">Générations simultanées max</FieldLabel>
-          <input name="maxConcurrentJobs" type="number" min="1" max="50" defaultValue={settings.maxConcurrentJobs} required />
+          <FieldLabel help="Nombre maximal de générations Musicful pouvant être en cours simultanément pour l’ensemble du SaaS.">
+            Générations simultanées max
+          </FieldLabel>
+          <input
+            name="maxConcurrentJobs"
+            type="number"
+            min="1"
+            max="50"
+            defaultValue={settings.maxConcurrentJobs}
+            required
+          />
         </label>
 
         <div className="admin-editor-field is-wide">
@@ -300,7 +368,10 @@ export default function AdminMusicfulProviderForm({
               <input type="checkbox" name="allowWavConversion" defaultChecked={settings.allowWavConversion} />
               <span>Conversion WAV (source intermédiaire)</span>
             </label>
-            <label className="admin-check-control" title="Enrichit automatiquement le style envoyé à Musicful avec la description de chaque genre du catalogue (Styles musicaux), plus une consigne explicite de fidélité au genre — s’applique à tous les styles actuels et futurs.">
+            <label
+              className="admin-check-control"
+              title="Enrichit automatiquement le style envoyé à Musicful avec la description de chaque genre du catalogue (Styles musicaux), plus une consigne explicite de fidélité au genre — s’applique à tous les styles actuels et futurs."
+            >
               <input type="checkbox" name="strictStyleAdherence" defaultChecked={settings.strictStyleAdherence} />
               <span>Respect strict du style musical</span>
             </label>

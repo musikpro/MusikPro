@@ -13,9 +13,7 @@ Sandbox:    https://api.test.bictorys.com
 
 ```ts
 function bictorysApiUrl(publicApiKey: string): string {
-  return publicApiKey.startsWith("test_")
-    ? "https://api.test.bictorys.com"
-    : "https://api.bictorys.com";
+  return publicApiKey.startsWith("test_") ? "https://api.test.bictorys.com" : "https://api.bictorys.com";
 }
 ```
 
@@ -81,13 +79,9 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 const execFileP = promisify(execFile);
 
-async function bictorysFetch(
-  url: string,
-  init: { method: string; headers: Record<string, string>; body?: string },
-) {
+async function bictorysFetch(url: string, init: { method: string; headers: Record<string, string>; body?: string }) {
   const args = ["-i", "-X", init.method];
-  for (const [k, v] of Object.entries(init.headers))
-    args.push("-H", `${k}: ${v}`);
+  for (const [k, v] of Object.entries(init.headers)) args.push("-H", `${k}: ${v}`);
   if (init.body) args.push("-d", init.body);
   args.push(url);
   const { stdout } = await execFileP("curl", args, { timeout: 15_000 });
@@ -178,8 +172,7 @@ Code:
 ```ts
 const txId = data.transactionId || data.chargeId;
 const checkoutUrl = data.link || data.redirectUrl;
-if (!txId || !checkoutUrl)
-  return { ok: false, error: "Bictorys: incomplete response" };
+if (!txId || !checkoutUrl) return { ok: false, error: "Bictorys: incomplete response" };
 ```
 
 ## Forcing the hosted page tab (Mobile Money vs Card)
@@ -284,12 +277,7 @@ Headers:
 Signed payload string: `` `${timestamp}.${rawBody}` ``
 
 ```ts
-function verifyBictorysHmac(
-  rawBody: Buffer,
-  sig: string,
-  ts: string,
-  secret: string,
-): boolean {
+function verifyBictorysHmac(rawBody: Buffer, sig: string, ts: string, secret: string): boolean {
   let tsNum = parseInt(ts, 10);
   // Auto-detect ms vs sec: anything < 10_000_000_000 is seconds (year 2286 in ms)
   if (tsNum > 0 && tsNum < 10_000_000_000) tsNum *= 1000;
@@ -313,10 +301,7 @@ function verifyBictorysHmac(
 Header: `X-Secret-Key` — the same `webhookSecret` value, sent as plaintext. Compare with `crypto.timingSafeEqual` to prevent timing attacks:
 
 ```ts
-function verifyBictorysStatic(
-  headerSecret: string,
-  expectedSecret: string,
-): boolean {
+function verifyBictorysStatic(headerSecret: string, expectedSecret: string): boolean {
   const a = Buffer.from(headerSecret);
   const b = Buffer.from(expectedSecret);
   if (a.length !== b.length) return false;
@@ -327,11 +312,7 @@ function verifyBictorysStatic(
 ### Combined verification
 
 ```ts
-function verifyBictorys(
-  req: Request,
-  rawBody: Buffer,
-  secret: string,
-): { ok: boolean; error?: string } {
+function verifyBictorys(req: Request, rawBody: Buffer, secret: string): { ok: boolean; error?: string } {
   const sig = req.headers["x-webhook-signature"] as string | undefined;
   const ts = req.headers["x-webhook-timestamp"] as string | undefined;
   if (sig && ts) {
@@ -343,13 +324,10 @@ function verifyBictorys(
   if (!staticKey) {
     return {
       ok: false,
-      error:
-        "No signature header (X-Webhook-Signature or X-Secret-Key required)",
+      error: "No signature header (X-Webhook-Signature or X-Secret-Key required)",
     };
   }
-  return verifyBictorysStatic(staticKey, secret)
-    ? { ok: true }
-    : { ok: false, error: "Bictorys X-Secret-Key invalid" };
+  return verifyBictorysStatic(staticKey, secret) ? { ok: true } : { ok: false, error: "Bictorys X-Secret-Key invalid" };
 }
 ```
 
@@ -372,16 +350,13 @@ Store in `processed_events (provider, eventId, processedAt)` with 24h TTL. Rejec
 ## Probe key validity
 
 ```ts
-async function probeKey(
-  publicApiKey: string,
-): Promise<{ ok: boolean; error?: string }> {
+async function probeKey(publicApiKey: string): Promise<{ ok: boolean; error?: string }> {
   const url = `${bictorysApiUrl(publicApiKey)}/pay/v1/transactions/izi_verify_probe_${Date.now()}/status?by_charge_id=true`;
   const res = await bictorysFetch(url, {
     method: "GET",
     headers: { "X-Api-Key": publicApiKey, Accept: "application/json" },
   });
-  if (res.status === 401 || res.status === 403)
-    return { ok: false, error: "Invalid Bictorys key" };
+  if (res.status === 401 || res.status === 403) return { ok: false, error: "Invalid Bictorys key" };
   return { ok: true }; // 404 (probe doesn't exist) is the normal "key OK" response
 }
 ```

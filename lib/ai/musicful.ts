@@ -183,7 +183,11 @@ function extractConversionUrl(response: unknown): string | null {
 }
 
 export async function getMusicfulProvider() {
-  const [stored] = await getServiceDb().select().from(audioProviderConfigs).where(eq(audioProviderConfigs.provider, "musicful")).limit(1);
+  const [stored] = await getServiceDb()
+    .select()
+    .from(audioProviderConfigs)
+    .where(eq(audioProviderConfigs.provider, "musicful"))
+    .limit(1);
   const apiKey =
     stored?.apiKeyCiphertext && stored.apiKeyIv && stored.apiKeyAuthTag
       ? decryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })

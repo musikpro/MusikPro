@@ -54,10 +54,7 @@ function replayRequest(request: Request, body: Uint8Array) {
   });
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: Promise<{ provider: string }> },
-) {
+export async function POST(request: Request, { params }: { params: Promise<{ provider: string }> }) {
   const rid = requestId(request);
   const rawBody = await readLimitedBody(request);
   if (!rawBody)
@@ -67,9 +64,10 @@ export async function POST(
     });
 
   const { provider: providerId } = await params;
-  const configured = providerId === "chariow"
-    ? await chariowIsConfigured()
-    : providerEnvironmentConfigured(providerId as PaymentProviderId);
+  const configured =
+    providerId === "chariow"
+      ? await chariowIsConfigured()
+      : providerEnvironmentConfigured(providerId as PaymentProviderId);
   if (!configured) {
     return new Response("Not found", {
       status: 404,

@@ -1,13 +1,5 @@
 import { icons, type LucideIcon } from "lucide-react";
-export default function Icon({
-  i,
-  size = 20,
-  className = "",
-}: {
-  i: string;
-  size?: number;
-  className?: string;
-}) {
+export default function Icon({ i, size = 20, className = "" }: { i: string; size?: number; className?: string }) {
   const aliases: Record<string, string> = {
     home: "House",
     "plus-circle": "CirclePlus",
@@ -24,14 +16,6 @@ export default function Icon({
       .split("-")
       .map((v) => v[0].toUpperCase() + v.slice(1))
       .join("");
-  const Component: LucideIcon =
-    icons[name as keyof typeof icons] ?? icons.Music;
-  return (
-    <Component
-      size={size}
-      className={className}
-      aria-hidden="true"
-      strokeWidth={2}
-    />
-  );
+  const Component: LucideIcon = icons[name as keyof typeof icons] ?? icons.Music;
+  return <Component size={size} className={className} aria-hidden="true" strokeWidth={2} />;
 }

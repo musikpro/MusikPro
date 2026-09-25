@@ -9,7 +9,15 @@ function StatusDot({ status }: { status: KitCheck["status"] }) {
   return <span className={`kit-dot kit-dot-${status}`} aria-hidden="true" />;
 }
 
-export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks: KitCheck[]; mobile: MobileAppReadiness; securityReport: SecuritySaasReport | null }) {
+export function SetupSaasDashboard({
+  checks,
+  mobile,
+  securityReport,
+}: {
+  checks: KitCheck[];
+  mobile: MobileAppReadiness;
+  securityReport: SecuritySaasReport | null;
+}) {
   const ok = checks.filter((c) => c.status === "ok").length;
   const warnings = checks.filter((c) => c.status === "warning").length;
   const missing = checks.filter((c) => c.status === "missing").length;
@@ -23,11 +31,17 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
         <div>
           <p className="kit-eyebrow">Africa SaaS Kit</p>
           <h1>État de préparation du kit</h1>
-          <p className="muted">Aucune inscription n’est requise pour démarrer le starter. Les voyants rouges signalent ce qui n’est pas encore installé/configuré; les verts confirment ce qui est prêt. Les modules explicitement optionnels restent visibles en rouge lorsqu’ils sont absents mais ne bloquent pas le score de préparation.</p>
+          <p className="muted">
+            Aucune inscription n’est requise pour démarrer le starter. Les voyants rouges signalent ce qui n’est pas
+            encore installé/configuré; les verts confirment ce qui est prêt. Les modules explicitement optionnels
+            restent visibles en rouge lorsqu’ils sont absents mais ne bloquent pas le score de préparation.
+          </p>
         </div>
         <div className="kit-score" aria-label={`${score}% prêt`}>
           <strong>{score}%</strong>
-          <span>{ok} verts · {warnings} à revoir · {missing} rouges · optionnels non bloquants</span>
+          <span>
+            {ok} verts · {warnings} à revoir · {missing} rouges · optionnels non bloquants
+          </span>
         </div>
       </section>
 
@@ -35,24 +49,37 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
         <code>/setup-saas</code>
         <span className="muted">ou</span>
         <code>npm run setup-saas</code>
-        <Link className="btn secondary" href="/setup">Actualiser les contrôles</Link>
+        <Link className="btn secondary" href="/setup">
+          Actualiser les contrôles
+        </Link>
       </div>
-
 
       <section className="card kit-next">
         <h2>Agents IA & Computer Use</h2>
-        <p className="muted">Le kit est compatible avec ChatGPT/Codex/Antigravity et Claude Code. Les deux voyants Computer Use sont indépendants : ils deviennent verts uniquement après un test réel enregistré, pas sur simple présence d’un fichier.</p>
+        <p className="muted">
+          Le kit est compatible avec ChatGPT/Codex/Antigravity et Claude Code. Les deux voyants Computer Use sont
+          indépendants : ils deviennent verts uniquement après un test réel enregistré, pas sur simple présence d’un
+          fichier.
+        </p>
         <div className="kit-actions">
           <code>npm run computer-use:openai:check</code>
           <code>npm run claude-code:check</code>
           <code>npm run computer-use:claude:check</code>
         </div>
-        <p className="muted">Pour Claude Code, les instructions projet sont dans <code>CLAUDE.md</code> et les raccourcis dans <code>.claude/commands/</code>. Les workflows métier restent centralisés dans <code>.agents/skills/</code> afin d’éviter deux versions contradictoires du kit.</p>
+        <p className="muted">
+          Pour Claude Code, les instructions projet sont dans <code>CLAUDE.md</code> et les raccourcis dans{" "}
+          <code>.claude/commands/</code>. Les workflows métier restent centralisés dans <code>.agents/skills/</code>{" "}
+          afin d’éviter deux versions contradictoires du kit.
+        </p>
       </section>
 
       <section className="card kit-next">
         <h2>Premier démarrage — installation guidée</h2>
-        <p className="muted">Une commande simple vérifie Node/npm, l’intégrité du starter et l’état des dépendances sans écraser votre configuration. Le mode <code>first-run:install</code> lance aussi <code>npm install</code>, puis vous indique la prochaine étape.</p>
+        <p className="muted">
+          Une commande simple vérifie Node/npm, l’intégrité du starter et l’état des dépendances sans écraser votre
+          configuration. Le mode <code>first-run:install</code> lance aussi <code>npm install</code>, puis vous indique
+          la prochaine étape.
+        </p>
         <div className="kit-actions">
           <code>npm run first-run</code>
           <code>npm run first-run:install</code>
@@ -61,7 +88,11 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
 
       <section className="card kit-next">
         <h2>Audit intégrité du kit</h2>
-        <p className="muted">Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes, runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:full-test</code> produit en plus un rapport consolidé et ajoute automatiquement lint, typecheck et tests dès que les dépendances sont installées.</p>
+        <p className="muted">
+          Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes,
+          runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:full-test</code> produit en plus un rapport
+          consolidé et ajoute automatiquement lint, typecheck et tests dès que les dépendances sont installées.
+        </p>
         <div className="kit-actions">
           <code>npm run kit:audit</code>
           <code>npm run kit:verify</code>
@@ -72,7 +103,10 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
 
       <section className="card kit-next">
         <h2>Staging Vercel — obligatoire avant Production</h2>
-        <p className="muted">Le kit impose désormais le parcours <strong>Local → Preview/Staging → validation → Production</strong>. Les variables Vercel Preview doivent rester séparées des variables Production.</p>
+        <p className="muted">
+          Le kit impose désormais le parcours <strong>Local → Preview/Staging → validation → Production</strong>. Les
+          variables Vercel Preview doivent rester séparées des variables Production.
+        </p>
         <div className="kit-actions">
           <code>npm run staging:check</code>
           <code>npm run staging:deploy</code>
@@ -80,15 +114,24 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
           <code>npm run staging:approve -- --url=https://...</code>
           <code>npm run deploy:production:check</code>
         </div>
-        <p className="muted">Après toute modification du commit approuvé, refaites le staging. La commande <code>npm run deploy:production</code> refuse de lancer Vercel Production sans approbation valide.</p>
+        <p className="muted">
+          Après toute modification du commit approuvé, refaites le staging. La commande{" "}
+          <code>npm run deploy:production</code> refuse de lancer Vercel Production sans approbation valide.
+        </p>
       </section>
 
       <section className="card kit-next">
         <h2>Backend status</h2>
-        <p className="muted">Sondes JSON rapides pour confirmer que le serveur tourne et que ses dépendances sont prêtes.</p>
+        <p className="muted">
+          Sondes JSON rapides pour confirmer que le serveur tourne et que ses dépendances sont prêtes.
+        </p>
         <div className="kit-actions">
-          <a className="btn secondary" href="/api/health" target="_blank" rel="noreferrer">/api/health — liveness</a>
-          <a className="btn secondary" href="/api/readyz" target="_blank" rel="noreferrer">/api/readyz — readiness</a>
+          <a className="btn secondary" href="/api/health" target="_blank" rel="noreferrer">
+            /api/health — liveness
+          </a>
+          <a className="btn secondary" href="/api/readyz" target="_blank" rel="noreferrer">
+            /api/readyz — readiness
+          </a>
         </div>
       </section>
 
@@ -120,9 +163,20 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
               <h2 id="security-audit-title">Audit sécurité du SaaS</h2>
               <span className="badge">/security-saas</span>
             </div>
-            <p className="muted">Scanne les fichiers du SaaS et vérifie les garde-fous du kit : secrets/.env.local, RLS, policies, validation serveur, Zod, authentification, vérification email, rate limiting, versions sensibles et npm audit.</p>
+            <p className="muted">
+              Scanne les fichiers du SaaS et vérifie les garde-fous du kit : secrets/.env.local, RLS, policies,
+              validation serveur, Zod, authentification, vérification email, rate limiting, versions sensibles et npm
+              audit.
+            </p>
           </div>
-          <div className="kit-security-score" aria-label={securityReport ? `Score sécurité ${securityReport.score}% rang ${securityReport.rank}` : "Audit sécurité non exécuté"}>
+          <div
+            className="kit-security-score"
+            aria-label={
+              securityReport
+                ? `Score sécurité ${securityReport.score}% rang ${securityReport.rank}`
+                : "Audit sécurité non exécuté"
+            }
+          >
             <strong>{securityReport ? `${securityReport.score}%` : "—"}</strong>
             <span>{securityReport ? `Rang ${securityReport.rank}` : "audit non exécuté"}</span>
           </div>
@@ -137,20 +191,36 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
 
         {securityReport ? (
           <>
-            <p className="muted">Dernier audit : {new Date(securityReport.generatedAt).toLocaleString("fr-FR")} · {securityReport.summary.scannedFiles} fichiers scannés · {securityReport.summary.pass} PASS · {securityReport.summary.warn} à vérifier · {securityReport.summary.fail} FAIL.</p>
+            <p className="muted">
+              Dernier audit : {new Date(securityReport.generatedAt).toLocaleString("fr-FR")} ·{" "}
+              {securityReport.summary.scannedFiles} fichiers scannés · {securityReport.summary.pass} PASS ·{" "}
+              {securityReport.summary.warn} à vérifier · {securityReport.summary.fail} FAIL.
+            </p>
             <div className="kit-check-grid">
               {securityReport.checks.map((item) => (
-                <article className={`kit-check ${item.status === "pass" ? "ok" : item.status === "warn" ? "warning" : "missing"}`} key={item.id}>
+                <article
+                  className={`kit-check ${item.status === "pass" ? "ok" : item.status === "warn" ? "warning" : "missing"}`}
+                  key={item.id}
+                >
                   <span className="kit-dot" aria-hidden="true" />
-                  <div><strong>{item.label}</strong><p>{item.detail}</p></div>
+                  <div>
+                    <strong>{item.label}</strong>
+                    <p>{item.detail}</p>
+                  </div>
                 </article>
               ))}
             </div>
           </>
         ) : (
-          <div className="notice">Aucun rapport généré. Lancez <code>/security-saas</code> dans Antigravity ou <code>npm run security-saas</code> dans le terminal pour obtenir le score et le rang.</div>
+          <div className="notice">
+            Aucun rapport généré. Lancez <code>/security-saas</code> dans Antigravity ou{" "}
+            <code>npm run security-saas</code> dans le terminal pour obtenir le score et le rang.
+          </div>
         )}
-        <p className="muted">Pour confirmer que RLS et les policies sont réellement actives dans Neon/Postgres, utilisez le mode online avec la connexion base disponible localement. Les secrets ne sont jamais affichés.</p>
+        <p className="muted">
+          Pour confirmer que RLS et les policies sont réellement actives dans Neon/Postgres, utilisez le mode online
+          avec la connexion base disponible localement. Les secrets ne sont jamais affichés.
+        </p>
       </section>
 
       <section className="card kit-mobile-app" aria-labelledby="mobile-app-title">
@@ -160,7 +230,10 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
               <h2 id="mobile-app-title">Application Android & iPhone — WebView connectée au SaaS</h2>
               <span className="badge">Optionnel</span>
             </div>
-            <p className="muted">L’application Capacitor ouvre directement le SaaS Next.js déjà déployé en HTTPS. Le backend, Neon, Resend, l’auth et les paiements restent en ligne côté serveur.</p>
+            <p className="muted">
+              L’application Capacitor ouvre directement le SaaS Next.js déjà déployé en HTTPS. Le backend, Neon, Resend,
+              l’auth et les paiements restent en ligne côté serveur.
+            </p>
           </div>
           <div className="kit-mobile-score">
             <strong>{mobile.progress}%</strong>
@@ -169,7 +242,10 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
         </div>
 
         <div className="kit-mobile-architecture" role="note">
-          <code>Android / iPhone → Capacitor WebView → {mobile.productionUrl || "https://monsaas.com"} → Next.js / API / Neon</code>
+          <code>
+            Android / iPhone → Capacitor WebView → {mobile.productionUrl || "https://monsaas.com"} → Next.js / API /
+            Neon
+          </code>
         </div>
 
         <div className="kit-mobile-columns">
@@ -179,7 +255,10 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
               {mobile.services.map((service) => (
                 <div className="kit-mobile-row" key={service.label}>
                   <StatusDot status={service.status} />
-                  <div><strong>{service.label}</strong><p>{service.detail}</p></div>
+                  <div>
+                    <strong>{service.label}</strong>
+                    <p>{service.detail}</p>
+                  </div>
                 </div>
               ))}
             </div>
@@ -187,15 +266,26 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
           <div>
             <h3>Étapes à garder en tête</h3>
             <ol className="kit-step-list">
-              {mobile.steps.map((step) => <li className={step.done ? "done" : ""} key={step.label}>{step.label}</li>)}
+              {mobile.steps.map((step) => (
+                <li className={step.done ? "done" : ""} key={step.label}>
+                  {step.label}
+                </li>
+              ))}
             </ol>
           </div>
         </div>
 
         <div className="kit-mobile-assets">
           <h3>Images / assets à préparer</h3>
-          <div className="kit-asset-grid">{mobile.assets.map((asset) => <span key={asset}>{asset}</span>)}</div>
-          <p className="muted">Les dimensions exactes des stores doivent être revalidées au moment de la publication. Conserver les fichiers sources haute définition.</p>
+          <div className="kit-asset-grid">
+            {mobile.assets.map((asset) => (
+              <span key={asset}>{asset}</span>
+            ))}
+          </div>
+          <p className="muted">
+            Les dimensions exactes des stores doivent être revalidées au moment de la publication. Conserver les
+            fichiers sources haute définition.
+          </p>
         </div>
 
         <div className="kit-actions">
@@ -211,16 +301,27 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
         <ul>
           <li>Auth Better Auth, organisations, rôles et 2FA</li>
           <li>Neon PostgreSQL + Drizzle + migrations versionnées</li>
-          <li>CRUD Clients post-Banani : modèle Prisma Client + routes <code>/api/clients/*</code> + Zod + RLS</li>
+          <li>
+            CRUD Clients post-Banani : modèle Prisma Client + routes <code>/api/clients/*</code> + Zod + RLS
+          </li>
           <li>Admin, paiements optionnels, webhooks, cron et uploads Cloudinary optionnels</li>
           <li>Health/readiness, tests Vitest, ESLint, Prettier, typecheck, build et audit npm</li>
-          <li>Computer Use OpenAI + Claude Code, compatibilité Claude Code, responsive Web, Mobile App WebView optionnelle, skeleton loaders, SEO, Banani planner et handoff GitHub/Vercel</li>
+          <li>
+            Computer Use OpenAI + Claude Code, compatibilité Claude Code, responsive Web, Mobile App WebView
+            optionnelle, skeleton loaders, SEO, Banani planner et handoff GitHub/Vercel
+          </li>
         </ul>
       </section>
 
       <section className="card kit-next">
         <h2>Ordre recommandé</h2>
-        <p className="muted">1. Lance <code>/setup-saas</code> → 2. vérifie les voyants Computer Use OpenAI et Claude Code → 3. configure Neon et les services de base → 4. importe Banani → attache le CRUD Clients si nécessaire → construis le SaaS → 5. teste/build → 6. prépare GitHub/Vercel → 7. valide obligatoirement le staging Vercel → 8. configure les services optionnels utiles → 9. finalise la production Web → 10. seulement ensuite, décide si la Phase 21 WebView Android/iPhone doit être activée.</p>
+        <p className="muted">
+          1. Lance <code>/setup-saas</code> → 2. vérifie les voyants Computer Use OpenAI et Claude Code → 3. configure
+          Neon et les services de base → 4. importe Banani → attache le CRUD Clients si nécessaire → construis le SaaS →
+          5. teste/build → 6. prépare GitHub/Vercel → 7. valide obligatoirement le staging Vercel → 8. configure les
+          services optionnels utiles → 9. finalise la production Web → 10. seulement ensuite, décide si la Phase 21
+          WebView Android/iPhone doit être activée.
+        </p>
       </section>
     </main>
   );

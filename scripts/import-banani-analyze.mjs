@@ -14,8 +14,11 @@ function fail(message) {
   process.exit(1);
 }
 function readJson(file) {
-  try { return JSON.parse(fs.readFileSync(file, "utf8")); }
-  catch (error) { fail(`JSON invalide: ${path.relative(root, file)} — ${error.message}`); }
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch (error) {
+    fail(`JSON invalide: ${path.relative(root, file)} — ${error.message}`);
+  }
 }
 function walk(dir, accept, out = []) {
   if (!fs.existsSync(dir)) return out;
@@ -28,22 +31,36 @@ function walk(dir, accept, out = []) {
 }
 function routeFromPage(file) {
   let rel = path.relative(path.join(root, "app"), path.dirname(file)).replaceAll(path.sep, "/");
-  rel = rel.split("/").filter((part) => !/^\(.+\)$/.test(part)).join("/");
+  rel = rel
+    .split("/")
+    .filter((part) => !/^\(.+\)$/.test(part))
+    .join("/");
   return rel ? `/${rel}` : "/";
 }
 function routeFromApi(file) {
   let rel = path.relative(path.join(root, "app"), path.dirname(file)).replaceAll(path.sep, "/");
-  rel = rel.split("/").filter((part) => !/^\(.+\)$/.test(part)).join("/");
+  rel = rel
+    .split("/")
+    .filter((part) => !/^\(.+\)$/.test(part))
+    .join("/");
   return `/${rel}`;
 }
 function normalizeToken(value) {
-  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
 }
 function screenKeywords(screen) {
-  return new Set(normalizeToken(`${screen.id} ${screen.name} ${screen.route}`).split(/\s+/).filter((x) => x.length >= 4));
+  return new Set(
+    normalizeToken(`${screen.id} ${screen.name} ${screen.route}`)
+      .split(/\s+/)
+      .filter((x) => x.length >= 4),
+  );
 }
 
-if (!fs.existsSync(importPath)) fail("design/banani/imported-design.json manquant. Exécuter /import-banani via MCP d’abord.");
+if (!fs.existsSync(importPath))
+  fail("design/banani/imported-design.json manquant. Exécuter /import-banani via MCP d’abord.");
 const imported = readJson(importPath);
 const screens = Array.isArray(imported.screens) ? imported.screens : [];
 if (!screens.length) fail("Aucun écran réel dans imported-design.json.");
@@ -54,7 +71,10 @@ const apiFiles = walk(path.join(root, "app", "api"), (f) => /route\.ts$/.test(f)
 const componentFiles = walk(path.join(root, "components"), (f) => /\.(tsx|ts)$/.test(f));
 const pageRoutes = new Map(pageFiles.map((f) => [routeFromPage(f), path.relative(root, f)]));
 const apiRoutes = new Map(apiFiles.map((f) => [routeFromApi(f), path.relative(root, f)]));
-const componentIndex = componentFiles.map((f) => ({ file: path.relative(root, f), token: normalizeToken(path.basename(f, path.extname(f))) }));
+const componentIndex = componentFiles.map((f) => ({
+  file: path.relative(root, f),
+  token: normalizeToken(path.basename(f, path.extname(f))),
+}));
 
 const normalizedScreens = [];
 const results = [];
@@ -71,7 +91,7 @@ for (const raw of screens) {
     keyElements: Array.isArray(raw.keyElements) ? raw.keyElements : [],
     interactions: Array.isArray(raw.interactions) ? raw.interactions : [],
     dataNeeds: Array.isArray(raw.dataNeeds) ? raw.dataNeeds : [],
-    integrations: Array.isArray(raw.integrations) ? raw.integrations : []
+    integrations: Array.isArray(raw.integrations) ? raw.integrations : [],
   };
   normalizedScreens.push(screen);
 
@@ -110,13 +130,14 @@ for (const raw of screens) {
     auth: screen.auth,
     dataNeeds: screen.dataNeeds,
     interactions: screen.interactions,
-    integrations: screen.integrations
+    integrations: screen.integrations,
   });
 }
 
 const referencedCapabilities = new Set();
 for (const screen of normalizedScreens) {
-  for (const v of [...screen.integrations, ...screen.dataNeeds, ...screen.interactions]) referencedCapabilities.add(normalizeToken(v));
+  for (const v of [...screen.integrations, ...screen.dataNeeds, ...screen.interactions])
+    referencedCapabilities.add(normalizeToken(v));
 }
 const featureHints = [];
 for (const [name, feature] of Object.entries(featureManifest.features || {})) {
@@ -129,45 +150,69 @@ const normalized = {
   project: imported.project?.name || imported.project || "SaaS Banani",
   source: "banani-mcp",
   importedAt: imported.project?.observedAt || new Date().toISOString(),
-  screens: normalizedScreens
+  screens: normalizedScreens,
 };
 fs.writeFileSync(normalizedPath, JSON.stringify(normalized, null, 2) + "\n");
 
-const counts = Object.fromEntries(["RÉUTILISER", "ADAPTER", "CRÉER", "À CONFIRMER"].map((k) => [k, results.filter((r) => r.classification === k).length]));
-const table = results.map((r, i) => `| ${i + 1} | ${r.name} | \`${r.route}\` | **${r.classification}** | ${r.existingPage ? `\`${r.existingPage}\`` : "—"} |`).join("\n");
-const detail = results.map((r, i) => [
-  `### ${i + 1}. ${r.name} — ${r.classification}`,
-  `- Route Banani: \`${r.route}\``,
-  `- Existant: ${r.existingPage ? `\`${r.existingPage}\`` : "aucune page correspondante"}`,
-  `- Décision: ${r.reason}`,
-  `- Composants candidats à réutiliser: ${r.componentCandidates.length ? r.componentCandidates.map((x) => `\`${x}\``).join(", ") : "aucun candidat évident"}`,
-  `- Auth observée: ${r.auth}`,
-  `- Données visibles: ${r.dataNeeds.length ? r.dataNeeds.join(", ") : "À CONFIRMER"}`,
-  `- Interactions visibles: ${r.interactions.length ? r.interactions.join(", ") : "À CONFIRMER"}`,
-  `- Intégrations visibles/confirmées: ${r.integrations.length ? r.integrations.join(", ") : "aucune / À CONFIRMER"}`,
-  ""
-].join("\n")).join("\n");
+const counts = Object.fromEntries(
+  ["RÉUTILISER", "ADAPTER", "CRÉER", "À CONFIRMER"].map((k) => [
+    k,
+    results.filter((r) => r.classification === k).length,
+  ]),
+);
+const table = results
+  .map(
+    (r, i) =>
+      `| ${i + 1} | ${r.name} | \`${r.route}\` | **${r.classification}** | ${r.existingPage ? `\`${r.existingPage}\`` : "—"} |`,
+  )
+  .join("\n");
+const detail = results
+  .map((r, i) =>
+    [
+      `### ${i + 1}. ${r.name} — ${r.classification}`,
+      `- Route Banani: \`${r.route}\``,
+      `- Existant: ${r.existingPage ? `\`${r.existingPage}\`` : "aucune page correspondante"}`,
+      `- Décision: ${r.reason}`,
+      `- Composants candidats à réutiliser: ${r.componentCandidates.length ? r.componentCandidates.map((x) => `\`${x}\``).join(", ") : "aucun candidat évident"}`,
+      `- Auth observée: ${r.auth}`,
+      `- Données visibles: ${r.dataNeeds.length ? r.dataNeeds.join(", ") : "À CONFIRMER"}`,
+      `- Interactions visibles: ${r.interactions.length ? r.interactions.join(", ") : "À CONFIRMER"}`,
+      `- Intégrations visibles/confirmées: ${r.integrations.length ? r.integrations.join(", ") : "aucune / À CONFIRMER"}`,
+      "",
+    ].join("\n"),
+  )
+  .join("\n");
 
-const md = `# Banani → Africa SaaS Kit — Gap analysis\n\n` +
-`> Généré à partir du snapshot MCP Banani. Le design est une source de vérité visuelle, pas une autorisation pour inventer les règles métier.\n\n` +
-`## Résumé\n- Écrans importés: ${results.length}\n- RÉUTILISER: ${counts["RÉUTILISER"]}\n- ADAPTER: ${counts["ADAPTER"]}\n- CRÉER: ${counts["CRÉER"]}\n- À CONFIRMER: ${counts["À CONFIRMER"]}\n- Pages existantes détectées: ${pageRoutes.size}\n- Routes API existantes détectées: ${apiRoutes.size}\n\n` +
-`## Matrice écran → starter\n\n| # | Écran | Route | Décision | Page existante |\n|---:|---|---|---|---|\n${table}\n\n` +
-`## Features existantes potentiellement concernées\n${featureHints.length ? featureHints.map((f) => `- **${f.feature}** — ${f.description}`).join("\n") : "- Aucune correspondance automatique fiable. L’IA doit consulter config/features.json avant toute création."}\n\n` +
-`## Détail\n\n${detail}\n` +
-`## Règles avant code\n1. Présenter cette matrice à l’utilisateur.\n2. Réutiliser ou adapter avant de créer.\n3. Toute règle métier non visible dans Banani reste **À CONFIRMER**.\n4. Exécuter \`npm run features:check\` après toute modification structurelle.\n5. Générer ensuite le plan avec \`npm run design:plan\`.\n`;
+const md =
+  `# Banani → Africa SaaS Kit — Gap analysis\n\n` +
+  `> Généré à partir du snapshot MCP Banani. Le design est une source de vérité visuelle, pas une autorisation pour inventer les règles métier.\n\n` +
+  `## Résumé\n- Écrans importés: ${results.length}\n- RÉUTILISER: ${counts["RÉUTILISER"]}\n- ADAPTER: ${counts["ADAPTER"]}\n- CRÉER: ${counts["CRÉER"]}\n- À CONFIRMER: ${counts["À CONFIRMER"]}\n- Pages existantes détectées: ${pageRoutes.size}\n- Routes API existantes détectées: ${apiRoutes.size}\n\n` +
+  `## Matrice écran → starter\n\n| # | Écran | Route | Décision | Page existante |\n|---:|---|---|---|---|\n${table}\n\n` +
+  `## Features existantes potentiellement concernées\n${featureHints.length ? featureHints.map((f) => `- **${f.feature}** — ${f.description}`).join("\n") : "- Aucune correspondance automatique fiable. L’IA doit consulter config/features.json avant toute création."}\n\n` +
+  `## Détail\n\n${detail}\n` +
+  `## Règles avant code\n1. Présenter cette matrice à l’utilisateur.\n2. Réutiliser ou adapter avant de créer.\n3. Toute règle métier non visible dans Banani reste **À CONFIRMER**.\n4. Exécuter \`npm run features:check\` après toute modification structurelle.\n5. Générer ensuite le plan avec \`npm run design:plan\`.\n`;
 
 fs.mkdirSync(generatedDir, { recursive: true });
 fs.writeFileSync(path.join(generatedDir, "banani-gap-analysis.md"), md);
-fs.writeFileSync(path.join(generatedDir, "banani-gap-analysis.json"), JSON.stringify({
-  version: kitVersion,
-  generatedAt: new Date().toISOString(),
-  project: normalized.project,
-  counts,
-  results,
-  featureHints
-}, null, 2));
+fs.writeFileSync(
+  path.join(generatedDir, "banani-gap-analysis.json"),
+  JSON.stringify(
+    {
+      version: kitVersion,
+      generatedAt: new Date().toISOString(),
+      project: normalized.project,
+      counts,
+      results,
+      featureHints,
+    },
+    null,
+    2,
+  ),
+);
 
 console.log(`✓ Banani import analyzed: ${results.length} screen(s)`);
-console.log(`✓ RÉUTILISER ${counts["RÉUTILISER"]} · ADAPTER ${counts["ADAPTER"]} · CRÉER ${counts["CRÉER"]} · À CONFIRMER ${counts["À CONFIRMER"]}`);
+console.log(
+  `✓ RÉUTILISER ${counts["RÉUTILISER"]} · ADAPTER ${counts["ADAPTER"]} · CRÉER ${counts["CRÉER"]} · À CONFIRMER ${counts["À CONFIRMER"]}`,
+);
 console.log("✓ generated/banani-gap-analysis.md");
 console.log("✓ design/banani/screens.json synchronized");

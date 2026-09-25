@@ -1,15 +1,7 @@
-import {
-  Skeleton,
-  SkeletonCards,
-  SkeletonTable,
-} from "@/components/ui/skeleton";
+import { Skeleton, SkeletonCards, SkeletonTable } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
-    <main
-      className="shell skeleton-page"
-      aria-busy="true"
-      aria-label="Chargement de la facturation"
-    >
+    <main className="shell skeleton-page" aria-busy="true" aria-label="Chargement de la facturation">
       <Skeleton className="skeleton-page-title" />
       <SkeletonCards count={3} />
       <Skeleton className="skeleton-section-title" />

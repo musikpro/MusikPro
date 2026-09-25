@@ -31,7 +31,10 @@ export async function downloadAudioFile(audioUrl: string, baseName: string): Pro
   }
 }
 
-export async function shareAudioFile(audioUrl: string, title: string): Promise<"shared" | "copied" | "cancelled" | "failed"> {
+export async function shareAudioFile(
+  audioUrl: string,
+  title: string,
+): Promise<"shared" | "copied" | "cancelled" | "failed"> {
   try {
     if (navigator.share) {
       await navigator.share({ title, text: "Écoute cette chanson créée sur MusikPro !", url: audioUrl });

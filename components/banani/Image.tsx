@@ -1,13 +1,5 @@
 import assets from "./assets.json";
-export default function Image({
-  ar,
-  prompt,
-  className = "",
-}: {
-  ar: string;
-  prompt: string;
-  className?: string;
-}) {
+export default function Image({ ar, prompt, className = "" }: { ar: string; prompt: string; className?: string }) {
   const src = (assets as Record<string, string>)[`${ar}\n${prompt}`];
   const description = /choir|church/i.test(prompt)
     ? "Chœur gospel dans une église africaine"

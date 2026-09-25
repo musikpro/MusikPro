@@ -20,12 +20,12 @@ const unitsPerXof: Record<CreditCurrencyCode, number> = {
 };
 
 export function convertFromXof(valueInXof: number, currency: string) {
-  const code = creditCurrencies.some((item) => item.code === currency) ? currency as CreditCurrencyCode : "XOF";
+  const code = creditCurrencies.some((item) => item.code === currency) ? (currency as CreditCurrencyCode) : "XOF";
   return valueInXof * unitsPerXof[code];
 }
 
 export function formatCreditPrice(valueInXof: number, currency: string) {
-  const code = creditCurrencies.some((item) => item.code === currency) ? currency as CreditCurrencyCode : "XOF";
+  const code = creditCurrencies.some((item) => item.code === currency) ? (currency as CreditCurrencyCode) : "XOF";
   const value = convertFromXof(valueInXof, code);
   return new Intl.NumberFormat(code === "XOF" || code === "XAF" ? "fr-FR" : "en", {
     style: "currency",

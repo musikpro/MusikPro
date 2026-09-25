@@ -2,7 +2,14 @@ import AdminSelect from "@/components/admin/AdminSelect";
 import AdminSecretField from "@/components/admin/AdminSecretField";
 import Icon from "@/components/banani/Icon";
 import AdminToast from "@/components/admin/AdminToast";
-import { removeAnthropicKey, removeOpenAiKey, saveAnthropicSettings, saveOpenAiSettings, testAnthropicConnection, testOpenAiConnection } from "@/app/admin/ai-providers/actions";
+import {
+  removeAnthropicKey,
+  removeOpenAiKey,
+  saveAnthropicSettings,
+  saveOpenAiSettings,
+  testAnthropicConnection,
+  testOpenAiConnection,
+} from "@/app/admin/ai-providers/actions";
 
 type Settings = {
   enabled: boolean;
@@ -87,7 +94,9 @@ export default function AdminAiProviderForm({
       ) : null}
       <form action={saveAction} className="admin-editor-grid">
         <label className="admin-editor-field is-wide">
-          <FieldLabel help={`Colle ici la clé secrète créée dans ${isAnthropic ? "Claude Platform" : "OpenAI Platform"}. Le champ masque les caractères pendant la saisie. Après enregistrement, seule la fin de la clé sera affichée.`}>
+          <FieldLabel
+            help={`Colle ici la clé secrète créée dans ${isAnthropic ? "Claude Platform" : "OpenAI Platform"}. Le champ masque les caractères pendant la saisie. Après enregistrement, seule la fin de la clé sera affichée.`}
+          >
             Clé API {providerName}
           </FieldLabel>
           <AdminSecretField
@@ -97,7 +106,9 @@ export default function AdminAiProviderForm({
             placeholder={
               settings.apiKeyLast4
                 ? `Clé enregistrée ••••${settings.apiKeyLast4} — laisser vide pour conserver`
-                : isAnthropic ? "sk-ant-…" : "sk-proj-…"
+                : isAnthropic
+                  ? "sk-ant-…"
+                  : "sk-proj-…"
             }
           />
           <small>
@@ -107,7 +118,9 @@ export default function AdminAiProviderForm({
           </small>
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help={`Activé autorise MusikPro à appeler ${providerName}. Désactivé conserve les réglages mais bloque les appels à ce fournisseur.`}>
+          <FieldLabel
+            help={`Activé autorise MusikPro à appeler ${providerName}. Désactivé conserve les réglages mais bloque les appels à ce fournisseur.`}
+          >
             État du fournisseur
           </FieldLabel>
           <AdminSelect
@@ -124,10 +137,20 @@ export default function AdminAiProviderForm({
           <FieldLabel help="Choisis ce fournisseur pour les nouvelles générations, révisions et extensions de paroles. Un seul fournisseur est utilisé à la fois.">
             Fournisseur utilisé pour les paroles
           </FieldLabel>
-          <AdminSelect name="isDefaultForLyrics" defaultValue={String(settings.isDefaultForLyrics)} ariaLabel={`Utiliser ${providerName} pour les paroles`} options={[{ value: "true", label: "Utiliser ce fournisseur" }, { value: "false", label: "Ne pas utiliser" }]} />
+          <AdminSelect
+            name="isDefaultForLyrics"
+            defaultValue={String(settings.isDefaultForLyrics)}
+            ariaLabel={`Utiliser ${providerName} pour les paroles`}
+            options={[
+              { value: "true", label: "Utiliser ce fournisseur" },
+              { value: "false", label: "Ne pas utiliser" },
+            ]}
+          />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help={`Identifiant exact du modèle ${providerName} utilisé pour écrire les paroles. Tu peux le modifier sans changer le code de MusikPro.`}>
+          <FieldLabel
+            help={`Identifiant exact du modèle ${providerName} utilisé pour écrire les paroles. Tu peux le modifier sans changer le code de MusikPro.`}
+          >
             Identifiant du modèle
           </FieldLabel>
           <input name="defaultModel" required minLength={1} maxLength={100} defaultValue={settings.defaultModel} />
@@ -173,7 +196,9 @@ export default function AdminAiProviderForm({
           />
         </label>
         <label className="admin-editor-field">
-          <FieldLabel help={`Autorise ${providerName} à réviser, reformuler ou rallonger des paroles déjà générées sans affecter la génération initiale.`}>
+          <FieldLabel
+            help={`Autorise ${providerName} à réviser, reformuler ou rallonger des paroles déjà générées sans affecter la génération initiale.`}
+          >
             Révision et rallongement
           </FieldLabel>
           <AdminSelect

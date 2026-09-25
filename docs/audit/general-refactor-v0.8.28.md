@@ -30,6 +30,6 @@ Le gate est branché sur `verify:code`, `verify:production`, `ci:check` et `secu
 
 Le ZIP source ne contient toujours pas `package-lock.json`. L’accès npm du workspace d’audit n’a pas permis de terminer `npm install --package-lock-only`. Par conséquent, `npm ci`, ESLint, TypeScript, Vitest, le build Next.js et `npm audit` ne peuvent pas être certifiés dans ce workspace. `conformity:check` garde volontairement ce point en échec bloquant jusqu’à génération/commit du lockfile.
 
-
 ### Dependency security floor
+
 `npm run security:versions` bloque les régressions sous les versions minimales de sécurité revues pour Next.js, React, Drizzle ORM et Better Auth. Ce contrôle complète `npm audit`; il ne le remplace pas.

@@ -30,7 +30,10 @@ async function checkPublic(pathname) {
 }
 
 function checkProtected(pathname) {
-  const outputFile = path.join(os.tmpdir(), `musikpro-staging-${process.pid}-${pathname.replaceAll("/", "-") || "root"}`);
+  const outputFile = path.join(
+    os.tmpdir(),
+    `musikpro-staging-${process.pid}-${pathname.replaceAll("/", "-") || "root"}`,
+  );
   try {
     const command = spawnSync(
       "npx",
@@ -60,9 +63,7 @@ function checkProtected(pathname) {
 }
 
 const checkPaths = ["/", "/api/health", "/api/readyz"];
-const results = protectedPreview
-  ? checkPaths.map(checkProtected)
-  : await Promise.all(checkPaths.map(checkPublic));
+const results = protectedPreview ? checkPaths.map(checkProtected) : await Promise.all(checkPaths.map(checkPublic));
 const all = results.every((result) => result.ok);
 let commit = null;
 try {
@@ -77,7 +78,10 @@ const report = {
   checks: results,
 };
 fs.mkdirSync(path.join(process.cwd(), "generated"), { recursive: true });
-fs.writeFileSync(path.join(process.cwd(), "generated/staging-test-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+fs.writeFileSync(
+  path.join(process.cwd(), "generated/staging-test-report.json"),
+  `${JSON.stringify(report, null, 2)}\n`,
+);
 console.log(`Staging tests: ${all ? "PASS" : "FAIL"} — ${url}`);
 for (const result of results) console.log(`${result.ok ? "PASS" : "FAIL"} ${result.path} ${result.status || "ERR"}`);
 if (!all) process.exit(1);
@@ -88,5 +92,7 @@ if (approve) {
   );
   console.log("Staging APPROVED. Production gate can now pass for this Git commit.");
 } else {
-  console.log("Review auth, responsive UI, email, DB, business flows and optional payments, then run staging:approve with the same URL.");
+  console.log(
+    "Review auth, responsive UI, email, DB, business flows and optional payments, then run staging:approve with the same URL.",
+  );
 }

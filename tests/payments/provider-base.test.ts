@@ -4,7 +4,9 @@ import { isSafeProviderFallbackError, PaymentProviderHttpError } from "@/lib/pay
 describe("payment provider fallback safety", () => {
   it("allows explicit client/configuration rejections", () => {
     expect(isSafeProviderFallbackError(new PaymentProviderHttpError(422))).toBe(true);
-    expect(isSafeProviderFallbackError(new Error("Missing required environment variable: FEDAPAY_SECRET_KEY"))).toBe(true);
+    expect(isSafeProviderFallbackError(new Error("Missing required environment variable: FEDAPAY_SECRET_KEY"))).toBe(
+      true,
+    );
   });
 
   it("blocks ambiguous network/server failures", () => {

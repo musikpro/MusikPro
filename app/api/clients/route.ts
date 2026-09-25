@@ -22,7 +22,8 @@ export async function GET(request: Request) {
   const user = await sessionUser(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const limit = await guardRate(request, user.id);
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
   if (!limit.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
   return NextResponse.json({ clients: await listClients(user.id) });
 }
@@ -38,11 +39,13 @@ export async function POST(request: Request) {
   const user = await sessionUser(request);
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const limit = await guardRate(request, user.id);
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
   if (!limit.success) return NextResponse.json({ error: "Too many requests" }, { status: 429 });
 
   const parsed = clientCreateSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Invalid client", details: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json({ error: "Invalid client", details: parsed.error.flatten() }, { status: 400 });
   const client = await createClient(user.id, parsed.data);
   return NextResponse.json({ client }, { status: 201 });
 }

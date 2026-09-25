@@ -12,18 +12,20 @@ export default function AudioFormatPanel({ preferredAudioFormat }: { preferredAu
   return (
     <section className="admin-panel admin-bypass-panel">
       <div className="admin-provider-heading">
-        <span className="admin-catalog-icon"><Icon i="music-4" size={20} /></span>
+        <span className="admin-catalog-icon">
+          <Icon i="music-4" size={20} />
+        </span>
         <div>
           <h2>Format audio reçu de Musicful</h2>
           <p>
-            MusikPro n’expose que du MP3 à l’utilisateur final (MP4/vidéo désactivé) : Musicful ne propose aucun
-            réglage pour demander directement de l’audio à la génération — le fichier natif peut arriver en MP3
-            ou, pour certaines chansons, en MP4 (vidéo) selon leur pipeline. Ce réglage ne change pas ce qui est
-            livré à l’utilisateur (toujours du MP3, vérifié puis transcodé automatiquement si besoin) : il choisit
-            seulement la source de départ. « Automatique » privilégie le MP3 natif quand Musicful le renvoie déjà.
-            « WAV systématique » force d’abord une conversion en audio WAV qualité studio pour chaque chanson
-            (source intermédiaire plus riche, fichiers de traitement plus lourds), qui est ensuite elle aussi
-            transcodée en MP3 avant d’être servie.
+            MusikPro n’expose que du MP3 à l’utilisateur final (MP4/vidéo désactivé) : Musicful ne propose aucun réglage
+            pour demander directement de l’audio à la génération — le fichier natif peut arriver en MP3 ou, pour
+            certaines chansons, en MP4 (vidéo) selon leur pipeline. Ce réglage ne change pas ce qui est livré à
+            l’utilisateur (toujours du MP3, vérifié puis transcodé automatiquement si besoin) : il choisit seulement la
+            source de départ. « Automatique » privilégie le MP3 natif quand Musicful le renvoie déjà. « WAV systématique
+            » force d’abord une conversion en audio WAV qualité studio pour chaque chanson (source intermédiaire plus
+            riche, fichiers de traitement plus lourds), qui est ensuite elle aussi transcodée en MP3 avant d’être
+            servie.
           </p>
         </div>
         <span className="admin-status is-success">{FORMAT_LABELS[preferredAudioFormat] ?? preferredAudioFormat}</span>

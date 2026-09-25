@@ -24,8 +24,10 @@ describe("Musicful v2 — MP3 Only", () => {
 
   it("marks a job failed instead of polling forever once maxPollingMinutes elapses without a verified MP3", async () => {
     const source = await fs.readFile("lib/ai/music-jobs.ts", "utf8");
-    expect(source).toContain("const isTimedOut = !isCompleted && !isFailed && elapsedMinutes > provider.maxPollingMinutes;");
-    expect(source).toContain("isFailed || isTimedOut ? (\"failed\" as const)");
+    expect(source).toContain(
+      "const isTimedOut = !isCompleted && !isFailed && elapsedMinutes > provider.maxPollingMinutes;",
+    );
+    expect(source).toContain('isFailed || isTimedOut\n          ? ("failed" as const)');
   });
 
   it("has no MP4 generation/conversion path left anywhere in the Musicful integration", async () => {
@@ -48,7 +50,7 @@ describe("Musicful v2 — MP3 Only", () => {
   it("transcodes remote audio to a real MP3 through a signed Cloudinary upload", async () => {
     const source = await fs.readFile("lib/storage/cloudinary.ts", "utf8");
     expect(source).toContain("export async function transcodeRemoteAudioToMp3(");
-    expect(source).toContain("format: \"mp3\"");
+    expect(source).toContain('format: "mp3"');
     expect(source).toContain("/video/upload");
     expect(source).toContain("Only https remote URLs can be transcoded");
   });

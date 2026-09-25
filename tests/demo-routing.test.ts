@@ -21,9 +21,7 @@ describe("demo routing", () => {
 
   it("rewrites the public demo to dashboard rendering without a session", () => {
     const response = proxy(new NextRequest("https://musikpro.net/demo/songs"));
-    expect(response.headers.get("x-middleware-rewrite")).toBe(
-      "https://musikpro.net/dashboard/songs",
-    );
+    expect(response.headers.get("x-middleware-rewrite")).toBe("https://musikpro.net/dashboard/songs");
   });
 
   it("keeps the real dashboard protected", () => {

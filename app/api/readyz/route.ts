@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getReadinessReport } from "@/lib/health/readiness";
 
-
 export const runtime = "nodejs";
 
 export const dynamic = "force-dynamic";

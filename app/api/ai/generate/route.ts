@@ -44,7 +44,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Cette fonction de paroles est désactivée." }, { status: 403 });
     if (code === "CONTENT_BLOCKED_REQUEST")
       return NextResponse.json(
-        { error: "Ta description contient du contenu qui ne peut pas être utilisé pour générer une chanson. Modifie ton texte et réessaie.", code },
+        {
+          error:
+            "Ta description contient du contenu qui ne peut pas être utilisé pour générer une chanson. Modifie ton texte et réessaie.",
+          code,
+        },
         { status: 422 },
       );
     if (code === "CONTENT_BLOCKED_RESULT")

@@ -54,18 +54,14 @@ export type EncryptedPayload = {
 };
 
 function resolveKeyEnvVar(version: number): string {
-  return version === 1
-    ? "BYOK_ENCRYPTION_KEY"
-    : `BYOK_ENCRYPTION_KEY_V${version}`;
+  return version === 1 ? "BYOK_ENCRYPTION_KEY" : `BYOK_ENCRYPTION_KEY_V${version}`;
 }
 
 function getKey(version: number = CURRENT_KEY_VERSION): Buffer {
   const envName = resolveKeyEnvVar(version);
   const raw = process.env[envName];
   if (!raw) {
-    throw new Error(
-      `Missing env var ${envName}. Generate one with generateEncryptionKey() (base64-encoded 32 bytes).`,
-    );
+    throw new Error(`Missing env var ${envName}. Generate one with generateEncryptionKey() (base64-encoded 32 bytes).`);
   }
   const buf = Buffer.from(raw, "base64");
   if (buf.length !== KEY_LENGTH) {
@@ -76,16 +72,11 @@ function getKey(version: number = CURRENT_KEY_VERSION): Buffer {
   return buf;
 }
 
-export function encryptCredentials<T extends Record<string, unknown>>(
-  plaintext: T,
-): EncryptedPayload {
+export function encryptCredentials<T extends Record<string, unknown>>(plaintext: T): EncryptedPayload {
   const key = getKey();
   const iv = randomBytes(IV_LENGTH);
   const cipher = createCipheriv(ALGORITHM, key, iv);
-  const encrypted = Buffer.concat([
-    cipher.update(JSON.stringify(plaintext), "utf8"),
-    cipher.final(),
-  ]);
+  const encrypted = Buffer.concat([cipher.update(JSON.stringify(plaintext), "utf8"), cipher.final()]);
   const authTag = cipher.getAuthTag();
   return {
     ciphertext: encrypted.toString("base64"),
@@ -96,9 +87,7 @@ export function encryptCredentials<T extends Record<string, unknown>>(
   };
 }
 
-export function decryptCredentials<T = Record<string, unknown>>(
-  payload: EncryptedPayload,
-): T {
+export function decryptCredentials<T = Record<string, unknown>>(payload: EncryptedPayload): T {
   if (payload.algorithm !== ALGORITHM) {
     throw new Error(`Unsupported algorithm: ${payload.algorithm}`);
   }
@@ -108,10 +97,7 @@ export function decryptCredentials<T = Record<string, unknown>>(
   const ciphertext = Buffer.from(payload.ciphertext, "base64");
   const decipher = createDecipheriv(ALGORITHM, key, iv);
   decipher.setAuthTag(authTag);
-  const decrypted = Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final(),
-  ]);
+  const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   return JSON.parse(decrypted.toString("utf8")) as T;
 }
 
@@ -151,9 +137,7 @@ const conn = await db.query.paymentConnections.findFirst({
 });
 if (!conn) throw new Error("not found");
 
-const credentials = decryptCredentials<MonerooCredentials>(
-  conn.credentialsEncrypted,
-);
+const credentials = decryptCredentials<MonerooCredentials>(conn.credentialsEncrypted);
 // credentials.secretKey is now usable
 ```
 

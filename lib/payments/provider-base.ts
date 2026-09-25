@@ -1,7 +1,10 @@
 import type { CheckoutInput, CheckoutResult, PaymentProvider, PaymentProviderId } from "./types";
 
 export class PaymentProviderHttpError extends Error {
-  constructor(public readonly status: number, public readonly code?: string) {
+  constructor(
+    public readonly status: number,
+    public readonly code?: string,
+  ) {
     super(`Payment provider HTTP ${status}${code ? ` (${code})` : ""}`);
     this.name = "PaymentProviderHttpError";
   }
@@ -18,7 +21,9 @@ export function isSafeProviderFallbackError(error: unknown) {
     return [400, 401, 403, 404, 422, 429].includes(error.status);
   }
   const message = error instanceof Error ? error.message : "";
-  return /^(Missing required environment variable:|.*requires customer |.*requires a product mapping|.*checkout requires |.*currently accepts XOF only|.*configured for XOF|.*must use HTTPS in production|Invalid .*?(id|token|number)|No enabled payment provider)/i.test(message);
+  return /^(Missing required environment variable:|.*requires customer |.*requires a product mapping|.*checkout requires |.*currently accepts XOF only|.*configured for XOF|.*must use HTTPS in production|Invalid .*?(id|token|number)|No enabled payment provider)/i.test(
+    message,
+  );
 }
 
 export abstract class HttpPaymentProvider implements PaymentProvider {
@@ -30,11 +35,14 @@ export abstract class HttpPaymentProvider implements PaymentProvider {
 
   protected async json(url: string, init: RequestInit = {}) {
     const response = await fetch(url, init);
-    const body = await response.json().catch(() => ({})) as Record<string, unknown>;
+    const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
     if (!response.ok) {
-      const code = typeof body.code === "string" ? body.code
-        : typeof (body.error as { code?: unknown } | undefined)?.code === "string" ? String((body.error as { code?: string }).code)
-        : undefined;
+      const code =
+        typeof body.code === "string"
+          ? body.code
+          : typeof (body.error as { code?: unknown } | undefined)?.code === "string"
+            ? String((body.error as { code?: string }).code)
+            : undefined;
       throw new PaymentProviderHttpError(response.status, code);
     }
     return body;

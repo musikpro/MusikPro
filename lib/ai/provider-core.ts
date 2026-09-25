@@ -51,7 +51,9 @@ export async function getLyricsProvider() {
     .from(aiProviderConfigs)
     .where(eq(aiProviderConfigs.isDefaultForLyrics, true))
     .limit(1);
-  return selected?.provider === "anthropic" ? getAnthropicProvider() : getOpenAiProvider().then((value) => ({ ...value, provider: "openai" as const }));
+  return selected?.provider === "anthropic"
+    ? getAnthropicProvider()
+    : getOpenAiProvider().then((value) => ({ ...value, provider: "openai" as const }));
 }
 
 export function createOpenAiClient(apiKey: string) {

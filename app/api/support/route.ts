@@ -24,8 +24,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Trop de messages envoyés. Réessaie plus tard." }, { status: 429 });
 
   const parsed = demoSupportSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success)
-    return NextResponse.json({ error: "Vérifie les informations du formulaire." }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Vérifie les informations du formulaire." }, { status: 400 });
 
   try {
     await sendSupportEmail({
@@ -38,6 +37,9 @@ export async function POST(request: Request) {
     });
     return NextResponse.json({ sent: true });
   } catch {
-    return NextResponse.json({ error: "Le message n’a pas pu être envoyé. Réessaie dans un instant." }, { status: 503 });
+    return NextResponse.json(
+      { error: "Le message n’a pas pu être envoyé. Réessaie dans un instant." },
+      { status: 503 },
+    );
   }
 }

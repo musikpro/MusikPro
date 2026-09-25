@@ -15,9 +15,13 @@ export default function AdminCreditPlanSortableGrid({ plans }: { plans: CreditPl
       className="admin-credit-plan-grid"
       itemLabel={(plan) => plan.name}
       renderItem={(plan, context) => (
-        <article className={`admin-catalog-card admin-music-style-card admin-credit-plan-card ${plan.active ? "is-active" : ""} ${context.dragging ? "is-dragging" : ""} ${context.dropTarget ? "is-drop-target" : ""}`}>
+        <article
+          className={`admin-catalog-card admin-music-style-card admin-credit-plan-card ${plan.active ? "is-active" : ""} ${context.dragging ? "is-dragging" : ""} ${context.dropTarget ? "is-drop-target" : ""}`}
+        >
           <div className="admin-catalog-card-head">
-            <span className="admin-catalog-icon"><Icon i="coins" size={21} /></span>
+            <span className="admin-catalog-icon">
+              <Icon i="coins" size={21} />
+            </span>
             <span className={`admin-status ${plan.active ? "is-success" : "is-pending"}`}>
               {plan.active ? "Active" : "Désactivée"}
             </span>
@@ -26,10 +30,14 @@ export default function AdminCreditPlanSortableGrid({ plans }: { plans: CreditPl
           <p>{plan.description}</p>
           <div className="admin-plan-credit-summary">
             <strong>{plan.credits} crédits</strong>
-            <span>{getGenerationCount(plan.credits)} générations · jusqu’à {getVersionCount(plan.credits)} versions</span>
+            <span>
+              {getGenerationCount(plan.credits)} générations · jusqu’à {getVersionCount(plan.credits)} versions
+            </span>
           </div>
           <strong className="admin-credit-plan-price">{plan.priceValue.toLocaleString("fr-FR")} FCFA</strong>
-          <small>Ordre {context.index + 1} · code {plan.code}</small>
+          <small>
+            Ordre {context.index + 1} · code {plan.code}
+          </small>
           <footer className="admin-style-actions">
             <Link className="admin-secondary-action admin-style-edit" href={`/admin/plans/${plan.id}`}>
               <Icon i="pencil" size={15} /> Modifier
@@ -51,7 +59,9 @@ export default function AdminCreditPlanSortableGrid({ plans }: { plans: CreditPl
       )}
       renderPreview={(plan) => (
         <>
-          <span className="admin-catalog-icon"><Icon i="coins" size={21} /></span>
+          <span className="admin-catalog-icon">
+            <Icon i="coins" size={21} />
+          </span>
           <strong>{plan.name}</strong>
           <Icon i="grip-vertical" size={18} />
         </>

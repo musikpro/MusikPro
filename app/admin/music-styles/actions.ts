@@ -90,7 +90,10 @@ export async function createMusicStyle(formData: FormData) {
   const id = randomUUID();
   const slug = slugify(parsed.name);
   if (!slug) {
-    redirectWithNotice("/admin/music-styles/new", { message: "Le nom doit contenir au moins un caractère utilisable.", tone: "error" });
+    redirectWithNotice("/admin/music-styles/new", {
+      message: "Le nom doit contenir au moins un caractère utilisable.",
+      tone: "error",
+    });
   }
 
   try {
@@ -103,7 +106,10 @@ export async function createMusicStyle(formData: FormData) {
         active: parsed.active === "true",
       });
   } catch (error) {
-    redirectWithNotice("/admin/music-styles/new", { message: actionErrorMessage(error, "Impossible d’enregistrer le style."), tone: "error" });
+    redirectWithNotice("/admin/music-styles/new", {
+      message: actionErrorMessage(error, "Impossible d’enregistrer le style."),
+      tone: "error",
+    });
   }
   await writeAuditLog({
     action: "music_style.created",
@@ -125,13 +131,19 @@ export async function updateMusicStyle(formData: FormData) {
     parsed = musicStyleUpdateSchema.parse(Object.fromEntries(formData));
   } catch (error) {
     redirectWithNotice(fallbackPath, {
-      message: actionErrorMessage(error, "Impossible d’enregistrer les modifications : vérifie les champs du formulaire."),
+      message: actionErrorMessage(
+        error,
+        "Impossible d’enregistrer les modifications : vérifie les champs du formulaire.",
+      ),
       tone: "error",
     });
   }
   const slug = slugify(parsed.name);
   if (!slug) {
-    redirectWithNotice(`/admin/music-styles/${parsed.id}`, { message: "Le nom doit contenir au moins un caractère utilisable.", tone: "error" });
+    redirectWithNotice(`/admin/music-styles/${parsed.id}`, {
+      message: "Le nom doit contenir au moins un caractère utilisable.",
+      tone: "error",
+    });
   }
 
   try {
@@ -150,7 +162,10 @@ export async function updateMusicStyle(formData: FormData) {
       })
       .where(eq(musicStyles.id, parsed.id));
   } catch (error) {
-    redirectWithNotice(`/admin/music-styles/${parsed.id}`, { message: actionErrorMessage(error, "Impossible d’enregistrer les modifications."), tone: "error" });
+    redirectWithNotice(`/admin/music-styles/${parsed.id}`, {
+      message: actionErrorMessage(error, "Impossible d’enregistrer les modifications."),
+      tone: "error",
+    });
   }
   await writeAuditLog({
     action: "music_style.updated",
@@ -161,15 +176,24 @@ export async function updateMusicStyle(formData: FormData) {
   });
   revalidateMusicStyles();
   revalidatePath(`/admin/music-styles/${parsed.id}`);
-  redirectWithNotice(`/admin/music-styles/${parsed.id}`, { message: `Style « ${parsed.name} » mis à jour.`, tone: "success" });
+  redirectWithNotice(`/admin/music-styles/${parsed.id}`, {
+    message: `Style « ${parsed.name} » mis à jour.`,
+    tone: "success",
+  });
 }
 
-export async function toggleMusicStyle(_previous: MusicStyleActionState, formData: FormData): Promise<MusicStyleActionState> {
+export async function toggleMusicStyle(
+  _previous: MusicStyleActionState,
+  formData: FormData,
+): Promise<MusicStyleActionState> {
   const session = await requireAdmin();
   try {
     const parsed = toggleMusicStyleSchema.parse(Object.fromEntries(formData));
     const active = parsed.active !== "true";
-    await getServiceDb().update(musicStyles).set({ active, updatedAt: new Date() }).where(eq(musicStyles.id, parsed.id));
+    await getServiceDb()
+      .update(musicStyles)
+      .set({ active, updatedAt: new Date() })
+      .where(eq(musicStyles.id, parsed.id));
     await writeAuditLog({
       action: "music_style.active.changed",
       actorId: session.user.id,
@@ -184,7 +208,10 @@ export async function toggleMusicStyle(_previous: MusicStyleActionState, formDat
   }
 }
 
-export async function deleteMusicStyle(_previous: MusicStyleActionState, formData: FormData): Promise<MusicStyleActionState> {
+export async function deleteMusicStyle(
+  _previous: MusicStyleActionState,
+  formData: FormData,
+): Promise<MusicStyleActionState> {
   const session = await requireAdmin();
   try {
     const parsed = styleMutationSchema.parse(Object.fromEntries(formData));

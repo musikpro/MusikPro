@@ -13,19 +13,46 @@ import {
 } from "@/lib/music-styles/catalog";
 
 const toneLabels: Record<MusicStyleTone, string> = {
-  orange: "Orange", coral: "Corail", red: "Rouge", rose: "Rose", pink: "Fuchsia",
-  violet: "Violet", indigo: "Indigo", blue: "Bleu", cyan: "Cyan", teal: "Turquoise",
-  green: "Vert", lime: "Citron vert", amber: "Ambre", yellow: "Jaune", slate: "Ardoise",
+  orange: "Orange",
+  coral: "Corail",
+  red: "Rouge",
+  rose: "Rose",
+  pink: "Fuchsia",
+  violet: "Violet",
+  indigo: "Indigo",
+  blue: "Bleu",
+  cyan: "Cyan",
+  teal: "Turquoise",
+  green: "Vert",
+  lime: "Citron vert",
+  amber: "Ambre",
+  yellow: "Jaune",
+  slate: "Ardoise",
 };
 
 const toneColors: Record<MusicStyleTone, string> = {
-  orange: "#d95012", coral: "#d95536", red: "#c83b3b", rose: "#c34570", pink: "#c43d8b",
-  violet: "#7950c7", indigo: "#4d5bc4", blue: "#2769be", cyan: "#157c96", teal: "#147e71",
-  green: "#138654", lime: "#59831b", amber: "#a9670d", yellow: "#967215", slate: "#526372",
+  orange: "#d95012",
+  coral: "#d95536",
+  red: "#c83b3b",
+  rose: "#c34570",
+  pink: "#c43d8b",
+  violet: "#7950c7",
+  indigo: "#4d5bc4",
+  blue: "#2769be",
+  cyan: "#157c96",
+  teal: "#147e71",
+  green: "#138654",
+  lime: "#59831b",
+  amber: "#a9670d",
+  yellow: "#967215",
+  slate: "#526372",
 };
 
 function iconLabel(value: MusicStyleIcon) {
-  return value.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+  return value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
 }
 
 type VisualPickerProps =
@@ -107,7 +134,12 @@ function VisualPickerDropdown(props: VisualPickerProps) {
       tabIndex={-1}
       onKeyDown={(event) => {
         const columns = kind === "icon" ? 6 : 3;
-        if (!["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End", "Enter", " ", "Escape", "Tab"].includes(event.key)) return;
+        if (
+          !["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End", "Enter", " ", "Escape", "Tab"].includes(
+            event.key,
+          )
+        )
+          return;
         if (event.key !== "Tab") event.preventDefault();
         if (event.key === "ArrowDown") setHighlighted((index) => Math.min(options.length - 1, index + columns));
         else if (event.key === "ArrowUp") setHighlighted((index) => Math.max(0, index - columns));
@@ -125,7 +157,8 @@ function VisualPickerDropdown(props: VisualPickerProps) {
       <div className={kind === "icon" ? "admin-visual-icon-grid" : "admin-visual-tone-grid"}>
         {options.map((option, index) => {
           const selected = option === value;
-          const optionLabel = kind === "icon" ? iconLabel(option as MusicStyleIcon) : toneLabels[option as MusicStyleTone];
+          const optionLabel =
+            kind === "icon" ? iconLabel(option as MusicStyleIcon) : toneLabels[option as MusicStyleTone];
           return (
             <button
               id={`${menuId}-option-${index}`}
@@ -148,9 +181,16 @@ function VisualPickerDropdown(props: VisualPickerProps) {
               onClick={() => choose(index)}
             >
               {kind === "icon" ? (
-                <><Icon i={option} size={20} /><small>{optionLabel}</small></>
+                <>
+                  <Icon i={option} size={20} />
+                  <small>{optionLabel}</small>
+                </>
               ) : (
-                <><span aria-hidden="true" /><small>{optionLabel}</small>{selected ? <Icon i="check" size={14} /> : null}</>
+                <>
+                  <span aria-hidden="true" />
+                  <small>{optionLabel}</small>
+                  {selected ? <Icon i="check" size={14} /> : null}
+                </>
               )}
             </button>
           );
@@ -179,12 +219,21 @@ function VisualPickerDropdown(props: VisualPickerProps) {
         }}
       >
         <span
-          className={kind === "tone" ? `admin-visual-trigger-swatch genre-choice-icon-${value}` : "admin-visual-trigger-icon"}
-          style={kind === "tone" ? { color: toneColors[value as MusicStyleTone], background: `${toneColors[value as MusicStyleTone]}14` } : undefined}
+          className={
+            kind === "tone" ? `admin-visual-trigger-swatch genre-choice-icon-${value}` : "admin-visual-trigger-icon"
+          }
+          style={
+            kind === "tone"
+              ? { color: toneColors[value as MusicStyleTone], background: `${toneColors[value as MusicStyleTone]}14` }
+              : undefined
+          }
         >
           {kind === "icon" ? <Icon i={value} size={20} /> : <span aria-hidden="true" />}
         </span>
-        <span className="admin-visual-trigger-copy"><small>{kind === "icon" ? "Icône sélectionnée" : "Couleur sélectionnée"}</small><strong>{label}</strong></span>
+        <span className="admin-visual-trigger-copy">
+          <small>{kind === "icon" ? "Icône sélectionnée" : "Couleur sélectionnée"}</small>
+          <strong>{label}</strong>
+        </span>
         <Icon i={open ? "chevron-up" : "chevron-down"} size={17} />
       </button>
       {typeof document !== "undefined" ? createPortal(menu, document.body) : null}
@@ -192,7 +241,13 @@ function VisualPickerDropdown(props: VisualPickerProps) {
   );
 }
 
-export default function AdminMusicStyleVisualPicker({ defaultIcon = "music-2", defaultTone = "orange" }: { defaultIcon?: string; defaultTone?: string }) {
+export default function AdminMusicStyleVisualPicker({
+  defaultIcon = "music-2",
+  defaultTone = "orange",
+}: {
+  defaultIcon?: string;
+  defaultTone?: string;
+}) {
   const [icon, setIcon] = useState<MusicStyleIcon>(isMusicStyleIcon(defaultIcon) ? defaultIcon : "music-2");
   const [tone, setTone] = useState<MusicStyleTone>(isMusicStyleTone(defaultTone) ? defaultTone : "orange");
   return (
@@ -201,17 +256,26 @@ export default function AdminMusicStyleVisualPicker({ defaultIcon = "music-2", d
       <input type="hidden" name="tone" value={tone} />
       <div className="admin-style-dropdown-grid">
         <div className="admin-style-dropdown-field">
-          <span>Icône</span><p>Déroule la liste pour choisir parmi {MUSIC_STYLE_ICONS.length} icônes.</p>
+          <span>Icône</span>
+          <p>Déroule la liste pour choisir parmi {MUSIC_STYLE_ICONS.length} icônes.</p>
           <VisualPickerDropdown kind="icon" value={icon} onValueChange={setIcon} />
         </div>
         <div className="admin-style-dropdown-field">
-          <span>Couleur</span><p>Déroule la liste pour choisir la couleur de la carte.</p>
+          <span>Couleur</span>
+          <p>Déroule la liste pour choisir la couleur de la carte.</p>
           <VisualPickerDropdown kind="tone" value={tone} onValueChange={setTone} />
         </div>
       </div>
       <div className="admin-style-picker-preview">
-        <span className={`admin-catalog-icon genre-choice-icon-${tone}`}><Icon i={icon} size={22} /></span>
-        <div><small>Aperçu</small><strong>{iconLabel(icon)} · {toneLabels[tone]}</strong></div>
+        <span className={`admin-catalog-icon genre-choice-icon-${tone}`}>
+          <Icon i={icon} size={22} />
+        </span>
+        <div>
+          <small>Aperçu</small>
+          <strong>
+            {iconLabel(icon)} · {toneLabels[tone]}
+          </strong>
+        </div>
       </div>
     </div>
   );

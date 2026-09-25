@@ -18,10 +18,24 @@ export { buildStylePrompt, MUSICFUL_STYLE_MAX_LENGTH } from "./style-prompt-buil
  * field existed. This looks it up live for whatever genre name the client submitted, so every
  * current and future catalog style benefits automatically — nothing here is hardcoded per style.
  */
-export async function resolveStylePrompt(genreName: string, mood: string, strictStyleAdherence: boolean): Promise<string> {
+export async function resolveStylePrompt(
+  genreName: string,
+  mood: string,
+  strictStyleAdherence: boolean,
+): Promise<string> {
   const database = getServiceDb();
-  const [exact] = await database.select({ aiDescription: musicStyles.aiDescription }).from(musicStyles).where(eq(musicStyles.name, genreName)).limit(1);
-  const [fuzzy] = exact ? [] : await database.select({ aiDescription: musicStyles.aiDescription }).from(musicStyles).where(ilike(musicStyles.name, genreName)).limit(1);
+  const [exact] = await database
+    .select({ aiDescription: musicStyles.aiDescription })
+    .from(musicStyles)
+    .where(eq(musicStyles.name, genreName))
+    .limit(1);
+  const [fuzzy] = exact
+    ? []
+    : await database
+        .select({ aiDescription: musicStyles.aiDescription })
+        .from(musicStyles)
+        .where(ilike(musicStyles.name, genreName))
+        .limit(1);
   const description = (exact ?? fuzzy)?.aiDescription?.trim();
   return buildStylePrompt(genreName, description, mood, strictStyleAdherence);
 }

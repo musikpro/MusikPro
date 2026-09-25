@@ -10,7 +10,12 @@ for (const rel of ["package.json", "africa-saas.config.example.json", "config/fe
   if (String(data.version) !== kitVersion) errors.push(`${rel}: version ${data.version} != ${kitVersion}`);
 }
 const stale = [];
-for (const rel of ["scripts/setup-payments.mjs", "scripts/setup-saas-mark.mjs", "scripts/production-doctor.mjs", "scripts/seed-payment-routes.mjs"]) {
+for (const rel of [
+  "scripts/setup-payments.mjs",
+  "scripts/setup-saas-mark.mjs",
+  "scripts/production-doctor.mjs",
+  "scripts/seed-payment-routes.mjs",
+]) {
   const text = fs.readFileSync(path.join(root, rel), "utf8");
   if (/0\.8\.(?:10|16|20)\b/.test(text)) stale.push(rel);
 }

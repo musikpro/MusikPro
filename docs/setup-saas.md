@@ -9,14 +9,13 @@ Le workflow n’affiche pas uniquement une checklist technique : il doit permett
 Après extraction, `npm run kit:verify` est la commande recommandée : elle exécute les contrôles statiques et sécurité immédiatement, puis ajoute automatiquement les contrôles dynamiques après `npm install`. Elle ne rend aucun service optionnel obligatoire.
 
 ## Principes
+
 - une seule phase détaillée à la fois ;
 - la roadmap complète reste visible ;
 - aucune clé secrète dans le chat ;
 - CONFIGURÉ ≠ TESTÉ ;
 - paiements, Cloudflare et Cloudinary sont optionnels ;
 - une phase n’est verte qu’après contrôle réel ou `skipped` explicite lorsqu’elle est optionnelle.
-
-
 
 ## Computer Use en Phase 2
 
@@ -39,6 +38,7 @@ npm run banani:check
 Le fichier est ignoré par Git. Le token ne doit jamais être collé dans le chat, une capture, un commit ou une documentation.
 
 ### Après la connexion : `/import-banani`
+
 Une fois le MCP Banani connecté, l’étape officielle est désormais :
 
 ```text
@@ -54,12 +54,12 @@ npm run import-banani:analyze
 
 Le résultat compare le design avec le starter et génère `generated/banani-gap-analysis.md` puis `generated/implementation-plan.md`. Aucun code massif ne doit être lancé avant cette comparaison.
 
-
 ## Upstash optionnel en Phase 16
 
 Upstash Redis est une phase dédiée et facultative. Il sert au cache TTL, au rate limiting distribué et aux états temporaires. Neon reste la source de vérité. Utiliser `npm run upstash:setup` ou `npm run upstash:setup -- --none`, puis `npm run upstash:check:online` si activé.
 
 ## Fin du parcours
+
 La Phase 20 finalise et contrôle le SaaS Web. La Phase 21 Mobile App est ensuite optionnelle.
 
 La Phase 20 inclut le contrôle final :
@@ -69,6 +69,7 @@ npm run conformity:check
 ```
 
 Ce test produit :
+
 - `generated/conformity-report.md`
 - `generated/conformity-report.json`
 
@@ -95,7 +96,6 @@ npm run cron:generate
 ```
 
 Cette commande ne fait rien si aucun provider n'est activé.
-
 
 ## Mobile App WebView optionnelle en Phase 21
 

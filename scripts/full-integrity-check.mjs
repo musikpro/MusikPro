@@ -70,7 +70,8 @@ if (hasLock && hasModules) {
   if (!hasLock) console.log("○ lockfile absent");
   if (!hasModules) console.log("○ node_modules absent");
   console.log("→ Après npm install, relancer : npm run kit:full-test");
-  for (const [label] of dynamicChecks) results.push({ label, status: "PENDING", exitCode: null, dynamic: true, blocking: true, durationMs: 0 });
+  for (const [label] of dynamicChecks)
+    results.push({ label, status: "PENDING", exitCode: null, dynamic: true, blocking: true, durationMs: 0 });
 }
 
 const failures = results.filter((r) => r.status === "FAIL");
@@ -80,7 +81,13 @@ const pending = results.filter((r) => r.status === "PENDING").length;
 const report = {
   version: kitVersion,
   generatedAt: new Date().toISOString(),
-  status: failures.length ? "FAIL" : dynamicState === "PENDING" ? "STATIC_PASS_DYNAMIC_PENDING" : warnings.length ? "PASS_WITH_WARNINGS" : "PASS",
+  status: failures.length
+    ? "FAIL"
+    : dynamicState === "PENDING"
+      ? "STATIC_PASS_DYNAMIC_PENDING"
+      : warnings.length
+        ? "PASS_WITH_WARNINGS"
+        : "PASS",
   summary: { pass: passes, warn: warnings.length, fail: failures.length, pending },
   results,
 };
@@ -100,9 +107,13 @@ const md = [
   `|---|---|---|`,
   ...results.map((r) => `| ${r.label} | ${r.status} | ${r.dynamic ? "dynamique" : "statique"} |`),
   ``,
-  failures.length ? `## Échecs\n${failures.map((r) => `- ${r.label}`).join("\n")}` : `## Échecs\nAucun échec bloquant détecté.`,
+  failures.length
+    ? `## Échecs\n${failures.map((r) => `- ${r.label}`).join("\n")}`
+    : `## Échecs\nAucun échec bloquant détecté.`,
   ``,
-  warnings.length ? `## Avertissements\n${warnings.map((r) => `- ${r.label}`).join("\n")}` : `## Avertissements\nAucun avertissement de contrôle.`,
+  warnings.length
+    ? `## Avertissements\n${warnings.map((r) => `- ${r.label}`).join("\n")}`
+    : `## Avertissements\nAucun avertissement de contrôle.`,
   ``,
   `> Les tests dynamiques nécessitent les dépendances installées. Le rapport statique vérifie la structure et les garde-fous du kit, mais ne remplace pas les tests sandbox fournisseurs, Neon réel et staging.`,
   ``,
@@ -118,4 +129,6 @@ if (dynamicState === "PENDING") {
   console.log(`Test d'intégrité complet : STATIC PASS · DYNAMIC PENDING`);
   process.exit(0);
 }
-console.log(`Test d'intégrité complet : ${warnings.length ? "PASS WITH WARNINGS" : "PASS"} — tous les contrôles exécutables ont réussi.`);
+console.log(
+  `Test d'intégrité complet : ${warnings.length ? "PASS WITH WARNINGS" : "PASS"} — tous les contrôles exécutables ont réussi.`,
+);

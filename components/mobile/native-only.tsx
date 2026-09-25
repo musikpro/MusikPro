@@ -7,11 +7,7 @@ const subscribe = () => () => {};
 const serverSnapshot = () => false;
 
 export function NativeOnly({ children }: { children: ReactNode }) {
-  const native = useSyncExternalStore(
-    subscribe,
-    isNativeMobileApp,
-    serverSnapshot,
-  );
+  const native = useSyncExternalStore(subscribe, isNativeMobileApp, serverSnapshot);
   if (!native) return null;
   return <>{children}</>;
 }

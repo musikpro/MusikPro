@@ -155,14 +155,14 @@ Puis tests manuels : auth, email, paiement sandbox/live contrôlé, responsive m
 
 Le statut reste **NON VÉRIFIÉ** pour tout service qui n'a pas été réellement testé sur le domaine final.
 
-
 ## Cloudflare optionnel — Phase 17
+
 Après validation du staging, le projet peut utiliser Cloudflare pour acheter/gérer le domaine ou gérer le DNS. Ce n’est pas obligatoire.
 
 - Sans Cloudflare : garder le registrar/DNS choisi et marquer la Phase 17 `skipped`.
 - Avec Cloudflare : lancer `npm run cloudflare:setup`, puis recopier dans Cloudflare DNS les enregistrements exacts demandés par Vercel.
 - Ne jamais considérer cette phase comme une activation de Cloudflare R2.
 
-
 ## Cloudinary optionnel — Phase 18
+
 Ajouter les variables Cloudinary à Vercel uniquement si les uploads d’images sont activés et testés en staging.

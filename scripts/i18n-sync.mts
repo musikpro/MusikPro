@@ -81,7 +81,11 @@ function loadDictionary(locale: TranslationLocale): Record<string, string> {
 
 function writeDictionary(locale: TranslationLocale, dict: Record<string, string>) {
   const file = path.join(ROOT, "lib/i18n/locales", `${locale}.json`);
-  const sorted = Object.fromEntries(Object.keys(dict).sort((a, b) => a.localeCompare(b, "fr")).map((k) => [k, dict[k]]));
+  const sorted = Object.fromEntries(
+    Object.keys(dict)
+      .sort((a, b) => a.localeCompare(b, "fr"))
+      .map((k) => [k, dict[k]]),
+  );
   writeFileSync(file, JSON.stringify(sorted, null, 2) + "\n");
 }
 
@@ -91,7 +95,9 @@ async function main() {
   const files = SCAN_DIRS.flatMap(walk);
   const usedKeys = collectKeys(files);
   for (const key of MANUAL_KEYS) usedKeys.add(key);
-  console.log(`Scanned ${files.length} files, found ${usedKeys.size} distinct t("...") strings (incl. ${MANUAL_KEYS.length} manual).`);
+  console.log(
+    `Scanned ${files.length} files, found ${usedKeys.size} distinct t("...") strings (incl. ${MANUAL_KEYS.length} manual).`,
+  );
 
   let anyMissing = false;
   for (const locale of LOCALES) {
@@ -113,7 +119,10 @@ async function main() {
       const translations = await translateBatch!(locale, batch);
       Object.assign(dict, translations);
       const stillMissing = batch.filter((key) => !(key in translations));
-      if (stillMissing.length) console.warn(`    ! AI response omitted ${stillMissing.length} key(s), left untranslated (fallback to French).`);
+      if (stillMissing.length)
+        console.warn(
+          `    ! AI response omitted ${stillMissing.length} key(s), left untranslated (fallback to French).`,
+        );
     }
     writeDictionary(locale, dict);
     console.log(`  ${locale}: written, now ${Object.keys(dict).length} keys.`);

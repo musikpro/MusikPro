@@ -40,18 +40,37 @@ export async function POST(request: Request) {
 
   const provider = await getMusicfulProvider();
   if (!provider.enabled || !provider.apiKey) {
-    return NextResponse.json({ error: "La génération audio n’est pas encore configurée.", code: "MUSICFUL_NOT_CONFIGURED" }, { status: 503 });
+    return NextResponse.json(
+      { error: "La génération audio n’est pas encore configurée.", code: "MUSICFUL_NOT_CONFIGURED" },
+      { status: 503 },
+    );
   }
   if (!provider.allowLyricsToMusic) {
-    return NextResponse.json({ error: "La génération de chansons est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" }, { status: 403 });
+    return NextResponse.json(
+      { error: "La génération de chansons est désactivée.", code: "MUSICFUL_CAPABILITY_DISABLED" },
+      { status: 403 },
+    );
   }
 
-  const limit = await rateLimit(`songs:generate:${session.user.id}:${clientIp(request)}`, provider.maxGenerationsPerUserPerHour, 3600);
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
-  if (!limit.success) return NextResponse.json({ error: "Trop de générations. Réessaie plus tard.", code: "RATE_LIMITED" }, { status: 429 });
+  const limit = await rateLimit(
+    `songs:generate:${session.user.id}:${clientIp(request)}`,
+    provider.maxGenerationsPerUserPerHour,
+    3600,
+  );
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
+  if (!limit.success)
+    return NextResponse.json(
+      { error: "Trop de générations. Réessaie plus tard.", code: "RATE_LIMITED" },
+      { status: 429 },
+    );
 
   const parsed = songGenerateRequestSchema.safeParse(await request.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "Paramètres de génération invalides.", details: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json(
+      { error: "Paramètres de génération invalides.", details: parsed.error.flatten() },
+      { status: 400 },
+    );
   const input = parsed.data;
 
   const isOwner = hasAppRole((session.user as { role?: string }).role, "admin");
@@ -59,13 +78,19 @@ export async function POST(request: Request) {
 
   let newBalance: number;
   if (bypassActive) {
-    const [row] = await userQuery(session.user.id, db.select({ balance: credits.balance }).from(credits).where(eq(credits.userId, session.user.id)).limit(1));
+    const [row] = await userQuery(
+      session.user.id,
+      db.select({ balance: credits.balance }).from(credits).where(eq(credits.userId, session.user.id)).limit(1),
+    );
     newBalance = Number(row?.balance ?? 0);
   } else {
     const deducted = await deductCredits(session.user.id, CREDITS_PER_GENERATION);
     if (deducted === null) {
       return NextResponse.json(
-        { error: `Il faut ${CREDITS_PER_GENERATION} crédits pour lancer une génération musicale.`, code: "INSUFFICIENT_CREDITS" },
+        {
+          error: `Il faut ${CREDITS_PER_GENERATION} crédits pour lancer une génération musicale.`,
+          code: "INSUFFICIENT_CREDITS",
+        },
         { status: 402 },
       );
     }
@@ -79,13 +104,24 @@ export async function POST(request: Request) {
   try {
     const { songGroupId, succeeded } = await submitSongGeneration(
       session.user.id,
-      { title, occasion: input.occasion, style, lyrics: input.lyrics, gender, instrumental: provider.defaultInstrumental ? 1 : 0 },
+      {
+        title,
+        occasion: input.occasion,
+        style,
+        lyrics: input.lyrics,
+        gender,
+        instrumental: provider.defaultInstrumental ? 1 : 0,
+      },
       provider.model,
     );
     if (succeeded === 0) {
       const refunded = bypassActive ? newBalance : await refundCredits(session.user.id, CREDITS_PER_GENERATION);
       return NextResponse.json(
-        { error: "La génération n’a pas pu démarrer. Tes crédits ont été recrédités.", code: "MUSICFUL_SUBMIT_FAILED", newBalance: refunded ?? newBalance },
+        {
+          error: "La génération n’a pas pu démarrer. Tes crédits ont été recrédités.",
+          code: "MUSICFUL_SUBMIT_FAILED",
+          newBalance: refunded ?? newBalance,
+        },
         { status: 502 },
       );
     }
@@ -99,9 +135,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ songGroupId, newBalance });
   } catch (error) {
     const refunded = bypassActive ? newBalance : await refundCredits(session.user.id, CREDITS_PER_GENERATION);
-    logger.error("Song generation submit failed", { userId: session.user.id, error: error instanceof Error ? error.message : "unknown" });
+    logger.error("Song generation submit failed", {
+      userId: session.user.id,
+      error: error instanceof Error ? error.message : "unknown",
+    });
     return NextResponse.json(
-      { error: "La génération n’a pas pu démarrer. Tes crédits ont été recrédités.", code: "MUSICFUL_SUBMIT_FAILED", newBalance: refunded ?? newBalance },
+      {
+        error: "La génération n’a pas pu démarrer. Tes crédits ont été recrédités.",
+        code: "MUSICFUL_SUBMIT_FAILED",
+        newBalance: refunded ?? newBalance,
+      },
       { status: 502 },
     );
   }

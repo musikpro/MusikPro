@@ -85,14 +85,16 @@ Express:
 // Either: capture rawBody for ALL routes (works for Stripe AND the African providers)
 app.use(
   express.json({
-    verify: (req, _res, buf) => { (req as any).rawBody = buf; },
+    verify: (req, _res, buf) => {
+      (req as any).rawBody = buf;
+    },
   }),
 );
 
 // Or: dedicated raw-body parser on the Stripe route specifically
 app.post(
   "/webhooks/stripe",
-  express.raw({ type: "application/json" }),  // req.body is now a Buffer
+  express.raw({ type: "application/json" }), // req.body is now a Buffer
   handler,
 );
 ```
@@ -103,7 +105,7 @@ Next.js App Router:
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  const rawBody = await req.text();   // ← .text(), NOT .json()
+  const rawBody = await req.text(); // ← .text(), NOT .json()
   const sig = req.headers.get("stripe-signature")!;
   const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   // … handle event
@@ -117,7 +119,7 @@ Next.js Pages Router (legacy):
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const rawBody = await getRawBody(req);  // helper from "raw-body"
+  const rawBody = await getRawBody(req); // helper from "raw-body"
   const sig = req.headers["stripe-signature"] as string;
   const event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
   // …
@@ -127,6 +129,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 #### Why `constructEvent` and not custom HMAC
 
 The `Stripe-Signature` header combines:
+
 - A timestamp (`t=`) used for the replay-window check.
 - One or more `v1=` signatures (multiple are present during a key rotation window so old and new secrets both verify).
 - Future schemes Stripe may roll out (`v2=`, `v3=`).
@@ -140,17 +143,12 @@ function verifyMoneroo(rawBody: Buffer, req: Request, secret: string) {
   const sig = req.headers["x-moneroo-signature"] as string | undefined;
   if (!sig) return { ok: false, error: "x-moneroo-signature header missing" };
 
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(rawBody)
-    .digest("hex");
+  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
 
   const a = Buffer.from(sig.trim());
   const b = Buffer.from(expected);
-  if (a.length !== b.length)
-    return { ok: false, error: "Moneroo signature length mismatch" };
-  if (!crypto.timingSafeEqual(a, b))
-    return { ok: false, error: "Moneroo signature invalid" };
+  if (a.length !== b.length) return { ok: false, error: "Moneroo signature length mismatch" };
+  if (!crypto.timingSafeEqual(a, b)) return { ok: false, error: "Moneroo signature invalid" };
   return { ok: true };
 }
 ```
@@ -206,12 +204,7 @@ PayTech does NOT send signature headers. Both verification methods read named fi
 PayTech also ships the IPN as `application/x-www-form-urlencoded` by default. Your handler must branch on `Content-Type` before parsing.
 
 ```ts
-function verifyPaytech(
-  rawBody: Buffer,
-  req: Request,
-  apiKey: string,
-  apiSecret: string,
-) {
+function verifyPaytech(rawBody: Buffer, req: Request, apiKey: string, apiSecret: string) {
   // Parse body according to Content-Type
   const ct = (req.headers["content-type"] as string | undefined) || "";
   let body: any;
@@ -230,10 +223,7 @@ function verifyPaytech(
     // Note: item_price arrives as STRING when form-encoded, NUMBER when JSON.
     // The HMAC message uses whichever form the IPN itself carries.
     const message = `${body.item_price}|${body.ref_command}|${apiKey}`;
-    const expected = crypto
-      .createHmac("sha256", apiSecret)
-      .update(message)
-      .digest("hex");
+    const expected = crypto.createHmac("sha256", apiSecret).update(message).digest("hex");
     const a = Buffer.from(body.hmac_compute);
     const b = Buffer.from(expected);
     if (a.length === b.length && crypto.timingSafeEqual(a, b)) {
@@ -243,14 +233,8 @@ function verifyPaytech(
   }
 
   // ── Method 2: SHA256-of-keys (default mode, always present) ──
-  const expectedKeyHash = crypto
-    .createHash("sha256")
-    .update(apiKey)
-    .digest("hex");
-  const expectedSecretHash = crypto
-    .createHash("sha256")
-    .update(apiSecret)
-    .digest("hex");
+  const expectedKeyHash = crypto.createHash("sha256").update(apiKey).digest("hex");
+  const expectedSecretHash = crypto.createHash("sha256").update(apiSecret).digest("hex");
   const aK = Buffer.from(body.api_key_sha256 ?? "");
   const bK = Buffer.from(expectedKeyHash);
   const aS = Buffer.from(body.api_secret_sha256 ?? "");
@@ -291,27 +275,15 @@ function computeEventId(rawBody: Buffer): string {
 //   )
 //   (Add a TTL job: delete where processed_at < now() - interval '24 hours')
 
-async function alreadyProcessedEvent(
-  provider: string,
-  eventId: string,
-): Promise<boolean> {
+async function alreadyProcessedEvent(provider: string, eventId: string): Promise<boolean> {
   const row = await db.query.processedEvents.findFirst({
-    where: and(
-      eq(processedEvents.provider, provider),
-      eq(processedEvents.eventId, eventId),
-    ),
+    where: and(eq(processedEvents.provider, provider), eq(processedEvents.eventId, eventId)),
   });
   return Boolean(row);
 }
 
-async function markEventProcessed(
-  provider: string,
-  eventId: string,
-): Promise<void> {
-  await db
-    .insert(processedEvents)
-    .values({ provider, eventId })
-    .onConflictDoNothing(); // safe race
+async function markEventProcessed(provider: string, eventId: string): Promise<void> {
+  await db.insert(processedEvents).values({ provider, eventId }).onConflictDoNothing(); // safe race
 }
 ```
 
@@ -323,11 +295,7 @@ If you already run Redis (Upstash, ElastiCache, self-hosted), prefer it over the
 import { Redis } from "@upstash/redis";
 const redis = Redis.fromEnv();
 
-async function alreadyProcessedEvent(
-  connectionId: string,
-  provider: string,
-  eventId: string,
-): Promise<boolean> {
+async function alreadyProcessedEvent(connectionId: string, provider: string, eventId: string): Promise<boolean> {
   const key = `webhook:dedup:${provider}:${connectionId}:${eventId}`;
   // SET key value NX EX 86400 → only sets if not exists, with 24h TTL.
   // Returns "OK" on success, null if key already existed.
@@ -364,10 +332,7 @@ Re-query the provider's API with the merchant's **secret API key** (which never 
 
 ```ts
 if (connection.provider === "moneroo" && event.status === "completed") {
-  const live = await monerooVerifyPayment(
-    event.providerTransactionId,
-    credentials.secretKey,
-  );
+  const live = await monerooVerifyPayment(event.providerTransactionId, credentials.secretKey);
   if (live && live.status !== "success") {
     event.status = "failed";
     event.failureReason = `Re-query mismatch: live=${live.status}`;
@@ -398,10 +363,7 @@ Layer 2 — entitlement guard. Replace `entitlements` / `customerId` / `referenc
 
 ```ts
 const existing = await db.query.entitlements.findFirst({
-  where: and(
-    eq(entitlements.customerId, payment.payerId),
-    eq(entitlements.referenceId, payment.referenceId),
-  ),
+  where: and(eq(entitlements.customerId, payment.payerId), eq(entitlements.referenceId, payment.referenceId)),
 });
 if (existing && existing.expiresAt > new Date()) {
   return res.json({ received: true, alreadyEntitled: true });
@@ -414,10 +376,7 @@ if (existing && existing.expiresAt > new Date()) {
 The webhook payload includes `data.amount` and `data.currency` (or equivalents). Compare to the row inserted at checkout time:
 
 ```ts
-if (
-  event.reportedAmount !== payment.amountTotal ||
-  event.reportedCurrency !== payment.currency
-) {
+if (event.reportedAmount !== payment.amountTotal || event.reportedCurrency !== payment.currency) {
   // Refuse — log a security alert.
   console.error("[WEBHOOK] amount tampering detected", {
     paymentId,
@@ -464,12 +423,7 @@ router.post("/webhooks/byok/:connectionId", async (req, res) => {
   const credentials = decryptCredentials(conn.credentialsEncrypted);
 
   // 4. Verify signature
-  const verified = verifyWebhookSignature(
-    conn.provider,
-    req,
-    rawBody,
-    credentials,
-  );
+  const verified = verifyWebhookSignature(conn.provider, req, rawBody, credentials);
   if (!verified.ok) return res.status(401).json({ error: verified.error });
 
   // 5. Parse + normalize event
@@ -484,10 +438,7 @@ router.post("/webhooks/byok/:connectionId", async (req, res) => {
 
   // 7. Re-query (Moneroo only)
   if (conn.provider === "moneroo" && event.status === "completed") {
-    const live = await monerooVerifyPayment(
-      event.providerTransactionId,
-      credentials.secretKey,
-    );
+    const live = await monerooVerifyPayment(event.providerTransactionId, credentials.secretKey);
     if (live && live.status !== "success") event.status = "failed";
   }
 

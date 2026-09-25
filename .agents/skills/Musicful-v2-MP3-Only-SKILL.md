@@ -746,8 +746,8 @@ DO NOT CALL
 Remove or deprecate methods such as:
 
 ```ts
-generateMp4()
-convertToMp4()
+generateMp4();
+convertToMp4();
 ```
 
 when safe.
@@ -762,12 +762,7 @@ export interface MusicfulConfig {
   apiBaseUrl: string;
   apiKey: string;
 
-  defaultModel:
-    | "MFV3.0"
-    | "MFV2.0"
-    | "MFV1.5X"
-    | "MFV1.5"
-    | "MFV1.0";
+  defaultModel: "MFV3.0" | "MFV2.0" | "MFV1.5X" | "MFV1.5" | "MFV1.0";
 
   defaultInstrumental: boolean;
   defaultGender: "male" | "female" | "";
@@ -794,11 +789,7 @@ const musicfulOutputSettingsSchema = z.object({
   outputFormat: z.literal("mp3"),
   mp4Enabled: z.literal(false),
   wavEnabled: z.literal(false),
-  mp3BitrateKbps: z.union([
-    z.literal(192),
-    z.literal(256),
-    z.literal(320),
-  ]).default(192),
+  mp3BitrateKbps: z.union([z.literal(192), z.literal(256), z.literal(320)]).default(192),
 });
 ```
 

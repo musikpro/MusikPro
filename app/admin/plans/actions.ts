@@ -13,7 +13,11 @@ import { writeAuditLog } from "@/lib/security/audit";
 
 const creditPlanFormSchema = z.object({
   name: z.string().trim().min(2).max(80),
-  code: z.string().trim().toLowerCase().regex(/^[a-z0-9_-]{2,40}$/),
+  code: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z0-9_-]{2,40}$/),
   amount: z.coerce.number().int().positive().max(1_000_000_000),
   credits: z.coerce.number().int().min(CREDITS_PER_GENERATION).max(100_000),
   description: z.string().trim().max(500).default(""),
@@ -26,14 +30,18 @@ const creditPlanFormSchema = z.object({
 const idSchema = z.object({ id: z.string().trim().min(1).max(120) });
 const toggleSchema = idSchema.extend({ active: z.enum(["true", "false"]) });
 const reorderSchema = z.object({
-  order: z.string().max(30000).transform((value, context) => {
-    try {
-      return JSON.parse(value) as unknown;
-    } catch {
-      context.addIssue({ code: "custom", message: "Ordre invalide." });
-      return z.NEVER;
-    }
-  }).pipe(z.array(z.string().trim().min(1).max(120)).min(1).max(200))
+  order: z
+    .string()
+    .max(30000)
+    .transform((value, context) => {
+      try {
+        return JSON.parse(value) as unknown;
+      } catch {
+        context.addIssue({ code: "custom", message: "Ordre invalide." });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.array(z.string().trim().min(1).max(120)).min(1).max(200))
     .refine((ids) => new Set(ids).size === ids.length, "Chaque offre doit apparaître une seule fois."),
 });
 
@@ -68,7 +76,9 @@ export async function createPlan(formData: FormData) {
   const session = await requireAdmin();
   const parsed = creditPlanFormSchema.parse(Object.fromEntries(formData));
   const id = randomUUID();
-  await getServiceDb().insert(plans).values({ id, ...planValues(parsed) });
+  await getServiceDb()
+    .insert(plans)
+    .values({ id, ...planValues(parsed) });
   await writeAuditLog({
     action: "plan.created",
     actorId: session.user.id,
@@ -82,7 +92,9 @@ export async function createPlan(formData: FormData) {
 
 export async function updatePlan(formData: FormData) {
   const session = await requireAdmin();
-  const parsed = creditPlanFormSchema.extend({ id: z.string().trim().min(1).max(120) }).parse(Object.fromEntries(formData));
+  const parsed = creditPlanFormSchema
+    .extend({ id: z.string().trim().min(1).max(120) })
+    .parse(Object.fromEntries(formData));
   await getServiceDb().update(plans).set(planValues(parsed)).where(eq(plans.id, parsed.id));
   await writeAuditLog({
     action: "plan.updated",
@@ -100,7 +112,13 @@ export async function togglePlan(formData: FormData) {
   const parsed = toggleSchema.parse(Object.fromEntries(formData));
   const active = parsed.active !== "true";
   await getServiceDb().update(plans).set({ active }).where(eq(plans.id, parsed.id));
-  await writeAuditLog({ action: "plan.active.changed", actorId: session.user.id, targetType: "plan", targetId: parsed.id, metadata: { active } });
+  await writeAuditLog({
+    action: "plan.active.changed",
+    actorId: session.user.id,
+    targetType: "plan",
+    targetId: parsed.id,
+    metadata: { active },
+  });
   revalidateCreditPlans();
 }
 
@@ -132,6 +150,12 @@ export async function reorderPlans(formData: FormData) {
     from jsonb_to_recordset(${orderedRows}::jsonb) as ordered(id text, sort_order integer)
     where ${plans.id} = ordered.id
   `);
-  await writeAuditLog({ action: "plan.reordered", actorId: session.user.id, targetType: "credit_plan_catalog", targetId: "global", metadata: { order } });
+  await writeAuditLog({
+    action: "plan.reordered",
+    actorId: session.user.id,
+    targetType: "credit_plan_catalog",
+    targetId: "global",
+    metadata: { order },
+  });
   revalidateCreditPlans();
 }

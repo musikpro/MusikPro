@@ -20,10 +20,10 @@ const rows = await sql`
   JOIN pg_namespace n ON n.oid = c.relnamespace
   WHERE n.nspname = 'public' AND c.relkind = 'r' AND c.relname = ANY(${inspected})
 `;
-const byName = new Map(rows.map(r => [r.table_name, r]));
-const errors=[];
+const byName = new Map(rows.map((r) => [r.table_name, r]));
+const errors = [];
 for (const table of inspected) {
-  const row=byName.get(table);
+  const row = byName.get(table);
   if (!row && conditional.includes(table)) continue;
   if (!row) errors.push(`${table}: table missing from public schema`);
   else {
@@ -36,4 +36,6 @@ if (errors.length) {
   for (const e of errors) console.error(`- ${e}`);
   process.exit(1);
 }
-console.log(`Security DB check: PASS — RLS verified on ${required.length} required table(s); ${conditional.length} conditional table(s) checked when present.`);
+console.log(
+  `Security DB check: PASS — RLS verified on ${required.length} required table(s); ${conditional.length} conditional table(s) checked when present.`,
+);

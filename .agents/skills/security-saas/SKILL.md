@@ -4,6 +4,7 @@ description: Audit de sécurité officiel Africa SaaS Kit. Scanne les fichiers d
 ---
 
 ## Langue de réponse
+
 Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
 
 # /security-saas — Audit sécurité complet du SaaS
@@ -35,6 +36,6 @@ Quand cette skill est invoquée :
 
 Un rang élevé n'est pas une garantie absolue d'absence de vulnérabilité : il mesure la conformité aux garde-fous automatisables du kit.
 
-
 ## Règle de refactorisation
+
 Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.

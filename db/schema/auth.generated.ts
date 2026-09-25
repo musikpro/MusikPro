@@ -25,7 +25,9 @@ export const session = pgTable("session", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   activeOrganizationId: text("active_organization_id"),
   activeTeamId: text("active_team_id"),
   impersonatedBy: text("impersonated_by"),
@@ -35,7 +37,9 @@ export const account = pgTable("account", {
   id: text("id").primaryKey(),
   accountId: text("account_id").notNull(),
   providerId: text("provider_id").notNull(),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   accessToken: text("access_token"),
   refreshToken: text("refresh_token"),
   idToken: text("id_token"),
@@ -56,15 +60,21 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const twoFactor = pgTable("two_factor", {
-  id: text("id").primaryKey(),
-  secret: text("secret").notNull(),
-  backupCodes: text("backup_codes").notNull(),
-  verified: boolean("verified").default(true),
-  failedVerificationCount: integer("failed_verification_count").default(0),
-  lockedUntil: timestamp("locked_until"),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
-}, (t) => ({ userUnique: uniqueIndex("two_factor_user_unique").on(t.userId) }));
+export const twoFactor = pgTable(
+  "two_factor",
+  {
+    id: text("id").primaryKey(),
+    secret: text("secret").notNull(),
+    backupCodes: text("backup_codes").notNull(),
+    verified: boolean("verified").default(true),
+    failedVerificationCount: integer("failed_verification_count").default(0),
+    lockedUntil: timestamp("locked_until"),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+  },
+  (t) => ({ userUnique: uniqueIndex("two_factor_user_unique").on(t.userId) }),
+);
 
 export const organization = pgTable("organization", {
   id: text("id").primaryKey(),
@@ -75,22 +85,34 @@ export const organization = pgTable("organization", {
   metadata: text("metadata"),
 });
 
-export const member = pgTable("member", {
-  id: text("id").primaryKey(),
-  organizationId: text("organization_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
-  role: text("role").notNull().default("member"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-}, (t) => ({ orgUserUnique: uniqueIndex("member_org_user_unique").on(t.organizationId, t.userId) }));
+export const member = pgTable(
+  "member",
+  {
+    id: text("id").primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    role: text("role").notNull().default("member"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => ({ orgUserUnique: uniqueIndex("member_org_user_unique").on(t.organizationId, t.userId) }),
+);
 
 export const invitation = pgTable("invitation", {
   id: text("id").primaryKey(),
-  organizationId: text("organization_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   role: text("role"),
   status: text("status").notNull().default("pending"),
   expiresAt: timestamp("expires_at").notNull(),
-  inviterId: text("inviter_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  inviterId: text("inviter_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
   teamId: text("team_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
@@ -99,19 +121,28 @@ export const team = pgTable("team", {
   memberCount: integer("member_count").notNull().default(0),
   id: text("id").primaryKey(),
   name: text("name").notNull(),
-  organizationId: text("organization_id").notNull().references(() => organization.id, { onDelete: "cascade" }),
+  organizationId: text("organization_id")
+    .notNull()
+    .references(() => organization.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-export const teamMember = pgTable("team_member", {
-  membershipKey: text("membership_key").unique(),
-  id: text("id").primaryKey(),
-  teamId: text("team_id").notNull().references(() => team.id, { onDelete: "cascade" }),
-  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow(),
-}, (t) => ({ teamUserUnique: uniqueIndex("team_member_team_user_unique").on(t.teamId, t.userId) }));
-
+export const teamMember = pgTable(
+  "team_member",
+  {
+    membershipKey: text("membership_key").unique(),
+    id: text("id").primaryKey(),
+    teamId: text("team_id")
+      .notNull()
+      .references(() => team.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at").defaultNow(),
+  },
+  (t) => ({ teamUserUnique: uniqueIndex("team_member_team_user_unique").on(t.teamId, t.userId) }),
+);
 
 // Better Auth rate limiting storage (database-backed for serverless safety).
 export const rateLimit = pgTable("rateLimit", {

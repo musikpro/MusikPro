@@ -44,7 +44,12 @@ export default function MySongsGenerated() {
     return () => window.clearInterval(timer);
   }, [demo, demo.isDemo, hasPendingSong]);
 
-  const playVersion = (versionKey: string, audioUrl: string | null | undefined, songId: string | number, versionIndex: number) => {
+  const playVersion = (
+    versionKey: string,
+    audioUrl: string | null | undefined,
+    songId: string | number,
+    versionIndex: number,
+  ) => {
     const audio = audioRef.current;
     if (!audio || !audioUrl) return;
     if (playingVersion === versionKey) {
@@ -195,7 +200,9 @@ export default function MySongsGenerated() {
                 const versionKey = `${song.id}|${vi}`;
                 const isPlaying = playingVersion === versionKey;
                 const versionStatus = v.status ?? "completed";
-                const isPending = !demo.isDemo && (versionStatus === "queued" || versionStatus === "submitting" || versionStatus === "processing");
+                const isPending =
+                  !demo.isDemo &&
+                  (versionStatus === "queued" || versionStatus === "submitting" || versionStatus === "processing");
                 const isFailed = !demo.isDemo && versionStatus === "failed";
                 return (
                   <div
@@ -338,7 +345,8 @@ export default function MySongsGenerated() {
                 type="button"
                 data-demo-ready="true"
                 onClick={() => {
-                  if (window.confirm(`Supprimer « ${song.title} » et ses versions ? Cette action est définitive.`)) demo.removeSong(song.id);
+                  if (window.confirm(`Supprimer « ${song.title} » et ses versions ? Cette action est définitive.`))
+                    demo.removeSong(song.id);
                 }}
                 aria-label={`Supprimer ${song.title}`}
                 className="flex items-center justify-center w-9 h-9 bg-red-50 border border-red-100 rounded-lg flex-shrink-0"

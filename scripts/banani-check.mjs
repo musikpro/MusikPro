@@ -8,9 +8,16 @@ const gitignore = path.join(root, ".gitignore");
 let failed = false;
 let configured = false;
 
-function fail(msg) { console.error(`✗ ${msg}`); failed = true; }
-function pass(msg) { console.log(`✓ ${msg}`); }
-function warn(msg) { console.log(`⚠ ${msg}`); }
+function fail(msg) {
+  console.error(`✗ ${msg}`);
+  failed = true;
+}
+function pass(msg) {
+  console.log(`✓ ${msg}`);
+}
+function warn(msg) {
+  console.log(`⚠ ${msg}`);
+}
 
 if (!fs.existsSync(file)) {
   fail(".codex/config.toml is missing. Run: npm run banani:prepare");
@@ -21,7 +28,7 @@ if (!fs.existsSync(file)) {
     fail("Banani MCP is not configured yet. Open .codex/config.toml and paste your own Banani MCP configuration.");
   } else {
     const hasServer = /\[\s*mcp_servers\.banani\s*\]/i.test(text);
-    const urlMatch = text.match(/^\s*url\s*=\s*["']([^"']+)["']/mi);
+    const urlMatch = text.match(/^\s*url\s*=\s*["']([^"']+)["']/im);
     const hasUrl = Boolean(urlMatch);
     const hasAuth = /Authorization/i.test(text) && /Bearer\s+[^"'\s}]+/i.test(text);
     let secureUrl = false;
@@ -30,7 +37,8 @@ if (!fs.existsSync(file)) {
         const parsed = new URL(urlMatch[1]);
         secureUrl = parsed.protocol === "https:";
         if (!secureUrl) fail("Banani MCP url must use HTTPS");
-        else if (parsed.hostname !== "app.banani.co") warn("Banani MCP host is not app.banani.co; verify this endpoint came from Banani before using it");
+        else if (parsed.hostname !== "app.banani.co")
+          warn("Banani MCP host is not app.banani.co; verify this endpoint came from Banani before using it");
       } catch {
         fail("Banani MCP url is invalid");
       }
@@ -52,8 +60,14 @@ else {
 }
 
 try {
-  const tracked = execFileSync("git", ["ls-files", "--error-unmatch", ".codex/config.toml"], { cwd: root, stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
-  if (tracked) fail(".codex/config.toml is already tracked by Git. Remove it from the index and rotate any exposed token.");
+  const tracked = execFileSync("git", ["ls-files", "--error-unmatch", ".codex/config.toml"], {
+    cwd: root,
+    stdio: ["ignore", "pipe", "ignore"],
+  })
+    .toString()
+    .trim();
+  if (tracked)
+    fail(".codex/config.toml is already tracked by Git. Remove it from the index and rotate any exposed token.");
 } catch {
   pass(".codex/config.toml is not tracked by Git (or repository not initialized yet)");
 }

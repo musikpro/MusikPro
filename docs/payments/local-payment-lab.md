@@ -48,6 +48,7 @@ ngrok version
 ## Parcours guidé obligatoire
 
 ### Gate 1 — serveur local
+
 Terminal A :
 
 ```bash
@@ -57,6 +58,7 @@ npm run dev
 Vérifier `http://localhost:3000`.
 
 ### Gate 2 — tunnel HTTPS
+
 Terminal B :
 
 ```bash
@@ -66,6 +68,7 @@ npm run payments:ngrok
 ngrok expose le port 3000 en HTTPS. Garder ce terminal ouvert.
 
 ### Gate 3 — découverte automatique
+
 Terminal C :
 
 ```bash
@@ -95,6 +98,7 @@ dans `.env.local`. Redémarrer ensuite `npm run dev`.
 `NEXT_PUBLIC_APP_URL` peut rester `http://localhost:3000`. Le tunnel est réservé aux webhooks/IPN.
 
 ### Gate 4 — dashboard sandbox du provider
+
 Copier l'URL générée correspondant au provider, par exemple :
 
 ```text
@@ -108,6 +112,7 @@ Ne jamais copier une URL d'un autre provider.
 Configurer uniquement l'environnement sandbox/test à cette étape.
 
 ### Gate 5 — checkout réel sandbox
+
 1. Ouvrir `/dashboard/billing`.
 2. Choisir un plan.
 3. Démarrer le checkout.
@@ -117,6 +122,7 @@ Configurer uniquement l'environnement sandbox/test à cette étape.
 Résultat attendu : le navigateur ne décide jamais que le paiement est réussi. L'état final vient du webhook/IPN et/ou de la réconciliation API fournisseur.
 
 ### Gate 6 — vérifier les données
+
 Contrôler :
 
 - `payments.status = paid` uniquement après vérification fournisseur ;
@@ -127,6 +133,7 @@ Contrôler :
 - `webhook_events`/idempotency key enregistré.
 
 ### Gate 7 — scénarios obligatoires
+
 Tester au minimum :
 
 1. succès ;
@@ -140,11 +147,13 @@ Tester au minimum :
 9. indisponibilité du premier provider et fallback automatique si le Smart Router est activé.
 
 ### Gate 8 — replay / inspection
+
 L'inspecteur de trafic ngrok peut servir à visualiser puis rejouer une requête webhook. Un replay valide ne doit jamais créditer deux fois le même paiement.
 
 Attention : la capture complète des corps peut contenir des données personnelles ou des tokens. Ne l'activer que temporairement pour le debug, sur des comptes sandbox, puis la désactiver.
 
 ### Gate 9 — clôture du test local
+
 Quand les tests sont terminés :
 
 1. arrêter ngrok ;

@@ -44,7 +44,9 @@ export function TwoFactorChallenge() {
       .catch(() => {
         if (active) setError("Cette vérification est expirée ou n’est pas autorisée.");
       });
-    return () => { active = false; };
+    return () => {
+      active = false;
+    };
   }, []);
 
   useEffect(() => {
@@ -67,9 +69,10 @@ export function TwoFactorChallenge() {
       return;
     }
     setBusy(true);
-    const result = method === "otp"
-      ? await authClient.twoFactor.verifyOtp({ code: parsed.data.code, trustDevice: false })
-      : await authClient.twoFactor.verifyTotp({ code: parsed.data.code, trustDevice: false });
+    const result =
+      method === "otp"
+        ? await authClient.twoFactor.verifyOtp({ code: parsed.data.code, trustDevice: false })
+        : await authClient.twoFactor.verifyTotp({ code: parsed.data.code, trustDevice: false });
     if (result.error) {
       setError(result.error.message || "Code invalide. Vérifiez les chiffres et réessayez.");
       setBusy(false);
@@ -107,7 +110,9 @@ export function TwoFactorChallenge() {
 
   return (
     <div className="auth-page auth-page-surface owner-2fa-page">
-      <nav className="auth-topbar"><AuthBackLink label="Retour" /></nav>
+      <nav className="auth-topbar">
+        <AuthBackLink label="Retour" />
+      </nav>
       <main className="auth-flow auth-flow-2fa">
         <AuthHeroIcon icon="shield-check" />
         <p className="owner-2fa-eyebrow">Accès propriétaire sécurisé</p>
@@ -120,9 +125,13 @@ export function TwoFactorChallenge() {
         ) : context ? (
           <>
             <p className="auth-flow-copy">
-              {method === "otp"
-                ? <>Nous avons envoyé un code à <strong>{context.email}</strong>.</>
-                : <>Ouvrez votre application d’authentification pour obtenir votre code.</>}
+              {method === "otp" ? (
+                <>
+                  Nous avons envoyé un code à <strong>{context.email}</strong>.
+                </>
+              ) : (
+                <>Ouvrez votre application d’authentification pour obtenir votre code.</>
+              )}
             </p>
             <form className="auth-code-card" onSubmit={submit}>
               <label htmlFor="owner-2fa-code">Entrez le code à 6 chiffres</label>
@@ -148,8 +157,16 @@ export function TwoFactorChallenge() {
                 <Icon i="clock-3" size={15} />
                 {secondsLeft > 0 ? `Ce code expire dans ${timerLabel(secondsLeft)}` : "Ce code a expiré"}
               </p>
-              {error && <p className="auth-alert auth-alert-error" role="alert">{error}</p>}
-              {notice && <p className="auth-alert auth-alert-success" role="status">{notice}</p>}
+              {error && (
+                <p className="auth-alert auth-alert-error" role="alert">
+                  {error}
+                </p>
+              )}
+              {notice && (
+                <p className="auth-alert auth-alert-success" role="status">
+                  {notice}
+                </p>
+              )}
               <button className="auth-submit" disabled={busy || code.length !== 6 || secondsLeft === 0}>
                 <Icon i="shield-check" size={18} />
                 {busy ? "Vérification…" : "Vérifier le code"}
@@ -163,26 +180,42 @@ export function TwoFactorChallenge() {
             <div className="auth-methods">
               <p>Autre méthode de vérification</p>
               {context.methods.includes("otp") && method !== "otp" && (
-                <button type="button" onClick={() => { selectMethod("otp"); void resend(); }}>
-                  <span><Icon i="mail" size={16} /></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    selectMethod("otp");
+                    void resend();
+                  }}
+                >
+                  <span>
+                    <Icon i="mail" size={16} />
+                  </span>
                   Recevoir un code par e-mail
                   <Icon i="chevron-right" size={16} />
                 </button>
               )}
               {context.methods.includes("totp") && method !== "totp" && (
                 <button type="button" onClick={() => selectMethod("totp")}>
-                  <span><Icon i="smartphone" size={16} /></span>
+                  <span>
+                    <Icon i="smartphone" size={16} />
+                  </span>
                   Google Authenticator
                   <Icon i="chevron-right" size={16} />
                 </button>
               )}
             </div>
-            <p className="owner-2fa-security-note"><Icon i="lock-keyhole" size={14} /> Vérification réservée aux propriétaires MusikPro</p>
+            <p className="owner-2fa-security-note">
+              <Icon i="lock-keyhole" size={14} /> Vérification réservée aux propriétaires MusikPro
+            </p>
           </>
         ) : (
           <div className="auth-code-card owner-2fa-invalid">
-            <p className="auth-alert auth-alert-error" role="alert">{error}</p>
-            <button className="auth-submit" type="button" onClick={() => router.replace("/login")}>Retour à la connexion</button>
+            <p className="auth-alert auth-alert-error" role="alert">
+              {error}
+            </p>
+            <button className="auth-submit" type="button" onClick={() => router.replace("/login")}>
+              Retour à la connexion
+            </button>
           </div>
         )}
       </main>

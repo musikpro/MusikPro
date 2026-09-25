@@ -3,6 +3,7 @@
 Ne donne jamais un abonnement parce que le navigateur arrive sur `/success`.
 
 Flux obligatoire:
+
 1. créer une référence interne unique;
 2. enregistrer un paiement `pending`;
 3. créer le checkout chez le fournisseur;

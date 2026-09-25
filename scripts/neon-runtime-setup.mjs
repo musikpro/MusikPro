@@ -6,9 +6,7 @@ import { neon } from "@neondatabase/serverless";
 import { z } from "zod";
 
 nextEnv.loadEnvConfig(process.cwd());
-const mode = z
-  .enum(["--migrate", "--provision", "--test"])
-  .parse(process.argv[2]);
+const mode = z.enum(["--migrate", "--provision", "--test"]).parse(process.argv[2]);
 const urlSchema = z
   .string()
   .url()
@@ -28,8 +26,7 @@ try {
     if (result.status !== 0) throw new Error("migration-failed");
     console.log("Migration RLS : PASS");
   } else if (mode === "--provision") {
-    if (new URL(appUrl).username === "musikpro_runtime")
-      throw new Error("already-provisioned");
+    if (new URL(appUrl).username === "musikpro_runtime") throw new Error("already-provisioned");
     const sql = neon(migrationUrl);
     const updates = { DATABASE_URL_DIRECT: migrationUrl };
     for (const [role, key] of [
@@ -56,9 +53,7 @@ try {
     }
     fs.writeFileSync(".env.local", content, { mode: 0o600 });
     fs.chmodSync(".env.local", 0o600);
-    console.log(
-      "Connexions runtime/service : PASS ; credentials stockés uniquement dans .env.local",
-    );
+    console.log("Connexions runtime/service : PASS ; credentials stockés uniquement dans .env.local");
   } else {
     const runtime = neon(appUrl);
     const service = neon(urlSchema.parse(process.env.DATABASE_SERVICE_URL));
@@ -82,19 +77,16 @@ try {
         await runtime`INSERT INTO "user" (id,name,email) VALUES (${id},'RLS verification',${id + "@example.invalid"})`;
         await service`INSERT INTO credits (id,user_id,balance) VALUES (${id},${id},1)`;
       }
-      const none =
-        await runtime`SELECT user_id FROM credits WHERE user_id=ANY(${ids})`;
+      const none = await runtime`SELECT user_id FROM credits WHERE user_id=ANY(${ids})`;
       if (none.length) throw new Error("context-free-read-leak");
       for (const id of ids) {
         const results = await runtime.transaction([
           runtime`SELECT set_config('app.user_id', ${id}, true), set_config('app.organization_id','',true)`,
           runtime`SELECT user_id FROM credits WHERE user_id=ANY(${ids})`,
         ]);
-        if (results[1].length !== 1 || results[1][0].user_id !== id)
-          throw new Error("cross-user-read-leak");
+        if (results[1].length !== 1 || results[1][0].user_id !== id) throw new Error("cross-user-read-leak");
       }
-      const leaked =
-        await runtime`SELECT user_id FROM credits WHERE user_id=ANY(${ids})`;
+      const leaked = await runtime`SELECT user_id FROM credits WHERE user_id=ANY(${ids})`;
       if (leaked.length) throw new Error("pooled-context-leak");
       let denied = false;
       try {
@@ -103,8 +95,7 @@ try {
         denied = e.code === "42501";
       }
       if (!denied) throw new Error("runtime-write-not-denied");
-      const ddl =
-        await runtime`SELECT has_schema_privilege(current_user,'public','CREATE') AS allowed`;
+      const ddl = await runtime`SELECT has_schema_privilege(current_user,'public','CREATE') AS allowed`;
       if (ddl[0].allowed) throw new Error("runtime-ddl-allowed");
       console.log(
         "RLS réelle : PASS — isolation A/B, refus sans contexte, contexte non persistant, mutation et DDL interdits",
@@ -115,8 +106,6 @@ try {
     }
   }
 } catch (error) {
-  console.error(
-    `Neon runtime setup : FAIL (${error.code || "operation-failed"}). Aucun identifiant affiché.`,
-  );
+  console.error(`Neon runtime setup : FAIL (${error.code || "operation-failed"}). Aucun identifiant affiché.`);
   process.exitCode = 1;
 }

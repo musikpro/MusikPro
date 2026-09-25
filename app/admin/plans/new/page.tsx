@@ -8,7 +8,11 @@ export default async function AdminNewCreditPlanPage() {
   return (
     <AdminPage>
       <AdminBackLink href="/admin/plans" />
-      <AdminPageHeader eyebrow="Crédits & tarifs" title="Nouvelle offre de crédits" description="Crée une offre qui apparaîtra automatiquement dans les espaces client réel et démo." />
+      <AdminPageHeader
+        eyebrow="Crédits & tarifs"
+        title="Nouvelle offre de crédits"
+        description="Crée une offre qui apparaîtra automatiquement dans les espaces client réel et démo."
+      />
       <section className="admin-panel admin-editor-card">
         <AdminCreditPlanForm action={createPlan} />
       </section>

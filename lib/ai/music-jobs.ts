@@ -71,7 +71,12 @@ export type MusicJobGroupContext = {
   occasion?: string;
 };
 
-export async function createMusicJob(userId: string, input: MusicfulGenerateRequest, model: string, context: MusicJobGroupContext = {}) {
+export async function createMusicJob(
+  userId: string,
+  input: MusicfulGenerateRequest,
+  model: string,
+  context: MusicJobGroupContext = {},
+) {
   const database = getServiceDb();
   const id = randomUUID();
   const [job] = await database
@@ -111,7 +116,14 @@ function callMusicfulGenerate(
   const gender = (job.gender as "male" | "female" | "" | null) || undefined;
   const instrumental: 0 | 1 = job.instrumental ? 1 : 0;
   if (job.lyrics && !job.instrumental) {
-    return client.generateMusicCustom({ lyrics: job.lyrics, title: job.title, style: job.style, mv: job.model, instrumental, gender });
+    return client.generateMusicCustom({
+      lyrics: job.lyrics,
+      title: job.title,
+      style: job.style,
+      mv: job.model,
+      instrumental,
+      gender,
+    });
   }
   return client.generateMusicAuto({ style: job.style, mv: job.model, instrumental, gender });
 }
@@ -123,7 +135,10 @@ export async function submitMusicJob(jobId: string) {
   const provider = await getMusicfulProvider();
   if (!provider.enabled || !provider.apiKey) throw new Error("MUSICFUL_NOT_CONFIGURED");
   const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
-  await database.update(musicGenerationJobs).set({ status: "submitting", startedAt: new Date(), updatedAt: new Date() }).where(eq(musicGenerationJobs.id, jobId));
+  await database
+    .update(musicGenerationJobs)
+    .set({ status: "submitting", startedAt: new Date(), updatedAt: new Date() })
+    .where(eq(musicGenerationJobs.id, jobId));
   let response: unknown;
   try {
     response = await callMusicfulGenerate(client, job);
@@ -173,7 +188,10 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
   const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
   await Promise.all(
     ordered.map((job) =>
-      database.update(musicGenerationJobs).set({ status: "submitting", startedAt: new Date(), updatedAt: new Date() }).where(eq(musicGenerationJobs.id, job.id)),
+      database
+        .update(musicGenerationJobs)
+        .set({ status: "submitting", startedAt: new Date(), updatedAt: new Date() })
+        .where(eq(musicGenerationJobs.id, job.id)),
     ),
   );
   let response: unknown;
@@ -193,7 +211,10 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
   }
   const providerTaskIds = extractTaskIds(response);
   if (!providerTaskIds.length) {
-    logger.error("Musicful generate response had no extractable task ids", { jobIds: ordered.map((job) => job.id), response });
+    logger.error("Musicful generate response had no extractable task ids", {
+      jobIds: ordered.map((job) => job.id),
+      response,
+    });
   }
   const providerMessage = extractGenerateErrorMessage(response);
   const missingIdFailureReason = providerMessage ? `musicful_rejected: ${providerMessage}` : "MUSICFUL_TASK_ID_MISSING";
@@ -210,7 +231,13 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
       }
       return database
         .update(musicGenerationJobs)
-        .set({ status: "failed", failureReason: missingIdFailureReason, responsePayload: response, failedAt: new Date(), updatedAt: new Date() })
+        .set({
+          status: "failed",
+          failureReason: missingIdFailureReason,
+          responsePayload: response,
+          failedAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(musicGenerationJobs.id, job.id));
     }),
   );
@@ -292,7 +319,8 @@ async function resolveAudioOnlyUrl(
   // "preferred audio format: wav" admin setting adds two extra third-party network hops (and two
   // extra failure points) for a file that was already exactly what the pipeline guarantees in the
   // end. That WAV detour is only useful when the native file genuinely isn't already an MP3.
-  const isAlreadyVerifiedMp3 = isNativeAudio && VERIFIED_MP3_CONTENT_TYPES.has(normalizedContentType(probe.contentType));
+  const isAlreadyVerifiedMp3 =
+    isNativeAudio && VERIFIED_MP3_CONTENT_TYPES.has(normalizedContentType(probe.contentType));
   const wantsWavConversion = !isAlreadyVerifiedMp3 && (isNativeVideo || preferredFormat === "wav");
   if (wantsWavConversion && allowWavConversion && songId) {
     try {
@@ -330,7 +358,10 @@ export async function ensureVerifiedMp3(candidateUrl: string, jobId: string): Pr
     return { url: candidateUrl, mimeType: "audio/mpeg", normalized: false, reason: null };
   }
   if (!isCloudinaryConfigured()) {
-    logger.error("Musicful audio isn't MP3 and Cloudinary isn't configured; cannot guarantee MP3-only output", { jobId, contentType });
+    logger.error("Musicful audio isn't MP3 and Cloudinary isn't configured; cannot guarantee MP3-only output", {
+      jobId,
+      contentType,
+    });
     return { url: null, mimeType: null, normalized: false, reason: "cloudinary_not_configured" };
   }
   try {
@@ -345,7 +376,8 @@ export async function ensureVerifiedMp3(candidateUrl: string, jobId: string): Pr
 
 export async function pollMusicJob(jobId: string, userId: string) {
   const job = await getOwnedJob(jobId, userId);
-  if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId) return job;
+  if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId)
+    return job;
   const provider = await getMusicfulProvider();
   if (!provider.apiKey) return job;
   const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
@@ -359,7 +391,14 @@ export async function pollMusicJob(jobId: string, userId: string) {
     const isFailed = task.fail_code != null;
     const candidateAudioUrl = !isFailed ? task.audio_url || null : null;
     const resolvedAudio: AudioUrlResolution = candidateAudioUrl
-      ? await resolveAudioOnlyUrl(client, candidateAudioUrl, task.song_id, provider.allowWavConversion, provider.preferredAudioFormat, job.id)
+      ? await resolveAudioOnlyUrl(
+          client,
+          candidateAudioUrl,
+          task.song_id,
+          provider.allowWavConversion,
+          provider.preferredAudioFormat,
+          job.id,
+        )
       : { url: null, reason: "musicful_audio_not_ready" };
     const mp3Result: Mp3Resolution = resolvedAudio.url
       ? await ensureVerifiedMp3(resolvedAudio.url, job.id)
@@ -386,7 +425,11 @@ export async function pollMusicJob(jobId: string, userId: string) {
       coverUrl: task.cover_url || job.coverUrl,
       providerStatus: task.status,
       responsePayload: task,
-      status: isCompleted ? ("completed" as const) : isFailed || isTimedOut ? ("failed" as const) : ("processing" as const),
+      status: isCompleted
+        ? ("completed" as const)
+        : isFailed || isTimedOut
+          ? ("failed" as const)
+          : ("processing" as const),
       failureCode: isFailed ? task.fail_code : job.failureCode,
       failureReason: isFailed
         ? task.fail_reason || "provider_task_failed"
@@ -408,7 +451,11 @@ export async function pollMusicJob(jobId: string, userId: string) {
     }
     return { ...job, ...values };
   } catch (error) {
-    logger.error("Musicful task poll failed", { jobId: job.id, providerTaskId: job.providerTaskId, error: error instanceof Error ? error.message : "unknown" });
+    logger.error("Musicful task poll failed", {
+      jobId: job.id,
+      providerTaskId: job.providerTaskId,
+      error: error instanceof Error ? error.message : "unknown",
+    });
     return job;
   }
 }
@@ -426,7 +473,10 @@ export async function requestWavConversion(jobId: string, userId: string) {
   const client = createMusicfulClient(provider.apiKey, provider.baseUrl, provider.timeoutMs);
   const result = await client.convertToWav(job.providerSongId!);
   const database = getServiceDb();
-  await database.update(musicGenerationJobs).set({ wavUrl: result.url || null, updatedAt: new Date() }).where(eq(musicGenerationJobs.id, job.id));
+  await database
+    .update(musicGenerationJobs)
+    .set({ wavUrl: result.url || null, updatedAt: new Date() })
+    .where(eq(musicGenerationJobs.id, job.id));
   return { ...job, wavUrl: result.url || null };
 }
 

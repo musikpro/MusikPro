@@ -46,7 +46,11 @@ export default function CreationPackScreen() {
         setCouponError(result.reason || t("Code promo invalide."));
         return;
       }
-      demo.setCoupon({ code: result.code ?? code, discountAmount: result.discountAmount, finalAmount: result.finalAmount ?? 0 });
+      demo.setCoupon({
+        code: result.code ?? code,
+        discountAmount: result.discountAmount,
+        finalAmount: result.finalAmount ?? 0,
+      });
     } catch {
       setCouponError(t("Impossible de vérifier ce code pour le moment."));
     } finally {

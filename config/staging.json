@@ -1,20 +1,8 @@
 {
   "requiredBeforeProduction": true,
   "provider": "vercel-preview",
-  "requiredChecks": [
-    "/",
-    "/api/health",
-    "/api/readyz"
-  ],
-  "recommendedChecks": [
-    "auth",
-    "responsive",
-    "email",
-    "database",
-    "business-flows",
-    "seo",
-    "payments-if-enabled"
-  ],
+  "requiredChecks": ["/", "/api/health", "/api/readyz"],
+  "recommendedChecks": ["auth", "responsive", "email", "database", "business-flows", "seo", "payments-if-enabled"],
   "environmentIsolation": {
     "preview": "Vercel Preview variables",
     "production": "Vercel Production variables",

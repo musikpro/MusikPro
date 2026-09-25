@@ -18,7 +18,8 @@ function run(command, args, label) {
 }
 
 const [major, minor] = process.versions.node.split(".").map(Number);
-if (major < 20 || (major === 20 && minor < 9)) failures.push(`Node.js ${process.versions.node} trop ancien — Node >=20.9.0 requis.`);
+if (major < 20 || (major === 20 && minor < 9))
+  failures.push(`Node.js ${process.versions.node} trop ancien — Node >=20.9.0 requis.`);
 else notes.push(`Node.js ${process.versions.node}`);
 
 try {
@@ -34,7 +35,8 @@ if (!exists(".gitignore")) failures.push(".gitignore absent.");
 else {
   const gitignore = fs.readFileSync(path.join(root, ".gitignore"), "utf8");
   if (!/(^|\n)\.env\.local(?:\n|$)/.test(gitignore)) failures.push(".env.local n'est pas ignoré par Git.");
-  if (!/(^|\n)node_modules\/?(?:\n|$)/.test(gitignore)) warnings.push("node_modules n'est pas explicitement ignoré par Git.");
+  if (!/(^|\n)node_modules\/?(?:\n|$)/.test(gitignore))
+    warnings.push("node_modules n'est pas explicitement ignoré par Git.");
 }
 
 console.log(`\nAfrica SaaS Kit ${kitVersionLabel} — Premier démarrage\n`);

@@ -80,7 +80,9 @@ export default function AdminCouponsTable({ rows }: { rows: AdminCouponRow[] }) 
                     {row.expiresAt ? new Date(row.expiresAt).toLocaleDateString("fr-FR") : "Jamais"}
                   </td>
                   <td data-label="État">
-                    <span className={`admin-status ${!row.active ? "is-pending" : expired ? "is-danger" : "is-success"}`}>
+                    <span
+                      className={`admin-status ${!row.active ? "is-pending" : expired ? "is-danger" : "is-success"}`}
+                    >
                       {!row.active ? "Désactivé" : expired ? "Expiré" : "Actif"}
                     </span>
                   </td>

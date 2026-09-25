@@ -1,9 +1,11 @@
 # Security Policy — Africa SaaS Kit V0.3
 
 ## Principle
+
 Security is part of the architecture. Never trust the browser, a payment redirect, a user-controlled role, an uploaded filename, or an unverified webhook.
 
 ## Before production
+
 1. Use separate accounts/projects for development, staging and production.
 2. Put secrets only in Vercel/hosting environment variables. Never in `NEXT_PUBLIC_*`.
 3. Enable GitHub 2FA, branch protection, Dependabot and secret scanning.
@@ -20,12 +22,13 @@ Security is part of the architecture. Never trust the browser, a payment redirec
 14. Run dependency and authorization tests before each release.
 
 ## Incident response
+
 If a key may be exposed: revoke/rotate it first, invalidate sessions when relevant, review audit logs, inspect payment/webhook events, patch the cause, redeploy, and document the incident.
 
 See `docs/security/` for step-by-step guides.
 
-
 ## V0.4 — sécurité multi-paiements
+
 - Ne jamais activer une passerelle `scaffold` en production.
 - Conserver toutes les clés API côté serveur ; aucune clé secrète dans `NEXT_PUBLIC_*`.
 - Les routes de checkout valident le provider autorisé pour le pays.
@@ -35,8 +38,8 @@ See `docs/security/` for step-by-step guides.
 - Chariow : mapper le plan à un produit publié et vérifier la signature `x-chariow-signature`.
 - Flutterwave : vérifier `flutterwave-signature` et re-vérifier transaction/référence/montant/devise avant délivrance.
 
-
 ## Smart Payment Router V0.5
+
 - Le routage ne valide jamais un paiement.
 - Les fallbacks sont journalisés dans `payment_attempts`.
 - Un provider explicitement choisi n'est pas remplacé silencieusement.
@@ -78,7 +81,6 @@ Le second audit après build recherche notamment les secrets qui auraient été 
 
 La V0.8.1 impose le modèle « webhook authentifié + relecture provider + comparaison montant/devise/référence + idempotence ». Un cron de réconciliation rattrape les paiements asynchrones récents. Le webhook n'est jamais à lui seul une preuve suffisante pour créditer l'utilisateur.
 
-
 ### Dépendances de test
 
 Vitest est fixé à **4.1.11** pour rester compatible avec Better Auth 1.7.3. Une montée vers Vitest 5 doit être précédée d’une vérification des peer-dependencies et d’un `npm install` propre.
@@ -101,7 +103,6 @@ npm run banani:check
 
 Si `.codex/config.toml` est déjà suivi par Git, retirer le fichier de l'index et **révoquer/régénérer** le token. Un token visible dans une capture, un chat ou un commit doit être considéré comme compromis.
 
-
 ## V0.8.26 — garde-fou permanent de checklist sécurité
 
 Le kit transforme désormais les règles de lancement en contrôles continus. `security:baseline` bloque une nouvelle route API non classifiée, une nouvelle table non classifiée pour RLS, la disparition du middleware d'authentification, de la vérification email ou du rate limiting, ainsi que la sortie de `npm audit` du chemin de release.
@@ -109,13 +110,13 @@ Le kit transforme désormais les règles de lancement en contrôles continus. `s
 Pour la base réelle, `security:db-check` vérifie en ligne que toutes les tables marquées `required` ont RLS activé et au moins une policy. Les tables Better Auth et les tables globales/service-only doivent rester des exemptions explicites et documentées plutôt que recevoir des policies génériques susceptibles de casser l'authentification.
 
 ## V0.8.27 — Zod Validation Gate
-Zod est obligatoire aux frontières de données non fiables de première partie. La validation front-end améliore l’UX mais ne remplace jamais la revalidation serveur. `npm run validation:zod-check` vérifie les Server Actions, les routes API mutantes et les formulaires auth directs; les exceptions doivent être documentées dans `config/zod-validation.json`.
 
+Zod est obligatoire aux frontières de données non fiables de première partie. La validation front-end améliore l’UX mais ne remplace jamais la revalidation serveur. `npm run validation:zod-check` vérifie les Server Actions, les routes API mutantes et les formulaires auth directs; les exceptions doivent être documentées dans `config/zod-validation.json`.
 
 ## V0.8.28 — General Refactor Gate
 
 Le contrôle `npm run refactor:check` est obligatoire et complète `security:baseline` et `validation:zod-check`. Il vérifie les frontières d’autorisation serveur, la non-exposition des payloads bruts de paiement, les gardes d’origine/type/taille des endpoints mutateurs de première partie, l’usage d’identifiants cryptographiques et la cohérence des workflows CI. Toute future page `/dashboard/*` doit rester protégée par le layout serveur et toute Server Action admin/dashboard doit conserver son garde d’autorisation.
 
-
 ### Dependency security floor
+
 `npm run security:versions` bloque les régressions sous les versions minimales de sécurité revues pour Next.js, React, Drizzle ORM et Better Auth. Ce contrôle complète `npm audit`; il ne le remplace pas.

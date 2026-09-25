@@ -67,7 +67,9 @@ export async function createRecipientRelation(formData: FormData) {
 }
 export async function updateRecipientRelation(formData: FormData) {
   const session = await requireAdmin();
-  const parsed = relationFormSchema.extend({ id: z.string().trim().min(1).max(120) }).parse(Object.fromEntries(formData));
+  const parsed = relationFormSchema
+    .extend({ id: z.string().trim().min(1).max(120) })
+    .parse(Object.fromEntries(formData));
   const slug = slugify(parsed.name);
   if (!slug) throw new Error("Le nom doit contenir au moins un caractère utilisable.");
   await getServiceDb()

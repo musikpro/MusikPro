@@ -3,6 +3,7 @@
 Ce dossier reçoit les migrations générées par `npm run db:generate`.
 
 Règles :
+
 1. Générer la migration après toute modification de schéma.
 2. Relire le SQL généré.
 3. Tester sur Neon staging.

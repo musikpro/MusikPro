@@ -40,8 +40,13 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
     throw new Error("AI_CAPABILITY_DISABLED");
   }
 
-  const requestText = [task.input.story, task.input.additionalDetails, task.input.recipientName].filter(Boolean).join("\n");
-  const requestVerdict = await moderateText(requestText, "Demande utilisateur (histoire, détails, destinataire) pour une chanson");
+  const requestText = [task.input.story, task.input.additionalDetails, task.input.recipientName]
+    .filter(Boolean)
+    .join("\n");
+  const requestVerdict = await moderateText(
+    requestText,
+    "Demande utilisateur (histoire, détails, destinataire) pour une chanson",
+  );
   if (requestVerdict.flagged) {
     await writeAuditLog({
       action: "ai.content.blocked_request",
@@ -51,8 +56,7 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
     throw new Error("CONTENT_BLOCKED_REQUEST");
   }
 
-  const instructions =
-    `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
+  const instructions = `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
   const raw = await runProviderTextTask(provider, instructions, promptFor(task));
   const result = { ...raw, text: enforceLyricsWordLimit(raw.text) };
 

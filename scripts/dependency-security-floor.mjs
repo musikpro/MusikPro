@@ -7,12 +7,15 @@ const deps = { ...(pkg.dependencies || {}), ...(pkg.devDependencies || {}) };
 const errors = [];
 
 function numeric(version) {
-  const clean = String(version).trim().replace(/^[~^<>=v\s]+/, "");
+  const clean = String(version)
+    .trim()
+    .replace(/^[~^<>=v\s]+/, "");
   const match = clean.match(/^(\d+)\.(\d+)\.(\d+)/);
   return match ? match.slice(1).map(Number) : null;
 }
 function gte(actual, minimum) {
-  const a = numeric(actual), b = numeric(minimum);
+  const a = numeric(actual),
+    b = numeric(minimum);
   if (!a || !b) return false;
   for (let i = 0; i < 3; i++) {
     if (a[i] > b[i]) return true;
@@ -23,8 +26,12 @@ function gte(actual, minimum) {
 
 for (const [name, rule] of Object.entries(policy.packages || {})) {
   const version = deps[name];
-  if (!version) { errors.push(`${name}: dependency missing`); continue; }
-  if (!gte(version, rule.min)) errors.push(`${name}: ${version} is below reviewed security floor ${rule.min} — ${rule.reason}`);
+  if (!version) {
+    errors.push(`${name}: dependency missing`);
+    continue;
+  }
+  if (!gte(version, rule.min))
+    errors.push(`${name}: ${version} is below reviewed security floor ${rule.min} — ${rule.reason}`);
 }
 if (errors.length) {
   console.error("Dependency security floor: FAIL");

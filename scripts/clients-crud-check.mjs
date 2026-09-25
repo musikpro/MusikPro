@@ -28,12 +28,21 @@ if (!imported && process.argv.includes("--require-banani")) {
 
 const collection = fs.readFileSync(path.join(root, "app/api/clients/route.ts"), "utf8");
 const item = fs.readFileSync(path.join(root, "app/api/clients/[id]/route.ts"), "utf8");
-const migration = fs.readFileSync(path.join(root, "prisma/migrations/20260912000000_clients_crud/migration.sql"), "utf8");
+const migration = fs.readFileSync(
+  path.join(root, "prisma/migrations/20260912000000_clients_crud/migration.sql"),
+  "utf8",
+);
 for (const [label, ok] of [
-  ["Zod server validation", collection.includes("clientCreateSchema.safeParse") && item.includes("clientUpdateSchema.safeParse")],
+  [
+    "Zod server validation",
+    collection.includes("clientCreateSchema.safeParse") && item.includes("clientUpdateSchema.safeParse"),
+  ],
   ["Better Auth session", collection.includes("auth.api.getSession") && item.includes("auth.api.getSession")],
   ["Rate limiting", collection.includes("rateLimit(") && item.includes("rateLimit(")],
-  ["Mutation request guards", collection.includes("rejectCrossSiteMutation") && item.includes("rejectCrossSiteMutation")],
+  [
+    "Mutation request guards",
+    collection.includes("rejectCrossSiteMutation") && item.includes("rejectCrossSiteMutation"),
+  ],
   ["RLS enabled", migration.includes("ENABLE ROW LEVEL SECURITY") && migration.includes("client_owner_policy")],
 ]) {
   console.log(`${ok ? "PASS" : "FAIL"} ${label}`);

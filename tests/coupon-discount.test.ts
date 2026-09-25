@@ -23,7 +23,9 @@ describe("computeDiscount", () => {
   });
 
   it("clamps a corrupt/out-of-range percent value defensively", () => {
-    expect(computeDiscount(1000, { type: "percent", value: 250 })).toBe(computeDiscount(1000, { type: "percent", value: 100 }));
+    expect(computeDiscount(1000, { type: "percent", value: 250 })).toBe(
+      computeDiscount(1000, { type: "percent", value: 100 }),
+    );
   });
 
   it("returns zero for a non-positive amount", () => {

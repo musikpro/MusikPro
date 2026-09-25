@@ -15,17 +15,17 @@ The adapter is `examples/stripe.ts`. Open it alongside this doc.
 
 ## Endpoints (the ones you'll use)
 
-| Purpose                     | SDK call                                         | REST endpoint                              |
-| --------------------------- | ------------------------------------------------ | ------------------------------------------ |
-| Create Checkout session     | `stripe.checkout.sessions.create()`              | `POST /v1/checkout/sessions`               |
-| Retrieve Checkout session   | `stripe.checkout.sessions.retrieve(id)`          | `GET  /v1/checkout/sessions/:id`           |
-| Create PaymentIntent        | `stripe.paymentIntents.create()`                 | `POST /v1/payment_intents`                 |
-| Retrieve PaymentIntent      | `stripe.paymentIntents.retrieve(id)`             | `GET  /v1/payment_intents/:id`             |
-| Create / get customer       | `stripe.customers.create()` / `.list({ email })` | `POST /v1/customers`                       |
-| Cancel subscription         | `stripe.subscriptions.update(id, …)`             | `POST /v1/subscriptions/:id`               |
-| Subscription Customer Portal| `stripe.billingPortal.sessions.create()`         | `POST /v1/billing_portal/sessions`         |
-| Sync product / price        | `stripe.products.create()` / `stripe.prices.create()` | `POST /v1/products`, `POST /v1/prices` |
-| Webhook verify              | `stripe.webhooks.constructEvent()`               | (no HTTP — signature check only)           |
+| Purpose                      | SDK call                                              | REST endpoint                          |
+| ---------------------------- | ----------------------------------------------------- | -------------------------------------- |
+| Create Checkout session      | `stripe.checkout.sessions.create()`                   | `POST /v1/checkout/sessions`           |
+| Retrieve Checkout session    | `stripe.checkout.sessions.retrieve(id)`               | `GET  /v1/checkout/sessions/:id`       |
+| Create PaymentIntent         | `stripe.paymentIntents.create()`                      | `POST /v1/payment_intents`             |
+| Retrieve PaymentIntent       | `stripe.paymentIntents.retrieve(id)`                  | `GET  /v1/payment_intents/:id`         |
+| Create / get customer        | `stripe.customers.create()` / `.list({ email })`      | `POST /v1/customers`                   |
+| Cancel subscription          | `stripe.subscriptions.update(id, …)`                  | `POST /v1/subscriptions/:id`           |
+| Subscription Customer Portal | `stripe.billingPortal.sessions.create()`              | `POST /v1/billing_portal/sessions`     |
+| Sync product / price         | `stripe.products.create()` / `stripe.prices.create()` | `POST /v1/products`, `POST /v1/prices` |
+| Webhook verify               | `stripe.webhooks.constructEvent()`                    | (no HTTP — signature check only)       |
 
 ## Authentication
 
@@ -48,14 +48,14 @@ When you do upgrade: read the [API changelog](https://docs.stripe.com/upgrades),
 
 ### Test vs live keys
 
-| Key prefix       | Environment | Notes                                         |
-| ---------------- | ----------- | --------------------------------------------- |
-| `sk_test_…`      | Sandbox     | Free, full feature set, fake cards.           |
-| `sk_live_…`      | Production  | Real money. Use `4242 4242 4242 4242` ≠ live. |
-| `pk_test_…`      | Sandbox     | Browser-safe, pair with `sk_test_`.           |
-| `pk_live_…`      | Production  | Browser-safe, pair with `sk_live_`.           |
-| `whsec_…`        | Either      | Different secret per webhook endpoint.        |
-| `rk_live_…`      | Production  | Restricted, scoped key. Use for cron jobs.    |
+| Key prefix  | Environment | Notes                                         |
+| ----------- | ----------- | --------------------------------------------- |
+| `sk_test_…` | Sandbox     | Free, full feature set, fake cards.           |
+| `sk_live_…` | Production  | Real money. Use `4242 4242 4242 4242` ≠ live. |
+| `pk_test_…` | Sandbox     | Browser-safe, pair with `sk_test_`.           |
+| `pk_live_…` | Production  | Browser-safe, pair with `sk_live_`.           |
+| `whsec_…`   | Either      | Different secret per webhook endpoint.        |
+| `rk_live_…` | Production  | Restricted, scoped key. Use for cron jobs.    |
 
 **Critical**: customers, products, prices, subscriptions are fully partitioned between test and live. A `cus_…` created in test mode does not exist when authenticating with `sk_live_`. The adapter's `getOrCreateCustomer` returns `testLiveMismatch: true` when this happens — clear the stale ID in your DB and retry.
 
@@ -68,19 +68,21 @@ The "boring works" path for any recurring billing — SaaS subscriptions, member
 ```ts
 const session = await stripe.checkout.sessions.create({
   mode: "subscription",
-  customer: stripeCustomerId,            // OR customer_email
+  customer: stripeCustomerId, // OR customer_email
   line_items: [{ price: priceId, quantity: 1 }],
   subscription_data: {
-    metadata: {                          // ← ends up on the SUBSCRIPTION
+    metadata: {
+      // ← ends up on the SUBSCRIPTION
       order_id: "order_abc",
       type: "subscription",
     },
-    trial_period_days: 7,                 // optional
+    trial_period_days: 7, // optional
   },
-  metadata: {                             // ← ends up on the CHECKOUT SESSION
+  metadata: {
+    // ← ends up on the CHECKOUT SESSION
     order_id: "order_abc",
   },
-  allow_promotion_codes: true,           // shows coupon field on the page
+  allow_promotion_codes: true, // shows coupon field on the page
   success_url: "https://app.example.com/paid?session_id={CHECKOUT_SESSION_ID}",
   cancel_url: "https://app.example.com/cancelled",
 });
@@ -91,11 +93,11 @@ const session = await stripe.checkout.sessions.create({
 
 Three different places. They have different lifetimes:
 
-| Path                              | Visible on              | Lifetime                                     |
-| --------------------------------- | ----------------------- | -------------------------------------------- |
-| `metadata`                        | Checkout Session        | The session itself, ~24 h                    |
-| `subscription_data.metadata`      | Subscription            | Forever (or until subscription is deleted)   |
-| `payment_intent_data.metadata`    | PaymentIntent (one-shot)| Forever (PaymentIntents persist)             |
+| Path                           | Visible on               | Lifetime                                   |
+| ------------------------------ | ------------------------ | ------------------------------------------ |
+| `metadata`                     | Checkout Session         | The session itself, ~24 h                  |
+| `subscription_data.metadata`   | Subscription             | Forever (or until subscription is deleted) |
+| `payment_intent_data.metadata` | PaymentIntent (one-shot) | Forever (PaymentIntents persist)           |
 
 In subscription mode, write to **both** `metadata` and `subscription_data.metadata` — the first lets you correlate `checkout.session.completed`, the second lets you correlate `customer.subscription.updated` and `invoice.paid` going forward.
 
@@ -126,7 +128,7 @@ const session = await stripe.checkout.sessions.create({
     {
       price_data: {
         currency: "usd",
-        unit_amount: 2999,                // $29.99 — see currency rules below
+        unit_amount: 2999, // $29.99 — see currency rules below
         product_data: { name: "Order #1234" },
       },
       quantity: 1,
@@ -162,7 +164,7 @@ When you want the card form embedded inside your app — no redirect, lower aban
 ```ts
 // Server
 const pi = await stripe.paymentIntents.create({
-  amount: toStripeAmount(2999, "usd"),  // 2999 cents
+  amount: toStripeAmount(2999, "usd"), // 2999 cents
   currency: "usd",
   customer: stripeCustomerId,
   description: "Order #1234",
@@ -195,8 +197,7 @@ const sub = await stripe.subscriptions.create({
   expand: ["latest_invoice.payment_intent"],
   metadata: { order_id: "order_abc", type: "subscription" },
 });
-const intent = (sub.latest_invoice as Stripe.Invoice & { payment_intent: Stripe.PaymentIntent })
-  .payment_intent;
+const intent = (sub.latest_invoice as Stripe.Invoice & { payment_intent: Stripe.PaymentIntent }).payment_intent;
 return { clientSecret: intent.client_secret, subscriptionId: sub.id };
 ```
 
@@ -214,10 +215,7 @@ const result = await stripeAdapter.getOrCreateCustomer(
 if (!result.ok && result.testLiveMismatch) {
   // Stale ID from the other environment. Wipe and retry.
   await db.update(users).set({ stripeCustomerId: null }).where(eq(users.id, user.id));
-  const retry = await stripeAdapter.getOrCreateCustomer(
-    { email: user.email, name: user.fullName },
-    credentials,
-  );
+  const retry = await stripeAdapter.getOrCreateCustomer({ email: user.email, name: user.fullName }, credentials);
   if (retry.ok) await db.update(users).set({ stripeCustomerId: retry.customerId }).where(eq(users.id, user.id));
 }
 ```
@@ -244,12 +242,12 @@ await stripeAdapter.reactivateSubscription(subscriptionId, credentials);
 
 ### Webhook trail
 
-| Action                                       | Webhooks fired                                                                |
-| -------------------------------------------- | ----------------------------------------------------------------------------- |
-| Cancel at period end                         | `customer.subscription.updated` (cancel_at_period_end=true) NOW                |
-| → time passes, period ends                   | `customer.subscription.deleted` (status=canceled) AT period end                |
-| Cancel immediately                           | `customer.subscription.deleted` immediately                                    |
-| Reactivate                                   | `customer.subscription.updated` (cancel_at_period_end=false)                  |
+| Action                     | Webhooks fired                                                  |
+| -------------------------- | --------------------------------------------------------------- |
+| Cancel at period end       | `customer.subscription.updated` (cancel_at_period_end=true) NOW |
+| → time passes, period ends | `customer.subscription.deleted` (status=canceled) AT period end |
+| Cancel immediately         | `customer.subscription.deleted` immediately                     |
+| Reactivate                 | `customer.subscription.updated` (cancel_at_period_end=false)    |
 
 Don't revoke access on `customer.subscription.updated` with `cancel_at_period_end=true`. Wait for `.deleted`. The buyer paid for that period.
 
@@ -271,15 +269,15 @@ Eliminates 90% of subscription-management UI work.
 
 The events the adapter normalizes are the ones you'll actually act on. Other events are valid signals but are usually not the primary trigger for fulfillment.
 
-| Event                              | Use it for                                                                  |
-| ---------------------------------- | --------------------------------------------------------------------------- |
-| `checkout.session.completed`       | First confirmation that a hosted Checkout finalized.                        |
-| `payment_intent.succeeded`         | Inline PaymentIntent confirmed (one-shot).                                  |
-| `payment_intent.payment_failed`    | Inline PaymentIntent rejected (capture `last_payment_error.message`).       |
-| `invoice.paid`                     | Subscription invoice paid — first cycle AND renewals.                       |
-| `invoice.payment_failed`           | Renewal failed — start your dunning flow (email, retry, downgrade).         |
-| `customer.subscription.updated`    | Plan change, cancel-at-period-end flag, status flip (active → past_due, …). |
-| `customer.subscription.deleted`    | Definitive end of subscription (revoke access).                             |
+| Event                           | Use it for                                                                  |
+| ------------------------------- | --------------------------------------------------------------------------- |
+| `checkout.session.completed`    | First confirmation that a hosted Checkout finalized.                        |
+| `payment_intent.succeeded`      | Inline PaymentIntent confirmed (one-shot).                                  |
+| `payment_intent.payment_failed` | Inline PaymentIntent rejected (capture `last_payment_error.message`).       |
+| `invoice.paid`                  | Subscription invoice paid — first cycle AND renewals.                       |
+| `invoice.payment_failed`        | Renewal failed — start your dunning flow (email, retry, downgrade).         |
+| `customer.subscription.updated` | Plan change, cancel-at-period-end flag, status flip (active → past_due, …). |
+| `customer.subscription.deleted` | Definitive end of subscription (revoke access).                             |
 
 ### Order quirk
 
@@ -299,7 +297,7 @@ app.post(
     const event = verifyStripeWebhook(req.body, sig, credentials);
     // ... handle event
     res.json({ received: true });
-  }
+  },
 );
 
 // Next.js App Router
@@ -332,14 +330,14 @@ Use the same key (your order UUID) within a 24h window; Stripe will return the o
 
 ## 7. Common errors
 
-| Error code             | Likely cause                                          | Fix                                                      |
-| ---------------------- | ----------------------------------------------------- | -------------------------------------------------------- |
-| `resource_missing`     | Test ID used with live key (or vice versa)            | Wipe stale ID, retry with email-based create.            |
-| `parameter_invalid_*`  | Wrong currency for amount (e.g. decimals on XOF)      | Validate currency vs amount via `toStripeAmount`.        |
-| `card_declined`        | Buyer's bank refused                                  | Show `last_payment_error.message`; let buyer retry.      |
-| `invalid_request_error` `webhook_signature_invalid` | Wrong webhook secret OR raw body was parsed | Use `req.text()` / `express.raw()`, verify whsec.        |
-| `rate_limit`           | More than ~100 req/sec to one account                  | Add backoff; use Idempotency-Key on retry.               |
-| `idempotency_error`    | Same Idempotency-Key with different params            | Either reuse params or use a fresh key.                  |
+| Error code                                          | Likely cause                                     | Fix                                                 |
+| --------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------- |
+| `resource_missing`                                  | Test ID used with live key (or vice versa)       | Wipe stale ID, retry with email-based create.       |
+| `parameter_invalid_*`                               | Wrong currency for amount (e.g. decimals on XOF) | Validate currency vs amount via `toStripeAmount`.   |
+| `card_declined`                                     | Buyer's bank refused                             | Show `last_payment_error.message`; let buyer retry. |
+| `invalid_request_error` `webhook_signature_invalid` | Wrong webhook secret OR raw body was parsed      | Use `req.text()` / `express.raw()`, verify whsec.   |
+| `rate_limit`                                        | More than ~100 req/sec to one account            | Add backoff; use Idempotency-Key on retry.          |
+| `idempotency_error`                                 | Same Idempotency-Key with different params       | Either reuse params or use a fresh key.             |
 
 ## 8. Refunds
 

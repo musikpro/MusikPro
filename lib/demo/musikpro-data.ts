@@ -169,7 +169,10 @@ export const demoNotifications = [
   },
 ];
 
-export { creditCurrencies as demoCurrencies, formatCreditPrice as formatDemoPackPrice } from "@/lib/credit-plans/currency";
+export {
+  creditCurrencies as demoCurrencies,
+  formatCreditPrice as formatDemoPackPrice,
+} from "@/lib/credit-plans/currency";
 
 export const demoLyrics =
   "Une histoire de beauté et d'amour\nCélébrons ce jour merveilleux ensemble\nAu rythme de l'Afrique, dansons sans fin\nCette chanson est pour toi, mon ami\n\nDans les rues de notre quartier\nOù les rires résonnent à chaque coin\nTu es né pour briller et rayonner\nEt nous dansons sous les étoiles";

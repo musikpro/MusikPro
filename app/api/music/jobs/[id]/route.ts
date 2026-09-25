@@ -17,8 +17,10 @@ export async function GET(request: Request, ctx: Ctx) {
   if (!parsedId.success) return NextResponse.json({ error: "Identifiant invalide." }, { status: 400 });
 
   const limit = await rateLimit(`music:jobs:${session.user.id}:${clientIp(request)}`, 60);
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
-  if (!limit.success) return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
+  if (!limit.success)
+    return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
 
   try {
     const job = await pollMusicJob(parsedId.data, session.user.id);
@@ -37,7 +39,8 @@ export async function GET(request: Request, ctx: Ctx) {
       completedAt: job.completedAt,
     });
   } catch (error) {
-    if (error instanceof MusicJobOwnershipError) return NextResponse.json({ error: "Génération introuvable." }, { status: 404 });
+    if (error instanceof MusicJobOwnershipError)
+      return NextResponse.json({ error: "Génération introuvable." }, { status: 404 });
     return NextResponse.json({ error: "Impossible de récupérer l’état de la génération." }, { status: 502 });
   }
 }

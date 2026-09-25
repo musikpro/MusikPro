@@ -19,7 +19,11 @@ export default function ReviewLyricsScreen() {
     if (!hasLyrics) demo.go("/dashboard/create/parameters");
   }, [demo, hasLyrics]);
   if (!hasLyrics) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">{t("Redirection vers la génération des paroles…")}</p>;
+    return (
+      <p className="p-6 text-center text-sm text-muted-foreground">
+        {t("Redirection vers la génération des paroles…")}
+      </p>
+    );
   }
   const lyricsWordCount = demo.fields.lyrics.trim().split(/\s+/).filter(Boolean).length;
   const estimatedDuration = formatLyricsDuration(estimateLyricsDurationSeconds(lyricsWordCount));

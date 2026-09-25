@@ -1,11 +1,12 @@
 # Règle prioritaire — langue de réponse
+
 - **Toujours répondre à l’utilisateur en français.**
 - Les explications, diagnostics, résumés, demandes de confirmation et recommandations doivent être rédigés en français, quel que soit l’agent utilisé (ChatGPT/Codex/Antigravity ou Claude Code).
 - Les commandes, noms de fichiers, identifiants de code, noms d’API et messages techniques peuvent rester dans leur forme originale quand cela évite de casser ou d’altérer le code.
 - Ne changer de langue que si l’utilisateur demande explicitement une autre langue pour une réponse précise.
 
-
 # Règle obligatoire — refactorisation propre et non régressive
+
 - **Toute modification, correction, mise à jour, migration, intégration ou nouvelle fonctionnalité doit être traitée comme une refactorisation propre, professionnelle et non régressive.**
 - Inspecter d’abord l’architecture, les dépendances et les fonctionnalités déjà présentes avant de modifier le code.
 - Préserver les comportements existants, routes, contrats API, modèles de données, variables d’environnement, règles de sécurité, skills et workflows, sauf demande explicite nécessitant leur évolution.
@@ -13,8 +14,8 @@
 - Ne jamais supprimer ou casser une fonctionnalité existante pour en ajouter une nouvelle ; si une évolution incompatible est réellement nécessaire, prévoir une migration claire et documentée.
 - Après chaque refactorisation, exécuter les contrôles pertinents du kit (`npm run kit:integrity`, `npm run kit:audit`, `/security-saas`, gates Zod et tests de la fonctionnalité concernée) et corriger toute régression avant de considérer le travail terminé.
 
-
 # Règle prioritaire — Mobile App Pipeline WebView optionnel
+
 - Le SaaS Web Next.js est construit, testé et déployé avant toute préparation Android/iOS.
 - L’architecture mobile officielle est **Capacitor WebView → URL HTTPS du SaaS en ligne** (`webview-hosted`), pas une copie du backend Next.js dans l’app.
 - La **Phase 21** est optionnelle. `mobileAppEnabled=false` est un état valide et ne doit déclencher aucune installation Capacitor.
@@ -23,16 +24,16 @@
 - Toute entrée non fiable continue d’être validée côté serveur avec Zod; une validation mobile n’est qu’une couche UX supplémentaire.
 - Une adaptation native doit être additive, isolée et réversible; elle ne doit jamais devenir nécessaire au rendu Web.
 
-
 ## Upstash optionnel
+
 - Upstash Redis est **optionnel** et se configure en Phase 16, après le staging de base et avant les paiements.
 - Neon reste la source de vérité. Upstash sert au cache TTL, au rate limiting distribué et aux états temporaires.
 - Ne jamais mettre `UPSTASH_REDIS_REST_TOKEN` dans une variable `NEXT_PUBLIC_*`, dans Git ou dans le chat.
 - Si Upstash n’est pas utilisé, marquer la Phase 16 `skipped`; le SaaS doit continuer à fonctionner directement avec Neon.
 - Si Upstash est activé, valider `npm run upstash:check:online` et `/api/readyz` avant production.
 
-
 # Règle prioritaire — Cloudflare optionnel
+
 - Cloudflare n’est jamais obligatoire pour construire ou déployer un SaaS avec le kit.
 - Le proposer seulement en **Phase 18**, après le staging et après la décision paiements.
 - La Phase 18 concerne domaine/DNS/proxy éventuel, pas Cloudflare R2.
@@ -52,6 +53,7 @@ Les providers de paiement ne sont **jamais obligatoires** pour utiliser, constru
 # /setup-saas — point d’entrée officiel du kit
 
 Quand l’utilisateur écrit exactement `/setup-saas` dans Antigravity/Codex :
+
 1. Lire `.agents/skills/setup-saas/SKILL.md`.
 2. Exécuter `npm run setup-saas`.
 3. Lire `generated/setup-saas-report.md` et `generated/setup-saas-report.json`.
@@ -64,7 +66,9 @@ Quand l’utilisateur écrit exactement `/setup-saas` dans Antigravity/Codex :
 # Instructions IA — Africa SaaS Kit
 
 ## Explication pédagogique obligatoire des phases
+
 Avant toute action dans une phase `/setup-saas`, expliquer en langage simple :
+
 1. à quoi sert le service ou la phase ;
 2. ce qu'il apporte concrètement au SaaS ;
 3. s'il est obligatoire ou optionnel ;
@@ -73,9 +77,10 @@ Avant toute action dans une phase `/setup-saas`, expliquer en langage simple :
 
 À la fin de la Phase 20, lancer `npm run conformity:check`, lire `generated/conformity-report.md` et corriger tout FAIL avant de considérer le SaaS Web conforme. La Phase 21 Mobile App est ensuite optionnelle et ne doit jamais remettre en cause un Web-only valide.
 
-
 ## Banani / Design
+
 Pour connecter Banani dans Codex/Antigravity :
+
 1. Exécute `npm run banani:prepare`. Cette commande doit seulement créer `.codex/config.toml` vide s’il manque et ne jamais écraser une configuration existante.
 2. Demande à l’utilisateur d’ouvrir `.codex/config.toml` et d’y coller lui-même la configuration MCP fournie par Banani.
 3. Ne demande jamais le token Banani dans le chat et ne l’écris jamais automatiquement dans un fichier.
@@ -83,6 +88,7 @@ Pour connecter Banani dans Codex/Antigravity :
 5. `.codex/config.toml` doit rester ignoré par Git. Si le fichier est suivi par Git ou si un token a été exposé, demander une rotation/révocation du token avant de continuer.
 
 Quand des écrans Banani, Figma ou captures sont importés :
+
 1. Ne code pas immédiatement tout le SaaS.
 2. Mets à jour `design/banani/screens.json` avec les écrans réellement observés.
 3. Lis `DESIGN.md` et `docs/design/implementation-planner.md`.
@@ -92,9 +98,10 @@ Quand des écrans Banani, Figma ou captures sont importés :
 7. À la fin de chaque phase, exécute les tests/gates demandés avant de continuer.
 8. N'invente jamais une règle métier, un endpoint de paiement ou une permission non démontrée.
 
-
 ## /import-banani — import design complet puis comparaison
+
 Quand l’utilisateur saisit `/import-banani` après avoir connecté Banani :
+
 1. Lire `.agents/skills/import-banani/SKILL.md`.
 2. Exécuter `npm run banani:check`.
 3. Utiliser les outils MCP Banani réellement disponibles pour parcourir le projet et observer **tous les écrans accessibles** ; ne jamais inventer un nom d’outil MCP.
@@ -107,7 +114,9 @@ Quand l’utilisateur saisit `/import-banani` après avoir connecté Banani :
 10. Toute donnée non observable depuis Banani reste `NON VÉRIFIÉ` ou `À CONFIRMER`.
 
 ## Mobile-First obligatoire
+
 Africa SaaS Kit cible une vraie application mobile-first et responsive.
+
 1. Construis chaque écran d'abord pour 320–430 px, puis tablette/desktop.
 2. Valide au minimum 320, 360, 390, 430, 768, 1024 et 1440 px.
 3. Aucun écran n'est terminé s'il provoque un scroll horizontal global, des boutons tronqués ou des cibles tactiles trop petites.
@@ -119,7 +128,9 @@ Africa SaaS Kit cible une vraie application mobile-first et responsive.
 9. Ne déclare jamais le responsive validé sans avoir réellement vérifié les viewports demandés ; sinon marque `NON VÉRIFIÉ`.
 
 ## Paiements locaux / ngrok
+
 Quand l'utilisateur veut tester les paiements en local :
+
 1. Lis `docs/payments/local-payment-lab.md`.
 2. Vérifie que les clés utilisées sont SANDBOX/TEST.
 3. Guide l'utilisateur terminal par terminal : `npm run dev`, `npm run payments:ngrok`, puis `npm run payments:local`.
@@ -131,6 +142,7 @@ Quand l'utilisateur veut tester les paiements en local :
 9. À la fin, arrête le tunnel et rappelle de remplacer les URLs sandbox/ngrok par le vrai domaine HTTPS en staging/production.
 
 ## Sécurité
+
 - L'UI ne remplace jamais les contrôles serveur.
 - Une Server Action est un endpoint public : auth + permission + validation obligatoires.
 - Les paiements ne sont crédités qu'après vérification fournisseur + idempotence.
@@ -140,6 +152,7 @@ Quand l'utilisateur veut tester les paiements en local :
 ## Skeleton Loader Gate — obligatoire
 
 Pour toute page ou zone qui attend des données :
+
 - créer un `loading.tsx` App Router ou un `Suspense` avec fallback dédié ;
 - utiliser les primitives de `components/ui/skeleton.tsx` ;
 - faire correspondre le skeleton à la géométrie du contenu final pour limiter le layout shift ;
@@ -152,7 +165,9 @@ Pour toute page ou zone qui attend des données :
 Gate de livraison : une page data-driven sans skeleton approprié est INCOMPLÈTE.
 
 ## SEO Gate — obligatoire pour chaque page publique
+
 Africa SaaS Kit doit être indexable proprement et partageable avec une image riche.
+
 1. Lis `docs/seo/google-seo.md` avant d'ajouter une page marketing/public.
 2. Chaque page publique doit avoir un title unique, une description, une canonical et une décision explicite index/noindex via `buildMetadata()` ou `generateMetadata()`.
 3. Toute page indexable doit être ajoutée au sitemap ; aucune route privée ou technique ne doit y apparaître.
@@ -168,7 +183,9 @@ Africa SaaS Kit doit être indexable proprement et partageable avec une image ri
 Gate de livraison : une page publique sans metadata/canonical/social preview appropriés est INCOMPLÈTE.
 
 ## Deployment Handoff Gate — GitHub → Vercel obligatoire
+
 Quand l'utilisateur demande de mettre le SaaS en ligne, de connecter GitHub/Vercel, ou de préparer la production :
+
 1. Lis `docs/deployment/vercel-github-handoff.md`.
 2. Lance `npm run deploy:handoff` et lis `generated/deployment-handoff.md`.
 3. Ne donne pas une liste générique inventée : utilise la configuration et les providers réellement présents dans le projet; s’il n’y en a aucun, ne rien inventer et indiquer que les paiements sont désactivés.
@@ -185,8 +202,6 @@ Quand l'utilisateur demande de mettre le SaaS en ligne, de connecter GitHub/Verc
 
 Gate de livraison : une mise en ligne sans `generated/deployment-handoff.md` actualisé est INCOMPLÈTE.
 
-
-
 ## Computer Use / Browser Tools — vérification continue obligatoire dans Antigravity
 
 - Dans Antigravity, la capacité navigateur est fournie par le **Browser Subagent / Browser Tools**; ne jamais inventer un package npm `computer-use`.
@@ -199,14 +214,15 @@ Gate de livraison : une mise en ligne sans `generated/deployment-handoff.md` act
 - Si Computer Use est indisponible hors Antigravity, marquer la vérification `NON VÉRIFIÉE` ou `skipped` avec justification et fournir un test manuel équivalent.
 
 ## Mémoire de progression locale
+
 Après un **vrai test réussi** (connexion DB, paiement sandbox, build, staging, etc.), l’agent peut mémoriser la phase avec :
 
 `npm run setup-saas:mark -- --phase=N --status=passed --note="preuve/test effectué"`
 
 Puis relancer `npm run setup-saas`. Ne jamais marquer une phase passée sur simple supposition ou présence d’une variable.
 
-
 ## Cloudinary optionnel
+
 - Ne proposer Cloudinary qu’en **Phase 19**, si le SaaS a besoin d’uploads d’images.
 - Sans upload : phase 18 `skipped`.
 - Avec upload : utiliser `npm run cloudinary:setup`, tester réellement un upload et des refus de sécurité, puis seulement marquer la phase `passed`.
@@ -215,6 +231,7 @@ Puis relancer `npm run setup-saas`. Ne jamais marquer une phase passée sur simp
 ## Gate qualité backend — Phase 13
 
 Avant le staging, l'agent doit aussi valider :
+
 - `GET /api/health` répond 200 ;
 - `GET /api/readyz` répond 200 lorsque Neon et les dépendances configurées sont disponibles ;
 - `npm run format:check` ;
@@ -225,7 +242,6 @@ Avant le staging, l'agent doit aussi valider :
 - `npm run audit:prod`.
 
 Les migrations sont Drizzle et doivent être versionnées dans `db/migrations/`. Utiliser `DATABASE_URL_DIRECT` pour les migrations si une connexion Neon directe est configurée, sans remplacer `DATABASE_URL` côté application.
-
 
 ## Commande provider — obligatoire
 
@@ -252,7 +268,6 @@ Pour les nouveaux appels JSON côté client, préférer `lib/api/client.ts`. Les
 
 Avant de supprimer une feature optionnelle, lire `config/features.json`. Vérifier `dependsOn`, `disableBehavior` et `removalComplexity`. Ne jamais supprimer un fichier simplement parce que l’écran qui l’utilisait a disparu. Préférer une désactivation par configuration pour les briques réutilisables. Après toute suppression ou refactorisation structurelle, exécuter `npm run features:check && npm run verify:code`.
 
-
 ## Premium Icon Gate — obligatoire et permanent
 
 - Avant toute livraison et après chaque ajout/refactorisation de page, exécuter `npm run ui:icons-check`.
@@ -263,7 +278,6 @@ Avant de supprimer une feature optionnelle, lire `config/features.json`. Vérifi
 - Après modification visuelle importante, compléter le contrôle statique par une vérification navigateur responsive lorsqu’un Browser Tool est disponible.
 
 Gate de livraison : une page contenant une icône Sparkle/Sparklet ou un substitut décoratif interdit est INCOMPLÈTE.
-
 
 ## Security Baseline Gate (obligatoire)
 
@@ -278,7 +292,6 @@ Après toute création/modification d’une route API, table Drizzle, auth, uplo
 
 Une erreur du Security Baseline Gate est bloquante : ne pas contourner le contrôle par suppression du script, de la règle ou par exemption sans justification de sécurité.
 
-
 ## Zod Validation Gate — obligatoire et permanent
 
 - Toute entrée non fiable structurée de première partie doit être validée par Zod.
@@ -291,17 +304,16 @@ Une erreur du Security Baseline Gate est bloquante : ne pas contourner le contr�
 
 Une modification qui contourne ce gate est INCOMPLÈTE.
 
-
 ## General Refactor Gate — obligatoire
 
 Après toute création ou modification importante de page, route API, Server Action, paiement, upload, authentification ou workflow CI, exécuter `npm run refactor:check`. Ne jamais contourner ce gate. Les pages `/dashboard/*` doivent hériter d'une validation serveur réelle via `requireUser()` et `/admin/*` via `requireAdmin()`. Ne jamais renvoyer le champ `raw` d’un provider de paiement au navigateur. Pour les endpoints mutateurs authentifiés de première partie, conserver les gardes d’origine/cross-site, de Content-Type et de taille avant parsing. Utiliser `node:crypto` et non `Math.random()` pour les identifiants ou tokens.
 
-
 ### Dependency security floor
+
 `npm run security:versions` bloque les régressions sous les versions minimales de sécurité revues pour Next.js, React, Drizzle ORM et Better Auth. Ce contrôle complète `npm audit`; il ne le remplace pas.
 
-
 ### Commande `/security-saas`
+
 - `/security-saas` est l'audit de sécurité à la demande officiel du kit.
 - L'équivalent terminal est `npm run security-saas`; utiliser `npm run security-saas:online` quand Neon/Postgres est accessible pour confirmer réellement RLS + policies.
 - Le rapport doit garder les contrôles impossibles en `À VÉRIFIER` plutôt que les déclarer PASS.
@@ -311,7 +323,6 @@ Après toute création ou modification importante de page, route API, Server Act
 ## CRUD Clients post-Banani
 
 Le module `Client` Prisma et les routes `/api/clients/*` sont une brique complémentaire. Toujours importer/analyser les écrans Banani avant de brancher ces routes à l’UI. Conserver Zod côté serveur, Better Auth, rate limiting, request guards et RLS. Ne pas migrer les autres modules Drizzle vers Prisma sans demande explicite.
-
 
 ## Règle permanente — branchement de toutes les pages propriétaire ↔ base ↔ client
 
@@ -332,13 +343,14 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 13. **Registres et gates** : mettre à jour `config/features.json`, `config/security-routes.json`, `config/security-rls.json` et `config/zod-validation.json` selon les fichiers ajoutés. Exécuter au minimum `npm run features:check`, `npm run validation:zod-check`, `npm run security:baseline`, `npm run refactor:check`, `npm run typecheck`, `npm run test`, `npm run mobile:check` et `npm run ui:icons-check`. Lorsque Neon est accessible, appliquer la migration puis exécuter `npm run security:db-check`.
 14. **Définition de terminé** : une page métier n’est terminée qu’après une mutation réellement persistée, une relecture depuis la base et une vérification du résultat dans le tableau propriétaire, le tableau client réel et la démo. Une interface seule, un tableau statique, des données uniquement en mémoire ou une mutation non relue depuis la base restent INCOMPLETS.
 
-
 ## Mandatory Staging Gate
+
 - Toujours déployer et valider une Vercel Preview avant Production.
 - Ne jamais contourner `npm run deploy:production:check`.
 - Séparer les secrets/variables Preview et Production; préférer une base de staging distincte.
 
 ## Claude Code — agent officiellement supporté
+
 - Lire `CLAUDE.md` lorsqu’une session est exécutée avec Claude Code.
 - Les commandes `.claude/commands/` doivent réutiliser les scripts npm et les skills `.agents/skills/`; ne pas créer une deuxième logique métier.
 - Exécuter `npm run claude-code:check` après installation/mise à jour de Claude Code.

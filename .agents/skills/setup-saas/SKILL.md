@@ -4,6 +4,7 @@ description: Assistant officiel Africa SaaS Kit. Analyse l’état du projet et 
 ---
 
 ## Langue de réponse
+
 Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
 
 # /setup-saas — Assistant de configuration complet en 21 phases
@@ -34,6 +35,7 @@ La définition détaillée des phases et les règles de progression sont dans `A
 - Phase 21 : Mobile App Pipeline Android/iOS WebView optionnel; ne jamais installer Capacitor si le projet reste Web-only. Si activé, guider aussi la préparation Android Studio/Xcode, les tests WebView, les assets (logo, icône, splash, captures Android/iPhone) et la publication stores.
 
 ## Staging Gate obligatoire
+
 Avant toute Production, lire `docs/deployment/staging-vercel.md` et valider une Vercel Preview du commit courant : `npm run staging:deploy`, `npm run staging:test -- --url=...`, `npm run staging:approve -- --url=...`, puis `npm run deploy:production:check`. Ne jamais contourner ce gate. Séparer les variables et bases Preview/Production ; refaire le staging si le code change.
 
 16. Compatibilité Claude Code : lire `CLAUDE.md`, utiliser les commandes `.claude/commands/`, et garder les voyants Computer Use OpenAI/Claude indépendants. Un voyant vert exige un test réel marqué `verified`.
@@ -43,6 +45,7 @@ Avant toute Production, lire `docs/deployment/staging-vercel.md` et valider une 
 À chaque installation ou adaptation d'un SaaS, ajouter ou préserver dans le tableau de bord du propriétaire un menu **État production** pointant vers `/admin/production-doctor`.
 
 L'écran doit :
+
 - afficher « Diagnostic local de préparation à la production. Le rapport CLI reste la source de vérité. » ;
 - lire le rapport du Production Doctor au lieu de recalculer un état divergent dans l'UI ;
 - afficher un voyant vert pour un contrôle prêt/installé, orange pour un contrôle à compléter/à vérifier et rouge pour un contrôle absent/bloquant ;
@@ -51,6 +54,6 @@ L'écran doit :
 
 Validation obligatoire après intégration : `npm run kit:integrity && npm run doctor:production`.
 
-
 ## Règle de refactorisation
+
 Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.

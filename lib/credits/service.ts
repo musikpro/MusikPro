@@ -23,7 +23,9 @@ export async function deductCredits(userId: string, amount: number): Promise<num
 export async function refundCredits(userId: string, amount: number): Promise<number | null> {
   const result = await userQuery(
     userId,
-    db.execute(sql`UPDATE ${credits} SET balance = balance + ${amount}, updated_at = now() WHERE user_id = ${userId} RETURNING balance`),
+    db.execute(
+      sql`UPDATE ${credits} SET balance = balance + ${amount}, updated_at = now() WHERE user_id = ${userId} RETURNING balance`,
+    ),
   );
   const row = result.rows[0] as { balance?: number | string } | undefined;
   return row ? Number(row.balance) : null;

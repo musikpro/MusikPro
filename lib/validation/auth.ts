@@ -2,7 +2,10 @@ import { z } from "zod";
 
 export const emailSchema = z.string().trim().toLowerCase().email().max(254);
 export const passwordSchema = z.string().min(10).max(256);
-export const totpCodeSchema = z.string().trim().regex(/^\d{6}$/);
+export const totpCodeSchema = z
+  .string()
+  .trim()
+  .regex(/^\d{6}$/);
 
 export const loginSchema = z.object({ email: emailSchema, password: passwordSchema });
 export const registerSchema = loginSchema.extend({ name: z.string().trim().min(2).max(120) });

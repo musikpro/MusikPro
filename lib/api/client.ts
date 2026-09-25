@@ -1,5 +1,9 @@
 export class ApiClientError extends Error {
-  constructor(public status: number, message: string, public code = "") {
+  constructor(
+    public status: number,
+    message: string,
+    public code = "",
+  ) {
     super(message);
     this.name = "ApiClientError";
   }
@@ -28,14 +32,14 @@ export async function apiFetch<T = unknown>(input: RequestInfo | URL, options: A
         let code = "";
         let message = response.status >= 500 ? "Service temporairement indisponible" : `HTTP ${response.status}`;
         try {
-          const json = await response.json() as { error?: string; code?: string };
+          const json = (await response.json()) as { error?: string; code?: string };
           if (typeof json.code === "string") code = json.code;
           if (typeof json.error === "string") message = json.error;
         } catch {}
         throw new ApiClientError(response.status, message, code);
       }
       if (response.status === 204 || method === "HEAD") return undefined as T;
-      return await response.json() as T;
+      return (await response.json()) as T;
     } catch (error) {
       lastError = error;
       if (error instanceof ApiClientError || attempt >= retries) throw error;

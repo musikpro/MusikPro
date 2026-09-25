@@ -3,10 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { WebOnly } from "@/components/mobile/web-only";
-import {
-  PremiumIcon,
-  type PremiumIconName,
-} from "@/components/ui/premium-icon";
+import { PremiumIcon, type PremiumIconName } from "@/components/ui/premium-icon";
 
 const items: Array<{ href: string; label: string; icon: PremiumIconName }> = [
   { href: "/", label: "Accueil", icon: "home" },
@@ -17,15 +14,11 @@ const items: Array<{ href: string; label: string; icon: PremiumIconName }> = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const musikPath = pathname.startsWith("/demo")
-    ? pathname.replace(/^\/demo/, "/dashboard") || "/dashboard"
-    : pathname;
+  const musikPath = pathname.startsWith("/demo") ? pathname.replace(/^\/demo/, "/dashboard") || "/dashboard" : pathname;
   const musik =
     musikPath === "/dashboard" ||
     (musikPath.startsWith("/dashboard/") &&
-      !["/dashboard/billing", "/dashboard/security"].some((route) =>
-        musikPath.startsWith(route),
-      ));
+      !["/dashboard/billing", "/dashboard/security"].some((route) => musikPath.startsWith(route)));
   const destinations = musik
     ? [
         { href: "/dashboard", label: "Accueil", icon: "home" as const },
@@ -49,10 +42,7 @@ export function MobileBottomNav() {
   if (musik) return null;
   return (
     <WebOnly>
-      <nav
-        className={`mobile-bottom-nav ${musik ? "musik-bottom-nav" : ""}`}
-        aria-label="Navigation mobile principale"
-      >
+      <nav className={`mobile-bottom-nav ${musik ? "musik-bottom-nav" : ""}`} aria-label="Navigation mobile principale">
         {destinations.map((item) => (
           <Link
             key={item.href}

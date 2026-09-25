@@ -5,9 +5,7 @@ import type { CheckoutInput, CheckoutResult } from "../types";
 import { requireEnv } from "@/lib/security/env";
 
 const base = () =>
-  process.env.BICTORYS_ENVIRONMENT === "live"
-    ? "https://api.bictorys.com"
-    : "https://api.test.bictorys.com";
+  process.env.BICTORYS_ENVIRONMENT === "live" ? "https://api.bictorys.com" : "https://api.test.bictorys.com";
 const headers = () => ({
   "X-Api-Key": requireEnv("BICTORYS_API_KEY"),
   Accept: "application/json",
@@ -20,10 +18,8 @@ const safe = (a: string, b: string) => {
 };
 const statusOf = (v: unknown): CheckoutResult["status"] => {
   const s = String(v || "").toLowerCase();
-  if (s.includes("succeed") || s.includes("success") || s.includes("paid"))
-    return "paid";
-  if (s.includes("fail") || s.includes("cancel") || s.includes("refund"))
-    return "failed";
+  if (s.includes("succeed") || s.includes("success") || s.includes("paid")) return "paid";
+  if (s.includes("fail") || s.includes("cancel") || s.includes("refund")) return "failed";
   return "pending";
 };
 
@@ -55,8 +51,7 @@ export class BictorysProvider extends HttpPaymentProvider {
     });
     const id = response.transactionId || response.chargeId || response.id;
     const url = response.link || response.redirectUrl || response.checkoutUrl;
-    if (!id || !url)
-      throw new Error("Bictorys returned an incomplete checkout response");
+    if (!id || !url) throw new Error("Bictorys returned an incomplete checkout response");
     return {
       provider: this.id,
       externalId: String(id),
@@ -67,23 +62,19 @@ export class BictorysProvider extends HttpPaymentProvider {
     };
   }
   async verifyPayment(id: string): Promise<CheckoutResult> {
-    const response = await fetch(
-      `${base()}/pay/v1/transactions/${encodeURIComponent(id)}/status?by_charge_id=true`,
-      { headers: headers(), cache: "no-store" },
-    );
-    const body = bictorysPayloadSchema.parse(
-      await response.json().catch(() => ({})),
-    );
-    if (!response.ok)
-      throw new Error(`Bictorys verify error ${response.status}`);
+    const response = await fetch(`${base()}/pay/v1/transactions/${encodeURIComponent(id)}/status?by_charge_id=true`, {
+      headers: headers(),
+      cache: "no-store",
+    });
+    const body = bictorysPayloadSchema.parse(await response.json().catch(() => ({})));
+    if (!response.ok) throw new Error(`Bictorys verify error ${response.status}`);
     const amount = Number(body.amount ?? body.transaction?.amount);
     const currency = String(body.currency ?? body.transaction?.currency ?? "");
     return {
       provider: this.id,
       externalId: id,
       status: statusOf(body.status ?? body.transaction?.status),
-      money:
-        Number.isFinite(amount) && currency ? { amount, currency } : undefined,
+      money: Number.isFinite(amount) && currency ? { amount, currency } : undefined,
       raw: body,
     };
   }

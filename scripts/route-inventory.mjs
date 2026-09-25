@@ -12,11 +12,16 @@ function walk(dir) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) walk(full);
     else if (entry.name === "route.ts" || entry.name === "route.js") {
-      const rel = path.relative(appDir, full).replace(/\\/g, "/").replace(/\/route\.(ts|js)$/, "");
+      const rel = path
+        .relative(appDir, full)
+        .replace(/\\/g, "/")
+        .replace(/\/route\.(ts|js)$/, "");
       const url = `/${rel}`.replace(/\/\(.*?\)/g, "");
       const source = fs.readFileSync(full, "utf8");
       const methods = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"].filter((method) => {
-        const direct = new RegExp(`export\\s+(?:async\\s+)?function\\s+${method}\\b|export\\s+const\\s+${method}\\b`).test(source);
+        const direct = new RegExp(
+          `export\\s+(?:async\\s+)?function\\s+${method}\\b|export\\s+const\\s+${method}\\b`,
+        ).test(source);
         const destructured = new RegExp(`export\\s+const\\s+\\{[^}]*\\b${method}\\b[^}]*\\}`).test(source);
         return direct || destructured;
       });

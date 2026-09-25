@@ -147,7 +147,9 @@ export default function SongPlayerScreen() {
               demo.setPlaying(false);
               demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
             }}
-            onStalled={() => demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")}
+            onStalled={() =>
+              demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")
+            }
             className="sr-only"
           />
         ) : null}
@@ -163,7 +165,12 @@ export default function SongPlayerScreen() {
             <div className="bg-border rounded-full h-1 mb-2">
               <div
                 className="bg-primary h-1 rounded-full"
-                style={{ width: audioUrl && progress.duration ? `${Math.min(100, (progress.current / progress.duration) * 100)}%` : "45%" }}
+                style={{
+                  width:
+                    audioUrl && progress.duration
+                      ? `${Math.min(100, (progress.current / progress.duration) * 100)}%`
+                      : "45%",
+                }}
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
@@ -215,7 +222,9 @@ export default function SongPlayerScreen() {
             type="button"
             data-demo-ready="true"
             onClick={() =>
-              audioUrl ? setMuted((prev) => !prev) : demo.notify("Action de démonstration : aucune opération réelle effectuée.")
+              audioUrl
+                ? setMuted((prev) => !prev)
+                : demo.notify("Action de démonstration : aucune opération réelle effectuée.")
             }
             aria-pressed={muted}
             aria-label={muted ? "Réactiver le son" : "Couper le son"}

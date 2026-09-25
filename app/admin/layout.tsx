@@ -14,7 +14,10 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const paymentBypassEnabled = await isPaymentBypassEnabled();
   return (
     <AdminToastProvider>
-      <AdminShell user={{ name: session.user.name, email: session.user.email }} paymentBypassEnabled={paymentBypassEnabled}>
+      <AdminShell
+        user={{ name: session.user.name, email: session.user.email }}
+        paymentBypassEnabled={paymentBypassEnabled}
+      >
         {children}
       </AdminShell>
     </AdminToastProvider>

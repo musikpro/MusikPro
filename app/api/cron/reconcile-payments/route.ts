@@ -8,19 +8,13 @@ import { verifyCronRequest } from "@/lib/cron/auth";
 export const runtime = "nodejs";
 
 async function handle(request: Request) {
-  if (!verifyCronRequest(request))
-    return new Response("Unauthorized", { status: 401 });
+  if (!verifyCronRequest(request)) return new Response("Unauthorized", { status: 401 });
   const db = getServiceDb();
   const since = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
   const rows = await db
     .select({ id: payments.id })
     .from(payments)
-    .where(
-      and(
-        inArray(payments.status, ["pending", "failed"]),
-        gte(payments.createdAt, since),
-      ),
-    )
+    .where(and(inArray(payments.status, ["pending", "failed"]), gte(payments.createdAt, since)))
     .orderBy(desc(payments.createdAt))
     .limit(100);
 

@@ -29,12 +29,8 @@ export default function UserAvatar({
     );
   }
   const src =
-    (assets as Record<string, string>)[
-      `/banani-avatars/avatar/${gender}/${ageGroup}/${heritage}/${index}`
-    ] ??
-    (assets as Record<string, string>)[
-      `/avatar/${gender}/${ageGroup}/${heritage}/${index}`
-    ];
+    (assets as Record<string, string>)[`/banani-avatars/avatar/${gender}/${ageGroup}/${heritage}/${index}`] ??
+    (assets as Record<string, string>)[`/avatar/${gender}/${ageGroup}/${heritage}/${index}`];
   return (
     <img
       src={src}

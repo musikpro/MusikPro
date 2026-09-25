@@ -1,6 +1,7 @@
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
-const SENSITIVE_KEY = /(password|secret|token|authorization|cookie|email|phone|api[_-]?key|client[_-]?secret|webhook|database[_-]?url|access[_-]?key)/i;
+const SENSITIVE_KEY =
+  /(password|secret|token|authorization|cookie|email|phone|api[_-]?key|client[_-]?secret|webhook|database[_-]?url|access[_-]?key)/i;
 
 function redact(value: unknown, depth = 0): unknown {
   if (depth > 6) return "[TRUNCATED]";
@@ -14,8 +15,11 @@ function redact(value: unknown, depth = 0): unknown {
 }
 
 function serialize(payload: Record<string, unknown>) {
-  try { return JSON.stringify(payload); }
-  catch { return JSON.stringify({ level: payload.level, message: payload.message, serializationError: true }); }
+  try {
+    return JSON.stringify(payload);
+  } catch {
+    return JSON.stringify({ level: payload.level, message: payload.message, serializationError: true });
+  }
 }
 
 export function createLogger(scope: string) {
@@ -28,9 +32,10 @@ export function createLogger(scope: string) {
       message,
       ...(context ? { context: redact(context) } : {}),
     };
-    const line = process.env.NODE_ENV === "production"
-      ? serialize(payload)
-      : `[${level.toUpperCase()}] [${scope}] ${message}${context ? ` ${serialize(redact(context) as Record<string, unknown>)}` : ""}`;
+    const line =
+      process.env.NODE_ENV === "production"
+        ? serialize(payload)
+        : `[${level.toUpperCase()}] [${scope}] ${message}${context ? ` ${serialize(redact(context) as Record<string, unknown>)}` : ""}`;
     if (level === "error") console.error(line);
     else if (level === "warn") console.warn(line);
     else console.log(line);

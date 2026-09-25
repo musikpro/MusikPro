@@ -18,12 +18,7 @@ export default function CreationTopNav({
   const demo = useDemo();
   return (
     <div className="creation-top-nav bg-background border-b border-border px-4 py-3">
-      <button
-        type="button"
-        data-demo-ready="true"
-        onClick={() => demo.go(backHref)}
-        className="creation-back-button"
-      >
+      <button type="button" data-demo-ready="true" onClick={() => demo.go(backHref)} className="creation-back-button">
         <Icon i="arrow-left" size={17} /> {t("Retour")}
       </button>
       <button
@@ -35,9 +30,7 @@ export default function CreationTopNav({
         <Icon i="layout-dashboard" size={16} />
         {t("Tableau de bord")}
       </button>
-      <span className="creation-step-label">
-        {label ?? `${t("Étape")} ${current}/${total}`}
-      </span>
+      <span className="creation-step-label">{label ?? `${t("Étape")} ${current}/${total}`}</span>
     </div>
   );
 }

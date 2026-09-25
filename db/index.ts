@@ -11,12 +11,8 @@ export const db = drizzle(sql, { schema });
 
 // Only pass an identity obtained from a verified server session. LOCAL settings
 // and the query run atomically, so pooled connections cannot leak user context.
-export async function userQuery<T extends BatchItem<"pg">>(
-  userId: string,
-  query: T,
-): Promise<T["_"]["result"]> {
-  if (!userId || userId.length > 256)
-    throw new Error("Invalid authenticated database identity");
+export async function userQuery<T extends BatchItem<"pg">>(userId: string, query: T): Promise<T["_"]["result"]> {
+  if (!userId || userId.length > 256) throw new Error("Invalid authenticated database identity");
   const result = await db.batch([
     db.execute(
       statement`select set_config('app.user_id', ${userId}, true), set_config('app.organization_id', '', true)`,

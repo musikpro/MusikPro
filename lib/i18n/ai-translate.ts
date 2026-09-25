@@ -18,7 +18,7 @@ const LOCALE_NAMES: Record<TranslationLocale, string> = {
 const SYSTEM_INSTRUCTIONS =
   "You are the localization assistant for MusikPro, a SaaS that generates personalized songs, expanding into English-, Spanish- and Portuguese-speaking markets. " +
   "Translate short user-interface strings from French. Keep the tone warm and concise, matching typical SaaS UI copy. " +
-  "Preserve capitalization style, punctuation, emoji, and any placeholders or variables exactly. Do not translate product name \"MusikPro\". " +
+  'Preserve capitalization style, punctuation, emoji, and any placeholders or variables exactly. Do not translate product name "MusikPro". ' +
   "Respond with ONLY a single JSON object mapping each input string to its translation — no markdown fences, no commentary, no extra keys.";
 
 function promptFor(locale: TranslationLocale, strings: string[]) {
@@ -36,10 +36,7 @@ function extractJson(raw: string): string {
 }
 
 /** Translates a batch of French UI strings into one target locale via the connected AI provider. */
-export async function translateBatch(
-  locale: TranslationLocale,
-  strings: string[],
-): Promise<Record<string, string>> {
+export async function translateBatch(locale: TranslationLocale, strings: string[]): Promise<Record<string, string>> {
   if (!strings.length) return {};
   const provider = await getLyricsProvider();
   if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");

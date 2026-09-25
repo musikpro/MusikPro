@@ -109,7 +109,9 @@ export default function StepAdditionalParams() {
               ariaInvalid={Boolean(detailError)}
               describedBy={detailError ? "detail-special-error" : undefined}
               onValueChange={() => setDetailError("")}
-              placeholder={t("Ex. : un voyage, une phrase qu’elle répète, un moment drôle ou une qualité qui te touche…")}
+              placeholder={t(
+                "Ex. : un voyage, une phrase qu’elle répète, un moment drôle ou une qualité qui te touche…",
+              )}
             />
             <VoiceMicrophoneButton
               value={demo.fields.detail}

@@ -13,6 +13,6 @@ export async function verifyTurnstile(token: string, remoteip?: string): Promise
     cache: "no-store",
   });
   if (!response.ok) return false;
-  const result = await response.json() as { success?: boolean };
+  const result = (await response.json()) as { success?: boolean };
   return result.success === true;
 }

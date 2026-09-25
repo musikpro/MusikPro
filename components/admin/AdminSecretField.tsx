@@ -15,9 +15,20 @@ export default function AdminSecretField({ name, configured, placeholder, disabl
   const [locked, setLocked] = useState(configured);
   return (
     <div className="admin-secret-field">
-      <input type="password" name={name} autoComplete="new-password" placeholder={placeholder} disabled={disabled || locked} />
+      <input
+        type="password"
+        name={name}
+        autoComplete="new-password"
+        placeholder={placeholder}
+        disabled={disabled || locked}
+      />
       {configured ? (
-        <button type="button" className="admin-secret-toggle" onClick={() => setLocked((value) => !value)} disabled={disabled}>
+        <button
+          type="button"
+          className="admin-secret-toggle"
+          onClick={() => setLocked((value) => !value)}
+          disabled={disabled}
+        >
           <Icon i={locked ? "pencil" : "lock"} size={13} />
           {locked ? "Modifier" : "Verrouiller"}
         </button>

@@ -8,11 +8,7 @@ import { checkCouponEligibility, findActiveCouponByCode } from "@/lib/coupons/se
 import { couponCodeSchema } from "@/lib/validation/coupons";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { getSecurityLevel, securityPolicy } from "@/lib/security/config";
-import {
-  rejectCrossSiteMutation,
-  rejectOversizedRequest,
-  requireContentType,
-} from "@/lib/security/request-guards";
+import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
 
 export const runtime = "nodejs";
 
@@ -30,32 +26,20 @@ export async function POST(request: Request) {
   if (typeFailure) return typeFailure;
 
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user)
-    return Response.json({ error: "Authentication required" }, { status: 401 });
+  if (!session?.user) return Response.json({ error: "Authentication required" }, { status: 401 });
   const level = getSecurityLevel();
   const ip = clientIp(request);
-  const limit = await rateLimit(
-    `coupon-apply:${session.user.id}:${ip}`,
-    securityPolicy[level].apiPerMinute,
-  );
+  const limit = await rateLimit(`coupon-apply:${session.user.id}:${ip}`, securityPolicy[level].apiPerMinute);
   if (limit.backend === "unavailable")
-    return Response.json(
-      { error: "Security rate-limit backend unavailable" },
-      { status: 503 },
-    );
-  if (!limit.success)
-    return Response.json({ error: "Too many requests" }, { status: 429 });
+    return Response.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
+  if (!limit.success) return Response.json({ error: "Too many requests" }, { status: 429 });
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
-    return Response.json(
-      { error: "Invalid request", details: parsed.error.flatten() },
-      { status: 400 },
-    );
+    return Response.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
 
   const [plan] = await db.select().from(plans).where(eq(plans.id, parsed.data.planId)).limit(1);
-  if (!plan?.active)
-    return Response.json({ error: "Plan unavailable" }, { status: 404 });
+  if (!plan?.active) return Response.json({ error: "Plan unavailable" }, { status: 404 });
 
   const coupon = await findActiveCouponByCode(parsed.data.code);
   if (!coupon)
@@ -65,12 +49,12 @@ export async function POST(request: Request) {
     );
   const eligibility = checkCouponEligibility(coupon);
   if (!eligibility.ok)
-    return Response.json(
-      { valid: false, reason: eligibility.reason },
-      { headers: { "Cache-Control": "no-store" } },
-    );
+    return Response.json({ valid: false, reason: eligibility.reason }, { headers: { "Cache-Control": "no-store" } });
 
-  const discountAmount = computeDiscount(plan.amount, { type: coupon.type as "percent" | "fixed", value: coupon.value });
+  const discountAmount = computeDiscount(plan.amount, {
+    type: coupon.type as "percent" | "fixed",
+    value: coupon.value,
+  });
   return Response.json(
     {
       valid: true,

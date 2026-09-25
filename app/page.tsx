@@ -9,7 +9,10 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: process.env.NODE_ENV === "production" ? undefined : "Africa SaaS Kit — Setup",
-  description: process.env.NODE_ENV === "production" ? siteConfig.description : "Tableau de préparation local du starter Africa SaaS Kit.",
+  description:
+    process.env.NODE_ENV === "production"
+      ? siteConfig.description
+      : "Tableau de préparation local du starter Africa SaaS Kit.",
   path: "/",
   noIndex: process.env.NODE_ENV !== "production",
 });

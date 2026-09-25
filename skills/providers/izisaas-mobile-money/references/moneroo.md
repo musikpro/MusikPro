@@ -165,15 +165,8 @@ Algorithm: hex-encoded HMAC-SHA256 of the **raw body** with the merchant's `webh
 ```ts
 import crypto from "node:crypto";
 
-function verifyMoneroo(
-  rawBody: Buffer,
-  signatureHeader: string,
-  secret: string,
-): boolean {
-  const expected = crypto
-    .createHmac("sha256", secret)
-    .update(rawBody)
-    .digest("hex");
+function verifyMoneroo(rawBody: Buffer, signatureHeader: string, secret: string): boolean {
+  const expected = crypto.createHmac("sha256", secret).update(rawBody).digest("hex");
   const a = Buffer.from(signatureHeader.trim());
   const b = Buffer.from(expected);
   if (a.length !== b.length) return false;
@@ -214,9 +207,7 @@ Store in a `processed_events (provider, eventId, processedAt)` table with 24h TT
 ## Probe key validity (without making a real charge)
 
 ```ts
-async function probeKey(
-  secretKey: string,
-): Promise<{ ok: boolean; error?: string }> {
+async function probeKey(secretKey: string): Promise<{ ok: boolean; error?: string }> {
   const url = `https://api.moneroo.io/v1/payments/izi_verify_probe_${Date.now()}`;
   const res = await fetch(url, {
     method: "GET",
@@ -226,8 +217,7 @@ async function probeKey(
     },
     signal: AbortSignal.timeout(10_000),
   });
-  if (res.status === 401 || res.status === 403)
-    return { ok: false, error: "Invalid Moneroo API key" };
+  if (res.status === 401 || res.status === 403) return { ok: false, error: "Invalid Moneroo API key" };
   // 404 (probe id doesn't exist) is the normal "key OK" response
   return { ok: true };
 }

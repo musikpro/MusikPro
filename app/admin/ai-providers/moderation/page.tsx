@@ -25,9 +25,9 @@ export default async function AdminModerationProviderPage() {
           <h2>{provider.provider === "anthropic" ? "Claude / Anthropic" : "OpenAI / ChatGPT"}</h2>
           <p>
             Modèle utilisé : {provider.model}. Chaque demande de paroles (histoire, détails, destinataire) et chaque
-            résultat généré est analysé avant d’être utilisé ou affiché ; tout contenu signalé est bloqué et
-            consigné dans le journal d’audit. Cette capacité réutilise automatiquement le même fournisseur et la
-            même clé que la génération des paroles — aucune configuration ni clé séparée n’est nécessaire.
+            résultat généré est analysé avant d’être utilisé ou affiché ; tout contenu signalé est bloqué et consigné
+            dans le journal d’audit. Cette capacité réutilise automatiquement le même fournisseur et la même clé que la
+            génération des paroles — aucune configuration ni clé séparée n’est nécessaire.
           </p>
           <span className="admin-status is-success">Connecté</span>
           <Link href="/admin/ai-providers/lyrics" className="admin-back-link" style={{ marginTop: 16 }}>

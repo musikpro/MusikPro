@@ -626,13 +626,10 @@ Example architecture:
 export class MusicfulClient {
   constructor(
     private apiKey: string,
-    private baseUrl = "https://api.musicful.ai"
+    private baseUrl = "https://api.musicful.ai",
   ) {}
 
-  private async request<T>(
-    path: string,
-    init: RequestInit = {}
-  ): Promise<T> {
+  private async request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60_000);
 
@@ -660,11 +657,7 @@ export class MusicfulClient {
       }
 
       if (!response.ok) {
-        throw new MusicfulApiError(
-          `Musicful request failed with HTTP ${response.status}`,
-          response.status,
-          data
-        );
+        throw new MusicfulApiError(`Musicful request failed with HTTP ${response.status}`, response.status, data);
       }
 
       return data as T;
@@ -776,13 +769,7 @@ Validated request:
 const musicfulAutoGenerateSchema = z.object({
   action: z.literal("auto"),
   style: z.string().trim().min(1).max(5000).nullable().optional(),
-  mv: z.enum([
-    "MFV3.0",
-    "MFV2.0",
-    "MFV1.5X",
-    "MFV1.5",
-    "MFV1.0",
-  ]),
+  mv: z.enum(["MFV3.0", "MFV2.0", "MFV1.5X", "MFV1.5", "MFV1.0"]),
   instrumental: z.union([z.literal(0), z.literal(1)]).default(0),
   gender: z.enum(["male", "female", ""]).nullable().optional(),
 });
@@ -1057,18 +1044,12 @@ Admin settings schema:
 ```ts
 const musicfulAdminSettingsSchema = z.object({
   enabled: z.boolean(),
-  apiBaseUrl: z.string().url().refine(
-    (value) => value.startsWith("https://"),
-    "HTTPS required"
-  ),
+  apiBaseUrl: z
+    .string()
+    .url()
+    .refine((value) => value.startsWith("https://"), "HTTPS required"),
   apiKey: z.string().trim().min(1).optional(),
-  defaultModel: z.enum([
-    "MFV3.0",
-    "MFV2.0",
-    "MFV1.5X",
-    "MFV1.5",
-    "MFV1.0",
-  ]),
+  defaultModel: z.enum(["MFV3.0", "MFV2.0", "MFV1.5X", "MFV1.5", "MFV1.0"]),
   defaultInstrumental: z.boolean(),
   defaultGender: z.enum(["male", "female", ""]).nullable(),
   requestTimeoutMs: z.number().int().min(5000).max(120000),
@@ -1656,29 +1637,17 @@ export interface MusicProvider {
 
   testConnection(): Promise<ProviderConnectionResult>;
 
-  generateMusic(
-    input: MusicGenerationInput
-  ): Promise<ProviderGenerationResult>;
+  generateMusic(input: MusicGenerationInput): Promise<ProviderGenerationResult>;
 
-  getTask(
-    providerTaskId: string
-  ): Promise<ProviderTaskResult>;
+  getTask(providerTaskId: string): Promise<ProviderTaskResult>;
 
-  generateLyrics?(
-    prompt: string
-  ): Promise<ProviderLyricsResult>;
+  generateLyrics?(prompt: string): Promise<ProviderLyricsResult>;
 
-  generateVibe?(
-    songId: string
-  ): Promise<unknown>;
+  generateVibe?(songId: string): Promise<unknown>;
 
-  convertToWav?(
-    songId: string
-  ): Promise<unknown>;
+  convertToWav?(songId: string): Promise<unknown>;
 
-  convertToMp4?(
-    songId: string
-  ): Promise<unknown>;
+  convertToMp4?(songId: string): Promise<unknown>;
 }
 ```
 
@@ -1691,12 +1660,7 @@ export interface MusicfulConfig {
   enabled: boolean;
   apiBaseUrl: string;
   apiKey: string;
-  defaultModel:
-    | "MFV3.0"
-    | "MFV2.0"
-    | "MFV1.5X"
-    | "MFV1.5"
-    | "MFV1.0";
+  defaultModel: "MFV3.0" | "MFV2.0" | "MFV1.5X" | "MFV1.5" | "MFV1.0";
   defaultInstrumental: boolean;
   defaultGender: "male" | "female" | "";
   timeoutMs: number;

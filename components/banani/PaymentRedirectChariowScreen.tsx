@@ -114,8 +114,7 @@ export default function PaymentRedirectScreen() {
             <div>
               <p className="text-sm font-semibold text-foreground">{t("Effectuez votre paiement")}</p>
               <p className="text-xs text-muted-foreground">
-                Montant :{" "}
-                {formatDemoPackPrice(demo.coupon?.finalAmount ?? demo.pack.priceValue, demo.choices.currency)}
+                Montant : {formatDemoPackPrice(demo.coupon?.finalAmount ?? demo.pack.priceValue, demo.choices.currency)}
                 {demo.coupon ? ` (code ${demo.coupon.code} appliqué)` : ""}
               </p>
             </div>
@@ -155,9 +154,14 @@ export default function PaymentRedirectScreen() {
           disabled={pending}
           className="w-full py-3 bg-primary text-primary-foreground font-semibold text-sm rounded-lg flex items-center justify-center gap-2"
         >
-          <Icon i="external-link" size={16} /> {pending ? t("Connexion à Chariow…") : demo.isDemo ? t("Simuler la confirmation") : t("Payer avec Chariow")}
+          <Icon i="external-link" size={16} />{" "}
+          {pending ? t("Connexion à Chariow…") : demo.isDemo ? t("Simuler la confirmation") : t("Payer avec Chariow")}
         </button>
-        {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+        {error && (
+          <p role="alert" className="text-sm text-red-700">
+            {error}
+          </p>
+        )}
         <button
           type="button"
           data-demo-ready="true"

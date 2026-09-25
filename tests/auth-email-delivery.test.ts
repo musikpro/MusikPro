@@ -30,9 +30,7 @@ describe("transactional authentication email", () => {
       data: null,
       error: { message: "sensitive provider payload" },
     });
-    await expect(sendAuthEmail(input)).rejects.toThrow(
-      "Transactional email delivery failed",
-    );
+    await expect(sendAuthEmail(input)).rejects.toThrow("Transactional email delivery failed");
   });
   it("accepts an email only when the provider returns an id", async () => {
     vi.stubEnv("RESEND_API_KEY", "test-only-placeholder");
@@ -43,9 +41,7 @@ describe("transactional authentication email", () => {
   it("fails closed in production when credentials are missing", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("RESEND_API_KEY", "");
-    await expect(sendAuthEmail(input)).rejects.toThrow(
-      "Transactional email is not configured in production",
-    );
+    await expect(sendAuthEmail(input)).rejects.toThrow("Transactional email is not configured in production");
     expect(send).not.toHaveBeenCalled();
   });
   it("sends a two-factor code without logging it", async () => {

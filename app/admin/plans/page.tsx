@@ -10,24 +10,28 @@ import { creditPlanFeaturesSchema, type CreditPlanOption } from "@/lib/credit-pl
 export default async function AdminPlansPage() {
   await requireAdmin();
   const rows = await getServiceDb().select().from(plans);
-  const catalog = rows.flatMap<CreditPlanOption>((plan) => {
-    const features = creditPlanFeaturesSchema.safeParse(plan.features);
-    if (!features.success) return [];
-    return [{
-      id: plan.id,
-      code: plan.code,
-      name: plan.name,
-      credits: features.data.credits,
-      generationCost: features.data.generationCost,
-      priceValue: plan.amount,
-      currency: "XOF",
-      description: plan.description || "Crédits de génération MusikPro",
-      popular: features.data.popular,
-      bonus: features.data.bonus,
-      sortOrder: features.data.sortOrder,
-      active: plan.active,
-    }];
-  }).sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "fr"));
+  const catalog = rows
+    .flatMap<CreditPlanOption>((plan) => {
+      const features = creditPlanFeaturesSchema.safeParse(plan.features);
+      if (!features.success) return [];
+      return [
+        {
+          id: plan.id,
+          code: plan.code,
+          name: plan.name,
+          credits: features.data.credits,
+          generationCost: features.data.generationCost,
+          priceValue: plan.amount,
+          currency: "XOF",
+          description: plan.description || "Crédits de génération MusikPro",
+          popular: features.data.popular,
+          bonus: features.data.bonus,
+          sortOrder: features.data.sortOrder,
+          active: plan.active,
+        },
+      ];
+    })
+    .sort((left, right) => left.sortOrder - right.sortOrder || left.name.localeCompare(right.name, "fr"));
   const activeCount = catalog.filter((plan) => plan.active).length;
 
   return (
@@ -42,7 +46,10 @@ export default async function AdminPlansPage() {
         <Icon i="database-zap" size={18} />
         <div>
           <strong>Catalogue connecté à Neon</strong>
-          <p>Les prix de référence sont enregistrés en FCFA et convertis automatiquement lorsque le client change de devise.</p>
+          <p>
+            Les prix de référence sont enregistrés en FCFA et convertis automatiquement lorsque le client change de
+            devise.
+          </p>
         </div>
       </div>
       {catalog.length ? (

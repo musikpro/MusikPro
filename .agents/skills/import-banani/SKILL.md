@@ -4,20 +4,23 @@ description: Importe le projet/design Banani via MCP, inventorie tous les écran
 ---
 
 ## Langue de réponse
+
 Toujours répondre à l’utilisateur en **français**. Conserver seulement les commandes, chemins, identifiants et extraits de code dans leur syntaxe technique d’origine. Utiliser une autre langue uniquement si l’utilisateur le demande explicitement pour une réponse précise.
 
 # /import-banani — Import design Banani → comparaison starter → plan d’implémentation
 
 Cette skill s’utilise **après** `npm run banani:check` et seulement si Banani MCP est réellement connecté via `.codex/config.toml`.
 
-
 ## Règle de refactorisation
+
 Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.
 
 ## Objectif
+
 Ne jamais passer directement du design Banani au code. La skill doit d’abord voir le design disponible dans Banani, l’inventorier, le comparer avec ce qui existe déjà dans Africa SaaS Kit, puis générer un plan d’implémentation complet.
 
 ## Étapes obligatoires
+
 1. Lire `AGENTS.md`, `DESIGN.md`, `config/features.json`, `design/banani/import-schema.json` et `docs/design/import-banani.md`.
 2. Exécuter `npm run banani:check`.
 3. Inspecter les outils MCP Banani réellement disponibles dans la session. Ne jamais inventer un nom d’outil MCP.
@@ -30,12 +33,14 @@ Ne jamais passer directement du design Banani au code. La skill doit d’abord v
 10. Ne commencer le code qu’après présentation du plan à l’utilisateur.
 
 ## Règles anti-doublons
+
 - Avant de proposer une nouvelle route, vérifier `app/**/page.tsx`, `app/api/**/route.ts` et `config/features.json`.
 - Avant de créer un composant, inspecter `components/` et proposer la réutilisation/adaptation des primitives existantes.
 - Ne jamais créer une deuxième auth, un deuxième moteur de paiement, un deuxième upload handler ou un second helper SEO si une feature existante couvre déjà le rôle.
 - Un design n’est pas une règle métier : prix, permissions, workflow de paiement, logique de rôle, notifications et contraintes DB absentes du design restent `À CONFIRMER`.
 
 ## Sorties attendues
+
 - `design/banani/imported-design.json` — snapshot sans secret du design réellement observé.
 - `design/banani/screens.json` — inventaire normalisé utilisé par le planner.
 - `generated/banani-gap-analysis.md`
@@ -43,7 +48,9 @@ Ne jamais passer directement du design Banani au code. La skill doit d’abord v
 - `generated/implementation-plan.md`
 
 ## Gate
+
 La skill est terminée seulement si :
+
 - Banani MCP est configuré ;
 - au moins un écran réel a été importé ;
 - le gap analysis existe ;

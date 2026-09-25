@@ -1,13 +1,5 @@
 export type PaymentProviderId =
-  | "chariow"
-  | "fedapay"
-  | "djomy"
-  | "paydunya"
-  | "flutterwave"
-  | "moneroo"
-  | "paytech"
-  | "bictorys"
-  | "stripe";
+  "chariow" | "fedapay" | "djomy" | "paydunya" | "flutterwave" | "moneroo" | "paytech" | "bictorys" | "stripe";
 
 export type Money = { amount: number; currency: "XOF" | "XAF" | "NGN" | "GHS" | "KES" | "USD" | "EUR" };
 

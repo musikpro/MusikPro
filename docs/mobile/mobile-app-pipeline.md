@@ -57,18 +57,21 @@ npx cap open ios
 ## Outils à prévoir
 
 ### Commun
+
 - Node.js/npm déjà utilisés par le SaaS.
 - `@capacitor/core` et `@capacitor/cli`.
 - `@capacitor/android` et/ou `@capacitor/ios` selon les plateformes choisies.
 - Domaine SaaS public en HTTPS.
 
 ### Android
+
 - Android Studio.
 - Android SDK.
 - JDK compatible avec la version Android/Gradle du projet.
 - Un émulateur et idéalement un téléphone Android réel.
 
 ### iPhone
+
 - macOS.
 - Xcode et les composants iOS correspondants.
 - Compte/signing Apple au moment des builds et de la distribution.
@@ -79,6 +82,7 @@ Les exigences exactes des stores et toolchains changent dans le temps : les reva
 ## Checklist WebView
 
 Avant publication, tester au minimum :
+
 - HTTPS et disponibilité de `productionUrl`;
 - login/logout, sessions et cookies dans la WebView;
 - OAuth/deep links si utilisés;
@@ -95,6 +99,7 @@ Avant publication, tester au minimum :
 ## Images et assets à préparer
 
 Garder au minimum les sources haute définition suivantes :
+
 1. logo principal de l'application;
 2. icône carrée de l'application;
 3. splash / écran de lancement;

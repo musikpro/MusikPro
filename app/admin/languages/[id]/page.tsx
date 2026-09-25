@@ -33,7 +33,10 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
         <div className="admin-section-heading">
           <div>
             <h2>Langue par défaut</h2>
-            <p>Utilisée comme repli lorsque la détection automatique du pays est désactivée ou ne trouve pas de correspondance.</p>
+            <p>
+              Utilisée comme repli lorsque la détection automatique du pays est désactivée ou ne trouve pas de
+              correspondance.
+            </p>
           </div>
           <span className={`admin-status ${isDefault ? "is-success" : "is-pending"}`}>
             {isDefault ? "Langue par défaut" : "Non définie par défaut"}

@@ -8,7 +8,7 @@ export async function listSearchConsoleSites(accessToken: string): Promise<Searc
     cache: "no-store",
   });
   if (!response.ok) throw new Error(`Search Console API error ${response.status}`);
-  const body = await response.json() as { siteEntry?: SearchConsoleSite[] };
+  const body = (await response.json()) as { siteEntry?: SearchConsoleSite[] };
   return body.siteEntry ?? [];
 }
 

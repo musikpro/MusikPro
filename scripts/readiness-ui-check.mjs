@@ -46,4 +46,6 @@ if (fail.length) {
   process.exit(1);
 }
 
-console.log(`Readiness UI check: PASS — ${registry.setupDashboard.length} cartes setup + ${registry.productionDoctor.length} cartes production garanties.`);
+console.log(
+  `Readiness UI check: PASS — ${registry.setupDashboard.length} cartes setup + ${registry.productionDoctor.length} cartes production garanties.`,
+);

@@ -6,18 +6,10 @@ import { DashboardNav } from "@/components/dashboard-nav";
 import { CheckoutButton } from "@/components/checkout-button";
 export default async function Page() {
   const s = await requireUser();
-  const offers = await userQuery(
-    s.user.id,
-    db.select().from(plans).where(eq(plans.active, true)),
-  );
+  const offers = await userQuery(s.user.id, db.select().from(plans).where(eq(plans.active, true)));
   const tx = await userQuery(
     s.user.id,
-    db
-      .select()
-      .from(payments)
-      .where(eq(payments.userId, s.user.id))
-      .orderBy(desc(payments.createdAt))
-      .limit(20),
+    db.select().from(payments).where(eq(payments.userId, s.user.id)).orderBy(desc(payments.createdAt)).limit(20),
   );
   return (
     <main className="shell">
@@ -29,8 +21,7 @@ export default async function Page() {
             <h2>{p.name}</h2>
             <p>{p.description}</p>
             <h3>
-              {p.amount.toLocaleString("fr-FR")} {p.currency}/
-              {p.interval === "year" ? "an" : "mois"}
+              {p.amount.toLocaleString("fr-FR")} {p.currency}/{p.interval === "year" ? "an" : "mois"}
             </h3>
             <CheckoutButton planId={p.id} />
           </div>

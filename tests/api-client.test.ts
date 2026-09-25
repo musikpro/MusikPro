@@ -5,7 +5,8 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("apiFetch", () => {
   it("retries a GET network failure once", async () => {
-    const fetchMock = vi.fn()
+    const fetchMock = vi
+      .fn()
       .mockRejectedValueOnce(new TypeError("network"))
       .mockResolvedValueOnce(new Response(JSON.stringify({ ok: true }), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);

@@ -93,7 +93,14 @@ function toGroupView(jobs: JobRow[]): SongGroupView {
 
 export async function submitSongGeneration(
   userId: string,
-  input: { title: string; occasion: string; style: string; lyrics: string; gender: "male" | "female" | ""; instrumental?: 0 | 1 },
+  input: {
+    title: string;
+    occasion: string;
+    style: string;
+    lyrics: string;
+    gender: "male" | "female" | "";
+    instrumental?: 0 | 1;
+  },
   model: string,
 ) {
   const songGroupId = randomUUID();
@@ -101,7 +108,13 @@ export async function submitSongGeneration(
     Array.from({ length: VERSIONS_PER_GENERATION }, (_, index) =>
       createMusicJob(
         userId,
-        { title: input.title, style: input.style, lyrics: input.lyrics, gender: input.gender, instrumental: input.instrumental ?? 0 },
+        {
+          title: input.title,
+          style: input.style,
+          lyrics: input.lyrics,
+          gender: input.gender,
+          instrumental: input.instrumental ?? 0,
+        },
         model,
         { songGroupId, versionLabel: `Version ${index + 1}`, occasion: input.occasion },
       ),
@@ -184,7 +197,9 @@ export async function getSongGroupForUser(userId: string, songGroupId: string): 
 
 export async function removeSongGroupForUser(userId: string, songGroupId: string) {
   const database = getServiceDb();
-  await database.delete(musicGenerationJobs).where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)));
+  await database
+    .delete(musicGenerationJobs)
+    .where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)));
 }
 
 export async function setSongVersionLiked(userId: string, jobId: string, liked: boolean): Promise<SongVersionView> {

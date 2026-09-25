@@ -55,11 +55,31 @@ export default async function AdminGenerationsPage() {
         description="Suis les chansons produites, leur statut, leur durée et leur qualité."
       />
       <section className="admin-metric-row">
-        <AdminMetric icon="music-2" value={rows.length.toLocaleString("fr-FR")} label="Versions générées" note={`Jusqu’à ${ROW_LIMIT} dernières`} />
-        <AdminMetric icon="badge-check" value={completed.length.toLocaleString("fr-FR")} label="Terminées" tone="success" />
+        <AdminMetric
+          icon="music-2"
+          value={rows.length.toLocaleString("fr-FR")}
+          label="Versions générées"
+          note={`Jusqu’à ${ROW_LIMIT} dernières`}
+        />
+        <AdminMetric
+          icon="badge-check"
+          value={completed.length.toLocaleString("fr-FR")}
+          label="Terminées"
+          tone="success"
+        />
         <AdminMetric icon="loader-circle" value={processing.toLocaleString("fr-FR")} label="En cours" tone="warning" />
-        <AdminMetric icon="circle-x" value={failed.toLocaleString("fr-FR")} label="Échouées" tone={failed ? "warning" : "success"} />
-        <AdminMetric icon="timer" value={formatDuration(avgDurationSeconds)} label="Durée moyenne" note="Versions terminées" />
+        <AdminMetric
+          icon="circle-x"
+          value={failed.toLocaleString("fr-FR")}
+          label="Échouées"
+          tone={failed ? "warning" : "success"}
+        />
+        <AdminMetric
+          icon="timer"
+          value={formatDuration(avgDurationSeconds)}
+          label="Durée moyenne"
+          note="Versions terminées"
+        />
       </section>
       <AdminGenerationsTable
         rows={rows.map((row) => ({

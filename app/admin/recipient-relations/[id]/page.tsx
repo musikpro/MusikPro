@@ -10,7 +10,11 @@ import { updateRecipientRelation } from "../actions";
 export default async function AdminEditRecipientRelationPage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
   const { id } = await params;
-  const [relation] = await getServiceDb().select().from(recipientRelations).where(eq(recipientRelations.id, id)).limit(1);
+  const [relation] = await getServiceDb()
+    .select()
+    .from(recipientRelations)
+    .where(eq(recipientRelations.id, id))
+    .limit(1);
   if (!relation) notFound();
   return (
     <AdminPage>

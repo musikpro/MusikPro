@@ -27,10 +27,14 @@ export async function POST(request: Request) {
   if (!hasAppRole(role, "admin")) return NextResponse.json({ error: "Accès refusé." }, { status: 403 });
 
   const provider = await getLyricsProvider();
-  const limit = await rateLimit(`ai:music-style-description:${session.user.id}:${clientIp(request)}`, provider.requestsPerMinute);
+  const limit = await rateLimit(
+    `ai:music-style-description:${session.user.id}:${clientIp(request)}`,
+    provider.requestsPerMinute,
+  );
   if (limit.backend === "unavailable")
     return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
-  if (!limit.success) return NextResponse.json({ error: "Trop de générations. Réessaie dans une minute." }, { status: 429 });
+  if (!limit.success)
+    return NextResponse.json({ error: "Trop de générations. Réessaie dans une minute." }, { status: 429 });
 
   const parsed = musicStyleDescriptionRequestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
@@ -42,7 +46,10 @@ export async function POST(request: Request) {
   } catch (error) {
     const code = error instanceof Error ? error.message : "AI_REQUEST_FAILED";
     if (code === "AI_PROVIDER_NOT_CONFIGURED")
-      return NextResponse.json({ error: "Le fournisseur IA n’est pas encore configuré dans Capacités IA." }, { status: 503 });
+      return NextResponse.json(
+        { error: "Le fournisseur IA n’est pas encore configuré dans Capacités IA." },
+        { status: 503 },
+      );
     if (code === "CONTENT_BLOCKED_RESULT")
       return NextResponse.json({ error: "Le résultat généré n’a pas pu être validé. Réessaie." }, { status: 422 });
     const failure = provider.provider === "anthropic" ? classifyAnthropicError(error) : classifyOpenAiError(error);

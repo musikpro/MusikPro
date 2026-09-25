@@ -4,9 +4,7 @@ const text = z.string().max(10000).optional();
 const scalar = z.union([z.string().max(10000), z.number()]).optional();
 const entity = z.looseObject({ id: scalar });
 const metadata = z.looseObject({ app_reference: text }).optional();
-const transaction = z
-  .looseObject({ id: scalar, amount: scalar, currency: text, status: text })
-  .optional();
+const transaction = z.looseObject({ id: scalar, amount: scalar, currency: text, status: text }).optional();
 
 export const bictorysPayloadSchema = z.looseObject({
   id: scalar,
@@ -34,9 +32,7 @@ export const paytechPayloadSchema = z.looseObject({
   item_price: scalar,
   amount: scalar,
   currency: text,
-  data: z
-    .looseObject({ status: text, amount: scalar, currency: text })
-    .optional(),
+  data: z.looseObject({ status: text, amount: scalar, currency: text }).optional(),
   hmac_compute: text,
   ref_command: text,
   api_key_sha256: text,
@@ -59,23 +55,15 @@ const monerooData = z.looseObject({
   link: text,
   amount: scalar,
   status: text,
-  currency: z
-    .union([z.string().max(100), z.looseObject({ code: text })])
-    .optional(),
+  currency: z.union([z.string().max(100), z.looseObject({ code: text })]).optional(),
 });
 export const monerooPayloadSchema = monerooData.extend({
   data: monerooData.optional(),
   event: text,
 });
-const chariowStatus = z
-  .union([z.string().max(1000), z.looseObject({ value: text })])
-  .optional();
+const chariowStatus = z.union([z.string().max(1000), z.looseObject({ value: text })]).optional();
 const chariowAmount = z
-  .union([
-    z.number(),
-    z.string().max(1000),
-    z.looseObject({ value: scalar, currency: text }),
-  ])
+  .union([z.number(), z.string().max(1000), z.looseObject({ value: scalar, currency: text })])
   .optional();
 const chariowData = z.looseObject({
   id: scalar,
@@ -90,9 +78,7 @@ const chariowData = z.looseObject({
       status: chariowStatus,
     })
     .optional(),
-  payment: z
-    .looseObject({ transaction_id: scalar, checkout_url: text })
-    .optional(),
+  payment: z.looseObject({ transaction_id: scalar, checkout_url: text }).optional(),
 });
 export const chariowPayloadSchema = chariowData.extend({
   data: chariowData.optional(),

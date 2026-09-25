@@ -2,74 +2,46 @@
   "fedapay": {
     "label": "FedaPay",
     "readiness": "production",
-    "env": [
-      "FEDAPAY_SECRET_KEY",
-      "FEDAPAY_WEBHOOK_SECRET"
-    ]
+    "env": ["FEDAPAY_SECRET_KEY", "FEDAPAY_WEBHOOK_SECRET"]
   },
   "chariow": {
     "label": "Chariow",
     "readiness": "production",
-    "env": [
-      "CHARIOW_API_KEY",
-      "CHARIOW_WEBHOOK_SECRET"
-    ]
+    "env": ["CHARIOW_API_KEY", "CHARIOW_WEBHOOK_SECRET"]
   },
   "paydunya": {
     "label": "PayDunya",
     "readiness": "production",
-    "env": [
-      "PAYDUNYA_MASTER_KEY",
-      "PAYDUNYA_PRIVATE_KEY",
-      "PAYDUNYA_TOKEN"
-    ]
+    "env": ["PAYDUNYA_MASTER_KEY", "PAYDUNYA_PRIVATE_KEY", "PAYDUNYA_TOKEN"]
   },
   "flutterwave": {
     "label": "Flutterwave",
     "readiness": "beta",
-    "env": [
-      "FLUTTERWAVE_SECRET_KEY",
-      "FLUTTERWAVE_WEBHOOK_SECRET"
-    ]
+    "env": ["FLUTTERWAVE_SECRET_KEY", "FLUTTERWAVE_WEBHOOK_SECRET"]
   },
   "djomy": {
     "label": "Djomy",
     "readiness": "merchant-validation",
-    "env": [
-      "DJOMY_API_KEY",
-      "DJOMY_API_SECRET"
-    ]
+    "env": ["DJOMY_API_KEY", "DJOMY_API_SECRET"]
   },
   "moneroo": {
     "label": "Moneroo",
     "readiness": "production",
-    "env": [
-      "MONEROO_API_KEY",
-      "MONEROO_WEBHOOK_SECRET"
-    ]
+    "env": ["MONEROO_API_KEY", "MONEROO_WEBHOOK_SECRET"]
   },
   "stripe": {
     "label": "Stripe",
     "readiness": "scaffold",
-    "env": [
-      "STRIPE_SECRET_KEY",
-      "STRIPE_WEBHOOK_SECRET"
-    ]
+    "env": ["STRIPE_SECRET_KEY", "STRIPE_WEBHOOK_SECRET"]
   },
   "paytech": {
     "label": "PayTech",
     "readiness": "beta",
-    "env": [
-      "PAYTECH_API_KEY",
-      "PAYTECH_API_SECRET"
-    ]
+    "env": ["PAYTECH_API_KEY", "PAYTECH_API_SECRET"]
   },
   "bictorys": {
     "label": "Bictorys",
     "readiness": "beta",
-    "env": [
-      "BICTORYS_API_KEY",
-      "BICTORYS_WEBHOOK_SECRET"
-    ]
+    "env": ["BICTORYS_API_KEY", "BICTORYS_WEBHOOK_SECRET"]
   }
 }

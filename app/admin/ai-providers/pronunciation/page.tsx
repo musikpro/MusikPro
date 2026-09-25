@@ -24,8 +24,8 @@ export default async function AdminPronunciationProviderPage() {
           </span>
           <h2>{provider.provider === "anthropic" ? "Claude / Anthropic" : "OpenAI / ChatGPT"}</h2>
           <p>
-            Modèle utilisé : {provider.model}. Cette capacité réutilise automatiquement le même fournisseur et la
-            même clé que la génération des paroles — aucune configuration ni clé séparée n’est nécessaire.
+            Modèle utilisé : {provider.model}. Cette capacité réutilise automatiquement le même fournisseur et la même
+            clé que la génération des paroles — aucune configuration ni clé séparée n’est nécessaire.
           </p>
           <span className="admin-status is-success">Connecté</span>
           <Link href="/admin/ai-providers/lyrics" className="admin-back-link" style={{ marginTop: 16 }}>

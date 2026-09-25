@@ -25,14 +25,19 @@ export async function POST(request: Request) {
 
   const ip = clientIp(request);
   const level = getSecurityLevel();
-  const limit = await rateLimit(`upload:${session.user.id}:${ip}`, Math.max(5, Math.floor(securityPolicy[level].apiPerMinute / 2)));
-  if (limit.backend === "unavailable") return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
+  const limit = await rateLimit(
+    `upload:${session.user.id}:${ip}`,
+    Math.max(5, Math.floor(securityPolicy[level].apiPerMinute / 2)),
+  );
+  if (limit.backend === "unavailable")
+    return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
   if (!limit.success) return NextResponse.json({ error: "Too many upload requests" }, { status: 429 });
   if (!isCloudinaryConfigured()) return NextResponse.json({ error: "Cloudinary is not enabled" }, { status: 503 });
 
   const form = await request.formData();
   const parsed = uploadFormSchema.safeParse({ file: form.get("file") });
-  if (!parsed.success) return NextResponse.json({ error: "Image file is required", details: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success)
+    return NextResponse.json({ error: "Image file is required", details: parsed.error.flatten() }, { status: 400 });
   const { file } = parsed.data;
 
   try {

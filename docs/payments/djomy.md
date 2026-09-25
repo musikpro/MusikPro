@@ -1,6 +1,7 @@
 # Djomy — statut V0.5 : merchant-validation
 
 Le provider est volontairement bloqué dans l'administration tant que la documentation technique correspondant au compte marchand n'a pas permis de confirmer :
+
 - mécanisme d'authentification ;
 - endpoint de création du paiement ;
 - endpoint de vérification ;

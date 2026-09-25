@@ -50,8 +50,12 @@ for (const rel of roots) walk(path.join(root, rel));
 
 if (failures.length) {
   console.error("Premium icon gate: FAIL");
-  console.error("Les icônes Sparkle/Sparklet et symboles décoratifs de style IA sont interdits dans app/ et components/.");
-  console.error("Utiliser components/ui/premium-icon.tsx ou une bibliothèque d’icônes professionnelle approuvée, avec un pictogramme sémantique adapté à l’action.");
+  console.error(
+    "Les icônes Sparkle/Sparklet et symboles décoratifs de style IA sont interdits dans app/ et components/.",
+  );
+  console.error(
+    "Utiliser components/ui/premium-icon.tsx ou une bibliothèque d’icônes professionnelle approuvée, avec un pictogramme sémantique adapté à l’action.",
+  );
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }

@@ -25,10 +25,7 @@
     "appId": null,
     "appName": null,
     "productionUrl": null,
-    "platforms": [
-      "android",
-      "ios"
-    ],
+    "platforms": ["android", "ios"],
     "strategy": "webview-hosted",
     "bottomNavigation": true,
     "prepared": false

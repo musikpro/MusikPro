@@ -52,7 +52,12 @@ export const demoProfileSchema = z.object({
   location: z.string().trim().min(2).max(150),
 });
 export const demoSupportSchema = z.object({
-  subject: z.string().trim().min(2).max(150).refine((value) => !/[\r\n]/.test(value), "Sujet invalide."),
+  subject: z
+    .string()
+    .trim()
+    .min(2)
+    .max(150)
+    .refine((value) => !/[\r\n]/.test(value), "Sujet invalide."),
   category: z.enum(["Problème technique", "Compte", "Crédits"]),
   message: z.string().trim().min(10).max(5000),
   email: z.email().max(254),
