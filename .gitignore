@@ -32,6 +32,11 @@ generated/setup-saas-report.json
 # Local Playwright MCP debugging output (screenshots, snapshots, console logs)
 .playwright-mcp/
 
+# Playwright E2E test output (npm run test:e2e)
+/playwright-report/
+/test-results/
+/blob-report/
+
 tsconfig.tsbuildinfo
 
 # Generated local reports/artifacts: keep directory only

@@ -47,6 +47,7 @@
     "format": "prettier --write .",
     "format:check": "node scripts/format-check.mjs",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "test:watch": "vitest",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "ci:check": "npm run kit:integrity && npm run claude-code:check && npm run dependencies:check && npm run security:baseline && npm run validation:zod-check && npm run refactor:check && npm run security:versions && npm run format:check && npm run version:check && npm run env:check && npm run runtime:check && npm run clients:crud:check && npm run features:check && npm run i18n:check && npm run lint && npm run ui:hydration-check && npm run typecheck && npm run test && npm run build && npm run audit:prod && npm run mobile:app:check",
@@ -139,6 +140,7 @@
   },
   "devDependencies": {
     "@eslint/compat": "2.1.1",
+    "@playwright/test": "^1.63.0",
     "@types/node": "26.5.0",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.7",
