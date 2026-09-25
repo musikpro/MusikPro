@@ -745,6 +745,31 @@
         "La permission microphone est demandée par le navigateur uniquement après une action explicite de l’utilisateur.",
         "La transcription dépend du support SpeechRecognition/webkitSpeechRecognition; MusikPro ne stocke aucun enregistrement audio, mais le navigateur peut utiliser son propre service de reconnaissance."
       ]
+    },
+    "ai-provider-credits": {
+      "description": "Page /admin/ai-credits affichant les crédits fournisseurs IA sans quitter MusikPro : solde Musicful (déjà récupéré via Tester la connexion) et dépenses Anthropic du mois en cours via l’API Coût Admin Anthropic.",
+      "optional": true,
+      "env": ["APP_SECRETS_ENCRYPTION_KEY"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0026_damp_vin_gonzales.sql",
+        "lib/ai/anthropic-usage.ts",
+        "lib/validation/ai.ts",
+        "app/admin/ai-credits/page.tsx",
+        "app/admin/ai-credits/actions.ts",
+        "components/admin/AdminAiCreditsPanel.tsx",
+        "components/admin/AdminShell.tsx"
+      ],
+      "routes": [],
+      "dependsOn": ["database", "auth"],
+      "removalComplexity": "low",
+      "disableBehavior": "Retirer le lien « Crédits fournisseurs IA » de AdminShell.tsx masque le menu ; la page /admin/ai-credits reste accessible par URL directe mais n’affiche que des placeholders si aucune clé n’est configurée.",
+      "notes": [
+        "Le solde Musicful est lu tel quel depuis audio_provider_configs.provider_credits (déjà rafraîchi par testMusicfulConnection sur /admin/ai-providers/audio) — aucun nouvel appel réseau sur cette page.",
+        "Anthropic n’expose aucun endpoint de solde restant (confirmé dans la documentation officielle) — seules les dépenses en USD du mois en cours sont récupérables, via GET /v1/organizations/cost_report.",
+        "Cet appel exige une Admin API Key Anthropic (sk-ant-admin01-…), volontairement stockée séparément (admin_api_key_ciphertext/iv/auth_tag/last4 sur ai_provider_configs) de la clé standard utilisée pour générer les paroles — jamais réutilisée pour la génération.",
+        "Un échec de l’appel Anthropic (clé invalide, réseau) affiche un message d’erreur clair au lieu de faire planter la page — voir AnthropicAdminApiError dans lib/ai/anthropic-usage.ts."
+      ]
     }
   },
   "removalProtocol": [

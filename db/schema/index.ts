@@ -389,6 +389,16 @@ export const aiProviderConfigs = pgTable("ai_provider_configs", {
   apiKeyIv: text("api_key_iv"),
   apiKeyAuthTag: text("api_key_auth_tag"),
   apiKeyLast4: text("api_key_last4"),
+  /**
+   * Anthropic-only, optional: a separate, more privileged "Admin API key" (sk-ant-admin01-…)
+   * used solely to read the organization's monthly spend via the Cost Report Admin API — see
+   * lib/ai/anthropic-usage.ts. Deliberately never reused for lyrics generation (apiKeyCiphertext
+   * above), which only needs the standard, narrower-scoped key.
+   */
+  adminApiKeyCiphertext: text("admin_api_key_ciphertext"),
+  adminApiKeyIv: text("admin_api_key_iv"),
+  adminApiKeyAuthTag: text("admin_api_key_auth_tag"),
+  adminApiKeyLast4: text("admin_api_key_last4"),
   defaultModel: text("default_model").notNull().default("gpt-5.6-terra"),
   maxOutputTokens: integer("max_output_tokens").notNull().default(4000),
   requestsPerMinute: integer("requests_per_minute").notNull().default(10),

@@ -49,6 +49,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/payments", icon: "credit-card", label: "Paiements" },
       { href: "/admin/coupons", icon: "ticket-percent", label: "Codes promo" },
       { href: "/admin/credits", icon: "coins", label: "Soldes crédits" },
+      { href: "/admin/ai-credits", icon: "wallet", label: "Crédits fournisseurs IA" },
       { href: "/admin/analytics", icon: "chart-no-axes-column-increasing", label: "Analytics" },
       { href: "/admin/funnel", icon: "funnel", label: "Entonnoir" },
     ],

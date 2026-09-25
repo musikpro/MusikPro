@@ -92,6 +92,27 @@ export const musicfulTaskSchema = z.object({
 
 export const musicfulTasksSchema = z.array(musicfulTaskSchema);
 
+export const anthropicAdminKeySettingsSchema = z.object({
+  adminApiKey: z.string().trim().min(10).max(500).optional().or(z.literal("")),
+});
+
+const anthropicCostResultSchema = z.object({
+  amount: z.string(),
+  currency: z.string(),
+});
+
+export const anthropicCostReportSchema = z.object({
+  data: z.array(
+    z.object({
+      starting_at: z.string(),
+      ending_at: z.string(),
+      results: z.array(anthropicCostResultSchema),
+    }),
+  ),
+  has_more: z.boolean(),
+  next_page: z.string().nullable().optional(),
+});
+
 const lyricsContextSchema = z.object({
   occasion: z.string().trim().min(1).max(100),
   story: z.string().trim().min(2).max(5_000),
