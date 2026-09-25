@@ -43,7 +43,12 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
     title: song.title,
     occasion: song.occasion || "",
     style: song.style || "",
-    date: new Date(song.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" }),
+    date: new Date(song.createdAt).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
     lyrics: song.lyrics || "",
     status: song.status,
     versions: song.versions.map((v) => ({
@@ -201,11 +206,23 @@ function useDemoState(
       : detectedAvailable
         ? initialDetectedInterfaceLanguage!.nativeName
         : (initialInterfaceLanguages[0]?.nativeName ?? "Français");
-    window.queueMicrotask(() =>
-      setChoices((current) => ({ ...current, appLanguage: selected })),
-    );
-    document.documentElement.lang =
-      initialInterfaceLanguages.find((language) => language.nativeName === selected)?.code ?? "fr";
+    // translate()/localizeField() (lib/i18n/translate.ts) read document.documentElement.lang live
+    // during render. Mutating it right away in this effect can outrace App Router's streamed
+    // hydration of sibling/child segments still mid-flight, producing a text mismatch those
+    // segments never asked for (React error #418). Two rAFs push the mutation past the browser's
+    // next paint, by which point the initial hydration pass has settled everywhere.
+    let raf2: number | null = null;
+    const raf1 = window.requestAnimationFrame(() => {
+      raf2 = window.requestAnimationFrame(() => {
+        setChoices((current) => ({ ...current, appLanguage: selected }));
+        document.documentElement.lang =
+          initialInterfaceLanguages.find((language) => language.nativeName === selected)?.code ?? "fr";
+      });
+    });
+    return () => {
+      window.cancelAnimationFrame(raf1);
+      if (raf2 !== null) window.cancelAnimationFrame(raf2);
+    };
   }, [initialDetectedInterfaceLanguage, initialInterfaceLanguages, persistenceId]);
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);
@@ -366,7 +383,11 @@ function useDemoState(
       const nextLiked = !version.liked;
       const jobId = version.jobId;
       setSongs((prev) =>
-        prev.map((s) => (s.id !== song.id ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: nextLiked } : v)) })),
+        prev.map((s) =>
+          s.id !== song.id
+            ? s
+            : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: nextLiked } : v)) },
+        ),
       );
       void apiFetch(`/api/songs/${song.id}`, {
         method: "PATCH",
@@ -374,7 +395,11 @@ function useDemoState(
         body: JSON.stringify({ action: "toggle-like", jobId, liked: nextLiked }),
       }).catch(() => {
         setSongs((prev) =>
-          prev.map((s) => (s.id !== song.id ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: !nextLiked } : v)) })),
+          prev.map((s) =>
+            s.id !== song.id
+              ? s
+              : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: !nextLiked } : v)) },
+          ),
         );
         notify("Impossible d’enregistrer ce favori pour le moment.");
       });
@@ -401,7 +426,11 @@ function useDemoState(
     const jobId = song?.versions[index]?.jobId;
     if (!jobId) return;
     setSongs((prev) =>
-      prev.map((s) => (s.id !== songId ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, plays: v.plays + 1 } : v)) })),
+      prev.map((s) =>
+        s.id !== songId
+          ? s
+          : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, plays: v.plays + 1 } : v)) },
+      ),
     );
     void apiFetch(`/api/songs/${songId}`, {
       method: "PATCH",
@@ -490,7 +519,11 @@ function useDemoState(
       setSelectedTitle(`Ma chanson — ${choices.occasion}`);
       return { songGroupId: result.songGroupId };
     } catch (error) {
-      notify(error instanceof ApiClientError ? error.message : "La génération n’a pas pu démarrer. Réessaie dans un instant.");
+      notify(
+        error instanceof ApiClientError
+          ? error.message
+          : "La génération n’a pas pu démarrer. Réessaie dans un instant.",
+      );
       go("/dashboard/songs");
       return null;
     }
