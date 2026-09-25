@@ -251,6 +251,16 @@ export const localizationSettings = pgTable("localization_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/** Admin-managed country -> interface language mapping used by automatic detection (see lib/languages/detection.ts). */
+export const countryLanguages = pgTable("country_languages", {
+  countryCode: text("country_code").primaryKey(),
+  countryName: text("country_name").notNull(),
+  flag: text("flag").notNull().default("🌍"),
+  languageCode: text("language_code").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const libraryCollections = pgTable(
   "library_collections",
   {

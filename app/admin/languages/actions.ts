@@ -5,11 +5,20 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { languages, localizationSettings, musicStyles, occasions, plans, recipientRelations } from "@/db/schema";
+import {
+  countryLanguages,
+  languages,
+  localizationSettings,
+  musicStyles,
+  occasions,
+  plans,
+  recipientRelations,
+} from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
+import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 
 const languageSchema = z
   .object({
@@ -32,6 +41,25 @@ const languageSchema = z
 const idSchema = z.object({ id: z.string().trim().min(1).max(120) });
 const toggleSchema = idSchema.extend({ scope: z.enum(["interface", "lyrics"]) });
 const automaticDetectionSchema = z.object({ enabled: z.enum(["true", "false"]) });
+const countryLanguageSchema = z.object({
+  countryCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/),
+  languageCode: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .regex(/^[a-z]{2,3}(?:-[a-z]{2})?$/),
+});
+const countryCodeSchema = z.object({
+  countryCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/),
+});
 const defaultLanguageSchema = z.object({
   code: z
     .string()
@@ -153,6 +181,42 @@ export async function updateAutomaticLanguageDetection(formData: FormData) {
     targetType: "localization_settings",
     targetId: "global",
     metadata: { automaticDetectionEnabled },
+  });
+  refresh();
+}
+
+export async function setCountryLanguage(formData: FormData) {
+  const session = await requireAdmin();
+  const parsed = countryLanguageSchema.parse(Object.fromEntries(formData));
+  const reference = COUNTRIES_REFERENCE.find((country) => country.code === parsed.countryCode);
+  const countryName = reference?.name ?? parsed.countryCode;
+  const flag = reference?.flag ?? "🌍";
+  await getServiceDb()
+    .insert(countryLanguages)
+    .values({ countryCode: parsed.countryCode, countryName, flag, languageCode: parsed.languageCode })
+    .onConflictDoUpdate({
+      target: countryLanguages.countryCode,
+      set: { countryName, flag, languageCode: parsed.languageCode, updatedAt: new Date() },
+    });
+  await writeAuditLog({
+    action: "country_language.set",
+    actorId: session.user.id,
+    targetType: "country_language",
+    targetId: parsed.countryCode,
+    metadata: { languageCode: parsed.languageCode },
+  });
+  refresh();
+}
+
+export async function removeCountryLanguage(formData: FormData) {
+  const session = await requireAdmin();
+  const { countryCode } = countryCodeSchema.parse(Object.fromEntries(formData));
+  await getServiceDb().delete(countryLanguages).where(eq(countryLanguages.countryCode, countryCode));
+  await writeAuditLog({
+    action: "country_language.removed",
+    actorId: session.user.id,
+    targetType: "country_language",
+    targetId: countryCode,
   });
   refresh();
 }

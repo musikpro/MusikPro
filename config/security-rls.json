@@ -15,6 +15,7 @@
     "coupons": "global promo-code catalog, server-managed; validated and applied server-side only (app/api/payments/coupons/apply, app/api/payments/checkout) — never exposes redemption counts or other coupons' existence to clients",
     "languages": "global language catalog, server-managed; client reads are filtered independently by interface and lyrics activation flags",
     "localization_settings": "global server-managed localization configuration; contains no user data and is never queried directly by clients",
+    "country_languages": "global admin-managed country-to-language mapping, server-managed; used server-side only by automatic language detection (lib/languages/detection.ts)",
     "library_collections": "global editorial catalog, server-managed; client reads are restricted to active public collections",
     "payment_fulfillments": "server-only idempotency ledger; never client queried",
     "webhook_events": "server-only provider event ledger",

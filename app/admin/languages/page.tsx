@@ -1,12 +1,20 @@
 import { asc } from "drizzle-orm";
 import Link from "next/link";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
 import { getServiceDb } from "@/db";
-import { languages, localizationSettings } from "@/db/schema";
+import { countryLanguages, languages, localizationSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { deleteLanguage, toggleLanguageScope, updateAutomaticLanguageDetection } from "./actions";
+import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
+import {
+  deleteLanguage,
+  removeCountryLanguage,
+  setCountryLanguage,
+  toggleLanguageScope,
+  updateAutomaticLanguageDetection,
+} from "./actions";
 
 function LanguageSection({
   title,
@@ -87,14 +95,109 @@ function LanguageSection({
   );
 }
 
+function CountryLanguageSection({
+  mappedCountries,
+  availableCountries,
+  interfaceLanguages,
+}: {
+  mappedCountries: Array<typeof countryLanguages.$inferSelect>;
+  availableCountries: Array<{ code: string; name: string; flag: string }>;
+  interfaceLanguages: Array<typeof languages.$inferSelect>;
+}) {
+  const orderedCountries = [...mappedCountries].sort((left, right) =>
+    left.countryName.localeCompare(right.countryName, "fr"),
+  );
+  return (
+    <section className="admin-panel admin-language-section">
+      <div className="admin-section-heading">
+        <div>
+          <h2>Association pays → langue</h2>
+          <p>
+            Quand country.is détecte le pays d’un visiteur, MusikPro utilise cette table pour choisir automatiquement la
+            langue de l’interface. Liste initiale : pays où Chariow propose au moins deux moyens de paiement. Ajoute
+            d’autres pays si besoin.
+          </p>
+        </div>
+        <span className="admin-status is-success">
+          {orderedCountries.length} pays{orderedCountries.length > 1 ? "" : ""}
+        </span>
+      </div>
+      {orderedCountries.length ? (
+        <div className="admin-catalog-grid">
+          {orderedCountries.map((row) => (
+            <article className="admin-catalog-card is-active" key={row.countryCode}>
+              <div className="admin-catalog-card-head">
+                <span className="admin-catalog-icon">{row.flag}</span>
+                <span className="admin-status is-success">{row.languageCode.toUpperCase()}</span>
+              </div>
+              <h3>{row.countryName}</h3>
+              <p>{row.countryCode}</p>
+              <footer className="admin-style-actions">
+                <form action={removeCountryLanguage}>
+                  <input type="hidden" name="countryCode" value={row.countryCode} />
+                  <button className="admin-secondary-action is-danger" type="submit">
+                    <Icon i="trash-2" size={15} /> Retirer
+                  </button>
+                </form>
+              </footer>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <div className="admin-empty-state">
+          <strong>Aucun pays associé</strong>
+          <p>Ajoute un pays ci-dessous pour lui associer une langue.</p>
+        </div>
+      )}
+      {availableCountries.length > 0 && interfaceLanguages.length > 0 ? (
+        <form action={setCountryLanguage} className="admin-editor-grid">
+          <div className="admin-editor-field">
+            <span>Pays</span>
+            <AdminSelect
+              name="countryCode"
+              ariaLabel="Pays à ajouter"
+              defaultValue={availableCountries[0]?.code}
+              options={availableCountries.map((country) => ({
+                value: country.code,
+                label: `${country.flag} ${country.name}`,
+              }))}
+            />
+          </div>
+          <div className="admin-editor-field">
+            <span>Langue associée</span>
+            <AdminSelect
+              name="languageCode"
+              ariaLabel="Langue associée"
+              defaultValue={interfaceLanguages[0]?.code}
+              options={interfaceLanguages.map((language) => ({
+                value: language.code,
+                label: `${language.flag} ${language.name}`,
+              }))}
+            />
+          </div>
+          <div className="admin-editor-actions">
+            <button type="submit">
+              <Icon i="plus" size={16} /> Associer
+            </button>
+          </div>
+        </form>
+      ) : null}
+    </section>
+  );
+}
+
 export default async function AdminLanguagesPage() {
   await requireAdmin();
   const serviceDb = getServiceDb();
-  const [rows, settingsRows] = await Promise.all([
+  const [rows, settingsRows, countryLanguageRows] = await Promise.all([
     serviceDb.select().from(languages).orderBy(asc(languages.name)),
     serviceDb.select().from(localizationSettings).limit(1),
+    serviceDb.select().from(countryLanguages),
   ]);
   const automaticDetectionEnabled = settingsRows[0]?.automaticDetectionEnabled ?? true;
+  const mappedCodes = new Set(countryLanguageRows.map((row) => row.countryCode));
+  const availableCountries = COUNTRIES_REFERENCE.filter((country) => !mappedCodes.has(country.code));
+  const interfaceLanguages = rows.filter((language) => language.interfaceEnabled);
   return (
     <AdminPage>
       <AdminPageHeader
@@ -137,9 +240,9 @@ export default async function AdminLanguagesPage() {
             <div>
               <h2>Traductions du catalogue</h2>
               <p>
-                Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans
-                toutes les langues actives, pour que le parcours de création et les crédits s’affichent dans la
-                langue choisie par le client. Le contenu source en français n’est jamais modifié.
+                Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans toutes
+                les langues actives, pour que le parcours de création et les crédits s’affichent dans la langue choisie
+                par le client. Le contenu source en français n’est jamais modifié.
               </p>
             </div>
           </div>
@@ -157,6 +260,11 @@ export default async function AdminLanguagesPage() {
         description="Langues transmises au fournisseur IA pour générer les paroles de chanson."
         rows={rows}
         scope="lyrics"
+      />
+      <CountryLanguageSection
+        mappedCountries={countryLanguageRows}
+        availableCountries={availableCountries}
+        interfaceLanguages={interfaceLanguages}
       />
     </AdminPage>
   );

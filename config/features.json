@@ -520,10 +520,12 @@
         "db/schema/index.ts",
         "db/migrations/0010_language_catalog.sql",
         "db/migrations/0011_localization_settings.sql",
+        "db/migrations/0023_supreme_bloodaxe.sql",
         "lib/languages/catalog.ts",
         "lib/languages/server.ts",
         "lib/languages/detection.ts",
         "lib/languages/country-language.ts",
+        "lib/languages/countries-reference.ts",
         "app/admin/languages/actions.ts",
         "app/admin/languages/page.tsx",
         "app/admin/languages/loading.tsx",
@@ -542,7 +544,8 @@
       "notes": [
         "Une langue peut être active pour l’interface, les paroles, ou les deux indépendamment.",
         "Les quatre langues initiales sont le français, l’anglais, l’espagnol et le portugais.",
-        "La détection Country.is est pilotée depuis Neon, mise en cache sept jours dans Upstash et n’écrase jamais un choix manuel du client."
+        "La détection Country.is est pilotée depuis Neon, mise en cache sept jours dans Upstash et n’écrase jamais un choix manuel du client.",
+        "L’onglet « Association pays → langue » (table country_languages) permet au propriétaire d’associer un pays détecté à une langue d’interface active ; sans association explicite, la détection retombe sur la carte statique de lib/languages/country-language.ts."
       ]
     },
     "library-collection-catalog": {

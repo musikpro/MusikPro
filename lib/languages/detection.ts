@@ -4,13 +4,13 @@ import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
-import { localizationSettings } from "@/db/schema";
+import { countryLanguages, localizationSettings } from "@/db/schema";
 import { cacheGet, cacheSet } from "@/lib/cache/upstash";
 import { requireEnv } from "@/lib/security/env";
 import type { LanguageOption } from "./catalog";
-import { languageCodeForCountry } from "./country-language";
+import { resolveCountryLanguage } from "./country-language";
 
-export { languageCodeForCountry } from "./country-language";
+export { languageCodeForCountry, resolveCountryLanguage } from "./country-language";
 
 const COUNTRY_IS_URL = "https://api.country.is";
 const FALLBACK_TTL_SECONDS = 7 * 24 * 60 * 60;
@@ -88,6 +88,13 @@ export async function detectInterfaceLanguage(
   if (!ip) return fallback;
   const country = await lookupCountry(ip, ttlSeconds);
   if (!country) return fallback;
-  const languageCode = languageCodeForCountry(country);
+  let override: string | undefined;
+  try {
+    const [row] = await db.select().from(countryLanguages).where(eq(countryLanguages.countryCode, country)).limit(1);
+    override = row?.languageCode;
+  } catch {
+    // Migration not yet applied: fall back to the static heuristic mapping.
+  }
+  const languageCode = resolveCountryLanguage(country, override ? { [country]: override } : {});
   return activeLanguages.find((language) => language.code === languageCode) ?? fallback;
 }

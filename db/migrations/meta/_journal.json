@@ -162,6 +162,13 @@
       "when": 1790262168332,
       "tag": "0022_nostalgic_tinkerer",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790337833276,
+      "tag": "0023_supreme_bloodaxe",
+      "breakpoints": true
     }
   ]
 }
