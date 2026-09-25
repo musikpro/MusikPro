@@ -3,6 +3,7 @@ import { getServiceDb } from "@/db";
 import { paymentProviderConfigs, planProviderMappings, plans } from "@/db/schema";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminSecretField from "@/components/admin/AdminSecretField";
 import { requireAdmin } from "@/lib/auth/session";
@@ -74,7 +75,7 @@ export default async function ChariowProviderPage() {
               {current?.enabled && apiLast4 ? "Actif" : "À configurer"}
             </span>
           </div>
-          <form action={saveChariowProvider} className="admin-stack-form admin-chariow-form">
+          <AdminActionForm action={saveChariowProvider} className="admin-stack-form admin-chariow-form">
             <div className="admin-editor-grid">
               <div className="admin-editor-field admin-editor-field-wide">
                 <span>
@@ -135,7 +136,7 @@ export default async function ChariowProviderPage() {
               <Icon i="save" size={16} />
               Enregistrer Chariow
             </button>
-          </form>
+          </AdminActionForm>
           <div className="admin-webhook-box">
             <div>
               <strong>
@@ -159,7 +160,7 @@ export default async function ChariowProviderPage() {
               </div>
             </div>
           </div>
-          <form action={savePlanMapping} className="admin-product-create-form">
+          <AdminActionForm action={savePlanMapping} className="admin-product-create-form">
             <input type="hidden" name="provider" value="chariow" />
             <div className="admin-editor-field">
               <span>
@@ -209,34 +210,43 @@ export default async function ChariowProviderPage() {
               <Icon i="plus" size={16} />
               Ajouter le produit
             </button>
-          </form>
+          </AdminActionForm>
           <div className="admin-mapping-list">
             {chariowMappings.length ? (
               chariowMappings.map((mapping) => {
                 const metadata = (mapping.metadata || {}) as { productName?: string };
                 const plan = planMap.get(mapping.planId);
+                const editFormId = `chariow-mapping-edit-${mapping.id}`;
+                const deleteFormId = `chariow-mapping-delete-${mapping.id}`;
                 return (
-                  <form action={savePlanMapping} key={mapping.id} className="admin-product-row">
-                    <input type="hidden" name="planId" value={mapping.planId} />
-                    <input type="hidden" name="provider" value="chariow" />
-                    <span className="admin-product-plan">
-                      Offre : <strong>{plan?.name || mapping.planId}</strong>
-                    </span>
-                    <label>
-                      <span>Nom du produit</span>
-                      <input
-                        name="productName"
-                        defaultValue={metadata.productName || plan?.name || "Produit Chariow"}
-                        required
-                      />
-                    </label>
-                    <label>
-                      <span>Identifiant Chariow</span>
-                      <input name="externalProductId" defaultValue={mapping.externalProductId || ""} required />
-                    </label>
+                  <div key={mapping.id} className="admin-product-row">
+                    <AdminActionForm id={editFormId} action={savePlanMapping} className="admin-product-edit-form">
+                      <input type="hidden" name="planId" value={mapping.planId} />
+                      <input type="hidden" name="provider" value="chariow" />
+                      <span className="admin-product-plan">
+                        Offre : <strong>{plan?.name || mapping.planId}</strong>
+                      </span>
+                      <label>
+                        <span>Nom du produit</span>
+                        <input
+                          name="productName"
+                          defaultValue={metadata.productName || plan?.name || "Produit Chariow"}
+                          required
+                        />
+                      </label>
+                      <label>
+                        <span>Identifiant Chariow</span>
+                        <input name="externalProductId" defaultValue={mapping.externalProductId || ""} required />
+                      </label>
+                    </AdminActionForm>
+                    <AdminActionForm id={deleteFormId} action={deletePlanMapping}>
+                      <input type="hidden" name="planId" value={mapping.planId} />
+                      <input type="hidden" name="provider" value="chariow" />
+                    </AdminActionForm>
                     <div className="admin-product-actions">
                       <button
                         type="submit"
+                        form={editFormId}
                         className="admin-secondary-action"
                         aria-label={`Enregistrer ${metadata.productName || plan?.name || "le produit"}`}
                       >
@@ -245,7 +255,7 @@ export default async function ChariowProviderPage() {
                       </button>
                       <button
                         type="submit"
-                        formAction={deletePlanMapping}
+                        form={deleteFormId}
                         className="admin-secondary-action is-danger"
                         aria-label={`Supprimer ${metadata.productName || plan?.name || "le produit"}`}
                       >
@@ -253,7 +263,7 @@ export default async function ChariowProviderPage() {
                         Supprimer
                       </button>
                     </div>
-                  </form>
+                  </div>
                 );
               })
             ) : (

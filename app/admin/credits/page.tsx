@@ -1,6 +1,7 @@
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { credits, user } from "@/db/schema";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
@@ -52,7 +53,7 @@ export default async function AdminCreditsPage() {
             </div>
           </div>
         </div>
-        <form className="admin-editor-grid" action={setCredits}>
+        <AdminActionForm className="admin-editor-grid" action={setCredits}>
           <label className="admin-editor-field">
             <span>E-mail utilisateur</span>
             <input
@@ -83,7 +84,7 @@ export default async function AdminCreditsPage() {
               Mettre à jour le solde
             </button>
           </div>
-        </form>
+        </AdminActionForm>
       </section>
       <section className="admin-panel admin-table-panel">
         <div className="admin-panel-heading">

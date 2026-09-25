@@ -114,27 +114,37 @@ export async function updatePlan(_previous: PlanActionState, formData: FormData)
   }
 }
 
-export async function togglePlan(formData: FormData) {
-  const session = await requireAdmin();
-  const parsed = toggleSchema.parse(Object.fromEntries(formData));
-  const active = parsed.active !== "true";
-  await getServiceDb().update(plans).set({ active }).where(eq(plans.id, parsed.id));
-  await writeAuditLog({
-    action: "plan.active.changed",
-    actorId: session.user.id,
-    targetType: "plan",
-    targetId: parsed.id,
-    metadata: { active },
-  });
-  revalidateCreditPlans();
+export async function togglePlan(_previous: PlanActionState, formData: FormData): Promise<PlanActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = toggleSchema.parse(Object.fromEntries(formData));
+    const active = parsed.active !== "true";
+    await getServiceDb().update(plans).set({ active }).where(eq(plans.id, parsed.id));
+    await writeAuditLog({
+      action: "plan.active.changed",
+      actorId: session.user.id,
+      targetType: "plan",
+      targetId: parsed.id,
+      metadata: { active },
+    });
+    revalidateCreditPlans();
+    return { ok: true, message: active ? "Offre activée." : "Offre désactivée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette offre.") };
+  }
 }
 
-export async function deletePlan(formData: FormData) {
-  const session = await requireAdmin();
-  const parsed = idSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(plans).where(eq(plans.id, parsed.id));
-  await writeAuditLog({ action: "plan.deleted", actorId: session.user.id, targetType: "plan", targetId: parsed.id });
-  revalidateCreditPlans();
+export async function deletePlan(_previous: PlanActionState, formData: FormData): Promise<PlanActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = idSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(plans).where(eq(plans.id, parsed.id));
+    await writeAuditLog({ action: "plan.deleted", actorId: session.user.id, targetType: "plan", targetId: parsed.id });
+    revalidateCreditPlans();
+    return { ok: true, message: "Offre supprimée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette offre.") };
+  }
 }
 
 export async function reorderPlans(formData: FormData) {

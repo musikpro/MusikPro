@@ -115,34 +115,50 @@ export async function updateLibraryCollection(
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette collection.") };
   }
 }
-export async function toggleLibraryCollection(formData: FormData) {
+export async function toggleLibraryCollection(
+  _previous: LibraryCollectionActionState,
+  formData: FormData,
+): Promise<LibraryCollectionActionState> {
   const session = await requireAdmin();
-  const parsed = toggleSchema.parse(Object.fromEntries(formData));
-  const active = parsed.active !== "true";
-  await getServiceDb()
-    .update(libraryCollections)
-    .set({ active, updatedAt: new Date() })
-    .where(eq(libraryCollections.id, parsed.id));
-  await writeAuditLog({
-    action: "library_collection.active.changed",
-    actorId: session.user.id,
-    targetType: "library_collection",
-    targetId: parsed.id,
-    metadata: { active },
-  });
-  refresh();
+  try {
+    const parsed = toggleSchema.parse(Object.fromEntries(formData));
+    const active = parsed.active !== "true";
+    await getServiceDb()
+      .update(libraryCollections)
+      .set({ active, updatedAt: new Date() })
+      .where(eq(libraryCollections.id, parsed.id));
+    await writeAuditLog({
+      action: "library_collection.active.changed",
+      actorId: session.user.id,
+      targetType: "library_collection",
+      targetId: parsed.id,
+      metadata: { active },
+    });
+    refresh();
+    return { ok: true, message: active ? "Collection publiée." : "Collection dépubliée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette collection.") };
+  }
 }
-export async function deleteLibraryCollection(formData: FormData) {
+export async function deleteLibraryCollection(
+  _previous: LibraryCollectionActionState,
+  formData: FormData,
+): Promise<LibraryCollectionActionState> {
   const session = await requireAdmin();
-  const { id } = idSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(libraryCollections).where(eq(libraryCollections.id, id));
-  await writeAuditLog({
-    action: "library_collection.deleted",
-    actorId: session.user.id,
-    targetType: "library_collection",
-    targetId: id,
-  });
-  refresh();
+  try {
+    const { id } = idSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(libraryCollections).where(eq(libraryCollections.id, id));
+    await writeAuditLog({
+      action: "library_collection.deleted",
+      actorId: session.user.id,
+      targetType: "library_collection",
+      targetId: id,
+    });
+    refresh();
+    return { ok: true, message: "Collection supprimée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette collection.") };
+  }
 }
 export async function reorderLibraryCollections(formData: FormData) {
   const session = await requireAdmin();

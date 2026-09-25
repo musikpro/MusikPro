@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { deleteUser, setRole } from "@/app/admin/users/actions";
 import { getNameInitials } from "@/lib/profile/name-initials";
+import AdminActionForm from "./AdminActionForm";
 import AdminDeleteUserButton from "./AdminDeleteUserButton";
 import AdminSelect from "./AdminSelect";
 
@@ -108,7 +109,7 @@ export default function AdminUsersTable({
                 </td>
                 <td>
                   <div className="admin-table-actions">
-                    <form action={setRole} className="admin-inline-form">
+                    <AdminActionForm action={setRole} className="admin-inline-form">
                       <input type="hidden" name="userId" value={row.id} />
                       <AdminSelect
                         name="role"
@@ -120,11 +121,11 @@ export default function AdminUsersTable({
                         <Icon i="check" size={17} />
                         <span>Valider</span>
                       </button>
-                    </form>
-                    <form action={deleteUser}>
+                    </AdminActionForm>
+                    <AdminActionForm action={deleteUser}>
                       <input type="hidden" name="userId" value={row.id} />
                       <AdminDeleteUserButton email={row.email} />
-                    </form>
+                    </AdminActionForm>
                   </div>
                 </td>
               </tr>
@@ -162,7 +163,7 @@ export default function AdminUsersTable({
               </div>
             </dl>
             <div className="admin-table-actions">
-              <form action={setRole} className="admin-inline-form">
+              <AdminActionForm action={setRole} className="admin-inline-form">
                 <input type="hidden" name="userId" value={row.id} />
                 <AdminSelect
                   name="role"
@@ -174,11 +175,11 @@ export default function AdminUsersTable({
                   <Icon i="check" size={17} />
                   <span>Valider</span>
                 </button>
-              </form>
-              <form action={deleteUser}>
+              </AdminActionForm>
+              <AdminActionForm action={deleteUser}>
                 <input type="hidden" name="userId" value={row.id} />
                 <AdminDeleteUserButton email={row.email} />
-              </form>
+              </AdminActionForm>
             </div>
           </article>
         ))}

@@ -1,10 +1,17 @@
 "use client";
 import Icon from "@/components/banani/Icon";
-export default function AdminDeleteRecipientRelationButton({ name }: { name: string }) {
+export default function AdminDeleteRecipientRelationButton({
+  name,
+  pending = false,
+}: {
+  name: string;
+  pending?: boolean;
+}) {
   return (
     <button
       type="submit"
       className="admin-style-delete"
+      disabled={pending}
       onClick={(event) => {
         if (!window.confirm(`Supprimer définitivement le lien « ${name} » ?`)) event.preventDefault();
       }}

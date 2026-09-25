@@ -1,14 +1,58 @@
 "use client";
 import Link from "next/link";
+import { useActionState, useEffect } from "react";
 import {
   deleteLibraryCollection,
   reorderLibraryCollections,
   toggleLibraryCollection,
+  type LibraryCollectionActionState,
 } from "@/app/admin/library/actions";
 import Icon from "@/components/banani/Icon";
 import { parseCollectionStyles } from "@/lib/library-collections/catalog";
+import { useAdminToast } from "./AdminToastProvider";
 import AdminDeleteCollectionButton from "./AdminDeleteCollectionButton";
 import AdminSortableGrid from "./AdminSortableGrid";
+
+/** Fires a global toast whenever a `useActionState` result changes — shared by the toggle and delete forms below. */
+function useActionToast(state: LibraryCollectionActionState) {
+  const showToast = useAdminToast();
+  useEffect(() => {
+    if (!state) return;
+    showToast({ message: state.message, tone: state.ok ? "success" : "error" });
+  }, [state, showToast]);
+}
+
+function ToggleLibraryCollectionForm({ id, active }: { id: string; active: boolean }) {
+  const [state, formAction, pending] = useActionState<LibraryCollectionActionState, FormData>(
+    toggleLibraryCollection,
+    null,
+  );
+  useActionToast(state);
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="active" value={String(active)} />
+      <button className="admin-secondary-action" type="submit" disabled={pending}>
+        <Icon i={active ? "pause" : "play"} size={15} />
+        {active ? "Dépublier" : "Publier"}
+      </button>
+    </form>
+  );
+}
+
+function DeleteLibraryCollectionForm({ id, name }: { id: string; name: string }) {
+  const [state, formAction, pending] = useActionState<LibraryCollectionActionState, FormData>(
+    deleteLibraryCollection,
+    null,
+  );
+  useActionToast(state);
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="id" value={id} />
+      <AdminDeleteCollectionButton name={name} pending={pending} />
+    </form>
+  );
+}
 
 export type SortableLibraryCollection = {
   id: string;
@@ -50,18 +94,8 @@ export default function AdminLibraryCollectionGrid({ collections }: { collection
               <Link className="admin-secondary-action admin-style-edit" href={`/admin/library/${item.id}`}>
                 <Icon i="pencil" size={15} /> Modifier
               </Link>
-              <form action={toggleLibraryCollection}>
-                <input type="hidden" name="id" value={item.id} />
-                <input type="hidden" name="active" value={String(item.active)} />
-                <button className="admin-secondary-action" type="submit">
-                  <Icon i={item.active ? "pause" : "play"} size={15} />
-                  {item.active ? "Dépublier" : "Publier"}
-                </button>
-              </form>
-              <form action={deleteLibraryCollection}>
-                <input type="hidden" name="id" value={item.id} />
-                <AdminDeleteCollectionButton name={item.name} />
-              </form>
+              <ToggleLibraryCollectionForm id={item.id} active={item.active} />
+              <DeleteLibraryCollectionForm id={item.id} name={item.name} />
             </footer>
           </article>
         );

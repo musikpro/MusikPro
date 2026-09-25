@@ -1,4 +1,5 @@
 import Icon from "@/components/banani/Icon";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminConfirmSubmit from "@/components/admin/AdminConfirmSubmit";
 import { setPaymentBypass } from "./actions";
 import type { PaymentBypassStatus } from "@/lib/settings/payment-bypass";
@@ -29,7 +30,7 @@ export default function PaymentBypassPanel({ status }: { status: PaymentBypassSt
           ligne réelle : les comptes propriétaires génèrent gratuitement tant qu’il reste actif.
         </p>
       ) : null}
-      <form action={setPaymentBypass}>
+      <AdminActionForm action={setPaymentBypass}>
         <input type="hidden" name="enabled" value={enabled ? "off" : "on"} />
         <div className="admin-btn-row">
           <AdminConfirmSubmit
@@ -44,7 +45,7 @@ export default function PaymentBypassPanel({ status }: { status: PaymentBypassSt
             {enabled ? "Désactiver le mode test" : "Activer le mode test"}
           </AdminConfirmSubmit>
         </div>
-      </form>
+      </AdminActionForm>
     </section>
   );
 }

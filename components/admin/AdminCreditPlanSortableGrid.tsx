@@ -4,6 +4,7 @@ import Link from "next/link";
 import { deletePlan, reorderPlans, togglePlan } from "@/app/admin/plans/actions";
 import Icon from "@/components/banani/Icon";
 import { getGenerationCount, getVersionCount, type CreditPlanOption } from "@/lib/credit-plans/catalog";
+import AdminActionForm from "./AdminActionForm";
 import AdminDeletePlanButton from "./AdminDeletePlanButton";
 import AdminSortableGrid from "./AdminSortableGrid";
 
@@ -49,18 +50,18 @@ export default function AdminCreditPlanSortableGrid({
             <Link className="admin-secondary-action admin-style-edit" href={`/admin/plans/${plan.id}`}>
               <Icon i="pencil" size={15} /> Modifier
             </Link>
-            <form action={togglePlan}>
+            <AdminActionForm action={togglePlan}>
               <input type="hidden" name="id" value={plan.id} />
               <input type="hidden" name="active" value={String(plan.active)} />
               <button className="admin-secondary-action" type="submit">
                 <Icon i={plan.active ? "pause" : "play"} size={15} />
                 {plan.active ? "Désactiver" : "Activer"}
               </button>
-            </form>
-            <form action={deletePlan}>
+            </AdminActionForm>
+            <AdminActionForm action={deletePlan}>
               <input type="hidden" name="id" value={plan.id} />
               <AdminDeletePlanButton name={plan.name} />
-            </form>
+            </AdminActionForm>
           </footer>
         </article>
       )}

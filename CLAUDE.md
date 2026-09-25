@@ -36,6 +36,16 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Le rapport CLI généré par `npm run doctor:production` reste la source de vérité; l'interface ne doit pas fabriquer un statut indépendant.
 - L'absence de ce menu/page est une régression bloquante pour `npm run kit:integrity`.
 
+## Règle obligatoire — notification toast sur toute action d'enregistrement/validation (dashboard propriétaire)
+
+- **Tout bouton du dashboard propriétaire/admin qui enregistre, valide, active/désactive ou supprime quelque chose doit rendre compte du résultat via la notification toast globale en haut à droite — jamais de crash silencieux vers `app/admin/error.tsx`, jamais d'absence de retour.**
+- Mécanisme commun unique, ne jamais en recréer un autre :
+  1. Le formulaire utilise `<AdminActionForm action={maFonction}>` (`components/admin/AdminActionForm.tsx`) à la place d'un `<form action={fn}>` brut. Pour un bouton isolé sans champs (ex. bouton supprimer dans une grille triable où l'état de pending doit être exposé localement), reproduire le pattern déjà en place dans `components/admin/AdminMusicStyleSortableGrid.tsx` (un `useActionState` local + `useAdminActionToast`).
+  2. La Server Action correspondante suit impérativement la signature `(previous: AdminActionState, formData: FormData) => Promise<AdminActionState>` (type `AdminActionState` exporté par `components/admin/useAdminActionToast.ts`), avec tout le corps dans un `try/catch` : succès → `{ ok: true, message: "..." }` (message court et spécifique à l'action, en français) ; échec → `{ ok: false, message: actionErrorMessage(error, "...") }` (`lib/admin/action-state.ts`, gère proprement les erreurs Zod).
+  3. Cas particulier redirection (ex. création avec retour sur une autre page) : utiliser `redirect(withAdminNotice(path, message, tone?))` (`lib/admin/notice-redirect.ts`) plutôt qu'un `redirect()` nu, sinon aucun toast de succès ne s'affiche.
+  4. Pour un même `<article>`/ligne avec plusieurs boutons (ex. Modifier + Supprimer), scinder en plusieurs `<AdminActionForm id="...">` distincts et relier les boutons avec l'attribut HTML standard `form={id}` plutôt que d'imbriquer des formulaires ou d'inventer un mécanisme ad hoc (voir `app/admin/payment-providers/chariow/page.tsx`).
+- Toute nouvelle page, panneau ou bouton d'action ajouté au dashboard propriétaire doit suivre ce même mécanisme et le même style de toast dès sa création — ce n'est pas un chantier ponctuel mais une règle permanente, au même titre que l'i18n ou la validation Zod.
+
 ## Sources de vérité
 
 - Lire `AGENTS.md`, `README.md`, `SECURITY.md`, `DESIGN.md` avant une refactorisation importante.

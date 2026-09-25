@@ -20,6 +20,8 @@ import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { actionErrorMessage } from "@/lib/admin/action-state";
+import { withAdminNotice } from "@/lib/admin/notice-redirect";
+import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 export type LanguageActionState = { ok: boolean; message: string } | null;
 
@@ -74,7 +76,12 @@ function refresh() {
 }
 export async function createLanguage(_previous: LanguageActionState, formData: FormData): Promise<LanguageActionState> {
   const session = await requireAdmin();
-  const parsed = languageSchema.parse(Object.fromEntries(formData));
+  let parsed: z.infer<typeof languageSchema>;
+  try {
+    parsed = languageSchema.parse(Object.fromEntries(formData));
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’ajouter cette langue.") };
+  }
   const id = randomUUID();
   await getServiceDb()
     .insert(languages)
@@ -92,7 +99,7 @@ export async function createLanguage(_previous: LanguageActionState, formData: F
     metadata: { code: parsed.code },
   });
   refresh();
-  redirect("/admin/languages");
+  redirect(withAdminNotice("/admin/languages", "Langue ajoutée."));
 }
 export async function updateLanguage(_previous: LanguageActionState, formData: FormData): Promise<LanguageActionState> {
   const session = await requireAdmin();
@@ -120,90 +127,118 @@ export async function updateLanguage(_previous: LanguageActionState, formData: F
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette langue.") };
   }
 }
-export async function toggleLanguageScope(formData: FormData) {
-  const session = await requireAdmin();
-  const parsed = toggleSchema.parse(Object.fromEntries(formData));
-  const [row] = await getServiceDb().select().from(languages).where(eq(languages.id, parsed.id)).limit(1);
-  if (!row) return;
-  const patch =
-    parsed.scope === "interface" ? { interfaceEnabled: !row.interfaceEnabled } : { lyricsEnabled: !row.lyricsEnabled };
-  await getServiceDb()
-    .update(languages)
-    .set({ ...patch, updatedAt: new Date() })
-    .where(eq(languages.id, parsed.id));
-  await writeAuditLog({
-    action: "language.scope.changed",
-    actorId: session.user.id,
-    targetType: "language",
-    targetId: parsed.id,
-    metadata: { scope: parsed.scope },
-  });
-  refresh();
-}
-export async function deleteLanguage(formData: FormData) {
-  const session = await requireAdmin();
-  const { id } = idSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(languages).where(eq(languages.id, id));
-  await writeAuditLog({ action: "language.deleted", actorId: session.user.id, targetType: "language", targetId: id });
-  refresh();
-}
-
-export async function setDefaultLanguage(formData: FormData) {
-  const session = await requireAdmin();
-  const { code } = defaultLanguageSchema.parse(Object.fromEntries(formData));
-  const [language] = await getServiceDb().select().from(languages).where(eq(languages.code, code)).limit(1);
-  if (!language) return;
-  await getServiceDb()
-    .insert(localizationSettings)
-    .values({ id: "global", defaultLanguageCode: code })
-    .onConflictDoUpdate({
-      target: localizationSettings.id,
-      set: { defaultLanguageCode: code, updatedAt: new Date() },
+export async function toggleLanguageScope(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = toggleSchema.parse(Object.fromEntries(formData));
+    const [row] = await getServiceDb().select().from(languages).where(eq(languages.id, parsed.id)).limit(1);
+    if (!row) return { ok: false, message: "Langue introuvable." };
+    const patch =
+      parsed.scope === "interface" ? { interfaceEnabled: !row.interfaceEnabled } : { lyricsEnabled: !row.lyricsEnabled };
+    await getServiceDb()
+      .update(languages)
+      .set({ ...patch, updatedAt: new Date() })
+      .where(eq(languages.id, parsed.id));
+    await writeAuditLog({
+      action: "language.scope.changed",
+      actorId: session.user.id,
+      targetType: "language",
+      targetId: parsed.id,
+      metadata: { scope: parsed.scope },
     });
-  await writeAuditLog({
-    action: "localization.default_language.changed",
-    actorId: session.user.id,
-    targetType: "localization_settings",
-    targetId: "global",
-    metadata: { code },
-  });
-  refresh();
+    refresh();
+    return { ok: true, message: "Disponibilité mise à jour." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette langue.") };
+  }
+}
+export async function deleteLanguage(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const { id } = idSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(languages).where(eq(languages.id, id));
+    await writeAuditLog({ action: "language.deleted", actorId: session.user.id, targetType: "language", targetId: id });
+    refresh();
+    return { ok: true, message: "Langue supprimée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette langue.") };
+  }
 }
 
-export async function setCountryLanguage(formData: FormData) {
-  const session = await requireAdmin();
-  const parsed = countryLanguageSchema.parse(Object.fromEntries(formData));
-  const reference = COUNTRIES_REFERENCE.find((country) => country.code === parsed.countryCode);
-  const countryName = reference?.name ?? parsed.countryCode;
-  const flag = reference?.flag ?? "🌍";
-  await getServiceDb()
-    .insert(countryLanguages)
-    .values({ countryCode: parsed.countryCode, countryName, flag, languageCode: parsed.languageCode })
-    .onConflictDoUpdate({
-      target: countryLanguages.countryCode,
-      set: { countryName, flag, languageCode: parsed.languageCode, updatedAt: new Date() },
+export async function setDefaultLanguage(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const { code } = defaultLanguageSchema.parse(Object.fromEntries(formData));
+    const [language] = await getServiceDb().select().from(languages).where(eq(languages.code, code)).limit(1);
+    if (!language) return { ok: false, message: "Langue introuvable." };
+    await getServiceDb()
+      .insert(localizationSettings)
+      .values({ id: "global", defaultLanguageCode: code })
+      .onConflictDoUpdate({
+        target: localizationSettings.id,
+        set: { defaultLanguageCode: code, updatedAt: new Date() },
+      });
+    await writeAuditLog({
+      action: "localization.default_language.changed",
+      actorId: session.user.id,
+      targetType: "localization_settings",
+      targetId: "global",
+      metadata: { code },
     });
-  await writeAuditLog({
-    action: "country_language.set",
-    actorId: session.user.id,
-    targetType: "country_language",
-    targetId: parsed.countryCode,
-    metadata: { languageCode: parsed.languageCode },
-  });
-  refresh();
+    refresh();
+    return { ok: true, message: "Langue par défaut mise à jour." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de changer la langue par défaut.") };
+  }
 }
 
-export async function removeCountryLanguage(formData: FormData) {
-  const session = await requireAdmin();
-  const { countryCode } = countryCodeSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(countryLanguages).where(eq(countryLanguages.countryCode, countryCode));
-  await writeAuditLog({
-    action: "country_language.removed",
-    actorId: session.user.id,
-    targetType: "country_language",
-    targetId: countryCode,
-  });
-  refresh();
+export async function setCountryLanguage(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = countryLanguageSchema.parse(Object.fromEntries(formData));
+    const reference = COUNTRIES_REFERENCE.find((country) => country.code === parsed.countryCode);
+    const countryName = reference?.name ?? parsed.countryCode;
+    const flag = reference?.flag ?? "🌍";
+    await getServiceDb()
+      .insert(countryLanguages)
+      .values({ countryCode: parsed.countryCode, countryName, flag, languageCode: parsed.languageCode })
+      .onConflictDoUpdate({
+        target: countryLanguages.countryCode,
+        set: { countryName, flag, languageCode: parsed.languageCode, updatedAt: new Date() },
+      });
+    await writeAuditLog({
+      action: "country_language.set",
+      actorId: session.user.id,
+      targetType: "country_language",
+      targetId: parsed.countryCode,
+      metadata: { languageCode: parsed.languageCode },
+    });
+    refresh();
+    return { ok: true, message: "Association pays → langue enregistrée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’associer ce pays.") };
+  }
+}
+
+export async function removeCountryLanguage(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const { countryCode } = countryCodeSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(countryLanguages).where(eq(countryLanguages.countryCode, countryCode));
+    await writeAuditLog({
+      action: "country_language.removed",
+      actorId: session.user.id,
+      targetType: "country_language",
+      targetId: countryCode,
+    });
+    refresh();
+    return { ok: true, message: "Association retirée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de retirer cette association.") };
+  }
 }
 
 /**

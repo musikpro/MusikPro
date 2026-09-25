@@ -1,4 +1,5 @@
 import Icon from "@/components/banani/Icon";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminButton from "@/components/admin/AdminButton";
 import CountryIsTestButton from "./CountryIsTestButton";
 import { setCountryDetectionSettings } from "./actions";
@@ -42,7 +43,7 @@ export default function CountryDetectionPanel({
         </span>
       </p>
 
-      <form
+      <AdminActionForm
         action={setCountryDetectionSettings}
         style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}
       >
@@ -71,7 +72,7 @@ export default function CountryDetectionPanel({
             Enregistrer
           </AdminButton>
         </div>
-      </form>
+      </AdminActionForm>
 
       <div className="admin-btn-row" style={{ marginTop: 16 }}>
         <CountryIsTestButton />

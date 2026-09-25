@@ -104,31 +104,47 @@ export async function updateOccasion(_previous: OccasionActionState, formData: F
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette occasion.") };
   }
 }
-export async function toggleOccasion(formData: FormData) {
+export async function toggleOccasion(
+  _previous: OccasionActionState,
+  formData: FormData,
+): Promise<OccasionActionState> {
   const session = await requireAdmin();
-  const parsed = toggleOccasionSchema.parse(Object.fromEntries(formData));
-  const active = parsed.active !== "true";
-  await getServiceDb().update(occasions).set({ active, updatedAt: new Date() }).where(eq(occasions.id, parsed.id));
-  await writeAuditLog({
-    action: "occasion.active.changed",
-    actorId: session.user.id,
-    targetType: "occasion",
-    targetId: parsed.id,
-    metadata: { active },
-  });
-  revalidateOccasions();
+  try {
+    const parsed = toggleOccasionSchema.parse(Object.fromEntries(formData));
+    const active = parsed.active !== "true";
+    await getServiceDb().update(occasions).set({ active, updatedAt: new Date() }).where(eq(occasions.id, parsed.id));
+    await writeAuditLog({
+      action: "occasion.active.changed",
+      actorId: session.user.id,
+      targetType: "occasion",
+      targetId: parsed.id,
+      metadata: { active },
+    });
+    revalidateOccasions();
+    return { ok: true, message: active ? "Occasion activée." : "Occasion désactivée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette occasion.") };
+  }
 }
-export async function deleteOccasion(formData: FormData) {
+export async function deleteOccasion(
+  _previous: OccasionActionState,
+  formData: FormData,
+): Promise<OccasionActionState> {
   const session = await requireAdmin();
-  const parsed = occasionMutationSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(occasions).where(eq(occasions.id, parsed.id));
-  await writeAuditLog({
-    action: "occasion.deleted",
-    actorId: session.user.id,
-    targetType: "occasion",
-    targetId: parsed.id,
-  });
-  revalidateOccasions();
+  try {
+    const parsed = occasionMutationSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(occasions).where(eq(occasions.id, parsed.id));
+    await writeAuditLog({
+      action: "occasion.deleted",
+      actorId: session.user.id,
+      targetType: "occasion",
+      targetId: parsed.id,
+    });
+    revalidateOccasions();
+    return { ok: true, message: "Occasion supprimée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette occasion.") };
+  }
 }
 export async function reorderOccasions(formData: FormData) {
   const session = await requireAdmin();

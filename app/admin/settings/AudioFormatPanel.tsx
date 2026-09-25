@@ -1,3 +1,4 @@
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminButton from "@/components/admin/AdminButton";
 import Icon from "@/components/banani/Icon";
@@ -30,7 +31,7 @@ export default function AudioFormatPanel({ preferredAudioFormat }: { preferredAu
         </div>
         <span className="admin-status is-success">{FORMAT_LABELS[preferredAudioFormat] ?? preferredAudioFormat}</span>
       </div>
-      <form action={setPreferredAudioFormat} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <AdminActionForm action={setPreferredAudioFormat} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         <AdminSelect
           name="preferredAudioFormat"
           defaultValue={preferredAudioFormat}
@@ -46,7 +47,7 @@ export default function AudioFormatPanel({ preferredAudioFormat }: { preferredAu
             Enregistrer
           </AdminButton>
         </div>
-      </form>
+      </AdminActionForm>
     </section>
   );
 }

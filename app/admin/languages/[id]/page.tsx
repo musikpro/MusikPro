@@ -1,5 +1,6 @@
 import { eq, or } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminLanguageForm from "@/components/admin/AdminLanguageForm";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
@@ -43,12 +44,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
           </span>
         </div>
         {!isDefault && (
-          <form action={setDefaultLanguage}>
+          <AdminActionForm action={setDefaultLanguage}>
             <input type="hidden" name="code" value={language.code} />
             <button className="admin-secondary-action" type="submit">
               <Icon i="star" size={16} /> Définir comme langue par défaut
             </button>
-          </form>
+          </AdminActionForm>
         )}
       </section>
       <AdminLanguageForm action={updateLanguage} values={language} />

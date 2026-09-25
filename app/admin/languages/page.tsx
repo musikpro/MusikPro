@@ -1,6 +1,7 @@
 import { asc } from "drizzle-orm";
 import Link from "next/link";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
@@ -61,20 +62,20 @@ function LanguageSection({
                 <Link className="admin-secondary-action admin-style-edit" href={`/admin/languages/${language.id}`}>
                   <Icon i="pencil" size={15} /> Modifier
                 </Link>
-                <form action={toggleLanguageScope}>
+                <AdminActionForm action={toggleLanguageScope}>
                   <input type="hidden" name="id" value={language.id} />
                   <input type="hidden" name="scope" value={scope} />
                   <button className="admin-secondary-action" type="submit">
                     <Icon i={isEnabled(language) ? "pause" : "play"} size={15} />{" "}
                     {isEnabled(language) ? "Désactiver" : "Activer"}
                   </button>
-                </form>
-                <form action={deleteLanguage}>
+                </AdminActionForm>
+                <AdminActionForm action={deleteLanguage}>
                   <input type="hidden" name="id" value={language.id} />
                   <button className="admin-secondary-action is-danger" type="submit">
                     <Icon i="trash-2" size={15} /> Supprimer
                   </button>
-                </form>
+                </AdminActionForm>
               </footer>
             </article>
           ))}
@@ -127,12 +128,12 @@ function CountryLanguageSection({
               <h3>{row.countryName}</h3>
               <p>{row.countryCode}</p>
               <footer className="admin-style-actions">
-                <form action={removeCountryLanguage}>
+                <AdminActionForm action={removeCountryLanguage}>
                   <input type="hidden" name="countryCode" value={row.countryCode} />
                   <button className="admin-secondary-action is-danger" type="submit">
                     <Icon i="trash-2" size={15} /> Retirer
                   </button>
-                </form>
+                </AdminActionForm>
               </footer>
             </article>
           ))}
@@ -144,7 +145,7 @@ function CountryLanguageSection({
         </div>
       )}
       {availableCountries.length > 0 && interfaceLanguages.length > 0 ? (
-        <form action={setCountryLanguage} className="admin-editor-grid">
+        <AdminActionForm action={setCountryLanguage} className="admin-editor-grid">
           <div className="admin-editor-field">
             <span>Pays</span>
             <AdminSelect
@@ -174,7 +175,7 @@ function CountryLanguageSection({
               <Icon i="plus" size={16} /> Associer
             </button>
           </div>
-        </form>
+        </AdminActionForm>
       ) : null}
     </section>
   );

@@ -2886,12 +2886,22 @@
 }
 
 .admin-product-row {
+  display: grid;
   grid-template-columns: minmax(0, 1fr) !important;
   align-items: stretch !important;
+  gap: 8px;
   padding: 12px;
   border: 1px solid var(--admin-border);
   border-radius: 13px;
   background: var(--admin-background);
+}
+
+/* .admin-product-row now wraps two independent forms (edit + delete) instead of being a
+   single <form>, so this restores the single-column stacking the generic
+   `.admin-mapping-list form` rule no longer applies to it. */
+.admin-product-row .admin-product-edit-form {
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
 }
 
 .admin-product-plan {

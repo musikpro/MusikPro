@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { deleteCoupon, toggleCoupon } from "@/app/admin/coupons/actions";
+import AdminActionForm from "./AdminActionForm";
 import AdminDeleteCouponButton from "./AdminDeleteCouponButton";
 
 export type AdminCouponRow = {
@@ -91,18 +92,18 @@ export default function AdminCouponsTable({ rows }: { rows: AdminCouponRow[] }) 
                       <Link className="admin-secondary-action admin-style-edit" href={`/admin/coupons/${row.id}`}>
                         <Icon i="pencil" size={15} /> Modifier
                       </Link>
-                      <form action={toggleCoupon}>
+                      <AdminActionForm action={toggleCoupon}>
                         <input type="hidden" name="id" value={row.id} />
                         <input type="hidden" name="active" value={String(row.active)} />
                         <button className="admin-secondary-action" type="submit">
                           <Icon i={row.active ? "pause" : "play"} size={15} />
                           {row.active ? "Désactiver" : "Activer"}
                         </button>
-                      </form>
-                      <form action={deleteCoupon}>
+                      </AdminActionForm>
+                      <AdminActionForm action={deleteCoupon}>
                         <input type="hidden" name="id" value={row.id} />
                         <AdminDeleteCouponButton code={row.code} />
-                      </form>
+                      </AdminActionForm>
                     </div>
                   </td>
                 </tr>

@@ -1,9 +1,52 @@
 "use client";
 import Link from "next/link";
-import { deleteOccasion, reorderOccasions, toggleOccasion } from "@/app/admin/occasions/actions";
+import { useActionState, useEffect } from "react";
+import {
+  deleteOccasion,
+  reorderOccasions,
+  toggleOccasion,
+  type OccasionActionState,
+} from "@/app/admin/occasions/actions";
 import Icon from "@/components/banani/Icon";
+import { useAdminToast } from "./AdminToastProvider";
 import AdminDeleteOccasionButton from "./AdminDeleteOccasionButton";
 import AdminSortableGrid from "./AdminSortableGrid";
+
+/** Fires a global toast whenever a `useActionState` result changes — shared by the toggle and delete forms below. */
+function useActionToast(state: OccasionActionState) {
+  const showToast = useAdminToast();
+  useEffect(() => {
+    if (!state) return;
+    showToast({ message: state.message, tone: state.ok ? "success" : "error" });
+  }, [state, showToast]);
+}
+
+function ToggleOccasionForm({ id, active }: { id: string; active: boolean }) {
+  const [state, formAction, pending] = useActionState<OccasionActionState, FormData>(toggleOccasion, null);
+  useActionToast(state);
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="active" value={String(active)} />
+      <button className="admin-secondary-action" type="submit" disabled={pending}>
+        <Icon i={active ? "pause" : "play"} size={15} />
+        {active ? "Désactiver" : "Activer"}
+      </button>
+    </form>
+  );
+}
+
+function DeleteOccasionForm({ id, name }: { id: string; name: string }) {
+  const [state, formAction, pending] = useActionState<OccasionActionState, FormData>(deleteOccasion, null);
+  useActionToast(state);
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="id" value={id} />
+      <AdminDeleteOccasionButton name={name} pending={pending} />
+    </form>
+  );
+}
+
 export type SortableOccasion = {
   id: string;
   name: string;
@@ -38,18 +81,8 @@ export default function AdminOccasionSortableGrid({ occasions }: { occasions: So
             <Link className="admin-secondary-action admin-style-edit" href={`/admin/occasions/${occasion.id}`}>
               <Icon i="pencil" size={15} /> Modifier
             </Link>
-            <form action={toggleOccasion}>
-              <input type="hidden" name="id" value={occasion.id} />
-              <input type="hidden" name="active" value={String(occasion.active)} />
-              <button className="admin-secondary-action" type="submit">
-                <Icon i={occasion.active ? "pause" : "play"} size={15} />
-                {occasion.active ? "Désactiver" : "Activer"}
-              </button>
-            </form>
-            <form action={deleteOccasion}>
-              <input type="hidden" name="id" value={occasion.id} />
-              <AdminDeleteOccasionButton name={occasion.name} />
-            </form>
+            <ToggleOccasionForm id={occasion.id} active={occasion.active} />
+            <DeleteOccasionForm id={occasion.id} name={occasion.name} />
           </footer>
         </article>
       )}

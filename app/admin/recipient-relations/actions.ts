@@ -105,34 +105,50 @@ export async function updateRecipientRelation(
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce lien destinataire.") };
   }
 }
-export async function toggleRecipientRelation(formData: FormData) {
+export async function toggleRecipientRelation(
+  _previous: RecipientRelationActionState,
+  formData: FormData,
+): Promise<RecipientRelationActionState> {
   const session = await requireAdmin();
-  const parsed = toggleRelationSchema.parse(Object.fromEntries(formData));
-  const active = parsed.active !== "true";
-  await getServiceDb()
-    .update(recipientRelations)
-    .set({ active, updatedAt: new Date() })
-    .where(eq(recipientRelations.id, parsed.id));
-  await writeAuditLog({
-    action: "recipient_relation.active.changed",
-    actorId: session.user.id,
-    targetType: "recipient_relation",
-    targetId: parsed.id,
-    metadata: { active },
-  });
-  revalidateRelations();
+  try {
+    const parsed = toggleRelationSchema.parse(Object.fromEntries(formData));
+    const active = parsed.active !== "true";
+    await getServiceDb()
+      .update(recipientRelations)
+      .set({ active, updatedAt: new Date() })
+      .where(eq(recipientRelations.id, parsed.id));
+    await writeAuditLog({
+      action: "recipient_relation.active.changed",
+      actorId: session.user.id,
+      targetType: "recipient_relation",
+      targetId: parsed.id,
+      metadata: { active },
+    });
+    revalidateRelations();
+    return { ok: true, message: active ? "Relation destinataire activée." : "Relation destinataire désactivée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette relation destinataire.") };
+  }
 }
-export async function deleteRecipientRelation(formData: FormData) {
+export async function deleteRecipientRelation(
+  _previous: RecipientRelationActionState,
+  formData: FormData,
+): Promise<RecipientRelationActionState> {
   const session = await requireAdmin();
-  const parsed = relationMutationSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(recipientRelations).where(eq(recipientRelations.id, parsed.id));
-  await writeAuditLog({
-    action: "recipient_relation.deleted",
-    actorId: session.user.id,
-    targetType: "recipient_relation",
-    targetId: parsed.id,
-  });
-  revalidateRelations();
+  try {
+    const parsed = relationMutationSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(recipientRelations).where(eq(recipientRelations.id, parsed.id));
+    await writeAuditLog({
+      action: "recipient_relation.deleted",
+      actorId: session.user.id,
+      targetType: "recipient_relation",
+      targetId: parsed.id,
+    });
+    revalidateRelations();
+    return { ok: true, message: "Relation destinataire supprimée." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette relation destinataire.") };
+  }
 }
 export async function reorderRecipientRelations(formData: FormData) {
   const session = await requireAdmin();

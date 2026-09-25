@@ -108,29 +108,39 @@ export async function updateCoupon(_previous: CouponActionState, formData: FormD
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce code promo.") };
   }
 }
-export async function toggleCoupon(formData: FormData) {
-  const session = await requireAdmin();
-  const parsed = toggleSchema.parse(Object.fromEntries(formData));
-  const active = parsed.active !== "true";
-  await getServiceDb().update(coupons).set({ active, updatedAt: new Date() }).where(eq(coupons.id, parsed.id));
-  await writeAuditLog({
-    action: "coupon.active.changed",
-    actorId: session.user.id,
-    targetType: "coupon",
-    targetId: parsed.id,
-    metadata: { active },
-  });
-  revalidateCoupons();
+export async function toggleCoupon(_previous: CouponActionState, formData: FormData): Promise<CouponActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = toggleSchema.parse(Object.fromEntries(formData));
+    const active = parsed.active !== "true";
+    await getServiceDb().update(coupons).set({ active, updatedAt: new Date() }).where(eq(coupons.id, parsed.id));
+    await writeAuditLog({
+      action: "coupon.active.changed",
+      actorId: session.user.id,
+      targetType: "coupon",
+      targetId: parsed.id,
+      metadata: { active },
+    });
+    revalidateCoupons();
+    return { ok: true, message: active ? "Code promo activé." : "Code promo désactivé." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier ce code promo.") };
+  }
 }
-export async function deleteCoupon(formData: FormData) {
-  const session = await requireAdmin();
-  const parsed = idSchema.parse(Object.fromEntries(formData));
-  await getServiceDb().delete(coupons).where(eq(coupons.id, parsed.id));
-  await writeAuditLog({
-    action: "coupon.deleted",
-    actorId: session.user.id,
-    targetType: "coupon",
-    targetId: parsed.id,
-  });
-  revalidateCoupons();
+export async function deleteCoupon(_previous: CouponActionState, formData: FormData): Promise<CouponActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = idSchema.parse(Object.fromEntries(formData));
+    await getServiceDb().delete(coupons).where(eq(coupons.id, parsed.id));
+    await writeAuditLog({
+      action: "coupon.deleted",
+      actorId: session.user.id,
+      targetType: "coupon",
+      targetId: parsed.id,
+    });
+    revalidateCoupons();
+    return { ok: true, message: "Code promo supprimé." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer ce code promo.") };
+  }
 }
