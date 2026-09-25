@@ -16,7 +16,13 @@ export default async function AdminAiCreditsPage() {
     .limit(1);
 
   const anthropicKeyStatus = await getAnthropicAdminKeyStatus();
-  let anthropicSpend: { amountUsd: number; currency: string; periodStart: string; periodEnd: string } | null = null;
+  let anthropicSpend: {
+    amountUsd: number;
+    currency: string;
+    periodStart: string;
+    periodEnd: string;
+    dailySpend: { day: string; amountUsd: number }[];
+  } | null = null;
   let anthropicSpendError: string | null = null;
   if (anthropicKeyStatus.configured) {
     try {
@@ -27,6 +33,7 @@ export default async function AdminAiCreditsPage() {
           currency: spend.currency,
           periodStart: spend.periodStart.toISOString(),
           periodEnd: spend.periodEnd.toISOString(),
+          dailySpend: spend.dailySpend,
         };
       }
     } catch (error) {

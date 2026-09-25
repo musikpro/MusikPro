@@ -1281,6 +1281,13 @@
   gap: 18px;
 }
 
+.admin-panel-footnote {
+  margin: -8px 0 0;
+  color: var(--admin-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
 .admin-insight-charts {
   display: grid;
   gap: 16px;

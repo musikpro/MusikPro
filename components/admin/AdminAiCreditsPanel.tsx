@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import Icon from "@/components/banani/Icon";
 import { AdminMetric } from "@/components/admin/AdminPage";
+import AdminDailyBarChart from "@/components/admin/AdminDailyBarChart";
 import AdminSecretField from "@/components/admin/AdminSecretField";
 import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
 import {
@@ -18,7 +19,13 @@ type MusicfulInfo = {
   lastTestedAt: Date | string | null;
 };
 
-type AnthropicSpend = { amountUsd: number; currency: string; periodStart: string; periodEnd: string };
+type AnthropicSpend = {
+  amountUsd: number;
+  currency: string;
+  periodStart: string;
+  periodEnd: string;
+  dailySpend: { day: string; amountUsd: number }[];
+};
 
 type AnthropicInfo = {
   configured: boolean;
@@ -54,12 +61,18 @@ export default function AdminAiCreditsPanel({
   useAdminActionToast(removeState);
 
   return (
-    <div className="admin-editor-grid">
-      <section className="admin-panel admin-editor-card">
-        <div>
-          <span className="admin-eyebrow">Génération audio</span>
-          <h2>Musicful</h2>
-          <p>Solde tel que récupéré lors du dernier test de connexion.</p>
+    <div className="admin-insight-grid">
+      <article className="admin-panel admin-insight-panel">
+        <div className="admin-panel-heading">
+          <div>
+            <span className="admin-panel-icon">
+              <Icon i="music-2" size={18} />
+            </span>
+            <div>
+              <h2>Musicful</h2>
+              <p>Solde tel que récupéré lors du dernier test de connexion.</p>
+            </div>
+          </div>
         </div>
         {musicful.configured ? (
           <>
@@ -68,13 +81,17 @@ export default function AdminAiCreditsPanel({
                 icon="coins"
                 value={musicful.credits ?? "—"}
                 label="Crédits/droits restants"
+                note={
+                  musicful.lastTestedAt
+                    ? `Dernier test : ${new Date(musicful.lastTestedAt).toLocaleString("fr-FR")}`
+                    : "Aucun test de connexion effectué pour le moment."
+                }
                 tone="primary"
               />
             </div>
-            <p>
-              {musicful.lastTestedAt
-                ? `Dernier test : ${new Date(musicful.lastTestedAt).toLocaleString("fr-FR")}`
-                : "Aucun test de connexion effectué pour le moment."}
+            <p className="admin-panel-footnote">
+              Musicful n’expose pas de consommation totale historique via son API — seul le solde restant est
+              disponible.
             </p>
           </>
         ) : (
@@ -86,16 +103,22 @@ export default function AdminAiCreditsPanel({
             {musicful.configured ? "Rafraîchir (tester la connexion)" : "Configurer Musicful"}
           </Link>
         </div>
-      </section>
+      </article>
 
-      <section className="admin-panel admin-editor-card">
-        <div>
-          <span className="admin-eyebrow">Génération des paroles</span>
-          <h2>Claude / Anthropic</h2>
-          <p>
-            Dépenses du mois en cours via l’API Coût Anthropic. Le solde restant de l’organisation n’est pas exposé par
-            l’API Anthropic — consulte console.anthropic.com pour ce chiffre.
-          </p>
+      <article className="admin-panel admin-insight-panel">
+        <div className="admin-panel-heading">
+          <div>
+            <span className="admin-panel-icon">
+              <Icon i="credit-card" size={18} />
+            </span>
+            <div>
+              <h2>Claude / Anthropic</h2>
+              <p>
+                Dépenses du mois en cours via l’API Coût Anthropic. Le solde restant de l’organisation n’est pas
+                exposé par l’API Anthropic — consulte console.anthropic.com pour ce chiffre.
+              </p>
+            </div>
+          </div>
         </div>
 
         {!anthropic.configured ? (
@@ -127,13 +150,15 @@ export default function AdminAiCreditsPanel({
                     icon="credit-card"
                     value={formatUsd(anthropic.spend.amountUsd, anthropic.spend.currency)}
                     label="Dépenses ce mois-ci"
+                    note={`Période : ${new Date(anthropic.spend.periodStart).toLocaleDateString("fr-FR")} – ${new Date(anthropic.spend.periodEnd).toLocaleDateString("fr-FR")}`}
                     tone="primary"
                   />
                 </div>
-                <p>
-                  Période : {new Date(anthropic.spend.periodStart).toLocaleDateString("fr-FR")} –{" "}
-                  {new Date(anthropic.spend.periodEnd).toLocaleDateString("fr-FR")}
-                </p>
+                <AdminDailyBarChart
+                  title="Dépenses quotidiennes"
+                  total={formatUsd(anthropic.spend.amountUsd, anthropic.spend.currency)}
+                  points={anthropic.spend.dailySpend.map((point) => ({ day: point.day, value: point.amountUsd }))}
+                />
               </>
             ) : anthropic.spendError ? (
               <p>{anthropic.spendError}</p>
@@ -151,7 +176,7 @@ export default function AdminAiCreditsPanel({
             </div>
           </>
         )}
-      </section>
+      </article>
     </div>
   );
 }

@@ -46,6 +46,7 @@ export type AnthropicMonthlySpend = {
   currency: string;
   periodStart: Date;
   periodEnd: Date;
+  dailySpend: { day: string; amountUsd: number }[];
 };
 
 /**
@@ -87,10 +88,14 @@ export async function getAnthropicMonthlySpend(): Promise<AnthropicMonthlySpend 
   const parsed = anthropicCostReportSchema.safeParse(json);
   if (!parsed.success) throw new AnthropicAdminApiError("Réponse Anthropic inattendue.", 502);
 
+  const dailySpend = parsed.data.data.map((bucket) => {
+    const bucketCents = bucket.results.reduce((sum, result) => sum + Number(result.amount || 0), 0);
+    return { day: bucket.starting_at.slice(0, 10), amountUsd: bucketCents / 100 };
+  });
   const totalCents = parsed.data.data.reduce(
     (sum, bucket) => sum + bucket.results.reduce((bucketSum, result) => bucketSum + Number(result.amount || 0), 0),
     0,
   );
   const currency = parsed.data.data[0]?.results[0]?.currency ?? "USD";
-  return { configured: true, amountUsd: totalCents / 100, currency, periodStart, periodEnd: now };
+  return { configured: true, amountUsd: totalCents / 100, currency, periodStart, periodEnd: now, dailySpend };
 }
