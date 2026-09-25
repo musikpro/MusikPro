@@ -26,6 +26,13 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Exception stricte : ne jamais traduire le titre des chansons, ni plus généralement le contenu généré ou saisi librement par l'utilisateur, sauf mécanisme dédié explicitement validé.
 - Les traductions proviennent uniquement du fournisseur IA déjà connecté (`lib/ai/provider.ts`) ; ne jamais écrire de traductions statiques à la main.
 
+## État production dans le dashboard propriétaire
+- Toujours conserver/ajouter le menu **État production** dans le tableau de bord propriétaire ou administrateur du SaaS, même sans demande explicite.
+- Conserver la route rétrocompatible `/admin/production-doctor` et le texte « Diagnostic local de préparation à la production. Le rapport CLI reste la source de vérité. ».
+- Utiliser les voyants vert/orange/rouge pour prêt, à vérifier et bloquant.
+- Le rapport CLI généré par `npm run doctor:production` reste la source de vérité; l'interface ne doit pas fabriquer un statut indépendant.
+- L'absence de ce menu/page est une régression bloquante pour `npm run kit:integrity`.
+
 ## Sources de vérité
 - Lire `AGENTS.md`, `README.md`, `SECURITY.md`, `DESIGN.md` avant une refactorisation importante.
 - Réutiliser les workflows de `.agents/skills/` au lieu de créer une deuxième logique divergente.

@@ -1,8 +1,35 @@
-# Africa SaaS Kit V0.10.1
+# Africa SaaS Kit V0.10.7
 
-> **Version : V0.10.1 — intégrité renforcée + premier démarrage guidé**
+> **Version : V0.10.7 — Refactorisation générale + test d’intégrité complet**
 
 
+## V0.10.7 — Refactorisation générale + intégrité complète
+
+Cette version ajoute une commande unique `npm run kit:full-test` qui orchestre les principaux contrôles du kit et génère un rapport consolidé dans `generated/full-integrity-report.md` et `.json`. Elle corrige aussi le diagnostic CSP afin qu’un voyant vert exige réellement l’absence de `unsafe-inline` **et** la présence d’une stratégie de nonces, renforce le contrôle Turnstile (widget + vérification serveur + clés site/secret), ajoute Playwright au diagnostic et retire les modules optionnels du calcul du score de préparation.
+
+Le test complet reste volontairement non destructif : il ne modifie ni `.env.local`, ni les providers, ni la base. Sans dépendances installées, il valide toute la partie statique et marque les tests dynamiques `PENDING`; après `npm install`, il exécute aussi lint, typecheck et tests.
+
+## V0.10.6 — État production permanent dans le dashboard propriétaire
+
+Le tableau de bord propriétaire/admin contient désormais obligatoirement un menu **État production** avec voyant vert d’installation. La route historique `/admin/production-doctor` est conservée pour éviter toute régression. L’écran reprend le diagnostic local de préparation à la production avec voyants vert/orange/rouge et continue de lire le rapport CLI comme source de vérité. `kit:integrity` et le Production Doctor détectent désormais la disparition de ce menu/page.
+
+## V0.10.5 — Voyants Sécurité / Performance
+
+Le tableau **État de préparation du kit** détecte maintenant CSP nonce/sans `unsafe-inline`, Cloudflare Turnstile, Upstash (cache/rate limiting distribué) et Playwright (projet ou configuration MCP connue). Les contrôles utilisent un voyant rouge si absent/incomplet et vert si prêt. Upstash et Playwright restent optionnels et ne bloquent pas le score global.
+
+## V0.10.4 — Refactorisation propre et non régressive
+
+Cette version rend explicite une règle commune à tous les agents et skills : **chaque modification du projet doit être une refactorisation propre, professionnelle et non régressive**. Les fonctionnalités existantes doivent être préservées, les changements doivent être additifs/réversibles autant que possible, et les gates d’intégrité, sécurité et Zod doivent être relancés avant de considérer une modification terminée. `npm run kit:integrity` protège aussi cette règle contre une suppression accidentelle.
+
+## V0.10.3 — Réponses IA toujours en français
+
+Cette version ajoute une règle de langue commune à tous les agents supportés par le kit : **ChatGPT/Codex/Antigravity et Claude Code doivent répondre en français**. La règle est protégée par `npm run kit:integrity` et propagée dans `AGENTS.md`, `CLAUDE.md`, `.claude/README.md` et les skills officiels. Les commandes, chemins, identifiants et extraits de code conservent leur syntaxe technique d’origine.
+
+## V0.10.2 — Claude Code + Computer Use multi-agent
+
+Cette version adapte le kit à **Claude Code (Anthropic)** sans remplacer le workflow OpenAI existant. La page État de préparation affiche désormais deux voyants indépendants pour **Computer Use — ChatGPT/OpenAI** et **Computer Use — Claude Code/Anthropic**. Un voyant devient vert uniquement après un test réel marqué `verified`.
+
+Commandes : `npm run claude-code:check`, `npm run computer-use:openai:check`, `npm run computer-use:claude:check`.
 
 ## V0.10.1 — Premier démarrage guidé + audit d’intégrité
 

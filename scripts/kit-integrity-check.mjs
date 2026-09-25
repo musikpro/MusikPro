@@ -22,6 +22,7 @@ const requiredFiles = [
   'scripts/kit-doctor.mjs',
   'scripts/kit-audit.mjs',
   'scripts/kit-verify.mjs',
+  'scripts/full-integrity-check.mjs',
   'scripts/first-run.mjs',
   'scripts/security-saas.mjs',
   'lib/security/security-saas-report.ts',
@@ -36,6 +37,10 @@ const requiredFiles = [
   'scripts/staging-test.mjs',
   'scripts/production-release-gate.mjs',
   'docs/deployment/staging-vercel.md',
+  'docs/production-state-owner-dashboard.md',
+  'app/admin/production-doctor/page.tsx',
+  'app/admin/production-doctor/loading.tsx',
+  'app/admin/layout.tsx',
   'CLAUDE.md',
   '.claude/settings.json',
   '.claude/commands/setup-saas.md',
@@ -123,12 +128,32 @@ if (fs.existsSync(securitySkillPath)) {
   if (!/\/security-saas/.test(text) || !/Zod/i.test(text) || !/RLS/i.test(text)) failures.push('.agents/skills/security-saas/SKILL.md — security audit guidance incomplete');
 }
 
+const adminLayoutPath = path.join(root, 'app/admin/layout.tsx');
+const adminShellPath = path.join(root, 'components/admin/AdminShell.tsx');
+const productionStatePagePath = path.join(root, 'app/admin/production-doctor/page.tsx');
+if (fs.existsSync(productionStatePagePath)) {
+  // MusikPro's owner nav lives in components/admin/AdminShell.tsx (rendered from
+  // app/admin/layout.tsx), not inline in layout.tsx like the generic starter — check both.
+  const adminNavText = [adminLayoutPath, adminShellPath]
+    .filter((p) => fs.existsSync(p))
+    .map((p) => fs.readFileSync(p, 'utf8'))
+    .join('\n');
+  const productionStatePage = fs.readFileSync(productionStatePagePath, 'utf8');
+  if (!/href[:=]\s*["']\/admin\/production-doctor["']/.test(adminNavText) || !/État production/.test(adminNavText)) {
+    failures.push('app/admin/layout.tsx (ou components/admin/AdminShell.tsx) — menu propriétaire « État production » absent');
+  }
+  if (!/État production/.test(productionStatePage) || !/rapport CLI reste la source de vérité/i.test(productionStatePage)) {
+    failures.push('app/admin/production-doctor/page.tsx — écran État production incomplet');
+  }
+}
+
 const dashboardPath = path.join(root, 'components/setup-saas-dashboard.tsx');
 if (fs.existsSync(dashboardPath)) {
   const dashboard = fs.readFileSync(dashboardPath, 'utf8');
   if (!/Application Android & iPhone/.test(dashboard) || !/WebView connectée au SaaS/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — mobile WebView readiness section missing');
   if (!/\/security-saas/.test(dashboard) || !/Audit sécurité du SaaS/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — /security-saas dashboard section missing');
   if (!/npm run kit:verify/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — kit:verify command missing from dashboard');
+  if (!/npm run kit:full-test/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — kit:full-test command missing from dashboard');
   if (!/npm run first-run/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — first-run command missing from dashboard');
   if (!/Staging Vercel — obligatoire avant Production/.test(dashboard) || !/staging:approve/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — mandatory staging section missing');
   if (!/Agents IA & Computer Use/.test(dashboard) || !/computer-use:claude:check/.test(dashboard)) failures.push('components/setup-saas-dashboard.tsx — Claude Code / Computer Use readiness section missing');

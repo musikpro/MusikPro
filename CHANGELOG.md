@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.10.7 — Refactorisation générale et test d'intégrité complet
+
+- Ajout de `npm run kit:full-test` et des rapports `generated/full-integrity-report.{md,json}`.
+- Correction du contrôle CSP : `PASS` seulement sans `unsafe-inline` et avec stratégie nonce détectée.
+- Renforcement Turnstile : widget, vérification serveur et deux clés requises pour le voyant vert.
+- Ajout du contrôle Playwright (projet/config/MCP) dans Production Doctor.
+- Upstash et Playwright sont explicitement optionnels et exclus du score global de préparation.
+- Conservation de tous les garde-fous existants et refactorisation non régressive.
+
+## 0.10.6 — État production propriétaire permanent
+
+- Renomme le libellé visible **Production Doctor** en **État production** tout en conservant la route `/admin/production-doctor` pour la rétrocompatibilité.
+- Ajoute un voyant vert au menu propriétaire pour signaler que le module est bien installé.
+- Ajoute le contrôle `owner-production-state` au rapport CLI : l'absence du menu/page devient un FAIL.
+- Renforce `kit:integrity` pour empêcher une suppression accidentelle du menu ou de l'écran.
+- Rend cette règle permanente dans `AGENTS.md`, `CLAUDE.md` et le skill `/setup-saas`.
+
+## 0.10.5 — Voyants Sécurité / Performance / Playwright
+
+- Ajoute au tableau **État de préparation du kit** les contrôles CSP sans `unsafe-inline` / stratégie nonce, Cloudflare Turnstile, cache + rate limiting distribué Upstash et Playwright.
+- Ajoute les groupes dédiés **Sécurité** et **Performance**.
+- Les modules optionnels (Upstash, Playwright) restent visibles mais ne pénalisent pas le score global lorsqu'ils ne sont pas installés.
+
 ## 0.10.4 — Refactorisation non régressive par défaut
 
 - Durcit la CSP : `script-src` passe d'`unsafe-inline` à un nonce généré par requête (`proxy.ts`), conformément au pattern officiel Next.js App Router. Les pages jusqu'ici statiques nécessitant ce nonce (`/privacy`, `/terms`, `/forgot-password`, `/register`, `/reset-password`, `/two-factor`, la page 404) passent en rendu dynamique. `style-src` garde `unsafe-inline` (nonce non applicable aux attributs `style=""` HTML, utilisés massivement via `style={{}}` React).

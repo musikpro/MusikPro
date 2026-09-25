@@ -73,4 +73,5 @@ if (!exists("africa-saas.config.json")) {
 
 if (exists("package-lock.json") && exists("node_modules")) {
   console.log("Pour une vérification complète du code : `npm run kit:verify`.");
+  console.log("Pour le test d’intégrité complet : `npm run kit:full-test`.");
 }

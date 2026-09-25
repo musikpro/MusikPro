@@ -38,6 +38,19 @@ Avant toute Production, lire `docs/deployment/staging-vercel.md` et valider une 
 
 16. Compatibilité Claude Code : lire `CLAUDE.md`, utiliser les commandes `.claude/commands/`, et garder les voyants Computer Use OpenAI/Claude indépendants. Un voyant vert exige un test réel marqué `verified`.
 
+## État production propriétaire — installation obligatoire
+
+À chaque installation ou adaptation d'un SaaS, ajouter ou préserver dans le tableau de bord du propriétaire un menu **État production** pointant vers `/admin/production-doctor`.
+
+L'écran doit :
+- afficher « Diagnostic local de préparation à la production. Le rapport CLI reste la source de vérité. » ;
+- lire le rapport du Production Doctor au lieu de recalculer un état divergent dans l'UI ;
+- afficher un voyant vert pour un contrôle prêt/installé, orange pour un contrôle à compléter/à vérifier et rouge pour un contrôle absent/bloquant ;
+- conserver un voyant vert à côté du menu lorsqu'il est installé ;
+- rester protégé par `requireAdmin()` via le layout `/admin`.
+
+Validation obligatoire après intégration : `npm run kit:integrity && npm run doctor:production`.
+
 
 ## Règle de refactorisation
 Toute intervention doit être traitée comme une **refactorisation propre, professionnelle et non régressive**. Préserver les fonctionnalités existantes, éviter les suppressions/destructions inutiles, privilégier les changements additifs et réversibles, puis exécuter les contrôles pertinents du kit avant de conclure. Une rupture nécessaire doit être accompagnée d’une migration explicite et documentée.

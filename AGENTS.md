@@ -345,6 +345,16 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 - Pour Computer Use/Browser Claude Code, exécuter `npm run computer-use:claude:check`; le voyant ne devient vert qu’après un vrai test enregistré via `npm run computer-use:claude:mark -- --status=verified --evidence="..."`.
 - Le statut OpenAI et le statut Claude Code sont indépendants. Ne jamais copier automatiquement la preuve de l’un vers l’autre.
 
+## État production propriétaire — obligatoire et permanent
+
+- Chaque SaaS construit ou refactorisé avec Africa SaaS Kit doit conserver un accès **État production** dans le tableau de bord du propriétaire/administrateur du SaaS, même si l'utilisateur ne le demande pas explicitement.
+- La route de référence du starter reste `/admin/production-doctor` afin de préserver la rétrocompatibilité; le libellé visible est **État production**.
+- L'écran doit afficher exactement l'intention suivante : **« Diagnostic local de préparation à la production. Le rapport CLI reste la source de vérité. »**
+- Chaque contrôle doit être représenté par un voyant visuel : vert = installé/prêt, orange = à compléter/à vérifier, rouge = absent/bloquant.
+- Le menu lui-même doit disposer d'un voyant vert lorsqu'il est correctement installé. L'absence du menu ou de la page est une régression et doit faire échouer `npm run kit:integrity`.
+- Le tableau de bord n'invente jamais son propre état : il lit le dernier rapport produit par `npm run doctor:production` ou `npm run doctor:production:online`; le CLI demeure la source de vérité.
+- Après toute modification du dashboard propriétaire, vérifier que le menu **État production** est toujours présent, puis exécuter `npm run kit:integrity` et `npm run doctor:production`.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

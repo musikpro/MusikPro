@@ -13,7 +13,7 @@ const envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
 const env = Object.fromEntries(envText.split(/\r?\n/).filter(Boolean).filter(l=>!l.trim().startsWith('#')).map(l=>{const i=l.indexOf('='); return i<0?[l.trim(),'']:[l.slice(0,i).trim(), l.slice(i+1).trim().replace(/^['"]|['"]$/g,'')]}));
 const readJSON = p => JSON.parse(fs.readFileSync(path.join(root,p),'utf8'));
 const results=[];
-const add=(id,label,status,detail,category='core')=>results.push({id,label,status,detail,category});
+const add=(id,label,status,detail,category='core',optional=false)=>results.push({id,label,status,detail,category,optional});
 const exists=p=>fs.existsSync(path.join(root,p));
 
 let cfg=null;
@@ -38,9 +38,15 @@ const configuredSecurityLevel = cfg?.securityLevel || env.SECURITY_LEVEL || proc
 const verificationStatus = !emailPasswordEnabled ? 'PASS' : requireEmailVerification ? 'PASS' : ['high','maximum'].includes(configuredSecurityLevel) ? 'FAIL' : 'WARN';
 add('email-verification','Vérification e-mail',verificationStatus,!emailPasswordEnabled?'Email/password désactivé':requireEmailVerification?'Vérification e-mail activée':'AUTH_REQUIRE_EMAIL_VERIFICATION=false : réduction explicite de sécurité','auth');
 const strongSecurity = !cfg || ['high','maximum'].includes(cfg.securityLevel);
-add('turnstile','Turnstile',(env.TURNSTILE_SECRET_KEY||process.env.TURNSTILE_SECRET_KEY)?'PASS':strongSecurity?'WARN':'UNVERIFIED',(env.TURNSTILE_SECRET_KEY||process.env.TURNSTILE_SECRET_KEY)?'Secret Turnstile présent':'À configurer pour protéger inscription et formulaires publics','security');
+const turnstileFiles = exists('components/turnstile-widget.tsx') && exists('lib/security/turnstile.ts');
+const turnstileEnv = Boolean((env.TURNSTILE_SECRET_KEY||process.env.TURNSTILE_SECRET_KEY) && (env.NEXT_PUBLIC_TURNSTILE_SITE_KEY||process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY||env.TURNSTILE_SITE_KEY||process.env.TURNSTILE_SITE_KEY));
+const turnstileClientText = [exists('components/auth-form.tsx') ? fs.readFileSync(path.join(root,'components/auth-form.tsx'),'utf8') : '', exists('components/forgot-password-form.tsx') ? fs.readFileSync(path.join(root,'components/forgot-password-form.tsx'),'utf8') : ''].join('\n');
+const turnstileServerText = exists('lib/security/turnstile.ts') ? fs.readFileSync(path.join(root,'lib/security/turnstile.ts'),'utf8') : '';
+const turnstileProtected = /TurnstileWidget/.test(turnstileClientText) && /siteverify/.test(turnstileServerText);
+const turnstileReady = turnstileFiles && turnstileEnv && turnstileProtected;
+add('turnstile','Turnstile',turnstileReady?'PASS':strongSecurity?'FAIL':'UNVERIFIED',turnstileReady?'Widget, vérification serveur et clés site/secret détectés':'À configurer complètement pour protéger inscription et formulaires publics (widget + vérification serveur + 2 clés)','security');
 const upstashReady = Boolean((env.UPSTASH_REDIS_REST_URL||process.env.UPSTASH_REDIS_REST_URL) && (env.UPSTASH_REDIS_REST_TOKEN||process.env.UPSTASH_REDIS_REST_TOKEN));
-add('upstash','Cache / rate limiting distribué (optionnel)',upstashReady?'PASS':'WARN',upstashReady?'Upstash configuré':'Optionnel : Neon reste la source de vérité; sans Upstash, le cache distribué est désactivé','performance');
+add('upstash','Cache / rate limiting distribué (optionnel)',upstashReady?'PASS':'FAIL',upstashReady?'Upstash configuré':'Optionnel : Neon reste la source de vérité; sans Upstash, le cache distribué est désactivé','performance',true);
 const cloudinaryEnabled = cfg?.cloudinaryEnabled === true;
 const cloudinaryVarsOk = Boolean((env.CLOUDINARY_CLOUD_NAME||process.env.CLOUDINARY_CLOUD_NAME) && (env.CLOUDINARY_API_KEY||process.env.CLOUDINARY_API_KEY) && (env.CLOUDINARY_API_SECRET||process.env.CLOUDINARY_API_SECRET));
 add('cloudinary','Cloudinary images',!cfg?'UNVERIFIED':!cloudinaryEnabled?'PASS':cloudinaryVarsOk?'WARN':'FAIL',!cfg?'Configuration non générée':!cloudinaryEnabled?'Désactivé par configuration':cloudinaryVarsOk?'Variables présentes; upload réel à valider en staging':'Cloudinary activé mais variables manquantes','storage');
@@ -73,8 +79,36 @@ add('security-audit','Audit sécurité',exists('scripts/security-audit.sh')?'PAS
 add('mobile-first','Mobile-first foundations',exists('scripts/mobile-first-check.mjs')&&exists('docs/mobile/mobile-first-delivery.md')?'PASS':'FAIL','Exécuter npm run mobile:check et valider visuellement les viewports avant production','design');
 add('banani-plan','Plan implémentation Banani',exists('scripts/generate-implementation-plan.mjs')&&exists('design/banani/screens.json')?'PASS':'WARN','Après import des écrans: npm run design:plan','design');
 
+const ownerProductionPage = exists('app/admin/production-doctor/page.tsx');
+// MusikPro's owner nav lives in components/admin/AdminShell.tsx (rendered from
+// app/admin/layout.tsx), not inline in layout.tsx like the generic starter — check both.
+const ownerAdminNavText = [exists('app/admin/layout.tsx') ? fs.readFileSync(path.join(root,'app/admin/layout.tsx'),'utf8') : '', exists('components/admin/AdminShell.tsx') ? fs.readFileSync(path.join(root,'components/admin/AdminShell.tsx'),'utf8') : ''].join('\n');
+const ownerProductionMenu = ownerProductionPage && /href[:=]\s*["']\/admin\/production-doctor["']/.test(ownerAdminNavText) && ownerAdminNavText.includes('État production');
+add('owner-production-state','Menu État production propriétaire',ownerProductionMenu?'PASS':'FAIL',ownerProductionMenu?'Menu propriétaire installé avec accès au diagnostic local':'Le tableau de bord propriétaire doit toujours exposer « État production » vers /admin/production-doctor','operations');
+
 const cspText = exists('lib/security/headers.ts') ? fs.readFileSync(path.join(root,'lib/security/headers.ts'),'utf8') : '';
-add('csp-hardening','CSP sans unsafe-inline',cspText.includes("script-src 'self' 'unsafe-inline'")?'WARN':'PASS',cspText.includes("script-src 'self' 'unsafe-inline'")?'CSP compatible Next.js mais encore permissive: passer à des nonces avant niveau maximum':'script-src sans unsafe-inline détecté','security');
+const proxyText = exists('proxy.ts') ? fs.readFileSync(path.join(root,'proxy.ts'),'utf8') : '';
+const cspPresent = /Content-Security-Policy/i.test(cspText) || /Content-Security-Policy/i.test(proxyText);
+// Only the script-src directive matters here: style-src legitimately keeps 'unsafe-inline'
+// (no nonce equivalent for the style="..." HTML attribute, used via React's style={{}}).
+const scriptSrcLine = cspText.split('\n').find((l) => /script-src/i.test(l) && !/^\s*(\*|\/\/)/.test(l)) || '';
+const cspUnsafeInline = /unsafe-inline/i.test(scriptSrcLine);
+const nonceSources = [cspText, proxyText, exists('middleware.ts') ? fs.readFileSync(path.join(root,'middleware.ts'),'utf8') : ''].join('\n');
+const cspNonceStrategy = /nonce|x-nonce|nonce-/i.test(nonceSources);
+const cspReady = cspPresent && !cspUnsafeInline && cspNonceStrategy;
+add('csp-hardening','CSP sans unsafe-inline',cspReady?'PASS':'WARN',cspReady?'CSP renforcée : stratégie nonce détectée et aucun unsafe-inline':'CSP compatible Next.js mais encore permissive : supprimer unsafe-inline et passer à une stratégie de nonces avant le niveau maximum','security');
+
+let playwrightPkg = false;
+try {
+  const pkg = readJSON('package.json');
+  const deps = {...pkg.dependencies,...pkg.devDependencies};
+  playwrightPkg = Boolean(deps['@playwright/test'] || deps.playwright || deps['playwright-core']);
+} catch {}
+const playwrightConfig = ['playwright.config.ts','playwright.config.mts','playwright.config.js','playwright.config.mjs'].some(exists);
+const mcpText = [exists('.claude/settings.json') ? fs.readFileSync(path.join(root,'.claude/settings.json'),'utf8') : '', exists('.codex/config.toml') ? fs.readFileSync(path.join(root,'.codex/config.toml'),'utf8') : '', exists('.mcp.json') ? fs.readFileSync(path.join(root,'.mcp.json'),'utf8') : ''].join('\n');
+const playwrightMcp = /playwright/i.test(mcpText);
+const playwrightReady = playwrightPkg || playwrightConfig || playwrightMcp;
+add('playwright','Playwright — tests navigateur / MCP (optionnel)',playwrightReady?'PASS':'FAIL',playwrightReady?'Playwright détecté dans le projet ou une configuration MCP':'Optionnel mais recommandé : Playwright non détecté dans le projet ni dans les configurations MCP connues','quality',true);
 
 try {
   const pkg=readJSON('package.json');
@@ -113,8 +147,9 @@ try {
 } catch { add('security-check','Security preflight','FAIL','npm run security:check échoue','security'); }
 
 const weights={FAIL:0,WARN:0.5,PASS:1,UNVERIFIED:0.5};
-const score=Math.round(100*results.reduce((a,r)=>a+weights[r.status],0)/Math.max(results.length,1));
-const verdict=results.some(r=>r.status==='FAIL')?'NOT_READY':score>=90?'READY':'NEEDS_REVIEW';
+const scoredResults=results.filter(r=>!r.optional);
+const score=Math.round(100*scoredResults.reduce((a,r)=>a+weights[r.status],0)/Math.max(scoredResults.length,1));
+const verdict=scoredResults.some(r=>r.status==='FAIL')?'NOT_READY':score>=90?'READY':'NEEDS_REVIEW';
 const report={version:kitVersion,online,score,verdict,generatedAt:new Date().toISOString(),results};
 fs.mkdirSync(path.join(root,'generated'),{recursive:true});
 fs.writeFileSync(path.join(root,'generated/production-doctor.json'),JSON.stringify(report,null,2));

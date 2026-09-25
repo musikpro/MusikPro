@@ -58,10 +58,11 @@ export function SetupSaasDashboard({ checks, mobile, securityReport }: { checks:
 
       <section className="card kit-next">
         <h2>Audit intégrité du kit</h2>
-        <p className="muted">Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes, runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:verify</code> ajoute automatiquement les contrôles dynamiques dès que les dépendances sont installées.</p>
+        <p className="muted">Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes, runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:verify</code> ajoute automatiquement les contrôles dynamiques dès que les dépendances sont installées. <code>npm run kit:full-test</code> orchestre l&apos;ensemble des contrôles du kit et génère un rapport consolidé dans <code>generated/full-integrity-report.md</code>.</p>
         <div className="kit-actions">
           <code>npm run kit:audit</code>
           <code>npm run kit:verify</code>
+          <code>npm run kit:full-test</code>
           <code>npm run doctor:kit</code>
         </div>
       </section>
