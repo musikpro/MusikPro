@@ -35,61 +35,67 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
           : pathname === "/dashboard"
             ? "Accueil"
             : activeTab;
+  const renderTab = (item: (typeof items)[number]) => {
+    const isActive = item.key === currentTab;
+    return (
+      <button
+        type="button"
+        data-demo-ready
+        onClick={() => demo.go(demoDestination(item.key))}
+        aria-label={item.label}
+        aria-current={isActive ? "page" : undefined}
+        key={item.key}
+        className="flex flex-col items-center gap-0.5 px-2 py-1 relative"
+      >
+        <Icon i={item.icon} size={22} className={isActive ? "text-primary" : "text-muted-foreground"} />
+        {item.badge && (
+          <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+            {demo.balance}
+          </div>
+        )}
+        <span className={`text-xs font-body ${isActive ? "text-primary font-semibold" : "text-muted-foreground"}`}>
+          {item.label}
+        </span>
+      </button>
+    );
+  };
+  const centerItem = items.find((item) => item.isCenter)!;
+  const centerIndex = items.indexOf(centerItem);
+  const leftItems = items.slice(0, centerIndex);
+  const rightItems = items.slice(centerIndex + 1);
+  const isCenterActive = centerItem.key === currentTab;
   return (
+    // Two flex-1 halves (instead of one 5-up justify-around row) so the center button, absolutely
+    // centered on the nav itself, lands on the true midpoint of the screen regardless of how wide
+    // "Découvrir"/"Crédits"'s labels+badge are relative to "Accueil"/"Mes sons" — a single shared
+    // row can only guarantee even gaps between items, not that the middle one sits at 50%.
     <nav
       aria-label="Navigation mobile"
-      className="banani-bottom-nav bg-card border border-border rounded-xl mx-4 mb-4 px-2 py-2 flex items-center justify-around"
+      className="banani-bottom-nav bg-card border border-border rounded-xl mx-4 mb-4 px-2 py-2 flex items-center relative"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}
     >
-      {items.map((item) => {
-        const isActive = item.key === currentTab;
-        if (item.isCenter) {
-          return (
-            <button
-              type="button"
-              data-demo-ready
-              onClick={() => {
-                if (launching) return;
-                setLaunching(true);
-                window.setTimeout(() => demo.go(demoDestination(item.key)), 180);
-              }}
-              aria-label={item.label}
-              aria-busy={launching}
-              aria-current={isActive ? "page" : undefined}
-              key={item.key}
-              className={`mobile-create-launch flex flex-col items-center justify-center -mt-6 ${launching ? "is-launching" : ""}`}
-            >
-              <div
-                className="bg-primary w-14 h-14 rounded-xl flex items-center justify-center"
-                style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.40)" }}
-              >
-                <Icon i="plus" size={28} className="text-primary-foreground" />
-              </div>
-            </button>
-          );
-        }
-        return (
-          <button
-            type="button"
-            data-demo-ready
-            onClick={() => demo.go(demoDestination(item.key))}
-            aria-label={item.label}
-            aria-current={isActive ? "page" : undefined}
-            key={item.key}
-            className="flex flex-col items-center gap-0.5 px-2 py-1 relative"
-          >
-            <Icon i={item.icon} size={22} className={isActive ? "text-primary" : "text-muted-foreground"} />
-            {item.badge && (
-              <div className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                {demo.balance}
-              </div>
-            )}
-            <span className={`text-xs font-body ${isActive ? "text-primary font-semibold" : "text-muted-foreground"}`}>
-              {item.label}
-            </span>
-          </button>
-        );
-      })}
+      <div className="flex flex-1 items-center justify-around">{leftItems.map(renderTab)}</div>
+      <button
+        type="button"
+        data-demo-ready
+        onClick={() => {
+          if (launching) return;
+          setLaunching(true);
+          window.setTimeout(() => demo.go(demoDestination(centerItem.key)), 180);
+        }}
+        aria-label={centerItem.label}
+        aria-busy={launching}
+        aria-current={isCenterActive ? "page" : undefined}
+        className={`mobile-create-launch absolute left-1/2 top-0 -translate-x-1/2 -mt-6 flex flex-col items-center justify-center ${launching ? "is-launching" : ""}`}
+      >
+        <div
+          className="bg-primary w-14 h-14 rounded-xl flex items-center justify-center"
+          style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.40)" }}
+        >
+          <Icon i="plus" size={28} className="text-primary-foreground" />
+        </div>
+      </button>
+      <div className="flex flex-1 items-center justify-around">{rightItems.map(renderTab)}</div>
     </nav>
   );
 }
