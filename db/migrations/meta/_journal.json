@@ -169,6 +169,13 @@
       "when": 1790337833276,
       "tag": "0023_supreme_bloodaxe",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790346099755,
+      "tag": "0024_huge_mentallo",
+      "breakpoints": true
     }
   ]
 }

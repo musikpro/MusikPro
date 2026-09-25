@@ -14,6 +14,12 @@
       "rateLimit": "scheduler-exempt",
       "markers": ["verifyCronRequest(request)"]
     },
+    "app/api/cron/funnel-retention/route.ts": {
+      "auth": "cron-secret",
+      "validation": "no-user-body",
+      "rateLimit": "scheduler-exempt",
+      "markers": ["verifyCronRequest(request)"]
+    },
     "app/api/health/route.ts": {
       "auth": "public-health",
       "validation": "no-input",

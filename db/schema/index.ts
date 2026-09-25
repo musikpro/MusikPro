@@ -146,6 +146,25 @@ export const securityEvents = pgTable("security_events", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+/**
+ * Product funnel telemetry (see /admin/funnel and lib/admin/funnel.ts) — only "creation_started"
+ * is written today; the schema stays open for future steps (visit, abandoned) without a new
+ * migration. Purged after 180 days by app/api/cron/funnel-retention/route.ts.
+ */
+export const funnelEvents = pgTable(
+  "funnel_events",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    event: text("event").notNull(),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    eventCreatedAtIndex: index("funnel_events_event_created_at_idx").on(table.event, table.createdAt),
+  }),
+);
+
 export const credits = pgTable(
   "credits",
   {

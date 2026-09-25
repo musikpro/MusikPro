@@ -20,6 +20,7 @@
     "payment_fulfillments": "server-only idempotency ledger; never client queried",
     "webhook_events": "server-only provider event ledger",
     "security_events": "server-only security telemetry",
+    "funnel_events": "server-only product funnel telemetry (see lib/analytics/funnel.ts); written and read exclusively via getServiceDb(), never queried directly by clients; purged after 180 days by app/api/cron/funnel-retention/route.ts",
     "payment_provider_configs": "server/admin-only global configuration",
     "payment_bypass_settings": "server/admin-only global toggle; contains no user data and is never queried directly by clients",
     "payment_country_routes": "server/admin-only global routing configuration",

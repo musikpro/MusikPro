@@ -8,6 +8,7 @@
     "exemptions": {
       "app/api/auth/[...all]/route.ts": "Better Auth owns and validates its request contract.",
       "app/api/cron/reconcile-payments/route.ts": "No user-controlled structured body; request authentication is a signed cron secret.",
+      "app/api/cron/funnel-retention/route.ts": "No user-controlled structured body; request authentication is a signed cron secret.",
       "app/api/webhooks/[provider]/route.ts": "Raw body must remain byte-identical for provider signature verification; provider adapters validate/normalize after signature verification."
     }
   },

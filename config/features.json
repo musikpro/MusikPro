@@ -700,6 +700,32 @@
         "La page « Mes chansons » et le lecteur affichent un badge « En cours de génération » et sondent /api/songs/[groupId] tant qu’une version n’est pas terminée, au lieu d’afficher une durée fictive."
       ]
     },
+    "funnel-tracking": {
+      "description": "Page /admin/funnel branchée sur de vraies données Neon : comptes créés, créations commencées (funnel_events), paiements confirmés et générations terminées (music_generation_jobs), avec taux de conversion réels entre chaque étape.",
+      "optional": false,
+      "env": ["DATABASE_SERVICE_URL", "CRON_SECRET"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0024_huge_mentallo.sql",
+        "lib/analytics/funnel.ts",
+        "lib/admin/funnel.ts",
+        "app/admin/funnel/page.tsx",
+        "app/dashboard/create/page.tsx",
+        "app/api/cron/funnel-retention/route.ts",
+        "scripts/generate-vercel-cron.mjs"
+      ],
+      "routes": ["/api/cron/funnel-retention"],
+      "dependsOn": ["database", "auth"],
+      "removalComplexity": "low",
+      "disableBehavior": "Retirer l’appel writeFunnelEvent() de app/dashboard/create/page.tsx arrête la collecte ; la carte « Créations commencées » retombe alors à 0 sans casser le reste de la page.",
+      "notes": [
+        "writeFunnelEvent() est fail-safe (try/catch, jamais bloquant pour le parcours client) — même convention que lib/security/audit.ts.",
+        "Le compte de démonstration (musikpro-public-demo, /demo) n’écrit jamais d’événement funnel, pour ne pas polluer les métriques réelles.",
+        "« Créations commencées » compte des utilisateurs distincts (COUNT DISTINCT user_id), pas le nombre brut d’événements, pour rester stable même si un client revisite l’étape 1 plusieurs fois.",
+        "« Générations terminées » compte des song_group_id distincts ayant au moins un job « completed » — pas de nouvelle table, même agrégation que lib/ai/songs.ts.",
+        "app/api/cron/funnel-retention/route.ts purge les funnel_events de plus de 180 jours, exécuté quotidiennement (vercel.json, schedule configurable via FUNNEL_RETENTION_CRON)."
+      ]
+    },
     "browser-voice-transcription": {
       "description": "Transcription vocale via l’API Web Speech du navigateur pour les champs histoire et détail spécial du parcours de création.",
       "optional": true,
