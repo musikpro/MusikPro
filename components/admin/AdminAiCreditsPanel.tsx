@@ -76,19 +76,17 @@ export default function AdminAiCreditsPanel({
         </div>
         {musicful.configured ? (
           <>
-            <div className="admin-metric-row">
-              <AdminMetric
-                icon="coins"
-                value={musicful.credits ?? "—"}
-                label="Crédits/droits restants"
-                note={
-                  musicful.lastTestedAt
-                    ? `Dernier test : ${new Date(musicful.lastTestedAt).toLocaleString("fr-FR")}`
-                    : "Aucun test de connexion effectué pour le moment."
-                }
-                tone="primary"
-              />
-            </div>
+            <AdminMetric
+              icon="coins"
+              value={musicful.credits ?? "—"}
+              label="Crédits/droits restants"
+              note={
+                musicful.lastTestedAt
+                  ? `Dernier test : ${new Date(musicful.lastTestedAt).toLocaleString("fr-FR")}`
+                  : "Aucun test de connexion effectué pour le moment."
+              }
+              tone="primary"
+            />
             <p className="admin-panel-footnote">
               Musicful n’expose pas de consommation totale historique via son API — seul le solde restant est
               disponible.
@@ -145,15 +143,13 @@ export default function AdminAiCreditsPanel({
           <>
             {anthropic.spend ? (
               <>
-                <div className="admin-metric-row">
-                  <AdminMetric
-                    icon="credit-card"
-                    value={formatUsd(anthropic.spend.amountUsd, anthropic.spend.currency)}
-                    label="Dépenses ce mois-ci"
-                    note={`Période : ${new Date(anthropic.spend.periodStart).toLocaleDateString("fr-FR")} – ${new Date(anthropic.spend.periodEnd).toLocaleDateString("fr-FR")}`}
-                    tone="primary"
-                  />
-                </div>
+                <AdminMetric
+                  icon="credit-card"
+                  value={formatUsd(anthropic.spend.amountUsd, anthropic.spend.currency)}
+                  label="Dépenses ce mois-ci"
+                  note={`Période : ${new Date(anthropic.spend.periodStart).toLocaleDateString("fr-FR")} – ${new Date(anthropic.spend.periodEnd).toLocaleDateString("fr-FR")}`}
+                  tone="primary"
+                />
                 <AdminDailyBarChart
                   title="Dépenses quotidiennes"
                   total={formatUsd(anthropic.spend.amountUsd, anthropic.spend.currency)}
