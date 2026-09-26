@@ -23,7 +23,22 @@ describe("Recherche MusikPro", () => {
     expect(getVersionCount(DEFAULT_CREDIT_PLANS[0].credits)).toBe(4);
   });
   it("convertit automatiquement le prix de référence FCFA", () => {
-    expect(creditCurrencies.map((currency) => currency.code)).toEqual(["XOF", "XAF", "EUR", "USD", "NGN", "GHS"]);
+    expect(creditCurrencies.map((currency) => currency.code)).toEqual([
+      "XOF",
+      "XAF",
+      "EUR",
+      "USD",
+      "NGN",
+      "GHS",
+      "KES",
+      "CDF",
+      "RWF",
+      "TZS",
+      "UGX",
+      "ZMW",
+      "MZN",
+      "GNF",
+    ]);
     expect(convertFromXof(655_957, "EUR")).toBeCloseTo(1000, 4);
     expect(formatCreditPrice(1_000, "XOF")).toContain("1 000");
     expect(formatCreditPrice(1_000, "EUR")).toContain("€");

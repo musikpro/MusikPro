@@ -8,6 +8,7 @@ import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 import { demoCreationChoicesSchema, buildDemoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
+import { creditCurrencies, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
 import type { OccasionOption } from "@/lib/occasions/catalog";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import type { RecipientRelationOption } from "@/lib/recipient-relations/catalog";
@@ -83,6 +84,7 @@ function useDemoState(
   paymentBypassEnabled: boolean,
   versionsPerGeneration: number,
   initialPhonePrefixes: PhonePrefixOption[],
+  initialDetectedCurrency: CreditCurrencyCode | null,
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -227,6 +229,19 @@ function useDemoState(
       if (raf2 !== null) window.cancelAnimationFrame(raf2);
     };
   }, [initialDetectedInterfaceLanguage, initialInterfaceLanguages, persistenceId]);
+  useEffect(() => {
+    const savedCurrency = window.localStorage.getItem(`musikpro:currency:${persistenceId}`);
+    const savedValid = creditCurrencies.some((currency) => currency.code === savedCurrency);
+    const detectedValid = initialDetectedCurrency
+      ? creditCurrencies.some((currency) => currency.code === initialDetectedCurrency)
+      : false;
+    const selected = savedValid
+      ? (savedCurrency as CreditCurrencyCode)
+      : detectedValid
+        ? initialDetectedCurrency!
+        : "XOF";
+    setChoices((current) => ({ ...current, currency: selected }));
+  }, [initialDetectedCurrency, persistenceId]);
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);
   const [songs, setSongs] = useState(() => defaults.songs);
@@ -360,6 +375,7 @@ function useDemoState(
       document.documentElement.lang =
         initialInterfaceLanguages.find((language) => language.nativeName === value)?.code ?? "fr";
     }
+    if (key === "currency") window.localStorage.setItem(`musikpro:currency:${persistenceId}`, value);
     if (key === "phoneCountry") persistPaymentInfo(fields, value);
     if (!creationDraftReady || !["occasion", "genre", "mood", "language", "voice", "recipientRelation"].includes(key)) {
       return;
@@ -682,6 +698,7 @@ export function DemoProvider({
   paymentBypassEnabled = false,
   versionsPerGeneration = 1,
   initialPhonePrefixes,
+  initialDetectedCurrency,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
@@ -699,6 +716,7 @@ export function DemoProvider({
   paymentBypassEnabled?: boolean;
   versionsPerGeneration?: number;
   initialPhonePrefixes: PhonePrefixOption[];
+  initialDetectedCurrency: CreditCurrencyCode | null;
 }) {
   const state = useDemoState(
     mode,
@@ -716,6 +734,7 @@ export function DemoProvider({
     paymentBypassEnabled,
     versionsPerGeneration,
     initialPhonePrefixes,
+    initialDetectedCurrency,
   );
   const [offline, setOffline] = useState(false);
   useEffect(() => {

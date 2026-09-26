@@ -14,7 +14,7 @@ import { getActiveRecipientRelations } from "@/lib/recipient-relations/server";
 import { getPublishedLibraryCollections } from "@/lib/library-collections/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { getActivePhonePrefixes } from "@/lib/phone-prefixes/server";
-import { detectInterfaceLanguage } from "@/lib/languages/detection";
+import { detectCurrency, detectInterfaceLanguage } from "@/lib/languages/detection";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
 import { getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
 import { headers } from "next/headers";
@@ -38,6 +38,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const languageCatalog = await getActiveLanguageCatalog({ demo });
   const phonePrefixOptions = await getActivePhonePrefixes({ demo });
   const detectedInterfaceLanguage = await detectInterfaceLanguage(await headers(), languageCatalog.interfaceLanguages);
+  const detectedCurrency = await detectCurrency(await headers());
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
   const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
   const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
@@ -67,6 +68,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialLyricsLanguages={languageCatalog.lyricsLanguages}
       initialDetectedInterfaceLanguage={detectedInterfaceLanguage}
       initialPhonePrefixes={phonePrefixOptions}
+      initialDetectedCurrency={detectedCurrency}
       persistenceId={demo ? "demo" : session.user.id}
       initialProfile={{
         name: session.user.name,
