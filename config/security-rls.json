@@ -26,6 +26,7 @@
     "payment_country_routes": "server/admin-only global routing configuration",
     "plan_provider_mappings": "server/admin-only global mapping configuration",
     "payment_attempts": "server-only payment routing telemetry",
+    "custom_role": "server/admin-only global role catalog; created/edited/deleted exclusively via Super-Admin-gated Server Actions (app/admin/roles/actions.ts), never queried directly by clients",
     "ai_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
     "audio_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
     "music_generation_jobs": "user-owned generation ledger; never queried directly by clients — always accessed server-side via getServiceDb() with an explicit user_id filter (same pattern as app/api/payments/checkout/route.ts), not direct RLS",

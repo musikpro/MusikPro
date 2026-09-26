@@ -6,13 +6,15 @@ import AdminUsersTable from "@/components/admin/AdminUsersTable";
 import { requireAdmin } from "@/lib/auth/session";
 import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 import { isAdminRole } from "@/lib/auth/permissions";
+import { getActiveCustomRoleSlugs } from "@/lib/auth/custom-roles";
 
 export default async function AdminUsersPage() {
   await requireAdmin();
   const db = getServiceDb();
   const users = await db.select().from(user).orderBy(desc(user.createdAt)).limit(200);
+  const adminSlugs = await getActiveCustomRoleSlugs();
   const verified = users.filter((entry) => entry.emailVerified).length;
-  const admins = users.filter((entry) => isAdminRole(entry.role)).length;
+  const admins = users.filter((entry) => isAdminRole(entry.role, adminSlugs)).length;
   const suspended = users.filter((entry) => entry.banned).length;
   return (
     <AdminPage>

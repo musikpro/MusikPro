@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminRole } from "@/lib/auth/permissions";
+import { getActiveCustomRoleSlugs } from "@/lib/auth/custom-roles";
 import { generateMusicStyleDescription } from "@/lib/ai/music-style-description";
 import { getLyricsProvider } from "@/lib/ai/provider";
 import { musicStyleDescriptionRequestSchema } from "@/lib/validation/ai";
@@ -24,7 +25,8 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return NextResponse.json({ error: "Authentification requise." }, { status: 401 });
   const role = (session.user as { role?: string }).role;
-  if (!isAdminRole(role)) return NextResponse.json({ error: "Accès refusé." }, { status: 403 });
+  if (!isAdminRole(role, await getActiveCustomRoleSlugs()))
+    return NextResponse.json({ error: "Accès refusé." }, { status: 403 });
 
   const provider = await getLyricsProvider();
   const limit = await rateLimit(

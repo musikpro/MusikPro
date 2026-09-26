@@ -18,4 +18,9 @@ describe("authenticatedDestination", () => {
     expect(authenticatedDestination("user")).toBe("/dashboard");
     expect(authenticatedDestination(undefined)).toBe("/dashboard");
   });
+
+  it("envoie aussi un rôle personnalisé listé en extraAdminSlugs vers le tableau de bord propriétaire", () => {
+    expect(authenticatedDestination("custom:abc", ["custom:abc"])).toBe("/admin");
+    expect(authenticatedDestination("custom:abc", ["custom:def"])).toBe("/dashboard");
+  });
 });
