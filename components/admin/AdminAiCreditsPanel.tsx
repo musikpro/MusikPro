@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import Icon from "@/components/banani/Icon";
 import { AdminMetric } from "@/components/admin/AdminPage";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminDailyBarChart from "@/components/admin/AdminDailyBarChart";
 import AdminSecretField from "@/components/admin/AdminSecretField";
 import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
@@ -12,6 +13,7 @@ import {
   saveAnthropicAdminKey,
   type AiCreditsActionState,
 } from "@/app/admin/ai-credits/actions";
+import { testMusicfulConnection } from "@/app/admin/ai-providers/actions";
 
 type MusicfulInfo = {
   configured: boolean;
@@ -96,10 +98,19 @@ export default function AdminAiCreditsPanel({
           <p>Aucune clé Musicful configurée pour le moment.</p>
         )}
         <div className="admin-editor-actions">
-          <Link className="admin-secondary-action" href="/admin/ai-providers/audio">
-            <Icon i="activity" size={15} />
-            {musicful.configured ? "Rafraîchir (tester la connexion)" : "Configurer Musicful"}
-          </Link>
+          {musicful.configured ? (
+            <AdminActionForm action={testMusicfulConnection}>
+              <button type="submit" className="admin-secondary-action">
+                <Icon i="activity" size={15} />
+                Rafraîchir (tester la connexion)
+              </button>
+            </AdminActionForm>
+          ) : (
+            <Link className="admin-secondary-action" href="/admin/ai-providers/audio">
+              <Icon i="activity" size={15} />
+              Configurer Musicful
+            </Link>
+          )}
           <a
             className="admin-secondary-action"
             href="https://fr.musicful.ai/api/payment/balance/"

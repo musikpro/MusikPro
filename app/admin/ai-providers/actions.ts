@@ -362,6 +362,7 @@ export async function testMusicfulConnection(
       metadata: { success: true, keyStatus: info.key_status },
     });
     revalidatePath("/admin/ai-providers/audio");
+    revalidatePath("/admin/ai-credits");
     return { ok: true, message: "Connexion Musicful validée." };
   } catch (error) {
     if (provider.config) {
@@ -383,6 +384,7 @@ export async function testMusicfulConnection(
       metadata: { success: false },
     });
     revalidatePath("/admin/ai-providers/audio");
+    revalidatePath("/admin/ai-credits");
     return { ok: false, message: "Échec de connexion : vérifie la clé et la disponibilité de Musicful." };
   }
 }
