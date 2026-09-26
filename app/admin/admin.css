@@ -5491,3 +5491,31 @@ body:has(.admin-app),
     transition: none !important;
   }
 }
+
+.admin-color-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.admin-color-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.admin-color-option input {
+  margin: 0;
+}
+
+.admin-color-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: inline-block;
+}
