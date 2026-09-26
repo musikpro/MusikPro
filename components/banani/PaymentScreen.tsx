@@ -7,31 +7,26 @@ import DemoField from "./DemoField";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 import MusikSelect from "./MusikSelect";
-import { DEMO_PHONE_RULES, demoPaymentSchema, type DemoPhoneCountry } from "@/lib/validation/musikpro-demo";
+import { buildDemoPaymentSchema } from "@/lib/validation/musikpro-demo";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 
 export const displayName = "Vos informations";
 export const screenSize = "mobile";
 
-import { translate as t } from "@/lib/i18n/translate";
-
-const phonePrefixes = [
-  { value: "CI", label: "Côte d’Ivoire", display: "🇨🇮 +225" },
-  { value: "SN", label: "Sénégal", display: "🇸🇳 +221" },
-  { value: "ML", label: "Mali", display: "🇲🇱 +223" },
-  { value: "BF", label: "Burkina Faso", display: "🇧🇫 +226" },
-  { value: "NE", label: "Niger", display: "🇳🇪 +227" },
-  { value: "GH", label: "Ghana", display: "🇬🇭 +233" },
-  { value: "NG", label: "Nigeria", display: "🇳🇬 +234" },
-  { value: "FR", label: "France", display: "🇫🇷 +33" },
-] as const;
+import { translate as t, localizeField } from "@/lib/i18n/translate";
 
 export default function PaymentScreen() {
   const demo = useDemo();
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "email" | "phone", string>>>({});
-  const selectedCountry = (demo.choices.phoneCountry || "CI") as DemoPhoneCountry;
-  const phoneRule = DEMO_PHONE_RULES[selectedCountry] ?? DEMO_PHONE_RULES.CI;
+  const selectedCountry = demo.choices.phoneCountry || demo.phonePrefixes[0]?.countryCode || "";
+  const phoneRule =
+    demo.phonePrefixes.find((prefix) => prefix.countryCode === selectedCountry) ?? demo.phonePrefixes[0];
+  const phonePrefixOptions = demo.phonePrefixes.map((prefix) => ({
+    value: prefix.countryCode,
+    label: localizeField(prefix.countryName, prefix.translations, "countryName"),
+    display: `${prefix.flag} ${prefix.dialCode}`,
+  }));
 
   useEffect(() => {
     if (Object.keys(fieldErrors).length === 0) return;
@@ -51,7 +46,7 @@ export default function PaymentScreen() {
   const hasEnoughCredits = demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION;
 
   const handleContinue = () => {
-    const parsed = demoPaymentSchema.safeParse({
+    const parsed = buildDemoPaymentSchema(demo.phonePrefixes).safeParse({
       name: demo.fields["payment.name"],
       email: demo.fields["payment.email"],
       phone: demo.fields["payment.phone"],
@@ -163,32 +158,32 @@ export default function PaymentScreen() {
                   showSelectionMark={false}
                   value={selectedCountry}
                   onChange={(value) => {
-                    const country = value as DemoPhoneCountry;
+                    const country = value;
                     demo.choose("phoneCountry", country);
-                    demo.field(
-                      "payment.phone",
-                      demo.fields["payment.phone"].slice(0, DEMO_PHONE_RULES[country].digits),
-                    );
+                    const nextRule = demo.phonePrefixes.find((prefix) => prefix.countryCode === country);
+                    demo.field("payment.phone", demo.fields["payment.phone"].slice(0, nextRule?.digits ?? 0));
                     clearFieldError("phone");
                   }}
-                  options={phonePrefixes}
+                  options={phonePrefixOptions}
                 />
                 <span className="checkout-phone-divider" aria-hidden="true" />
                 <DemoField
                   name="payment.phone"
                   label="Numéro de téléphone"
                   type="tel"
-                  placeholder={phoneRule.placeholder}
-                  maxLength={phoneRule.digits}
+                  placeholder={phoneRule?.placeholder ?? ""}
+                  maxLength={phoneRule?.digits ?? 0}
                   className="checkout-input checkout-phone-input"
                   ariaInvalid={Boolean(fieldErrors.phone)}
                   describedBy={fieldErrors.phone ? "payment-phone-help payment-phone-error" : "payment-phone-help"}
-                  transformValue={(value) => value.replace(/\D/g, "").slice(0, phoneRule.digits)}
+                  transformValue={(value) => value.replace(/\D/g, "").slice(0, phoneRule?.digits ?? 0)}
                   onValueChange={() => clearFieldError("phone")}
                 />
               </span>
               <small id="payment-phone-help">
-                {phoneRule.digits} chiffres requis pour cet indicatif, sans espaces.
+                {phoneRule
+                  ? `${phoneRule.digits} chiffres requis pour cet indicatif, sans espaces.`
+                  : "Aucun indicatif disponible."}
               </small>
               {fieldErrors.phone && (
                 <InlineNotice id="payment-phone-error" tone="error" className="field-notice">
