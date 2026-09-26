@@ -4,14 +4,15 @@ import { useMemo, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { deleteUser, setRole } from "@/app/admin/users/actions";
 import { getNameInitials } from "@/lib/profile/name-initials";
+import { ADMIN_ROLES, ADMIN_ROLE_META } from "@/lib/auth/permissions";
 import AdminActionForm from "./AdminActionForm";
 import AdminDeleteUserButton from "./AdminDeleteUserButton";
 import AdminSelect from "./AdminSelect";
 
 const roleOptions = [
   { value: "user", label: "Utilisateur" },
-  { value: "admin", label: "Administrateur" },
-] as const;
+  ...ADMIN_ROLES.map((role) => ({ value: role, label: ADMIN_ROLE_META[role].label })),
+];
 
 export type AdminUserRow = {
   id: string;
