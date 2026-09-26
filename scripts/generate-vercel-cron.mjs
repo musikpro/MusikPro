@@ -24,7 +24,7 @@ crons.push({ path: "/api/cron/funnel-retention", schedule: process.env.FUNNEL_RE
 console.log("Cron config: purge des événements d’entonnoir (180 jours) programmée.");
 
 if (providers.length) {
-  crons.push({ path: "/api/cron/reconcile-payments", schedule: process.env.PAYMENT_RECONCILE_CRON || "0 * * * *" });
+  crons.push({ path: "/api/cron/reconcile-payments", schedule: process.env.PAYMENT_RECONCILE_CRON || "0 4 * * *" });
   console.log("Cron config: réconciliation des paiements programmée.");
 } else {
   console.log("Cron config: réconciliation des paiements SKIPPED — aucun provider de paiement activé.");
