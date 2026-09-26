@@ -213,6 +213,7 @@ export async function getMusicfulProvider() {
     preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
     strictStyleAdherence: stored?.strictStyleAdherence ?? true,
     versionsPerGeneration: stored?.versionsPerGeneration ?? 1,
+    keepExtraGeneratedVariant: stored?.keepExtraGeneratedVariant ?? true,
   };
 }
 

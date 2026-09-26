@@ -1,0 +1,1 @@
+ALTER TABLE "audio_provider_configs" ADD COLUMN "keep_extra_generated_variant" boolean DEFAULT true NOT NULL;

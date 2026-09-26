@@ -465,6 +465,16 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
    * (lib/credit-plans/catalog.ts): changing this does not change what a generation costs.
    */
   versionsPerGeneration: integer("versions_per_generation").notNull().default(1),
+  /**
+   * Musicful's generate endpoint always produces AND bills a pair of variants per call,
+   * regardless of versionsPerGeneration — confirmed live via the account's own Usage History
+   * (two separate line items per submission). When versionsPerGeneration is 1, that second,
+   * already-paid variant either gets kept as a bonus "Version 2" (true — zero waste, but the
+   * user always gets 2 songs) or discarded to genuinely keep exactly 1 song per generation
+   * (false — same Musicful cost either way, since the pair is billed the moment the call is
+   * made; this only changes what MusikPro shows).
+   */
+  keepExtraGeneratedVariant: boolean("keep_extra_generated_variant").notNull().default(true),
   lastConnectionStatus: text("last_connection_status"),
   lastConnectionError: text("last_connection_error"),
   lastTestedAt: timestamp("last_tested_at"),

@@ -36,6 +36,7 @@ type MusicfulSettings = {
   maxGenerationsPerUserPerHour: number;
   maxConcurrentJobs: number;
   versionsPerGeneration: number;
+  keepExtraGeneratedVariant: boolean;
 };
 
 type MusicfulAccountInfo = {
@@ -429,6 +430,25 @@ export default function AdminMusicfulProviderForm({
                 />
                 <small>
                   Le coût affiché et débité à l’utilisateur reste fixe à 2 crédits, indépendamment de ce réglage.
+                </small>
+              </label>
+              <label className="admin-editor-field is-wide">
+                <FieldLabel help="Musicful génère et facture TOUJOURS une paire de variantes à chaque appel, quel que soit ce réglage — confirmé par l’historique d’utilisation du compte (2 lignes facturées par génération). Ce choix ne change donc rien au coût débité sur le compte Musicful : il décide seulement si la 2ᵉ variante, déjà payée, est gardée comme chanson supplémentaire ou jetée.">
+                  Variante supplémentaire déjà facturée par Musicful
+                </FieldLabel>
+                <AdminSelect
+                  name="keepExtraGeneratedVariant"
+                  defaultValue={String(settings.keepExtraGeneratedVariant)}
+                  ariaLabel="Variante supplémentaire déjà facturée par Musicful"
+                  options={[
+                    { value: "true", label: "La garder comme 2ᵉ version (recommandé, aucun gaspillage)" },
+                    { value: "false", label: "La jeter (une seule chanson livrée, même coût Musicful)" },
+                  ]}
+                />
+                <small>
+                  Coût Musicful réel par génération : environ 6 crédits avec MFV3.0 (2 variantes × 3 crédits),
+                  débités dès l’appel — que MusikPro garde 1 ou 2 chansons. « La garder » livre donc 2 chansons
+                  pour ce prix ; « La jeter » livre 1 seule chanson pour le même prix.
                 </small>
               </label>
             </div>

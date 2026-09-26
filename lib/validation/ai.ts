@@ -41,6 +41,7 @@ export const musicfulSettingsSchema = z.object({
   maxGenerationsPerUserPerHour: z.coerce.number().int().min(1).max(1_000),
   maxConcurrentJobs: z.coerce.number().int().min(1).max(50),
   versionsPerGeneration: z.coerce.number().int().min(1).max(3),
+  keepExtraGeneratedVariant: z.enum(["true", "false"]),
 });
 
 export const musicfulGenerateRequestSchema = z.object({

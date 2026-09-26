@@ -45,6 +45,7 @@ export default async function AdminAudioProviderPage() {
           maxGenerationsPerUserPerHour: stored?.maxGenerationsPerUserPerHour ?? 2,
           maxConcurrentJobs: stored?.maxConcurrentJobs ?? 2,
           versionsPerGeneration: stored?.versionsPerGeneration ?? 1,
+          keepExtraGeneratedVariant: stored?.keepExtraGeneratedVariant ?? true,
         }}
         account={{
           lastConnectionStatus: stored?.lastConnectionStatus ?? null,

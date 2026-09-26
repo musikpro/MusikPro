@@ -241,7 +241,45 @@ export async function submitSongGroupJobs(jobIds: string[]): Promise<{ succeeded
         .where(eq(musicGenerationJobs.id, job.id));
     }),
   );
-  return { succeeded, failed: ordered.length - succeeded };
+  const failed = ordered.length - succeeded;
+
+  // Musicful always generates a pair of variants per call and bills each one separately (a live
+  // account's own Usage History confirms two distinct `/v1/music/generate` line items per
+  // submission) — so when fewer job rows were requested than ids came back, the extra variant is
+  // already paid for regardless of what MusikPro does with it. The admin's "keepExtraGeneratedVariant"
+  // setting controls what happens to it: true salvages it as an additional version (zero waste, but
+  // the user always gets 2 songs); false discards it to keep exactly the requested number of
+  // versions — Musicful's own cost is identical either way, since the pair is billed the instant the
+  // call is made.
+  if (provider.keepExtraGeneratedVariant && providerTaskIds.length > ordered.length) {
+    const extraIds = providerTaskIds.slice(ordered.length);
+    await Promise.all(
+      extraIds.map(async (providerTaskId, extraIndex) => {
+        const extraJob = await createMusicJob(
+          primary.userId!,
+          {
+            title: primary.title ?? undefined,
+            style: primary.style ?? undefined,
+            lyrics: primary.lyrics ?? undefined,
+            gender: (primary.gender as "male" | "female" | "" | null) ?? undefined,
+            instrumental: primary.instrumental ? 1 : 0,
+          },
+          primary.model,
+          {
+            songGroupId: primary.songGroupId ?? undefined,
+            versionLabel: `Version ${ordered.length + extraIndex + 1}`,
+            occasion: primary.occasion ?? undefined,
+          },
+        );
+        await database
+          .update(musicGenerationJobs)
+          .set({ providerTaskId, status: "processing", responsePayload: response, updatedAt: new Date() })
+          .where(eq(musicGenerationJobs.id, extraJob.id));
+      }),
+    );
+  }
+
+  return { succeeded, failed };
 }
 
 async function getOwnedJob(jobId: string, userId: string) {

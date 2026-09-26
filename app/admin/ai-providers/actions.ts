@@ -293,6 +293,7 @@ export async function saveMusicfulSettings(
       maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
       maxConcurrentJobs: parsed.maxConcurrentJobs,
       versionsPerGeneration: parsed.versionsPerGeneration,
+      keepExtraGeneratedVariant: parsed.keepExtraGeneratedVariant === "true",
       ...(encrypted
         ? {
             apiKeyCiphertext: encrypted.ciphertext,
@@ -315,6 +316,7 @@ export async function saveMusicfulSettings(
         model: values.defaultModel,
         keyReplaced: Boolean(encrypted),
         versionsPerGeneration: values.versionsPerGeneration,
+        keepExtraGeneratedVariant: values.keepExtraGeneratedVariant,
       },
     });
     revalidatePath("/admin/ai-providers");
