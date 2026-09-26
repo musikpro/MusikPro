@@ -6,6 +6,8 @@ import {
   demoDetailSchema,
   demoSupportSchema,
   buildDemoPaymentSchema,
+  buildDemoPaymentDraftSchema,
+  resolvePhoneCountry,
   demoProfileSchema,
 } from "@/lib/validation/musikpro-demo";
 
@@ -87,6 +89,34 @@ describe("frontières des saisies de démonstration MusikPro", () => {
       schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CI", phone: "0708807015" })
         .success,
     ).toBe(false);
+  });
+  it("valide un pays ajouté après coup, absent des 10 pays d’origine", () => {
+    const rulesWithNewCountry = [...testPhoneRules, { countryCode: "CM", digits: 9, placeholder: "612345678" }];
+    const schema = buildDemoPaymentSchema(rulesWithNewCountry);
+    expect(
+      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CM", phone: "612345678" })
+        .success,
+    ).toBe(true);
+    expect(
+      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CM", phone: "61234567" })
+        .success,
+    ).toBe(false);
+  });
+  it("retombe sur le premier préfixe valide quand le brouillon restauré est invalide ou absent", () => {
+    const draftSchema = buildDemoPaymentDraftSchema(testPhoneRules);
+    expect(draftSchema.parse({ name: "Awa", email: "awa@example.com", phone: "0708807015", phoneCountry: "XX" }))
+      .toHaveProperty("phoneCountry", "CI");
+    expect(draftSchema.parse({}).phoneCountry).toBe("CI");
+  });
+  it("ne plante pas quand on construit un brouillon avec une liste de préfixes vide", () => {
+    const draftSchema = buildDemoPaymentDraftSchema([]);
+    expect(draftSchema.parse({}).phoneCountry).toBe("");
+  });
+  it("résout l’indicatif sélectionné sur un préfixe réellement disponible", () => {
+    expect(resolvePhoneCountry("CI", testPhoneRules)).toBe("CI");
+    expect(resolvePhoneCountry("XX", testPhoneRules)).toBe("CI");
+    expect(resolvePhoneCountry("", testPhoneRules)).toBe("CI");
+    expect(resolvePhoneCountry("CI", [])).toBe("");
   });
   it("refuse un profil incomplet et retire les propriétés hors contrat", () => {
     expect(

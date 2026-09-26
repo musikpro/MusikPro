@@ -16,6 +16,13 @@ export const demoCreationChoicesSchema = z.object({
 });
 export type PhoneRule = { countryCode: string; digits: number; placeholder: string };
 
+/** Resolves a chosen country code against the live prefix list, falling back to the first
+ * available prefix if the choice is stale (deactivated/deleted) or unset — so the checkout
+ * screen never submits a `phoneCountry` that doesn't exist in `prefixes`. */
+export function resolvePhoneCountry(choice: string, prefixes: PhoneRule[]): string {
+  return prefixes.some((prefix) => prefix.countryCode === choice) ? choice : (prefixes[0]?.countryCode ?? "");
+}
+
 export function buildDemoPaymentDraftSchema(prefixes: PhoneRule[]) {
   const codes = new Set(prefixes.map((p) => p.countryCode));
   const fallback = prefixes[0]?.countryCode ?? "";

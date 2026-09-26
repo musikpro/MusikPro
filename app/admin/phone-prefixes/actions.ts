@@ -79,8 +79,15 @@ export async function createPhonePrefix(
     const parsed = createPhonePrefixSchema.parse(Object.fromEntries(formData));
     checkDigitsMatchPlaceholder(parsed.digits, parsed.placeholder);
     const country = COUNTRIES_REFERENCE.find((entry) => entry.code === parsed.countryCode)!;
+    const database = getServiceDb();
+    const existing = await database
+      .select({ id: phonePrefixes.id })
+      .from(phonePrefixes)
+      .where(eq(phonePrefixes.countryCode, parsed.countryCode))
+      .limit(1);
+    if (existing.length) throw new Error("Ce pays a déjà un préfixe enregistré.");
     const id = randomUUID();
-    await getServiceDb()
+    await database
       .insert(phonePrefixes)
       .values({
         id,

@@ -7,19 +7,19 @@ import DemoField from "./DemoField";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 import MusikSelect from "./MusikSelect";
-import { buildDemoPaymentSchema } from "@/lib/validation/musikpro-demo";
+import { buildDemoPaymentSchema, resolvePhoneCountry } from "@/lib/validation/musikpro-demo";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 
 export const displayName = "Vos informations";
 export const screenSize = "mobile";
 
-import { translate as t, localizeField } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
 
 export default function PaymentScreen() {
   const demo = useDemo();
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "email" | "phone", string>>>({});
-  const selectedCountry = demo.choices.phoneCountry || demo.phonePrefixes[0]?.countryCode || "";
+  const selectedCountry = resolvePhoneCountry(demo.choices.phoneCountry, demo.phonePrefixes);
   const phoneRule =
     demo.phonePrefixes.find((prefix) => prefix.countryCode === selectedCountry) ?? demo.phonePrefixes[0];
   const phonePrefixOptions = demo.phonePrefixes.map((prefix) => ({
@@ -55,7 +55,8 @@ export default function PaymentScreen() {
     if (!parsed.success) {
       const nextErrors: Partial<Record<"name" | "email" | "phone", string>> = {};
       for (const issue of parsed.error.issues) {
-        const field = issue.path[0];
+        const rawField = issue.path[0];
+        const field = rawField === "phoneCountry" ? "phone" : rawField;
         if ((field === "name" || field === "email" || field === "phone") && !nextErrors[field]) {
           nextErrors[field] = issue.message;
         }
@@ -182,8 +183,10 @@ export default function PaymentScreen() {
               </span>
               <small id="payment-phone-help">
                 {phoneRule
-                  ? `${phoneRule.digits} chiffres requis pour cet indicatif, sans espaces.`
-                  : "Aucun indicatif disponible."}
+                  ? translateTemplate("{digits} chiffres requis pour cet indicatif, sans espaces.", {
+                      digits: phoneRule.digits,
+                    })
+                  : t("Aucun indicatif disponible.")}
               </small>
               {fieldErrors.phone && (
                 <InlineNotice id="payment-phone-error" tone="error" className="field-notice">
