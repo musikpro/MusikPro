@@ -230,6 +230,7 @@ function useDemoState(
     };
   }, [initialDetectedInterfaceLanguage, initialInterfaceLanguages, persistenceId]);
   useEffect(() => {
+    let active = true;
     const savedCurrency = window.localStorage.getItem(`musikpro:currency:${persistenceId}`);
     const savedValid = creditCurrencies.some((currency) => currency.code === savedCurrency);
     const detectedValid = initialDetectedCurrency
@@ -240,7 +241,13 @@ function useDemoState(
       : detectedValid
         ? initialDetectedCurrency!
         : "XOF";
-    setChoices((current) => ({ ...current, currency: selected }));
+    window.queueMicrotask(() => {
+      if (!active) return;
+      setChoices((current) => ({ ...current, currency: selected }));
+    });
+    return () => {
+      active = false;
+    };
   }, [initialDetectedCurrency, persistenceId]);
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);

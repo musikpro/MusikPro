@@ -2,6 +2,7 @@ import "server-only";
 
 import { createHmac } from "node:crypto";
 import { isIP } from "node:net";
+import { cache } from "react";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { countryLanguages, localizationSettings } from "@/db/schema";
@@ -65,83 +66,88 @@ async function lookupCountry(ip: string, ttlSeconds: number): Promise<string | n
   }
 }
 
-async function resolveVisitorCountryCode(
-  headersList: Headers,
-  ttlSeconds: number,
-  fallbackCountryCode: string | null,
-): Promise<string | null> {
-  // Fast path: Vercel already resolved the visitor's country for this request, at no cost — skip
-  // the IP lookup, the cache round-trip and any call to country.is entirely when it's usable.
-  let country = extractVercelCountryHeader(headersList);
-  if (!country) {
-    const ip = visitorIpFromHeaders(headersList);
-    if (ip) country = await lookupCountry(ip, ttlSeconds);
+type LocalizationSettingsSnapshot = {
+  enabled: boolean;
+  defaultLanguageCode: string;
+  ttlSeconds: number;
+  fallbackCountryCode: string | null;
+};
+
+// cache() dedupes this within a single request — detectInterfaceLanguage and detectCurrency both
+// need it, and without this both `app/dashboard/layout.tsx` calls would otherwise each run their
+// own `localization_settings` query and, on a country.is cache miss, their own network call.
+const resolveLocalizationSettings = cache(async (): Promise<LocalizationSettingsSnapshot> => {
+  try {
+    const [settings] = await db
+      .select()
+      .from(localizationSettings)
+      .where(eq(localizationSettings.id, "global"))
+      .limit(1);
+    return {
+      enabled: settings?.automaticDetectionEnabled ?? true,
+      defaultLanguageCode: settings?.defaultLanguageCode ?? "fr",
+      ttlSeconds: settings?.countryCacheTtlSeconds ?? FALLBACK_TTL_SECONDS,
+      fallbackCountryCode: settings?.fallbackCountryCode ?? null,
+    };
+  } catch {
+    // Migration not yet applied: preserve a safe, usable default.
+    return { enabled: true, defaultLanguageCode: "fr", ttlSeconds: FALLBACK_TTL_SECONDS, fallbackCountryCode: null };
   }
-  return country ?? fallbackCountryCode;
-}
+});
+
+const resolveVisitorCountryCode = cache(
+  async (headersList: Headers, ttlSeconds: number, fallbackCountryCode: string | null): Promise<string | null> => {
+    // Fast path: Vercel already resolved the visitor's country for this request, at no cost — skip
+    // the IP lookup, the cache round-trip and any call to country.is entirely when it's usable.
+    let country = extractVercelCountryHeader(headersList);
+    if (!country) {
+      const ip = visitorIpFromHeaders(headersList);
+      if (ip) country = await lookupCountry(ip, ttlSeconds);
+    }
+    return country ?? fallbackCountryCode;
+  },
+);
+
+type CountryLanguageRow = { languageCode: string | undefined; currencyCode: string | undefined };
+
+// cache() dedupes this per country within a single request, for the same reason as above.
+const resolveCountryLanguageRow = cache(async (country: string): Promise<CountryLanguageRow> => {
+  try {
+    const [row] = await db
+      .select({ languageCode: countryLanguages.languageCode, currencyCode: countryLanguages.currencyCode })
+      .from(countryLanguages)
+      .where(eq(countryLanguages.countryCode, country))
+      .limit(1);
+    return { languageCode: row?.languageCode, currencyCode: row?.currencyCode };
+  } catch {
+    // Migration not yet applied: no override available.
+    return { languageCode: undefined, currencyCode: undefined };
+  }
+});
 
 export async function detectInterfaceLanguage(
   headersList: Headers,
   activeLanguages: LanguageOption[],
 ): Promise<LanguageOption | null> {
   if (!activeLanguages.length) return null;
-  let enabled = true;
-  let defaultLanguageCode = "fr";
-  let ttlSeconds = FALLBACK_TTL_SECONDS;
-  let fallbackCountryCode: string | null = null;
-  try {
-    const [settings] = await db
-      .select()
-      .from(localizationSettings)
-      .where(eq(localizationSettings.id, "global"))
-      .limit(1);
-    enabled = settings?.automaticDetectionEnabled ?? true;
-    defaultLanguageCode = settings?.defaultLanguageCode ?? "fr";
-    ttlSeconds = settings?.countryCacheTtlSeconds ?? FALLBACK_TTL_SECONDS;
-    fallbackCountryCode = settings?.fallbackCountryCode ?? null;
-  } catch {
-    // Migration not yet applied: preserve a safe, usable default.
-  }
+  const { enabled, defaultLanguageCode, ttlSeconds, fallbackCountryCode } = await resolveLocalizationSettings();
   const fallback = activeLanguages.find((language) => language.code === defaultLanguageCode) ?? activeLanguages[0];
   if (!enabled) return fallback;
 
   const country = await resolveVisitorCountryCode(headersList, ttlSeconds, fallbackCountryCode);
   if (!country) return fallback;
 
-  let override: string | undefined;
-  try {
-    const [row] = await db.select().from(countryLanguages).where(eq(countryLanguages.countryCode, country)).limit(1);
-    override = row?.languageCode;
-  } catch {
-    // Migration not yet applied: fall back to the static heuristic mapping.
-  }
+  const { languageCode: override } = await resolveCountryLanguageRow(country);
   return resolveLanguageForCountry(country, override ? { [country]: override } : {}, activeLanguages, fallback);
 }
 
 export async function detectCurrency(headersList: Headers): Promise<CreditCurrencyCode | null> {
-  let ttlSeconds = FALLBACK_TTL_SECONDS;
-  let fallbackCountryCode: string | null = null;
-  try {
-    const [settings] = await db
-      .select()
-      .from(localizationSettings)
-      .where(eq(localizationSettings.id, "global"))
-      .limit(1);
-    ttlSeconds = settings?.countryCacheTtlSeconds ?? FALLBACK_TTL_SECONDS;
-    fallbackCountryCode = settings?.fallbackCountryCode ?? null;
-  } catch {
-    // Migration not yet applied: no detection possible, caller falls back to its own default.
-  }
+  const { enabled, ttlSeconds, fallbackCountryCode } = await resolveLocalizationSettings();
+  if (!enabled) return null;
+
   const country = await resolveVisitorCountryCode(headersList, ttlSeconds, fallbackCountryCode);
   if (!country) return null;
-  try {
-    const [row] = await db
-      .select({ currencyCode: countryLanguages.currencyCode })
-      .from(countryLanguages)
-      .where(eq(countryLanguages.countryCode, country))
-      .limit(1);
-    return resolveCurrencyForCountry(country, row ? { [country]: row.currencyCode } : {});
-  } catch {
-    return null;
-  }
+
+  const { currencyCode: override } = await resolveCountryLanguageRow(country);
+  return resolveCurrencyForCountry(country, override ? { [country]: override } : {});
 }

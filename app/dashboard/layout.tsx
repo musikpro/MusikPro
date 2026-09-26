@@ -37,8 +37,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const libraryCollectionOptions = await getPublishedLibraryCollections();
   const languageCatalog = await getActiveLanguageCatalog({ demo });
   const phonePrefixOptions = await getActivePhonePrefixes({ demo });
-  const detectedInterfaceLanguage = await detectInterfaceLanguage(await headers(), languageCatalog.interfaceLanguages);
-  const detectedCurrency = await detectCurrency(await headers());
+  const requestHeaders = await headers();
+  const detectedInterfaceLanguage = await detectInterfaceLanguage(requestHeaders, languageCatalog.interfaceLanguages);
+  const detectedCurrency = await detectCurrency(requestHeaders);
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
   const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
   const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
