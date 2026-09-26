@@ -14,18 +14,46 @@ export const demoCreationChoicesSchema = z.object({
   voice: z.string().max(80),
   recipientRelation: z.string().max(100),
 });
-export const DEMO_PHONE_RULES = {
-  CI: { digits: 10, placeholder: "0708807015" },
-  SN: { digits: 9, placeholder: "771234567" },
-  ML: { digits: 8, placeholder: "70123456" },
-  BF: { digits: 8, placeholder: "70123456" },
-  NE: { digits: 8, placeholder: "90123456" },
-  GH: { digits: 9, placeholder: "241234567" },
-  NG: { digits: 10, placeholder: "8012345678" },
-  FR: { digits: 9, placeholder: "612345678" },
-} as const;
+export type PhoneRule = { countryCode: string; digits: number; placeholder: string };
 
-export type DemoPhoneCountry = keyof typeof DEMO_PHONE_RULES;
+export function buildDemoPaymentDraftSchema(prefixes: PhoneRule[]) {
+  const codes = new Set(prefixes.map((p) => p.countryCode));
+  const fallback = prefixes[0]?.countryCode ?? "";
+  return z.object({
+    name: z.string().trim().max(100).catch(""),
+    email: z.string().trim().max(254).catch(""),
+    phone: z.string().trim().max(25).regex(/^\d*$/).catch(""),
+    phoneCountry: z
+      .string()
+      .catch(fallback)
+      .transform((value) => (codes.has(value) ? value : fallback)),
+  });
+}
+
+export function buildDemoPaymentSchema(prefixes: PhoneRule[]) {
+  const rules = new Map(prefixes.map((p) => [p.countryCode, p]));
+  return z
+    .object({
+      name: z.string().trim().min(2, "Indique ton nom complet.").max(100),
+      email: z.email("Saisis une adresse e-mail valide.").max(254),
+      phoneCountry: z.string().min(2).max(4),
+      phone: z.string().regex(/^\d*$/, "Utilise uniquement des chiffres."),
+    })
+    .superRefine(({ phoneCountry, phone }, context) => {
+      const rule = rules.get(phoneCountry);
+      if (!rule) {
+        context.addIssue({ code: "custom", path: ["phoneCountry"], message: "Indicatif téléphonique invalide." });
+        return;
+      }
+      if (phone.length !== rule.digits) {
+        context.addIssue({
+          code: "custom",
+          path: ["phone"],
+          message: `Saisis exactement ${rule.digits} chiffres pour cet indicatif.`,
+        });
+      }
+    });
+}
 export const demoStorySchema = z
   .string()
   .trim()
@@ -66,26 +94,3 @@ export const demoSupportSchema = z.object({
     .max(25)
     .regex(/^[+\d\s-]*$/),
 });
-export const demoPaymentDraftSchema = z.object({
-  name: z.string().trim().max(100).catch(""),
-  email: z.string().trim().max(254).catch(""),
-  phone: z.string().trim().max(25).regex(/^\d*$/).catch(""),
-  phoneCountry: z.enum(Object.keys(DEMO_PHONE_RULES) as [DemoPhoneCountry, ...DemoPhoneCountry[]]).catch("CI"),
-});
-export const demoPaymentSchema = z
-  .object({
-    name: z.string().trim().min(2, "Indique ton nom complet.").max(100),
-    email: z.email("Saisis une adresse e-mail valide.").max(254),
-    phoneCountry: z.enum(Object.keys(DEMO_PHONE_RULES) as [DemoPhoneCountry, ...DemoPhoneCountry[]]),
-    phone: z.string().regex(/^\d*$/, "Utilise uniquement des chiffres."),
-  })
-  .superRefine(({ phoneCountry, phone }, context) => {
-    const requiredDigits = DEMO_PHONE_RULES[phoneCountry].digits;
-    if (phone.length !== requiredDigits) {
-      context.addIssue({
-        code: "custom",
-        path: ["phone"],
-        message: `Saisis exactement ${requiredDigits} chiffres pour cet indicatif.`,
-      });
-    }
-  });

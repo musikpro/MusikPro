@@ -5,9 +5,15 @@ import {
   demoLyricsSchema,
   demoDetailSchema,
   demoSupportSchema,
-  demoPaymentSchema,
+  buildDemoPaymentSchema,
   demoProfileSchema,
 } from "@/lib/validation/musikpro-demo";
+
+const testPhoneRules = [
+  { countryCode: "CI", digits: 10, placeholder: "0708807015" },
+  { countryCode: "BF", digits: 8, placeholder: "70123456" },
+  { countryCode: "SN", digits: 9, placeholder: "771234567" },
+];
 
 describe("frontières des saisies de démonstration MusikPro", () => {
   it("refuse une histoire vide ou trop longue et normalise les espaces", () => {
@@ -61,18 +67,26 @@ describe("frontières des saisies de démonstration MusikPro", () => {
     expect(demoSupportSchema.safeParse({ ...message, email: "invalide" }).success).toBe(false);
     expect(demoSupportSchema.safeParse({ ...message, phone: "<script>" }).success).toBe(false);
   });
-  it("valide la longueur du téléphone selon le pays sans accepter un numéro partiel", () => {
-    const payment = {
-      name: "Jean Dupont",
-      email: "demo@example.com",
-      phone: "0102030405",
-      phoneCountry: "CI",
-    };
-    expect(demoPaymentSchema.safeParse(payment).success).toBe(true);
-    expect(demoPaymentSchema.safeParse({ ...payment, phone: "0102" }).success).toBe(false);
-    expect(demoPaymentSchema.safeParse({ ...payment, phoneCountry: "BF", phone: "70123456" }).success).toBe(true);
-    expect(demoPaymentSchema.safeParse({ ...payment, phoneCountry: "SN", phone: "771234567" }).success).toBe(true);
-    expect(demoPaymentSchema.safeParse({ ...payment, phoneCountry: "BF", phone: "0708807015" }).success).toBe(false);
+  it("valide le téléphone selon l’indicatif choisi", () => {
+    const schema = buildDemoPaymentSchema(testPhoneRules);
+    const payment = { name: "Awa Koné", email: "awa@example.com", phoneCountry: "CI", phone: "0708807015" };
+    expect(schema.safeParse(payment).success).toBe(true);
+    expect(schema.safeParse({ ...payment, phone: "0102" }).success).toBe(false);
+    expect(schema.safeParse({ ...payment, phoneCountry: "BF", phone: "70123456" }).success).toBe(true);
+    expect(schema.safeParse({ ...payment, phoneCountry: "SN", phone: "771234567" }).success).toBe(true);
+    expect(schema.safeParse({ ...payment, phoneCountry: "BF", phone: "0708807015" }).success).toBe(false);
+  });
+  it("rejette un indicatif qui n’existe pas dans la liste fournie", () => {
+    const schema = buildDemoPaymentSchema(testPhoneRules);
+    const payment = { name: "Awa Koné", email: "awa@example.com", phoneCountry: "XX", phone: "12345678" };
+    expect(schema.safeParse(payment).success).toBe(false);
+  });
+  it("ne plante pas avec une liste de préfixes vide", () => {
+    const schema = buildDemoPaymentSchema([]);
+    expect(
+      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CI", phone: "0708807015" })
+        .success,
+    ).toBe(false);
   });
   it("refuse un profil incomplet et retire les propriétés hors contrat", () => {
     expect(
