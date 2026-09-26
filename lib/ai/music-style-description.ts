@@ -45,8 +45,10 @@ function promptFor(input: MusicStyleDescriptionRequest) {
   }
   return (
     `Style musical : "${input.styleName}".${reference}\n` +
-    "Rédige une description technique et précise (2 à 4 phrases, 500 caractères maximum) destinée à guider une IA de génération musicale afin qu'elle respecte fidèlement les codes authentiques de ce style : rythme, instrumentation typique, structure, tempo approximatif, caractéristiques vocales. " +
-    "Si ce style est rattaché à une origine locale ou régionale reconnaissable (un pays, une région ou un continent), précise explicitement cette origine (par exemple « musique ivoirienne » ou « rythme africain ») afin que l'IA génératrice de musique respecte l'authenticité culturelle du style. Si le style est international/générique sans origine locale marquée, n'invente pas d'origine. " +
+    "Rédige une description technique et précise (600 caractères maximum) destinée à guider une IA de génération musicale (Musicful) afin qu'elle respecte fidèlement les codes authentiques de ce style. " +
+    "Structure IMPÉRATIVEMENT la description en couvrant, dans cet ordre, ce modèle recommandé par Musicful — ne rédige jamais la description au hasard, base-toi toujours sur ce modèle : BPM (tempo approximatif) + rythme + percussions + basse + instruments + structure (couplet/refrain/pont…) + type de voix + chœurs + énergie + ambiance + caractéristiques régionales. " +
+    "Formule ces onze éléments de façon TRÈS concise (quelques mots chacun, phrases courtes) pour que la description tienne intégralement dans la limite de 600 caractères sans être coupée — mieux vaut chaque point bref que certains points manquants. " +
+    "Pour les caractéristiques régionales : si ce style est rattaché à une origine locale ou régionale reconnaissable (un pays, une région ou un continent), précise explicitement cette origine (par exemple « musique ivoirienne » ou « rythme africain ») afin que l'IA génératrice de musique respecte l'authenticité culturelle du style. Si le style est international/générique sans origine locale marquée, n'invente pas d'origine. " +
     "Sois concret et spécifique, évite les généralités."
   );
 }
