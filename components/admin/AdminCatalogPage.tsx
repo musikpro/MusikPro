@@ -48,6 +48,10 @@ export default function AdminCatalogPage({
 }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | AdminCatalogItem["status"]>("all");
+  // The notice is a reminder to finish connecting a capacity, not permanent architecture
+  // documentation — once every listed capacity is Actif, there's nothing left to connect, so
+  // keeping the "Source métier à connecter" heading up would be stale/misleading.
+  const hasUnconnectedItems = items.some((item) => item.status !== "active");
   const filtered = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("fr");
     return items.filter(
@@ -62,7 +66,7 @@ export default function AdminCatalogPage({
     <AdminPage>
       <AdminPageHeader eyebrow={eyebrow} title={title} description={description} action={action} />
       {banner}
-      {sourceNote ? <AdminSourceNotice>{sourceNote}</AdminSourceNotice> : null}
+      {sourceNote && hasUnconnectedItems ? <AdminSourceNotice>{sourceNote}</AdminSourceNotice> : null}
       <section className="admin-catalog-toolbar" aria-label={`Filtres ${title}`}>
         <label className="admin-search-field">
           <Icon i="search" size={17} />
