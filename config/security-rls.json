@@ -11,6 +11,7 @@
     "plans": "global catalog, server-managed; public reads are filtered by active flag",
     "music_styles": "global music catalog, server-managed; client reads are filtered by active flag",
     "occasions": "global occasion catalog, server-managed; client reads are filtered by active flag",
+    "phone_prefixes": "global phone-prefix catalog, server-managed; client reads are filtered by active flag",
     "recipient_relations": "global recipient-relation catalog, server-managed; client reads are filtered by active flag",
     "coupons": "global promo-code catalog, server-managed; validated and applied server-side only (app/api/payments/coupons/apply, app/api/payments/checkout) — never exposes redemption counts or other coupons' existence to clients",
     "languages": "global language catalog, server-managed; client reads are filtered independently by interface and lyrics activation flags",

@@ -541,3 +541,25 @@ export const customRoles = pgTable("custom_role", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const phonePrefixes = pgTable(
+  "phone_prefixes",
+  {
+    id: text("id").primaryKey(),
+    countryCode: text("country_code").notNull().unique(),
+    countryName: text("country_name").notNull(),
+    flag: text("flag").notNull(),
+    dialCode: text("dial_code").notNull(),
+    digits: integer("digits").notNull(),
+    placeholder: text("placeholder").notNull(),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(100),
+    /** AI-generated per-locale { en: { countryName }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    activeOrderIndex: index("phone_prefixes_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
