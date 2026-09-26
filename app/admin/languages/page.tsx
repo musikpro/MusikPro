@@ -120,25 +120,59 @@ function CountryLanguageSection({
       </div>
       {orderedCountries.length ? (
         <div className="admin-catalog-grid">
-          {orderedCountries.map((row) => (
-            <article className="admin-catalog-card is-active" key={row.countryCode}>
-              <div className="admin-catalog-card-head">
-                <span className="admin-catalog-icon">{row.flag}</span>
-                <span className="admin-status is-success">{row.languageCode.toUpperCase()}</span>
-              </div>
-              <h3>{row.countryName}</h3>
-              <p>{row.countryCode}</p>
-              <p className="admin-country-currency">{row.currencyCode}</p>
-              <footer className="admin-style-actions">
-                <AdminActionForm action={removeCountryLanguage}>
-                  <input type="hidden" name="countryCode" value={row.countryCode} />
-                  <button className="admin-secondary-action is-danger" type="submit">
-                    <Icon i="trash-2" size={15} /> Retirer
-                  </button>
-                </AdminActionForm>
-              </footer>
-            </article>
-          ))}
+          {orderedCountries.map((row) => {
+            const editFormId = `country-language-edit-${row.countryCode}`;
+            return (
+              <article className="admin-catalog-card is-active" key={row.countryCode}>
+                <div className="admin-catalog-card-head">
+                  <span className="admin-catalog-icon">{row.flag}</span>
+                  <span className="admin-status is-success">{row.languageCode.toUpperCase()}</span>
+                </div>
+                <h3>{row.countryName}</h3>
+                <p>{row.countryCode}</p>
+                <p className="admin-country-currency">{row.currencyCode}</p>
+                {interfaceLanguages.length > 0 ? (
+                  <AdminActionForm id={editFormId} action={setCountryLanguage} className="admin-editor-grid">
+                    <input type="hidden" name="countryCode" value={row.countryCode} />
+                    <div className="admin-editor-field">
+                      <span>Langue</span>
+                      <AdminSelect
+                        name="languageCode"
+                        ariaLabel={`Langue pour ${row.countryName}`}
+                        defaultValue={row.languageCode}
+                        options={interfaceLanguages.map((language) => ({
+                          value: language.code,
+                          label: `${language.flag} ${language.name}`,
+                        }))}
+                      />
+                    </div>
+                    <div className="admin-editor-field">
+                      <span>Monnaie</span>
+                      <AdminSelect
+                        name="currencyCode"
+                        ariaLabel={`Monnaie pour ${row.countryName}`}
+                        defaultValue={row.currencyCode}
+                        options={creditCurrencies.map((currency) => ({ value: currency.code, label: currency.label }))}
+                      />
+                    </div>
+                  </AdminActionForm>
+                ) : null}
+                <footer className="admin-style-actions">
+                  {interfaceLanguages.length > 0 ? (
+                    <button type="submit" form={editFormId} className="admin-secondary-action">
+                      <Icon i="save" size={15} /> Enregistrer
+                    </button>
+                  ) : null}
+                  <AdminActionForm action={removeCountryLanguage}>
+                    <input type="hidden" name="countryCode" value={row.countryCode} />
+                    <button className="admin-secondary-action is-danger" type="submit">
+                      <Icon i="trash-2" size={15} /> Retirer
+                    </button>
+                  </AdminActionForm>
+                </footer>
+              </article>
+            );
+          })}
         </div>
       ) : (
         <div className="admin-empty-state">
