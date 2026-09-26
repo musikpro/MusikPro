@@ -422,7 +422,7 @@ export default function AdminMusicfulProviderForm({
                   defaultValue={String(settings.versionsPerGeneration)}
                   ariaLabel="Versions générées par demande"
                   options={[
-                    { value: "1", label: "1 version" },
+                    { value: "1", label: "1 version (par défaut)" },
                     { value: "2", label: "2 versions" },
                     { value: "3", label: "3 versions" },
                   ]}
