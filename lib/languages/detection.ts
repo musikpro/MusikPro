@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { countryLanguages, localizationSettings } from "@/db/schema";
 import { cacheGet, cacheSet } from "@/lib/cache/upstash";
+import { resolveCurrencyForCountry, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
 import { requireEnv } from "@/lib/security/env";
 import type { LanguageOption } from "./catalog";
 import { extractVercelCountryHeader } from "./country-header";
@@ -64,6 +65,21 @@ async function lookupCountry(ip: string, ttlSeconds: number): Promise<string | n
   }
 }
 
+async function resolveVisitorCountryCode(
+  headersList: Headers,
+  ttlSeconds: number,
+  fallbackCountryCode: string | null,
+): Promise<string | null> {
+  // Fast path: Vercel already resolved the visitor's country for this request, at no cost — skip
+  // the IP lookup, the cache round-trip and any call to country.is entirely when it's usable.
+  let country = extractVercelCountryHeader(headersList);
+  if (!country) {
+    const ip = visitorIpFromHeaders(headersList);
+    if (ip) country = await lookupCountry(ip, ttlSeconds);
+  }
+  return country ?? fallbackCountryCode;
+}
+
 export async function detectInterfaceLanguage(
   headersList: Headers,
   activeLanguages: LanguageOption[],
@@ -89,14 +105,7 @@ export async function detectInterfaceLanguage(
   const fallback = activeLanguages.find((language) => language.code === defaultLanguageCode) ?? activeLanguages[0];
   if (!enabled) return fallback;
 
-  // Fast path: Vercel already resolved the visitor's country for this request, at no cost — skip
-  // the IP lookup, the cache round-trip and any call to country.is entirely when it's usable.
-  let country = extractVercelCountryHeader(headersList);
-  if (!country) {
-    const ip = visitorIpFromHeaders(headersList);
-    if (ip) country = await lookupCountry(ip, ttlSeconds);
-  }
-  if (!country) country = fallbackCountryCode;
+  const country = await resolveVisitorCountryCode(headersList, ttlSeconds, fallbackCountryCode);
   if (!country) return fallback;
 
   let override: string | undefined;
@@ -107,4 +116,32 @@ export async function detectInterfaceLanguage(
     // Migration not yet applied: fall back to the static heuristic mapping.
   }
   return resolveLanguageForCountry(country, override ? { [country]: override } : {}, activeLanguages, fallback);
+}
+
+export async function detectCurrency(headersList: Headers): Promise<CreditCurrencyCode | null> {
+  let ttlSeconds = FALLBACK_TTL_SECONDS;
+  let fallbackCountryCode: string | null = null;
+  try {
+    const [settings] = await db
+      .select()
+      .from(localizationSettings)
+      .where(eq(localizationSettings.id, "global"))
+      .limit(1);
+    ttlSeconds = settings?.countryCacheTtlSeconds ?? FALLBACK_TTL_SECONDS;
+    fallbackCountryCode = settings?.fallbackCountryCode ?? null;
+  } catch {
+    // Migration not yet applied: no detection possible, caller falls back to its own default.
+  }
+  const country = await resolveVisitorCountryCode(headersList, ttlSeconds, fallbackCountryCode);
+  if (!country) return null;
+  try {
+    const [row] = await db
+      .select({ currencyCode: countryLanguages.currencyCode })
+      .from(countryLanguages)
+      .where(eq(countryLanguages.countryCode, country))
+      .limit(1);
+    return resolveCurrencyForCountry(country, row ? { [country]: row.currencyCode } : {});
+  } catch {
+    return null;
+  }
 }
