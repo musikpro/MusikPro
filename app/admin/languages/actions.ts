@@ -11,6 +11,7 @@ import {
   localizationSettings,
   musicStyles,
   occasions,
+  phonePrefixes,
   plans,
   recipientRelations,
 } from "@/db/schema";
@@ -252,35 +253,38 @@ export async function refreshCatalogTranslations() {
   const session = await requireAdmin();
   const serviceDb = getServiceDb();
 
-  const [occasionRows, styleRows, relationRows, planRows] = await Promise.all([
+  const [occasionRows, styleRows, relationRows, planRows, prefixRows] = await Promise.all([
     serviceDb.select().from(occasions),
     serviceDb.select().from(musicStyles),
     serviceDb.select().from(recipientRelations),
     serviceDb.select().from(plans),
+    serviceDb.select().from(phonePrefixes),
   ]);
 
-  const [occasionTranslations, styleTranslations, relationTranslations, planTranslations] = await Promise.all([
-    translateCatalogTable(
-      occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-    ),
-    translateCatalogTable(
-      styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-    ),
-    translateCatalogTable(relationRows.map((row) => ({ id: row.id, fields: { name: row.name } }))),
-    translateCatalogTable(
-      planRows.map((row) => {
-        const features = creditPlanFeaturesSchema.safeParse(row.features);
-        return {
-          id: row.id,
-          fields: {
-            name: row.name,
-            description: row.description,
-            bonus: features.success ? features.data.bonus : null,
-          },
-        };
-      }),
-    ),
-  ]);
+  const [occasionTranslations, styleTranslations, relationTranslations, planTranslations, prefixTranslations] =
+    await Promise.all([
+      translateCatalogTable(
+        occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+      ),
+      translateCatalogTable(
+        styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+      ),
+      translateCatalogTable(relationRows.map((row) => ({ id: row.id, fields: { name: row.name } }))),
+      translateCatalogTable(
+        planRows.map((row) => {
+          const features = creditPlanFeaturesSchema.safeParse(row.features);
+          return {
+            id: row.id,
+            fields: {
+              name: row.name,
+              description: row.description,
+              bonus: features.success ? features.data.bonus : null,
+            },
+          };
+        }),
+      ),
+      translateCatalogTable(prefixRows.map((row) => ({ id: row.id, fields: { countryName: row.countryName } }))),
+    ]);
 
   await Promise.all([
     ...occasionRows.map((row) =>
@@ -307,6 +311,12 @@ export async function refreshCatalogTranslations() {
         .set({ translations: planTranslations.get(row.id) ?? {} })
         .where(eq(plans.id, row.id)),
     ),
+    ...prefixRows.map((row) =>
+      serviceDb
+        .update(phonePrefixes)
+        .set({ translations: prefixTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(phonePrefixes.id, row.id)),
+    ),
   ]);
 
   const counts = {
@@ -314,6 +324,7 @@ export async function refreshCatalogTranslations() {
     musicStyles: styleRows.length,
     recipientRelations: relationRows.length,
     plans: planRows.length,
+    phonePrefixes: prefixRows.length,
   };
 
   await writeAuditLog({
