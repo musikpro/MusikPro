@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { apiFetch } from "@/lib/api/client";
@@ -114,7 +114,9 @@ export default function PaymentRedirectScreen() {
             <div>
               <p className="text-sm font-semibold text-foreground">{t("Effectuez votre paiement")}</p>
               <p className="text-xs text-muted-foreground">
-                Montant : {formatDemoPackPrice(demo.coupon?.finalAmount ?? demo.pack.priceValue, demo.choices.currency)}
+                {translateTemplate("Montant : ≈ {amount}", {
+                  amount: formatDemoPackPrice(demo.coupon?.finalAmount ?? demo.pack.priceValue, demo.choices.currency),
+                })}
                 {demo.coupon ? ` (code ${demo.coupon.code} appliqué)` : ""}
               </p>
             </div>
