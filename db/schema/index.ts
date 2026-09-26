@@ -278,6 +278,7 @@ export const countryLanguages = pgTable("country_languages", {
   countryName: text("country_name").notNull(),
   flag: text("flag").notNull().default("🌍"),
   languageCode: text("language_code").notNull(),
+  currencyCode: text("currency_code").notNull().default("XOF"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
