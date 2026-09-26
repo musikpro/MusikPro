@@ -7,7 +7,6 @@ import * as schema from "@/db/schema";
 import { sendAuthEmail, sendTwoFactorEmail } from "@/lib/email";
 import { ownerTwoFactor, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
-import { ADMIN_ROLES } from "@/lib/auth/permissions";
 
 assertServerOnlyEnv();
 
@@ -69,7 +68,7 @@ export const auth = betterAuth({
   },
   plugins: [
     organization({ teams: { enabled: true } }),
-    admin({ defaultRole: "user", adminRoles: ADMIN_ROLES }),
+    admin({ defaultRole: "user", adminRoles: ["admin"] }),
     ...(ownerTwoFactorEnabled()
       ? [
           ownerTwoFactor(),

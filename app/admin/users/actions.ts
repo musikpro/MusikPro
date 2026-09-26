@@ -10,7 +10,7 @@ import { writeAuditLog } from "@/lib/security/audit";
 import { count, eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { user } from "@/db/schema";
-import { wouldRemoveLastSuperAdmin, wouldSelfDemoteToUser } from "@/lib/auth/permissions";
+import { hasAppRole, wouldRemoveLastSuperAdmin, wouldSelfDemoteToUser } from "@/lib/auth/permissions";
 
 const roleSchema = z.object({
   userId: z.string().min(1).max(120),
@@ -19,6 +19,12 @@ const roleSchema = z.object({
 export async function setRole(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
     const adminSession = await requireAdmin();
+    // better-auth's own admin plugin only grants the "set-role" permission to the literal "admin"
+    // role (its permission model is separate from ADMIN_ROLES/isAdminRole) — enforce the same rule
+    // explicitly here so the 4 other admin roles get a clear French message instead of an opaque
+    // FORBIDDEN error from auth.api.setRole below.
+    if (!hasAppRole((adminSession.user as { role?: string }).role, "admin"))
+      throw new Error("Seul un Super Admin peut modifier les rôles.");
     const parsed = roleSchema.parse(Object.fromEntries(formData));
     if (wouldSelfDemoteToUser(adminSession.user.id, parsed.userId, parsed.role))
       throw new Error("Vous ne pouvez pas retirer votre propre accès admin depuis cet écran.");
@@ -58,6 +64,10 @@ const deleteUserSchema = z.object({ userId: z.string().min(1).max(120) });
 export async function deleteUser(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
     const adminSession = await requireAdmin();
+    // Same reasoning as setRole above: better-auth's "remove-user" permission is also literal
+    // "admin"-only.
+    if (!hasAppRole((adminSession.user as { role?: string }).role, "admin"))
+      throw new Error("Seul un Super Admin peut supprimer un compte.");
     const parsed = deleteUserSchema.parse(Object.fromEntries(formData));
     if (parsed.userId === adminSession.user.id)
       throw new Error("Vous ne pouvez pas supprimer votre propre compte depuis cet écran.");
