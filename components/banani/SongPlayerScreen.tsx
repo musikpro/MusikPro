@@ -113,8 +113,8 @@ export default function SongPlayerScreen() {
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() => demo.toggleFavorite(currentSong.title)}
-            aria-pressed={demo.favorites.includes(currentSong.title)}
+            onClick={() => demo.toggleFavorite(currentSong.id)}
+            aria-pressed={demo.favorites.includes(currentSong.id)}
             aria-label={`Favori ${currentSong.title}`}
             className="flex items-center gap-1.5 text-primary font-semibold"
           >
@@ -279,7 +279,7 @@ export default function SongPlayerScreen() {
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{t("Suivant")}</p>
         <div className="space-y-2">
           {demo.library
-            .filter((song) => song.title !== currentSong.title)
+            .filter((song) => song.id !== currentSong.id)
             .slice(0, 2)
             .map((song) => (
               <div key={song.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/30">
@@ -293,7 +293,7 @@ export default function SongPlayerScreen() {
                 <span className="text-xs text-muted-foreground flex-shrink-0">{song.duration}</span>
               </div>
             ))}
-          {demo.library.filter((song) => song.title !== currentSong.title).length === 0 && (
+          {demo.library.filter((song) => song.id !== currentSong.id).length === 0 && (
             <div className="rounded-xl border border-border bg-card px-4 py-5 text-center">
               <p className="text-sm font-semibold text-foreground">Aucune autre chanson</p>
             </div>

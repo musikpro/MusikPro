@@ -13,6 +13,7 @@ import Icon from "./Icon";
 export default function MySongsScreen() {
   const demo = useDemo();
   const mySongs = demo.songs.map((song) => ({
+    id: song.id,
     title: song.title,
     style: song.style,
     occasion: song.occasion,
@@ -58,7 +59,7 @@ export default function MySongsScreen() {
           </p>
         )}
         {mySongs.map((song) => (
-          <SongCard key={song.title} {...song} />
+          <SongCard key={song.id} {...song} />
         ))}
       </div>
 

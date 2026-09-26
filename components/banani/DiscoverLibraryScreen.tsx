@@ -107,7 +107,7 @@ export default function DiscoverLibraryScreen() {
             </div>
           )}
           {results.map((song) => (
-            <div key={song.title} className="rounded-xl overflow-hidden relative group">
+            <div key={song.id} className="rounded-xl overflow-hidden relative group">
               <Image ar="1:1" prompt={song.img} className="w-full" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-between p-3">
                 <div className="text-left">
@@ -125,7 +125,7 @@ export default function DiscoverLibraryScreen() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.openSong(song.title)}
+                onClick={() => demo.openSong(song.id)}
                 aria-label="Écouter la chanson"
                 className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90"
               >

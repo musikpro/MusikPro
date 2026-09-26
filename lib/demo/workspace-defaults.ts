@@ -5,7 +5,7 @@ export function getWorkspaceDefaults(isDemo: boolean, realBalance = 0) {
   return {
     balance: isDemo ? 5 : realBalance,
     songs: (isDemo ? demoGeneratedSongs : []) as WorkspaceSong[],
-    favorites: isDemo ? demoFavoriteSongs.map((song) => song.title) : [],
+    favorites: isDemo ? demoFavoriteSongs.map((song) => song.id) : [],
     versionFavorites: isDemo
       ? demoGeneratedSongs.flatMap((song) =>
           song.versions.flatMap((version, index) => (version.liked ? [`${song.id}|${index}`] : [])),

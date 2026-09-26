@@ -79,7 +79,7 @@ export default function MySongsGenerated() {
     .filter(
       (s) =>
         matchesSongSearch(search, s.title, s.style, s.occasion) &&
-        (selectedTab !== "Favorites" || demo.favorites.includes(s.title)),
+        (selectedTab !== "Favorites" || demo.favorites.includes(s.id)),
     )
     .slice()
     .sort((a, b) => (sortByPlays ? totalPlays(b) - totalPlays(a) : 0));

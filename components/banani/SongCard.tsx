@@ -8,6 +8,7 @@ export const displayName = "Song Card";
 export const shortDescription = "A card showing a user song with play controls";
 
 export default function SongCard({
+  id = 1,
   title = "Pour toi Mariam",
   style = "Afrobeat",
   occasion = "Anniversaire",
@@ -20,6 +21,7 @@ export default function SongCard({
   onPlay,
   onDownload,
 }: {
+  id?: string | number;
   title?: string;
   style?: string;
   occasion?: string;
@@ -81,7 +83,7 @@ export default function SongCard({
           aria-label={isPlaying ? `Mettre en pause ${title}` : `Écouter ${title}`}
           aria-pressed={isPlaying}
           disabled={disablePlay}
-          onClick={() => (onPlay ? onPlay() : demo.openSong(title))}
+          onClick={() => (onPlay ? onPlay() : demo.openSong(id))}
           className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0 disabled:opacity-50"
         >
           <Icon

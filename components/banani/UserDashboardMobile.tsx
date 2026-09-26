@@ -67,7 +67,7 @@ export default function UserDashboardMobile() {
   });
   const playSong = (song: (typeof recentSongs)[number]) => {
     if (demo.isDemo) {
-      demo.openSong(song.title);
+      demo.openSong(song.id);
       return;
     }
     if (!song.audioUrl) {

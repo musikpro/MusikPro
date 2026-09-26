@@ -121,7 +121,7 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                 <div className="workspace-recent-list">
                   {demo.songs.length === 0 && <p className="workspace-hint">{t("Aucune création pour le moment.")}</p>}
                   {demo.songs.slice(0, 3).map((song) => (
-                    <button key={song.title} type="button" data-demo-ready onClick={() => demo.openSong(song.title)}>
+                    <button key={song.id} type="button" data-demo-ready onClick={() => demo.openSong(song.id)}>
                       <span className="workspace-song-icon">
                         <Icon i="music-2" size={16} />
                       </span>

@@ -79,7 +79,7 @@ export default function MyFavoritesSongs() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.openSong(song.title)}
+                onClick={() => demo.openSong(song.id)}
                 aria-label="Écouter la chanson"
                 className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40"
               >
@@ -108,7 +108,7 @@ export default function MyFavoritesSongs() {
                 <button
                   type="button"
                   data-demo-ready="true"
-                  onClick={() => demo.toggleFavorite(song.title)}
+                  onClick={() => demo.toggleFavorite(song.id)}
                   aria-label={`Retirer ${song.title} des favoris`}
                   className="text-red-400"
                 >

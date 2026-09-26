@@ -252,7 +252,7 @@ function useDemoState(
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);
   const [songs, setSongs] = useState(() => defaults.songs);
-  const [favorites, setFavorites] = useState<string[]>(() => defaults.favorites);
+  const [favorites, setFavorites] = useState<(string | number)[]>(() => defaults.favorites);
   const [versionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
   const [readNotifications, setReadNotifications] = useState<number[]>([]);
   const [toggles, setToggles] = useState<Record<string, boolean>>({
@@ -268,7 +268,7 @@ function useDemoState(
     "Qualité audio": true,
     "Assistant de téléchargement": true,
   });
-  const [selectedTitle, setSelectedTitle] = useState(isDemo ? "Mama Africa" : "");
+  const [selectedSongId, setSelectedSongId] = useState<string | number>(isDemo ? 1 : "");
   const [selectedVersion, setSelectedVersion] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [packIndex, setPackIndex] = useState(-1);
@@ -315,22 +315,25 @@ function useDemoState(
    */
   const displayName = (list: { name: string; translations?: CatalogTranslations | null }[], value: string) =>
     localizeField(value, list.find((item) => item.name === value)?.translations, "name");
-  const favoriteSongs = favorites.map((title, i) => {
-    const original = isDemo ? demoFavoriteSongs.find((s) => s.title === title) : undefined;
-    const own = songs.find((s) => s.title === title);
-    const publicSong = library.find((s) => s.title === title);
+  const favoriteSongs = favorites.map((id) => {
+    const original = isDemo ? demoFavoriteSongs.find((s) => s.id === id) : undefined;
+    const own = songs.find((s) => s.id === id);
+    const publicSong = library.find((s) => s.id === id);
     return {
-      id: i,
-      title,
+      id,
+      title: original?.title ?? own?.title ?? publicSong?.title ?? "",
       occasion: original?.occasion ?? own?.occasion ?? "Communauté",
       style: original?.style ?? own?.style ?? publicSong?.style ?? "Afrobeat",
       plays: original?.plays ?? own?.versions.reduce((n, v) => n + v.plays, 0) ?? publicSong?.plays ?? 0,
       img: original?.img ?? publicSong?.img ?? "",
     };
   });
-  const owned = songs.find((s) => s.title === selectedTitle);
+  // Matched by id, not title: two songs (e.g. two separate "Ma chanson — Anniversaire"
+  // generations) can share the exact same default title, and title-based matching used to
+  // open/favorite whichever one happened to come first instead of the one actually selected.
+  const owned = songs.find((s) => s.id === selectedSongId);
   const ownedVersion = owned?.versions[selectedVersion];
-  const currentSong = selectedTitle
+  const currentSong = selectedSongId
     ? owned
       ? {
           id: owned.id,
@@ -346,9 +349,9 @@ function useDemoState(
       : {
           audioUrl: null as string | null,
           status: "completed" as const,
-          ...(library.find((s) => s.title === selectedTitle) ?? {
-            id: -1,
-            title: selectedTitle,
+          ...(library.find((s) => s.id === selectedSongId) ?? {
+            id: selectedSongId,
+            title: "Chanson",
             style: isDemo ? "Création de démonstration" : "Création MusikPro",
             img: "",
             duration: "1:32",
@@ -396,8 +399,8 @@ function useDemoState(
     }
   };
   const toggle = (key: string) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-  const toggleFavorite = (title: string) =>
-    setFavorites((prev) => (prev.includes(title) ? prev.filter((v) => v !== title) : [...prev, title]));
+  const toggleFavorite = (id: string | number) =>
+    setFavorites((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
   // Keyed by the song's unique id, not its title: several songs (e.g. two separate
   // "Ma chanson — Anniversaire" generations) can share the exact same title, and a
   // title-based key made liking/playing one collide visually with every same-titled song's
@@ -437,14 +440,12 @@ function useDemoState(
       ? versionFavorites.filter((v) => v !== key)
       : [...versionFavorites, key];
     setVersionFavorites(next);
-    const title = songs.find((s) => s.id === songId)?.title;
-    if (!title) return;
     setFavorites((prev) =>
       next.some((v) => v.startsWith(`${songId}|`))
-        ? prev.includes(title)
+        ? prev.includes(songId)
           ? prev
-          : [...prev, title]
-        : prev.filter((v) => v !== title),
+          : [...prev, songId]
+        : prev.filter((v) => v !== songId),
     );
   };
   const registerPlay = (songId: string | number, index: number) => {
@@ -467,15 +468,15 @@ function useDemoState(
       // A missed play-count tick is not worth surfacing to the listener.
     });
   };
-  const openSong = (title: string, version = 0) => {
-    setSelectedTitle(title);
+  const openSong = (id: string | number, version = 0) => {
+    setSelectedSongId(id);
     setSelectedVersion(version);
     go("/dashboard/songs/player");
   };
   const nextSong = (direction: number) => {
     if (!library.length) return;
-    const index = library.findIndex((s) => s.title === selectedTitle);
-    setSelectedTitle(library[(index + direction + library.length) % library.length].title);
+    const index = library.findIndex((s) => s.id === selectedSongId);
+    setSelectedSongId(library[(index + direction + library.length) % library.length].id);
   };
   const refreshSongs = async () => {
     if (isDemo) return;
@@ -497,12 +498,14 @@ function useDemoState(
   /** Demo-only instant fake generation, unchanged from the original scaffold. */
   const generateSong = async () => {
     const title = `Ma chanson — ${choices.occasion}`;
+    const existingId = songs.find((s) => s.title === title)?.id;
+    const newId = existingId ?? songs.length + 1000;
     setSongs((prev) =>
-      prev.some((s) => s.title === title)
+      existingId !== undefined
         ? prev
         : [
             {
-              id: prev.length + 1000,
+              id: newId,
               title,
               occasion: choices.occasion,
               style: choices.genre,
@@ -516,7 +519,7 @@ function useDemoState(
             ...prev,
           ],
     );
-    setSelectedTitle(title);
+    setSelectedSongId(newId);
     go("/dashboard/songs");
   };
   /**
@@ -543,7 +546,7 @@ function useDemoState(
         timeoutMs: 30_000,
       });
       setBalance(result.newBalance);
-      setSelectedTitle(`Ma chanson — ${choices.occasion}`);
+      setSelectedSongId(result.songGroupId);
       return { songGroupId: result.songGroupId };
     } catch (error) {
       notify(
@@ -644,7 +647,7 @@ function useDemoState(
     setReadNotifications,
     toggles,
     toggle,
-    selectedTitle,
+    selectedSongId,
     selectedVersion,
     currentSong,
     openSong,
@@ -668,7 +671,7 @@ function useDemoState(
       if (!song) return;
       if (isDemo) {
         setSongs((prev) => prev.filter((s) => s.id !== id));
-        setFavorites((prev) => prev.filter((v) => v !== song.title));
+        setFavorites((prev) => prev.filter((v) => v !== song.id));
         setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${song.id}|`)));
         notify("Chanson retirée de cette démonstration locale.");
         return;
