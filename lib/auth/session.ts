@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { hasAppRole } from "@/lib/auth/permissions";
+import { isAdminRole } from "@/lib/auth/permissions";
 import { getSecurityLevel, securityPolicy } from "@/lib/security/config";
 import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 
@@ -50,7 +50,7 @@ export async function requireUser() {
 export async function requireAdmin() {
   const session = await requireUser();
   const role = (session.user as { role?: string }).role;
-  if (!hasAppRole(role, "admin")) redirect("/dashboard");
+  if (!isAdminRole(role)) redirect("/dashboard");
   const twoFactorEnabled = Boolean((session.user as { twoFactorEnabled?: boolean }).twoFactorEnabled);
   const policy = securityPolicy[getSecurityLevel()];
   if (ownerTwoFactorEnabled() && policy.requireAdmin2FA && !twoFactorEnabled) {
