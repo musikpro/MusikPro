@@ -45,11 +45,16 @@ export default function StepGeneratingSong() {
   const [messageIndex, setMessageIndex] = useState(0);
   const skipRequested = useRef(false);
   const finished = useRef(false);
-  /** Guards ONLY the real submission call (a real, non-idempotent Musicful request + credit
+  /** Guards the real submission call (a real, non-idempotent Musicful request + credit
    * deduction) against React's dev Strict Mode double-invoking this effect — unlike the
-   * interval/timeout below, this must never fire twice. Intentionally never reset by the
-   * effect's cleanup, since the whole point is to survive the synthetic mount→cleanup→mount. */
-  const submissionStarted = useRef(false);
+   * interval/timeout below, this must never fire twice. Shared (never reset by the effect's
+   * cleanup) so the phantom first mount's in-flight call is reused by the surviving second
+   * mount instead of firing again — storing the PROMISE itself, not just a boolean, is what
+   * lets that surviving mount also await the same result and then poll using its own, live
+   * `active` closure (see runReal below: a boolean-only guard left the survivor never calling
+   * runReal at all, while the phantom mount's own call always bailed out post-await because
+   * its `active` had already flipped false — orphaning the poll loop forever, silently). */
+  const submissionPromise = useRef<Promise<{ songGroupId: string } | null> | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -78,14 +83,34 @@ export default function StepGeneratingSong() {
       demo.go(destination);
     };
 
+    // Chrome (and other Chromium browsers) throttle a hidden tab's timers to ~1 run/minute after
+    // 5 minutes in the background ("intensive timer throttling") — exactly the point a user
+    // switching apps to wait, or taking a screenshot, stalls this screen's 5s poll for minutes at
+    // a time even though the song may already be done server-side. `wakeNow` lets the
+    // `visibilitychange` listener below cut the current wait short the instant the tab regains
+    // focus, instead of waiting for the next throttled tick.
+    let wakeNow: (() => void) | null = null;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") wakeNow?.();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+
     async function runReal() {
-      const submission = await demo.startRealGeneration();
+      if (!submissionPromise.current) submissionPromise.current = demo.startRealGeneration();
+      const submission = await submissionPromise.current;
       if (!active || skipRequested.current) return;
       if (!submission) return; // startRealGeneration already redirected on failure/insufficient credits.
       const deadline = Date.now() + MAX_REAL_POLL_MS;
       let resolvedStatus: string | null = null;
       while (active && !skipRequested.current && Date.now() < deadline) {
-        await new Promise((resolve) => window.setTimeout(resolve, POLL_INTERVAL_MS));
+        await new Promise<void>((resolve) => {
+          const timer = window.setTimeout(resolve, POLL_INTERVAL_MS);
+          wakeNow = () => {
+            window.clearTimeout(timer);
+            resolve();
+          };
+        });
+        wakeNow = null;
         if (!active || skipRequested.current) break;
         try {
           const result = await apiFetch<{ song: { status: string } }>(`/api/songs/${submission.songGroupId}`, {
@@ -114,15 +139,13 @@ export default function StepGeneratingSong() {
           if (active) void demo.generateSong();
         }, DEMO_DURATION_MS)
       : undefined;
-    if (!demo.isDemo && !submissionStarted.current) {
-      submissionStarted.current = true;
-      void runReal();
-    }
+    if (!demo.isDemo) void runReal();
 
     return () => {
       active = false;
       window.clearInterval(tick);
       if (demoTimer) window.clearTimeout(demoTimer);
+      document.removeEventListener("visibilitychange", onVisible);
     };
     // Runs once: restarting the timers/polling on every demo context change would replay the animation or double-submit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
