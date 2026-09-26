@@ -46,6 +46,15 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
   4. Pour un même `<article>`/ligne avec plusieurs boutons (ex. Modifier + Supprimer), scinder en plusieurs `<AdminActionForm id="...">` distincts et relier les boutons avec l'attribut HTML standard `form={id}` plutôt que d'imbriquer des formulaires ou d'inventer un mécanisme ad hoc (voir `app/admin/payment-providers/chariow/page.tsx`).
 - Toute nouvelle page, panneau ou bouton d'action ajouté au dashboard propriétaire doit suivre ce même mécanisme et le même style de toast dès sa création — ce n'est pas un chantier ponctuel mais une règle permanente, au même titre que l'i18n ou la validation Zod.
 
+## Règle obligatoire — onglets horizontaux (dashboard propriétaire)
+
+- **Toute page/panneau du dashboard propriétaire/admin qui regroupe plusieurs boîtes/sections dans un même écran doit les présenter via le composant partagé `AdminTabs`/`AdminTabPanel` (`components/admin/AdminTabs.tsx`) — jamais un nouvel accordéon, une nouvelle mécanique d'onglets ou un système de classes CSS ad hoc.**
+- Mécanisme commun unique, ne jamais en recréer un autre :
+  1. Envelopper les boîtes avec `<AdminTabs ariaLabel="..." tabs={[{ id, label }, ...]}>` et donner à chaque boîte un `<AdminTabPanel id="...">` correspondant (voir `app/admin/languages/page.tsx` et `components/admin/AdminMusicfulProviderForm.tsx` pour des exemples déjà en place).
+  2. Le style (carte avec fond/bordure/ombre autour de la barre d'onglets, changement de contenu **sans aucune animation/transition** au clic) est déjà porté par les classes globales `.admin-tabs`, `.admin-tabs-list`, `.admin-tabs-trigger`, `.admin-tabs-panel` dans `app/admin/admin.css` — ne pas dupliquer ce CSS ailleurs ni en surcharger le comportement par page ; toute évolution du style des onglets se fait une seule fois dans ces classes partagées pour bénéficier à toutes les pages qui utilisent `AdminTabs`.
+  3. Les panneaux restent montés (masqués via l'attribut `hidden`, pas démontés) : un `<AdminActionForm>` qui englobe `AdminTabs` continue donc de soumettre les champs de tous les onglets, pas seulement celui visible.
+- Toute nouvelle page ou nouveau panneau du dashboard propriétaire qui a besoin d'onglets horizontaux doit réutiliser ce même composant dès sa création — ce n'est pas un chantier ponctuel mais une règle permanente, au même titre que l'i18n ou la notification toast.
+
 ## Sources de vérité
 
 - Lire `AGENTS.md`, `README.md`, `SECURITY.md`, `DESIGN.md` avant une refactorisation importante.

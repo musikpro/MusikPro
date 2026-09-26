@@ -2,6 +2,7 @@ import { asc } from "drizzle-orm";
 import Link from "next/link";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import AdminActionForm from "@/components/admin/AdminActionForm";
+import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
@@ -251,53 +252,71 @@ export default async function AdminLanguagesPage() {
           <p>Toute modification est répercutée dans les sélecteurs du tableau de bord client.</p>
         </div>
       </div>
-      <div className="admin-language-top-row">
-        <section className="admin-panel admin-language-detection">
-          <div className="admin-section-heading">
-            <div>
-              <h2>Détection automatique du pays</h2>
-              <p>
-                Activation, durée du cache, pays de secours et diagnostic Country.is se règlent désormais dans une
-                boîte dédiée des paramètres généraux.
-              </p>
-            </div>
+      <AdminTabs
+        ariaLabel="Sections de Langues et Monnaies"
+        tabs={[
+          { id: "interface", label: "Langues de l’interface" },
+          { id: "lyrics", label: "Langues des paroles" },
+          { id: "countries", label: "Association pays, langue et monnaie" },
+          { id: "settings", label: "Réglages" },
+        ]}
+      >
+        <AdminTabPanel id="interface">
+          <LanguageSection
+            title="Langues de l’interface"
+            description="Langues proposées pour naviguer dans MusikPro. Les traductions éditoriales restent relues à partir du français de référence."
+            rows={rows}
+            scope="interface"
+          />
+        </AdminTabPanel>
+        <AdminTabPanel id="lyrics">
+          <LanguageSection
+            title="Langues des paroles"
+            description="Langues transmises au fournisseur IA pour générer les paroles de chanson."
+            rows={rows}
+            scope="lyrics"
+          />
+        </AdminTabPanel>
+        <AdminTabPanel id="countries">
+          <CountryLanguageSection
+            mappedCountries={countryLanguageRows}
+            availableCountries={availableCountries}
+            interfaceLanguages={interfaceLanguages}
+          />
+        </AdminTabPanel>
+        <AdminTabPanel id="settings">
+          <div className="admin-language-top-row">
+            <section className="admin-panel admin-language-detection">
+              <div className="admin-section-heading">
+                <div>
+                  <h2>Détection automatique du pays</h2>
+                  <p>
+                    Activation, durée du cache, pays de secours et diagnostic Country.is se règlent désormais dans une
+                    boîte dédiée des paramètres généraux.
+                  </p>
+                </div>
+              </div>
+              <Link className="admin-secondary-action" href="/admin/settings">
+                <Icon i="settings" size={16} />
+                Ouvrir les réglages de détection
+              </Link>
+            </section>
+            <section className="admin-panel admin-language-detection">
+              <div className="admin-section-heading">
+                <div>
+                  <h2>Traductions du catalogue</h2>
+                  <p>
+                    Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans
+                    toutes les langues actives, pour que le parcours de création et les crédits s’affichent dans la
+                    langue choisie par le client. Le contenu source en français n’est jamais modifié.
+                  </p>
+                </div>
+              </div>
+              <RefreshCatalogTranslationsButton />
+            </section>
           </div>
-          <Link className="admin-secondary-action" href="/admin/settings">
-            <Icon i="settings" size={16} />
-            Ouvrir les réglages de détection
-          </Link>
-        </section>
-        <section className="admin-panel admin-language-detection">
-          <div className="admin-section-heading">
-            <div>
-              <h2>Traductions du catalogue</h2>
-              <p>
-                Traduit avec l’IA connectée les occasions, styles musicaux, relations et offres de crédits dans toutes
-                les langues actives, pour que le parcours de création et les crédits s’affichent dans la langue choisie
-                par le client. Le contenu source en français n’est jamais modifié.
-              </p>
-            </div>
-          </div>
-          <RefreshCatalogTranslationsButton />
-        </section>
-      </div>
-      <LanguageSection
-        title="Langues de l’interface"
-        description="Langues proposées pour naviguer dans MusikPro. Les traductions éditoriales restent relues à partir du français de référence."
-        rows={rows}
-        scope="interface"
-      />
-      <LanguageSection
-        title="Langues des paroles"
-        description="Langues transmises au fournisseur IA pour générer les paroles de chanson."
-        rows={rows}
-        scope="lyrics"
-      />
-      <CountryLanguageSection
-        mappedCountries={countryLanguageRows}
-        availableCountries={availableCountries}
-        interfaceLanguages={interfaceLanguages}
-      />
+        </AdminTabPanel>
+      </AdminTabs>
     </AdminPage>
   );
 }

@@ -1442,6 +1442,11 @@
 .admin-tabs-list {
   display: flex;
   gap: 6px;
+  padding: 6px;
+  border: 1px solid color-mix(in srgb, var(--admin-border) 86%, white);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgb(242 101 34 / 2%), transparent 60%), var(--admin-card);
+  box-shadow: var(--admin-shadow);
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -1470,6 +1475,12 @@
 
 .admin-tabs-panel[hidden] {
   display: none;
+}
+
+.admin-tabs-panel,
+.admin-tabs-panel * {
+  transition: none !important;
+  animation: none !important;
 }
 
 .admin-info-grid {

@@ -10,9 +10,13 @@ export type AdminTabItem = {
 const AdminTabsContext = createContext<{ active: string } | null>(null);
 
 /**
- * Horizontal tab switcher. Panels stay mounted (hidden via the `hidden` attribute, not
- * unmounted) so any <form> wrapping AdminTabs still submits fields from every tab, not just
- * the visible one.
+ * Horizontal tab switcher — the single shared mechanism for horizontal tabs across the admin
+ * dashboard (see CLAUDE.md). Any new set of admin boxes presented as horizontal tabs reuses this
+ * component instead of a new implementation, so the card background, no-animation switching and
+ * behavior stay consistent everywhere (already used by /admin/languages and /admin/ai-providers).
+ *
+ * Panels stay mounted (hidden via the `hidden` attribute, not unmounted) so any <form> wrapping
+ * AdminTabs still submits fields from every tab, not just the visible one.
  */
 export function AdminTabs({
   tabs,
