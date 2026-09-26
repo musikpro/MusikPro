@@ -7,7 +7,6 @@ import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { musicStyles } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { redirectWithNotice } from "@/lib/admin/notice";
 import { MUSIC_STYLE_ICONS, MUSIC_STYLE_TONES } from "@/lib/music-styles/catalog";
 import { writeAuditLog } from "@/lib/security/audit";
 
@@ -76,27 +75,17 @@ function revalidateMusicStyles() {
   revalidatePath("/dashboard/create/style");
 }
 
-export async function createMusicStyle(formData: FormData) {
+export async function createMusicStyle(
+  _previous: MusicStyleActionState,
+  formData: FormData,
+): Promise<MusicStyleActionState> {
   const session = await requireAdmin();
-  let parsed: z.infer<typeof musicStyleFormSchema>;
   try {
-    parsed = musicStyleFormSchema.parse(Object.fromEntries(formData));
-  } catch (error) {
-    redirectWithNotice("/admin/music-styles/new", {
-      message: actionErrorMessage(error, "Impossible d’enregistrer le style : vérifie les champs du formulaire."),
-      tone: "error",
-    });
-  }
-  const id = randomUUID();
-  const slug = slugify(parsed.name);
-  if (!slug) {
-    redirectWithNotice("/admin/music-styles/new", {
-      message: "Le nom doit contenir au moins un caractère utilisable.",
-      tone: "error",
-    });
-  }
+    const parsed = musicStyleFormSchema.parse(Object.fromEntries(formData));
+    const slug = slugify(parsed.name);
+    if (!slug) return { ok: false, message: "Le nom doit contenir au moins un caractère utilisable." };
 
-  try {
+    const id = randomUUID();
     await getServiceDb()
       .insert(musicStyles)
       .values({
@@ -105,48 +94,34 @@ export async function createMusicStyle(formData: FormData) {
         ...parsed,
         active: parsed.active === "true",
       });
-  } catch (error) {
-    redirectWithNotice("/admin/music-styles/new", {
-      message: actionErrorMessage(error, "Impossible d’enregistrer le style."),
-      tone: "error",
+
+    await writeAuditLog({
+      action: "music_style.created",
+      actorId: session.user.id,
+      targetType: "music_style",
+      targetId: id,
+      metadata: { name: parsed.name, slug, active: parsed.active === "true" },
     });
+    revalidateMusicStyles();
+    return { ok: true, message: `Style « ${parsed.name} » créé. Tu peux continuer à en ajouter d'autres.` };
+  } catch (error) {
+    return {
+      ok: false,
+      message: actionErrorMessage(error, "Impossible d’enregistrer le style."),
+    };
   }
-  await writeAuditLog({
-    action: "music_style.created",
-    actorId: session.user.id,
-    targetType: "music_style",
-    targetId: id,
-    metadata: { name: parsed.name, slug, active: parsed.active === "true" },
-  });
-  revalidateMusicStyles();
-  redirectWithNotice("/admin/music-styles", { message: `Style « ${parsed.name} » créé.`, tone: "success" });
 }
 
-export async function updateMusicStyle(formData: FormData) {
+export async function updateMusicStyle(
+  _previous: MusicStyleActionState,
+  formData: FormData,
+): Promise<MusicStyleActionState> {
   const session = await requireAdmin();
-  const rawId = formData.get("id");
-  const fallbackPath = typeof rawId === "string" && rawId ? `/admin/music-styles/${rawId}` : "/admin/music-styles";
-  let parsed: z.infer<typeof musicStyleUpdateSchema>;
   try {
-    parsed = musicStyleUpdateSchema.parse(Object.fromEntries(formData));
-  } catch (error) {
-    redirectWithNotice(fallbackPath, {
-      message: actionErrorMessage(
-        error,
-        "Impossible d’enregistrer les modifications : vérifie les champs du formulaire.",
-      ),
-      tone: "error",
-    });
-  }
-  const slug = slugify(parsed.name);
-  if (!slug) {
-    redirectWithNotice(`/admin/music-styles/${parsed.id}`, {
-      message: "Le nom doit contenir au moins un caractère utilisable.",
-      tone: "error",
-    });
-  }
+    const parsed = musicStyleUpdateSchema.parse(Object.fromEntries(formData));
+    const slug = slugify(parsed.name);
+    if (!slug) return { ok: false, message: "Le nom doit contenir au moins un caractère utilisable." };
 
-  try {
     await getServiceDb()
       .update(musicStyles)
       .set({
@@ -161,25 +136,23 @@ export async function updateMusicStyle(formData: FormData) {
         updatedAt: new Date(),
       })
       .where(eq(musicStyles.id, parsed.id));
-  } catch (error) {
-    redirectWithNotice(`/admin/music-styles/${parsed.id}`, {
-      message: actionErrorMessage(error, "Impossible d’enregistrer les modifications."),
-      tone: "error",
+
+    await writeAuditLog({
+      action: "music_style.updated",
+      actorId: session.user.id,
+      targetType: "music_style",
+      targetId: parsed.id,
+      metadata: { name: parsed.name, slug, active: parsed.active === "true" },
     });
+    revalidateMusicStyles();
+    revalidatePath(`/admin/music-styles/${parsed.id}`);
+    return { ok: true, message: `Style « ${parsed.name} » mis à jour.` };
+  } catch (error) {
+    return {
+      ok: false,
+      message: actionErrorMessage(error, "Impossible d’enregistrer les modifications."),
+    };
   }
-  await writeAuditLog({
-    action: "music_style.updated",
-    actorId: session.user.id,
-    targetType: "music_style",
-    targetId: parsed.id,
-    metadata: { name: parsed.name, slug, active: parsed.active === "true" },
-  });
-  revalidateMusicStyles();
-  revalidatePath(`/admin/music-styles/${parsed.id}`);
-  redirectWithNotice(`/admin/music-styles/${parsed.id}`, {
-    message: `Style « ${parsed.name} » mis à jour.`,
-    tone: "success",
-  });
 }
 
 export async function toggleMusicStyle(

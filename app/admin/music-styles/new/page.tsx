@@ -1,3 +1,4 @@
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminMusicStyleDescriptionFields from "@/components/admin/AdminMusicStyleDescriptionFields";
 import AdminMusicStyleVisualPicker from "@/components/admin/AdminMusicStyleVisualPicker";
@@ -17,7 +18,7 @@ export default async function AdminNewMusicStylePage() {
         description="Ajoute un style qui pourra être proposé immédiatement dans le parcours de création client."
       />
       <section className="admin-panel admin-editor-card">
-        <form action={createMusicStyle} className="admin-editor-grid">
+        <AdminActionForm action={createMusicStyle} className="admin-editor-grid">
           <label className="admin-editor-field">
             <span>Nom du style</span>
             <input name="name" required minLength={2} maxLength={60} placeholder="Ex. Coupé-décalé" />
@@ -47,7 +48,7 @@ export default async function AdminNewMusicStylePage() {
               Enregistrer le style
             </button>
           </div>
-        </form>
+        </AdminActionForm>
       </section>
     </AdminPage>
   );

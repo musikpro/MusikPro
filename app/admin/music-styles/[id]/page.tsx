@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
+import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminMusicStyleDescriptionFields from "@/components/admin/AdminMusicStyleDescriptionFields";
 import AdminMusicStyleVisualPicker from "@/components/admin/AdminMusicStyleVisualPicker";
 import AdminSelect from "@/components/admin/AdminSelect";
@@ -25,7 +26,7 @@ export default async function AdminEditMusicStylePage({ params }: { params: Prom
         description="Mets à jour les informations visibles dans le parcours client."
       />
       <section className="admin-panel admin-editor-card">
-        <form action={updateMusicStyle} className="admin-editor-grid">
+        <AdminActionForm action={updateMusicStyle} className="admin-editor-grid">
           <input type="hidden" name="id" value={style.id} />
           <label className="admin-editor-field">
             <span>Nom du style</span>
@@ -59,7 +60,7 @@ export default async function AdminEditMusicStylePage({ params }: { params: Prom
               Enregistrer les modifications
             </button>
           </div>
-        </form>
+        </AdminActionForm>
       </section>
     </AdminPage>
   );
