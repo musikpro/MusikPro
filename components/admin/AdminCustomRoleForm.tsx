@@ -44,9 +44,11 @@ export default function AdminCustomRoleForm({
         <div className="admin-color-options">
           {CUSTOM_ROLE_COLORS.map((color) => (
             <label className="admin-color-option" key={color}>
-              <input type="radio" name="color" value={color} defaultChecked={(role?.color ?? "orange") === color} />
+              <span className="admin-color-option-row">
+                <input type="radio" name="color" value={color} defaultChecked={(role?.color ?? "orange") === color} />
+                {color}
+              </span>
               <span className="admin-color-swatch" style={{ background: CUSTOM_ROLE_COLOR_HEX[color] }} />
-              {color}
             </label>
           ))}
         </div>
@@ -58,12 +60,14 @@ export default function AdminCustomRoleForm({
           personnalisé donne accès à l’ensemble du tableau de bord /admin, comme les rôles système
           actuels.
         </small>
-        {ALL_MODULES.map((module) => (
-          <label className="admin-editor-check" key={module}>
-            <input type="checkbox" name="permissions" value={module} defaultChecked={role?.permissions.includes(module)} />
-            <span>{MODULE_META[module].label}</span>
-          </label>
-        ))}
+        <div className="admin-check-grid">
+          {ALL_MODULES.map((module) => (
+            <label className="admin-editor-check" key={module}>
+              <input type="checkbox" name="permissions" value={module} defaultChecked={role?.permissions.includes(module)} />
+              <span>{MODULE_META[module].label}</span>
+            </label>
+          ))}
+        </div>
       </div>
       <div className="admin-editor-actions is-wide">
         <AdminBackLink href="/admin/roles" label="Annuler" />
