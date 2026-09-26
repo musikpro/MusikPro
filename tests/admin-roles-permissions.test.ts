@@ -7,6 +7,7 @@ import {
   isAdminRole,
   wouldSelfDemoteToUser,
   wouldRemoveLastSuperAdmin,
+  canDeleteCustomRole,
 } from "@/lib/auth/permissions";
 
 describe("isAdminRole", () => {
@@ -85,5 +86,35 @@ describe("wouldRemoveLastSuperAdmin", () => {
 
   it("autorise quand le nouveau rôle reste admin", () => {
     expect(wouldRemoveLastSuperAdmin(1, "admin", "admin")).toBe(false);
+  });
+});
+
+describe("isAdminRole avec des rôles personnalisés", () => {
+  it("reste rétrocompatible sans second argument", () => {
+    expect(isAdminRole("admin")).toBe(true);
+    expect(isAdminRole("user")).toBe(false);
+  });
+
+  it("reconnaît un slug personnalisé listé dans extraAdminSlugs", () => {
+    expect(isAdminRole("custom:abc", ["custom:abc"])).toBe(true);
+  });
+
+  it("rejette un slug personnalisé absent de extraAdminSlugs", () => {
+    expect(isAdminRole("custom:abc", ["custom:def"])).toBe(false);
+  });
+
+  it("gère un rôle personnalisé combiné en CSV", () => {
+    expect(isAdminRole("custom:abc,user", ["custom:abc"])).toBe(true);
+  });
+});
+
+describe("canDeleteCustomRole", () => {
+  it("autorise la suppression quand il ne reste aucun membre", () => {
+    expect(canDeleteCustomRole(0)).toBe(true);
+  });
+
+  it("bloque la suppression tant qu'il reste au moins un membre", () => {
+    expect(canDeleteCustomRole(1)).toBe(false);
+    expect(canDeleteCustomRole(5)).toBe(false);
   });
 });

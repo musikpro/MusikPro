@@ -60,11 +60,12 @@ export function hasAppRole(role: string | null | undefined, expected: AppRole) {
   return roles.includes(expected);
 }
 
-/** True pour n'importe lequel des 5 rôles admin — remplace hasAppRole(role, "admin") partout où
- * la parité d'accès /admin doit s'appliquer à tous les rôles admin, pas seulement au Super Admin. */
-export function isAdminRole(role: string | null | undefined): boolean {
+/** True pour n'importe lequel des 5 rôles admin (ou un slug listé dans extraAdminSlugs, ex. un rôle
+ * personnalisé "custom:<id>") — remplace hasAppRole(role, "admin") partout où la parité d'accès
+ * /admin doit s'appliquer à tous les rôles admin, pas seulement au Super Admin. */
+export function isAdminRole(role: string | null | undefined, extraAdminSlugs: string[] = []): boolean {
   const roles = (role ?? "user").split(",").map((r) => r.trim());
-  return roles.some((r) => (ADMIN_ROLES as string[]).includes(r));
+  return roles.some((r) => (ADMIN_ROLES as string[]).includes(r) || extraAdminSlugs.includes(r));
 }
 
 /** Empêche un compte de se retirer lui-même tout accès admin depuis /admin/users. */
@@ -80,4 +81,9 @@ export function wouldRemoveLastSuperAdmin(
   nextRole: AppRole,
 ): boolean {
   return targetCurrentRole === "admin" && nextRole !== "admin" && remainingSuperAdminCount <= 1;
+}
+
+/** Un rôle personnalisé ne peut être supprimé que s'il n'a plus aucun membre assigné. */
+export function canDeleteCustomRole(memberCount: number): boolean {
+  return memberCount === 0;
 }
