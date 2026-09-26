@@ -4,15 +4,9 @@ import { useMemo, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { deleteUser, setRole } from "@/app/admin/users/actions";
 import { getNameInitials } from "@/lib/profile/name-initials";
-import { ADMIN_ROLES, ADMIN_ROLE_META } from "@/lib/auth/permissions";
 import AdminActionForm from "./AdminActionForm";
 import AdminDeleteUserButton from "./AdminDeleteUserButton";
 import AdminSelect from "./AdminSelect";
-
-const roleOptions = [
-  { value: "user", label: "Utilisateur" },
-  ...ADMIN_ROLES.map((role) => ({ value: role, label: ADMIN_ROLE_META[role].label })),
-];
 
 export type AdminUserRow = {
   id: string;
@@ -27,13 +21,16 @@ export type AdminUserRow = {
 
 export default function AdminUsersTable({
   rows,
+  roleOptions,
   twoFactorAvailable,
 }: {
   rows: AdminUserRow[];
+  roleOptions: { value: string; label: string }[];
   twoFactorAvailable: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<"all" | "active" | "inactive">("all");
+  const roleLabelByValue = useMemo(() => new Map(roleOptions.map((option) => [option.value, option.label])), [roleOptions]);
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("fr");
     return rows.filter(
@@ -102,7 +99,7 @@ export default function AdminUsersTable({
                   </span>
                 </td>
                 <td>{twoFactorAvailable ? (row.twoFactor ? "Activée" : "Non") : "Suspendue"}</td>
-                <td>{row.role}</td>
+                <td>{roleLabelByValue.get(row.role) ?? row.role}</td>
                 <td>
                   <span className={`admin-status ${row.banned ? "is-danger" : "is-success"}`}>
                     {row.banned ? "Suspendu" : "Actif"}

@@ -9,12 +9,18 @@ import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { count, eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { user } from "@/db/schema";
-import { hasAppRole, wouldRemoveLastSuperAdmin, wouldSelfDemoteToUser } from "@/lib/auth/permissions";
+import { user, customRoles } from "@/db/schema";
+import {
+  ADMIN_ROLES,
+  hasAppRole,
+  wouldRemoveLastSuperAdmin,
+  wouldSelfDemoteToUser,
+  type AppRole,
+} from "@/lib/auth/permissions";
 
 const roleSchema = z.object({
   userId: z.string().min(1).max(120),
-  role: z.enum(["user", "admin", "admin_content", "admin_payments", "support", "moderator"]),
+  role: z.string().min(1).max(140), // rôle système ("user", "admin", ...) ou "custom:<id>"
 });
 export async function setRole(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
@@ -26,7 +32,23 @@ export async function setRole(_previous: AdminActionState, formData: FormData): 
     if (!hasAppRole((adminSession.user as { role?: string }).role, "admin"))
       throw new Error("Seul un Super Admin peut modifier les rôles.");
     const parsed = roleSchema.parse(Object.fromEntries(formData));
-    if (wouldSelfDemoteToUser(adminSession.user.id, parsed.userId, parsed.role))
+    const knownSystemRoles: string[] = ["user", ...ADMIN_ROLES];
+    const isCustomRole = parsed.role.startsWith("custom:");
+    if (!knownSystemRoles.includes(parsed.role) && !isCustomRole) throw new Error("Rôle invalide.");
+    if (isCustomRole) {
+      const customRoleId = parsed.role.slice("custom:".length);
+      const [existing] = await getServiceDb()
+        .select({ id: customRoles.id })
+        .from(customRoles)
+        .where(eq(customRoles.id, customRoleId))
+        .limit(1);
+      if (!existing) throw new Error("Ce rôle personnalisé n’existe plus.");
+    }
+    // wouldSelfDemoteToUser/wouldRemoveLastSuperAdmin only ever compare nextRole against the
+    // literals "user"/"admin" — a custom role slug is just "some other string" to their logic, so
+    // this assertion is safe even though a custom role isn't a member of the AppRole union.
+    const nextRole = parsed.role as AppRole;
+    if (wouldSelfDemoteToUser(adminSession.user.id, parsed.userId, nextRole))
       throw new Error("Vous ne pouvez pas retirer votre propre accès admin depuis cet écran.");
     const [target] = await getServiceDb()
       .select({ role: user.role })
@@ -38,7 +60,7 @@ export async function setRole(_previous: AdminActionState, formData: FormData): 
         .select({ value: count() })
         .from(user)
         .where(eq(user.role, "admin"));
-      if (wouldRemoveLastSuperAdmin(Number(superAdminCount), target.role, parsed.role))
+      if (wouldRemoveLastSuperAdmin(Number(superAdminCount), target.role, nextRole))
         throw new Error("Impossible de retirer le dernier compte Super Admin.");
     }
     // better-auth's admin plugin types setRole's role as "user" | "admin" regardless of the
