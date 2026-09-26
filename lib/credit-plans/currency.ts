@@ -64,3 +64,17 @@ export function formatCreditPrice(valueInXof: number, currency: string) {
     maximumFractionDigits: zeroDecimals ? 0 : 2,
   }).format(value);
 }
+
+/**
+ * Resolves the display currency for a country, from an admin-configured override
+ * (the `country_languages.currencyCode` column) only — there is no static heuristic
+ * fallback for currency, unlike language.
+ */
+export function resolveCurrencyForCountry(
+  country: string | null,
+  overrides: Record<string, string>,
+): CreditCurrencyCode | null {
+  if (!country) return null;
+  const code = overrides[country.trim().toUpperCase()];
+  return creditCurrencies.some((item) => item.code === code) ? (code as CreditCurrencyCode) : null;
+}

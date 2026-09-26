@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { creditCurrencies, convertFromXof, formatCreditPrice } from "@/lib/credit-plans/currency";
+import { creditCurrencies, convertFromXof, formatCreditPrice, resolveCurrencyForCountry } from "@/lib/credit-plans/currency";
 
 describe("creditCurrencies", () => {
   it("includes the 8 newly supported local currencies", () => {
@@ -28,5 +28,27 @@ describe("formatCreditPrice with new currencies", () => {
   it("formats ZMW with 2 decimals, like GHS", () => {
     const formatted = formatCreditPrice(1000, "ZMW");
     expect(formatted).toMatch(/[.,]\d{2}(?!\d)/);
+  });
+});
+
+describe("resolveCurrencyForCountry", () => {
+  it("returns null when no country was detected", () => {
+    expect(resolveCurrencyForCountry(null, {})).toBeNull();
+  });
+
+  it("returns null when the country has no override", () => {
+    expect(resolveCurrencyForCountry("CI", {})).toBeNull();
+  });
+
+  it("returns the overridden currency for the country", () => {
+    expect(resolveCurrencyForCountry("GH", { GH: "GHS" })).toBe("GHS");
+  });
+
+  it("is case-insensitive on the country code", () => {
+    expect(resolveCurrencyForCountry("gh", { GH: "GHS" })).toBe("GHS");
+  });
+
+  it("returns null when the stored currency code isn't a supported currency (corrupted data)", () => {
+    expect(resolveCurrencyForCountry("CI", { CI: "ZZZ" })).toBeNull();
   });
 });
