@@ -6,12 +6,10 @@ import { getServiceDb } from "@/db";
 import { plans } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { creditPlanFeaturesSchema, type CreditPlanOption } from "@/lib/credit-plans/catalog";
-import { getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
 
 export default async function AdminPlansPage() {
   await requireAdmin();
   const rows = await getServiceDb().select().from(plans);
-  const versionsPerGeneration = await getMusicfulVersionsPerGeneration();
   const catalog = rows
     .flatMap<CreditPlanOption>((plan) => {
       const features = creditPlanFeaturesSchema.safeParse(plan.features);
@@ -55,7 +53,7 @@ export default async function AdminPlansPage() {
         </div>
       </div>
       {catalog.length ? (
-        <AdminCreditPlanSortableGrid plans={catalog} versionsPerGeneration={versionsPerGeneration} />
+        <AdminCreditPlanSortableGrid plans={catalog} />
       ) : (
         <div className="admin-empty-state admin-catalog-empty">
           <Icon i="coins" size={24} />

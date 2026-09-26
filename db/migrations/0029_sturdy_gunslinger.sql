@@ -1,0 +1,1 @@
+ALTER TABLE "audio_provider_configs" ALTER COLUMN "versions_per_generation" SET DEFAULT 1;

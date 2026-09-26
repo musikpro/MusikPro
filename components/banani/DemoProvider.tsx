@@ -676,7 +676,7 @@ export function DemoProvider({
   initialDetectedInterfaceLanguage,
   persistenceId,
   paymentBypassEnabled = false,
-  versionsPerGeneration = 2,
+  versionsPerGeneration = 1,
 }: {
   children: ReactNode;
   mode: "demo" | "real";

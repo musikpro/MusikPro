@@ -37,7 +37,7 @@ export const DEFAULT_CREDIT_PLANS: CreditPlanOption[] = [
     generationCost: CREDITS_PER_GENERATION,
     priceValue: 1_000,
     currency: "XOF",
-    description: "2 générations, soit jusqu’à 4 versions musicales",
+    description: "2 générations, soit 2 chansons musicales",
     popular: false,
     bonus: "1 crédit restant",
     sortOrder: 10,
@@ -51,7 +51,7 @@ export const DEFAULT_CREDIT_PLANS: CreditPlanOption[] = [
     generationCost: CREDITS_PER_GENERATION,
     priceValue: 2_000,
     currency: "XOF",
-    description: "5 générations, soit jusqu’à 10 versions musicales",
+    description: "5 générations, soit 5 chansons musicales",
     popular: false,
     bonus: null,
     sortOrder: 20,
@@ -65,7 +65,7 @@ export const DEFAULT_CREDIT_PLANS: CreditPlanOption[] = [
     generationCost: CREDITS_PER_GENERATION,
     priceValue: 3_500,
     currency: "XOF",
-    description: "10 générations, soit jusqu’à 20 versions musicales",
+    description: "10 générations, soit 10 chansons musicales",
     popular: true,
     bonus: "Meilleur rapport crédits-prix",
     sortOrder: 30,
@@ -79,7 +79,7 @@ export const DEFAULT_CREDIT_PLANS: CreditPlanOption[] = [
     generationCost: CREDITS_PER_GENERATION,
     priceValue: 7_500,
     currency: "XOF",
-    description: "25 générations, soit jusqu’à 50 versions musicales",
+    description: "25 générations, soit 25 chansons musicales",
     popular: false,
     bonus: "Pour les créateurs réguliers",
     sortOrder: 40,
@@ -97,4 +97,8 @@ export function getVersionCount(
   versionsPerGeneration = VERSIONS_PER_GENERATION,
 ) {
   return getGenerationCount(credits, cost) * versionsPerGeneration;
+}
+
+export function getCreditsConsumed(credits: number, cost = CREDITS_PER_GENERATION) {
+  return getGenerationCount(credits, cost) * cost;
 }

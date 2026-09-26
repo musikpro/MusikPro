@@ -3,18 +3,12 @@
 import Link from "next/link";
 import { deletePlan, reorderPlans, togglePlan } from "@/app/admin/plans/actions";
 import Icon from "@/components/banani/Icon";
-import { getGenerationCount, getVersionCount, type CreditPlanOption } from "@/lib/credit-plans/catalog";
+import { getCreditsConsumed, getGenerationCount, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import AdminActionForm from "./AdminActionForm";
 import AdminDeletePlanButton from "./AdminDeletePlanButton";
 import AdminSortableGrid from "./AdminSortableGrid";
 
-export default function AdminCreditPlanSortableGrid({
-  plans,
-  versionsPerGeneration,
-}: {
-  plans: CreditPlanOption[];
-  versionsPerGeneration: number;
-}) {
+export default function AdminCreditPlanSortableGrid({ plans }: { plans: CreditPlanOption[] }) {
   return (
     <AdminSortableGrid
       items={plans}
@@ -38,8 +32,7 @@ export default function AdminCreditPlanSortableGrid({
           <div className="admin-plan-credit-summary">
             <strong>{plan.credits} crédits</strong>
             <span>
-              {getGenerationCount(plan.credits)} générations · jusqu’à{" "}
-              {getVersionCount(plan.credits, undefined, versionsPerGeneration)} versions
+              {getGenerationCount(plan.credits)} générations · {getCreditsConsumed(plan.credits)} crédits consommés
             </span>
           </div>
           <strong className="admin-credit-plan-price">{plan.priceValue.toLocaleString("fr-FR")} FCFA</strong>

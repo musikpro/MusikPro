@@ -8,7 +8,7 @@ import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
 import { useDemo } from "./DemoProvider";
-import { CREDITS_PER_GENERATION, getGenerationCount, getVersionCount } from "@/lib/credit-plans/catalog";
+import { CREDITS_PER_GENERATION, getCreditsConsumed, getGenerationCount } from "@/lib/credit-plans/catalog";
 
 export const displayName = "Choix de l’offre de crédits";
 export const screenSize = "mobile";
@@ -28,10 +28,6 @@ export default function CreationPackScreen() {
   const [couponInput, setCouponInput] = useState("");
   const [couponPending, setCouponPending] = useState(false);
   const [couponError, setCouponError] = useState("");
-  const versionsLabel =
-    demo.versionsPerGeneration === 1
-      ? t("1 version")
-      : translateTemplate("{count} versions", { count: demo.versionsPerGeneration });
 
   const applyCoupon = async () => {
     const code = couponInput.trim();
@@ -77,9 +73,8 @@ export default function CreationPackScreen() {
           <div>
             <span className="creation-pack-kicker">
               <Icon i="music-2" size={16} />
-              {translateTemplate("{count} crédits · une génération · {versionsLabel}", {
+              {translateTemplate("{count} crédits · une génération", {
                 count: CREDITS_PER_GENERATION,
-                versionsLabel,
               })}
             </span>
             <h1>{t("Choisis tes crédits")}</h1>
@@ -109,13 +104,9 @@ export default function CreationPackScreen() {
             <div>
               <h2 id="creation-pack-panel-title">{t("Offres de crédits")}</h2>
               <p>
-                {translateTemplate(
-                  "Chaque génération musicale consomme {credits} crédits et produit {versionsLabel}.",
-                  {
-                    credits: CREDITS_PER_GENERATION,
-                    versionsLabel,
-                  },
-                )}
+                {translateTemplate("Chaque génération musicale consomme {credits} crédits.", {
+                  credits: CREDITS_PER_GENERATION,
+                })}
               </p>
             </div>
           </div>
@@ -161,9 +152,9 @@ export default function CreationPackScreen() {
                     <strong>{pack.credits}</strong>
                     <small>{t("crédits")}</small>
                     <small>
-                      {translateTemplate("{count} générations · {versions} versions", {
+                      {translateTemplate("{count} générations · {credits} crédits consommés", {
                         count: getGenerationCount(pack.credits, pack.generationCost),
-                        versions: getVersionCount(pack.credits, pack.generationCost, demo.versionsPerGeneration),
+                        credits: getCreditsConsumed(pack.credits, pack.generationCost),
                       })}
                     </small>
                     <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>

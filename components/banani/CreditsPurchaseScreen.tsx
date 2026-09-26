@@ -11,7 +11,7 @@ import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
-import { CREDITS_PER_GENERATION, getGenerationCount, getVersionCount } from "@/lib/credit-plans/catalog";
+import { CREDITS_PER_GENERATION, getCreditsConsumed, getGenerationCount } from "@/lib/credit-plans/catalog";
 
 const transactionHistory = [
   {
@@ -37,10 +37,6 @@ const transactionHistory = [
 export default function CreditsMobile() {
   const demo = useDemo();
   const availableGenerations = getGenerationCount(demo.balance);
-  const versionsLabel =
-    demo.versionsPerGeneration === 1
-      ? t("1 version")
-      : translateTemplate("{count} versions", { count: demo.versionsPerGeneration });
   const visibleHistory = demo.isDemo ? transactionHistory : [];
   return (
     <div className="bg-background flex flex-col">
@@ -102,10 +98,7 @@ export default function CreditsMobile() {
             <p className="pack-generation-cost-note">
               <Icon i="coins" size={15} />
               <span>
-                {t("À chaque génération,")} <strong>{t("2 crédits")}</strong>{" "}
-                {translateTemplate("sont débités de ton solde. Tu reçois {versionsLabel} de ta chanson.", {
-                  versionsLabel,
-                })}
+                {t("À chaque génération,")} <strong>{t("2 crédits")}</strong> {t("sont débités de ton solde.")}
               </span>
             </p>
           </div>
@@ -163,9 +156,9 @@ export default function CreditsMobile() {
                 </div>
 
                 <p className="pack-grid-credit-rule">
-                  {translateTemplate("{count} générations · jusqu’à {versions} versions", {
+                  {translateTemplate("{count} générations · {credits} crédits consommés", {
                     count: getGenerationCount(pack.credits, pack.generationCost),
-                    versions: getVersionCount(pack.credits, pack.generationCost, demo.versionsPerGeneration),
+                    credits: getCreditsConsumed(pack.credits, pack.generationCost),
                   })}
                 </p>
 
@@ -198,9 +191,8 @@ export default function CreditsMobile() {
             <div>
               <p className="text-sm font-semibold text-foreground mb-1">{t("Comment fonctionnent les crédits ?")}</p>
               <p className="text-xs text-muted-foreground">
-                {translateTemplate("Chaque génération consomme {count} crédits et produit {versionsLabel}.", {
+                {translateTemplate("Chaque génération consomme {count} crédits.", {
                   count: CREDITS_PER_GENERATION,
-                  versionsLabel,
                 })}
               </p>
             </div>

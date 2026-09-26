@@ -16,7 +16,7 @@ const faqs = [
   {
     question: "Combien de chansons puis-je créer ?",
     answer:
-      "Chaque génération musicale consomme 2 crédits et produit deux versions. Votre solde indique combien de générations restent disponibles.",
+      "Chaque génération musicale consomme 2 crédits. Votre solde indique combien de générations restent disponibles.",
   },
   {
     question: "Puis-je télécharger mes chansons ?",
@@ -26,7 +26,7 @@ const faqs = [
   {
     question: "Comment fonctionnent les crédits ?",
     answer:
-      "Choisissez une offre de crédits selon vos besoins. L’offre Découverte contient 5 crédits, soit 2 générations et jusqu’à 4 versions musicales.",
+      "Choisissez une offre de crédits selon vos besoins. L’offre Découverte contient 5 crédits, soit 2 générations musicales.",
   },
   {
     question: "Puis-je partager mes chansons ?",

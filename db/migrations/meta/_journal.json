@@ -204,6 +204,13 @@
       "when": 1790389355358,
       "tag": "0028_watery_infant_terrible",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1790415721623,
+      "tag": "0029_sturdy_gunslinger",
+      "breakpoints": true
     }
   ]
 }

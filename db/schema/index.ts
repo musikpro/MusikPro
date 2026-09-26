@@ -463,7 +463,7 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
    * lib/ai/songs.ts's submitSongGeneration(). Independent from CREDITS_PER_GENERATION
    * (lib/credit-plans/catalog.ts): changing this does not change what a generation costs.
    */
-  versionsPerGeneration: integer("versions_per_generation").notNull().default(2),
+  versionsPerGeneration: integer("versions_per_generation").notNull().default(1),
   lastConnectionStatus: text("last_connection_status"),
   lastConnectionError: text("last_connection_error"),
   lastTestedAt: timestamp("last_tested_at"),

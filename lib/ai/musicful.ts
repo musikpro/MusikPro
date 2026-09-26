@@ -212,7 +212,7 @@ export async function getMusicfulProvider() {
     allowWavConversion: stored?.allowWavConversion ?? true,
     preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
     strictStyleAdherence: stored?.strictStyleAdherence ?? true,
-    versionsPerGeneration: stored?.versionsPerGeneration ?? 2,
+    versionsPerGeneration: stored?.versionsPerGeneration ?? 1,
   };
 }
 
@@ -226,7 +226,7 @@ export async function getMusicfulVersionsPerGeneration(): Promise<number> {
     .from(audioProviderConfigs)
     .where(eq(audioProviderConfigs.provider, "musicful"))
     .limit(1);
-  return stored?.versionsPerGeneration ?? 2;
+  return stored?.versionsPerGeneration ?? 1;
 }
 
 export function createMusicfulClient(apiKey: string, baseUrl?: string, timeoutMs?: number) {
