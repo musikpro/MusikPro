@@ -13,9 +13,9 @@ import MobileBottomNav from "./MobileBottomNav";
 import SongCard from "./SongCard";
 import Icon from "./Icon";
 import Image from "./Image";
-import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
 import QuickLanguageSelect from "./QuickLanguageSelect";
+import SocialProofBadge from "./SocialProofBadge";
 
 const trendingSongs = [
   {
@@ -40,40 +40,9 @@ const trendingSongs = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Aïssatou Traoré",
-    role: "Mariée - Dakar",
-    text: "J'ai créé une chanson pour les noces de mon frère. Tous les invités ont adoré ! C'était tellement personnel et spécial. Je recommande vivement !",
-    rating: 5,
-    avatar: "female",
-    ageGroup: "25-35",
-    heritage: "African",
-  },
-  {
-    name: "Kofi Mensah",
-    role: "Papa - Accra",
-    text: "Pour l'anniversaire de ma fille, j'ai généré une chanson en Twi. Elle a pleuré de joie ! C'est devenu sa chanson préférée. Merci MusikPro !",
-    rating: 5,
-    avatar: "male",
-    ageGroup: "35-50",
-    heritage: "African",
-  },
-  {
-    name: "Zara Okafor",
-    role: "DJ - Lagos",
-    text: "J'intègre les chansons de MusikPro dans mes sets. Les gens adorent la personnalisation ! C'est un outil puissant pour créer des moments inoubliables.",
-    rating: 5,
-    avatar: "female",
-    ageGroup: "18-25",
-    heritage: "African",
-  },
-];
-
 export default function UserDashboardMobile() {
   const demo = useDemo();
   const visibleTrends = demo.isDemo ? trendingSongs : [];
-  const visibleTestimonials = demo.isDemo ? testimonials : [];
   const [launching, setLaunching] = useState(false);
   const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -268,43 +237,9 @@ export default function UserDashboardMobile() {
       </div>
 
       <div className="px-4 mb-6">
-        <h2 className="font-headings font-bold text-lg text-foreground mb-3">{t("Témoignages")}</h2>
-        <div className="flex flex-col gap-3">
-          {visibleTestimonials.length === 0 && (
-            <div className="rounded-xl border border-border bg-card px-5 py-7 text-center">
-              <Icon i="message-square" size={24} className="mx-auto mb-2 text-primary" />
-              <p className="text-sm font-semibold text-foreground">Aucun témoignage publié</p>
-              <p className="mt-1 text-xs text-muted-foreground">{t("Les témoignages réels apparaîtront ici.")}</p>
-            </div>
-          )}
-          {visibleTestimonials.map((testimonial, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-xl p-4">
-              {/* Rating */}
-              <div className="flex gap-0.5 mb-2">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Icon key={i} i="star" size={14} className="text-yellow-500" />
-                ))}
-              </div>
-
-              {/* Testimonial text */}
-              <p className="text-sm text-foreground mb-3">{testimonial.text}</p>
-
-              {/* Author */}
-              <div className="flex items-center gap-2">
-                <UserAvatar
-                  gender={testimonial.avatar}
-                  ageGroup={testimonial.ageGroup}
-                  heritage={testimonial.heritage}
-                  index={idx}
-                  className="w-8 h-8"
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground">{testimonial.name}</p>
-                  <p className="text-xs text-muted-foreground">{testimonial.role}</p>
-                </div>
-              </div>
-            </div>
-          ))}
+        <h2 className="font-headings font-bold text-lg text-foreground mb-3">{t("Ils nous font confiance")}</h2>
+        <div className="rounded-xl border border-border bg-card px-5 py-7">
+          <SocialProofBadge />
         </div>
       </div>
 

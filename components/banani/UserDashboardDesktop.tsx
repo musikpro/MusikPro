@@ -15,6 +15,7 @@ import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
+import SocialProofBadge from "./SocialProofBadge";
 
 const trendingCards = [
   {
@@ -39,40 +40,9 @@ const trendingCards = [
   },
 ];
 
-const testimonials = [
-  {
-    name: "Aïssatou Traoré",
-    role: "Mariée - Dakar",
-    text: "J'ai créé une chanson pour les noces de mon frère. Tous les invités ont adoré ! C'était tellement personnel et spécial. Je recommande vivement !",
-    rating: 5,
-    avatar: "female",
-    ageGroup: "25-35",
-    heritage: "African",
-  },
-  {
-    name: "Kofi Mensah",
-    role: "Papa - Accra",
-    text: "Pour l'anniversaire de ma fille, j'ai généré une chanson en Twi. Elle a pleuré de joie ! C'est devenu sa chanson préférée. Merci MusikPro !",
-    rating: 5,
-    avatar: "male",
-    ageGroup: "35-50",
-    heritage: "African",
-  },
-  {
-    name: "Zara Okafor",
-    role: "DJ - Lagos",
-    text: "J'intègre les chansons de MusikPro dans mes sets. Les gens adorent la personnalisation ! C'est un outil puissant pour créer des moments inoubliables.",
-    rating: 5,
-    avatar: "female",
-    ageGroup: "18-25",
-    heritage: "African",
-  },
-];
-
 export default function UserDashboardDesktop() {
   const demo = useDemo();
   const visibleTrends = demo.isDemo ? trendingCards : [];
-  const visibleTestimonials = demo.isDemo ? testimonials : [];
   const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recentSongs = demo.songs.slice(0, 2).map((song) => {
@@ -232,43 +202,9 @@ export default function UserDashboardDesktop() {
             </div>
 
             <div>
-              <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Témoignages")}</h2>
-              <div className="grid grid-cols-3 gap-4">
-                {visibleTestimonials.length === 0 && (
-                  <div className="col-span-3 rounded-xl border border-border bg-card px-6 py-8 text-center">
-                    <Icon i="message-square" size={26} className="mx-auto mb-2 text-primary" />
-                    <p className="font-semibold text-foreground">{t("Aucun témoignage publié")}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{t("Les témoignages réels apparaîtront ici.")}</p>
-                  </div>
-                )}
-                {visibleTestimonials.map((testimonial, idx) => (
-                  <div key={idx} className="bg-card border border-border rounded-xl p-4">
-                    {/* Rating */}
-                    <div className="flex gap-0.5 mb-3">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Icon key={i} i="star" size={14} className="text-yellow-500" />
-                      ))}
-                    </div>
-
-                    {/* Testimonial text */}
-                    <p className="text-sm text-foreground mb-4 line-clamp-4">{testimonial.text}</p>
-
-                    {/* Author */}
-                    <div className="flex items-center gap-3">
-                      <UserAvatar
-                        gender={testimonial.avatar}
-                        ageGroup={testimonial.ageGroup}
-                        heritage={testimonial.heritage}
-                        index={idx}
-                        className="w-10 h-10"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground truncate">{testimonial.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">{testimonial.role}</p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+              <h2 className="font-headings font-bold text-lg text-foreground mb-4">{t("Ils nous font confiance")}</h2>
+              <div className="rounded-xl border border-border bg-card px-6 py-8">
+                <SocialProofBadge />
               </div>
             </div>
           </div>

@@ -46,6 +46,22 @@ export async function translateBatch(locale: TranslationLocale, strings: string[
   try {
     parsed = JSON.parse(extractJson(raw.text));
   } catch {
+    // Some providers occasionally echo back a bare value instead of a { key: value } object when
+    // asked to translate a single string (e.g. `{"translated text"}`, which is invalid JSON on its
+    // own). There's only one possible source string in that case, so recover deterministically
+    // instead of failing the whole sync run.
+    if (strings.length === 1) {
+      const bare = extractJson(raw.text)
+        .trim()
+        .replace(/^\{\s*/, "")
+        .replace(/\s*\}$/, "");
+      try {
+        const value: unknown = JSON.parse(bare);
+        if (typeof value === "string" && value.trim()) return { [strings[0]]: value.trim() };
+      } catch {
+        // fall through to the error below
+      }
+    }
     throw new Error(`AI translation response was not valid JSON: ${raw.text.slice(0, 200)}`);
   }
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
