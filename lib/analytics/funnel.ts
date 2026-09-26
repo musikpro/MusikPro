@@ -7,7 +7,9 @@ const log = createLogger("funnel");
 
 /** Known funnel step names — see db/schema/index.ts's funnelEvents table doc comment. */
 export const FUNNEL_EVENT = {
+  SITE_VISIT: "site_visit",
   CREATION_STARTED: "creation_started",
+  CREATION_ABANDONED: "creation_abandoned",
 } as const;
 
 export type FunnelEventName = (typeof FUNNEL_EVENT)[keyof typeof FUNNEL_EVENT];

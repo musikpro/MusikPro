@@ -4,6 +4,7 @@ import { getKitDashboardChecks, getMobileAppReadiness } from "@/lib/setup/kit-da
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getSecuritySaasReport } from "@/lib/security/security-saas-report";
 import { siteConfig } from "@/lib/seo/site";
+import { FUNNEL_EVENT, writeFunnelEvent } from "@/lib/analytics/funnel";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ export const metadata: Metadata = buildMetadata({
 
 export default async function Home() {
   if (process.env.NODE_ENV === "production") {
+    await writeFunnelEvent({ event: FUNNEL_EVENT.SITE_VISIT });
     return (
       <main className="shell">
         <section className="card">

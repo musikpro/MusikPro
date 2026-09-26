@@ -35,6 +35,10 @@ export default function PrivacyPage() {
                 Des données techniques limitées, telles que l’adresse IP, le type de navigateur, les journaux de
                 sécurité et les erreurs, peuvent être traitées pour protéger et maintenir le service.
               </p>
+              <p>
+                MusikPro comptabilise aussi, de façon agrégée et sans cookie ni identifiant personnel, le nombre de
+                visites de la page d’accueil publique, à des fins statistiques internes de suivi du service.
+              </p>
             </>
           ),
         },

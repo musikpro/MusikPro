@@ -3,6 +3,7 @@
 import Icon from "./Icon";
 import { useDemo } from "./DemoProvider";
 import { translate as t } from "@/lib/i18n/translate";
+import { recordCreationAbandoned } from "@/lib/analytics/funnel-actions";
 
 export default function CreationTopNav({
   backHref,
@@ -24,7 +25,10 @@ export default function CreationTopNav({
       <button
         type="button"
         data-demo-ready="true"
-        onClick={() => demo.go("/dashboard")}
+        onClick={() => {
+          if (!demo.isDemo) void recordCreationAbandoned(label);
+          demo.go("/dashboard");
+        }}
         className="creation-dashboard-button"
       >
         <Icon i="layout-dashboard" size={16} />
