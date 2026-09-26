@@ -18,6 +18,7 @@ import {
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
+import { creditCurrencies } from "@/lib/credit-plans/currency";
 import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { actionErrorMessage } from "@/lib/admin/action-state";
@@ -57,6 +58,7 @@ const countryLanguageSchema = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z]{2,3}(?:-[a-z]{2})?$/),
+  currencyCode: z.enum(creditCurrencies.map((currency) => currency.code) as [string, ...string[]]),
 });
 const countryCodeSchema = z.object({
   countryCode: z
@@ -202,20 +204,32 @@ export async function setCountryLanguage(_previous: AdminActionState, formData: 
     const flag = reference?.flag ?? "🌍";
     await getServiceDb()
       .insert(countryLanguages)
-      .values({ countryCode: parsed.countryCode, countryName, flag, languageCode: parsed.languageCode })
+      .values({
+        countryCode: parsed.countryCode,
+        countryName,
+        flag,
+        languageCode: parsed.languageCode,
+        currencyCode: parsed.currencyCode,
+      })
       .onConflictDoUpdate({
         target: countryLanguages.countryCode,
-        set: { countryName, flag, languageCode: parsed.languageCode, updatedAt: new Date() },
+        set: {
+          countryName,
+          flag,
+          languageCode: parsed.languageCode,
+          currencyCode: parsed.currencyCode,
+          updatedAt: new Date(),
+        },
       });
     await writeAuditLog({
       action: "country_language.set",
       actorId: session.user.id,
       targetType: "country_language",
       targetId: parsed.countryCode,
-      metadata: { languageCode: parsed.languageCode },
+      metadata: { languageCode: parsed.languageCode, currencyCode: parsed.currencyCode },
     });
     refresh();
-    return { ok: true, message: "Association pays → langue enregistrée." };
+    return { ok: true, message: "Association pays, langue et devise enregistrée." };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’associer ce pays.") };
   }

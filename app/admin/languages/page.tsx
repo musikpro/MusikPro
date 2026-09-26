@@ -8,6 +8,7 @@ import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogT
 import { getServiceDb } from "@/db";
 import { countryLanguages, languages } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { creditCurrencies } from "@/lib/credit-plans/currency";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { deleteLanguage, removeCountryLanguage, setCountryLanguage, toggleLanguageScope } from "./actions";
 
@@ -106,11 +107,11 @@ function CountryLanguageSection({
     <section className="admin-panel admin-language-section">
       <div className="admin-section-heading">
         <div>
-          <h2>Association pays → langue</h2>
+          <h2>Association pays, langue et monnaie</h2>
           <p>
             Quand country.is détecte le pays d’un visiteur, MusikPro utilise cette table pour choisir automatiquement la
-            langue de l’interface. Liste initiale : pays où Chariow propose au moins deux moyens de paiement. Ajoute
-            d’autres pays si besoin.
+            langue de l’interface et la devise affichée sur l’écran crédits. Liste initiale : pays où Chariow propose au
+            moins deux moyens de paiement. Ajoute d’autres pays si besoin.
           </p>
         </div>
         <span className="admin-status is-success">
@@ -127,6 +128,7 @@ function CountryLanguageSection({
               </div>
               <h3>{row.countryName}</h3>
               <p>{row.countryCode}</p>
+              <p className="admin-country-currency">{row.currencyCode}</p>
               <footer className="admin-style-actions">
                 <AdminActionForm action={removeCountryLanguage}>
                   <input type="hidden" name="countryCode" value={row.countryCode} />
@@ -170,6 +172,15 @@ function CountryLanguageSection({
               }))}
             />
           </div>
+          <div className="admin-editor-field">
+            <span>Monnaie</span>
+            <AdminSelect
+              name="currencyCode"
+              ariaLabel="Monnaie associée"
+              defaultValue={creditCurrencies[0]?.code}
+              options={creditCurrencies.map((currency) => ({ value: currency.code, label: currency.label }))}
+            />
+          </div>
           <div className="admin-editor-actions">
             <button type="submit">
               <Icon i="plus" size={16} /> Associer
@@ -195,7 +206,7 @@ export default async function AdminLanguagesPage() {
     <AdminPage>
       <AdminPageHeader
         eyebrow="Localisation"
-        title="Langues"
+        title="Langues et Monnaies"
         description="Gère séparément les langues de l’interface et celles utilisées pour écrire les paroles."
         action={{ href: "/admin/languages/new", label: "Nouvelle langue" }}
       />

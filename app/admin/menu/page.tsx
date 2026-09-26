@@ -12,7 +12,7 @@ const links = [
   ["/admin/music-styles", "Styles musicaux", "sliders-horizontal"],
   ["/admin/occasions", "Occasions", "calendar-heart"],
   ["/admin/recipient-relations", "Liens destinataire", "heart-handshake"],
-  ["/admin/languages", "Langues", "languages"],
+  ["/admin/languages", "Langues et Monnaies", "languages"],
   ["/admin/payments", "Paiements", "credit-card"],
   ["/admin/coupons", "Codes promo", "ticket-percent"],
   ["/admin/analytics", "Analytics", "chart-no-axes-column-increasing"],

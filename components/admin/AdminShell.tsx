@@ -39,7 +39,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/music-styles", icon: "sliders-horizontal", label: "Styles musicaux" },
       { href: "/admin/occasions", icon: "calendar-heart", label: "Occasions" },
       { href: "/admin/recipient-relations", icon: "heart-handshake", label: "Liens destinataire" },
-      { href: "/admin/languages", icon: "languages", label: "Langues" },
+      { href: "/admin/languages", icon: "languages", label: "Langues et Monnaies" },
       { href: "/admin/ai-providers", icon: "cpu", label: "Fournisseurs IA" },
     ],
   },
