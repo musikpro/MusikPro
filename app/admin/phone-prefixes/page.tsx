@@ -1,34 +1,46 @@
-import AdminCatalogPage from "@/components/admin/AdminCatalogPage";
+import { asc } from "drizzle-orm";
+import Link from "next/link";
+import AdminPhonePrefixSortableGrid from "@/components/admin/AdminPhonePrefixSortableGrid";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import Icon from "@/components/banani/Icon";
+import { getServiceDb } from "@/db";
+import { phonePrefixes } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-
-const countries = [
-  ["ci", "🇨🇮  +225", "Côte d’Ivoire", "Préfixe par défaut", "active"],
-  ["sn", "🇸🇳  +221", "Sénégal", "Disponible", "active"],
-  ["ml", "🇲🇱  +223", "Mali", "Disponible", "active"],
-  ["bf", "🇧🇫  +226", "Burkina Faso", "Disponible", "active"],
-  ["ne", "🇳🇪  +227", "Niger", "Disponible", "active"],
-  ["gh", "🇬🇭  +233", "Ghana", "Disponible", "active"],
-  ["tg", "🇹🇬  +228", "Togo", "À préparer", "coming"],
-  ["bj", "🇧🇯  +229", "Bénin", "À préparer", "coming"],
-] as const;
 
 export default async function AdminPhonePrefixesPage() {
   await requireAdmin();
+  const rows = await getServiceDb()
+    .select()
+    .from(phonePrefixes)
+    .orderBy(asc(phonePrefixes.sortOrder), asc(phonePrefixes.countryName));
+  const activeCount = rows.filter((prefix) => prefix.active).length;
   return (
-    <AdminCatalogPage
-      eyebrow="Téléphonie"
-      title="Préfixes téléphoniques"
-      description="Visualise les indicatifs proposés dans le parcours de commande."
-      searchLabel="Rechercher un préfixe"
-      sourceNote="Cette liste reprend le sélecteur actuel du parcours client. La configuration centrale et les mutations ne sont pas encore persistées."
-      items={countries.map(([id, title, subtitle, meta, status]) => ({
-        id,
-        title,
-        subtitle,
-        meta,
-        status,
-        icon: "phone",
-      }))}
-    />
+    <AdminPage>
+      <AdminPageHeader
+        eyebrow="Téléphonie"
+        title="Préfixes téléphoniques"
+        description={`${activeCount} préfixe${activeCount > 1 ? "s" : ""} actif${activeCount > 1 ? "s" : ""} sur ${rows.length}. Le même catalogue alimente le champ téléphone du parcours client.`}
+        action={{ href: "/admin/phone-prefixes/new", label: "Nouveau préfixe" }}
+      />
+      <div className="admin-source-notice is-connected">
+        <Icon i="database-zap" size={18} />
+        <div>
+          <strong>Catalogue connecté à Neon</strong>
+          <p>L’indicatif, le nombre de chiffres, l’état et l’ordre sont appliqués au parcours de paiement client.</p>
+        </div>
+      </div>
+      {rows.length ? (
+        <AdminPhonePrefixSortableGrid prefixes={rows} />
+      ) : (
+        <div className="admin-empty-state admin-catalog-empty">
+          <Icon i="phone" size={24} />
+          <strong>Aucun préfixe enregistré</strong>
+          <p>Ajoute un préfixe pour le proposer dans le champ téléphone du parcours client.</p>
+          <Link className="admin-primary-action" href="/admin/phone-prefixes/new">
+            <Icon i="plus" size={16} /> Ajouter un préfixe
+          </Link>
+        </div>
+      )}
+    </AdminPage>
   );
 }
