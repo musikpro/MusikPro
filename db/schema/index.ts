@@ -530,3 +530,14 @@ export const musicGenerationJobs = pgTable(
     songGroupIndex: index("music_generation_jobs_song_group_idx").on(table.userId, table.songGroupId),
   }),
 );
+
+export const customRoles = pgTable("custom_role", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull().default(""),
+  color: text("color").notNull().default("orange"),
+  /** Subset of PermissionModule keys (lib/auth/permissions.ts) — decorative, like the rest of the matrix. */
+  permissions: jsonb("permissions").notNull().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
