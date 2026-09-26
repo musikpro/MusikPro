@@ -6,13 +6,14 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { authClient } from "@/lib/auth/client";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
-import { demoCreationChoicesSchema, demoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
+import { demoCreationChoicesSchema, buildDemoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import type { OccasionOption } from "@/lib/occasions/catalog";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import type { RecipientRelationOption } from "@/lib/recipient-relations/catalog";
 import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
 import type { LanguageOption } from "@/lib/languages/catalog";
+import type { PhonePrefixOption } from "@/lib/phone-prefixes/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
 import { localizeField, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
@@ -81,6 +82,7 @@ function useDemoState(
   persistenceId: string,
   paymentBypassEnabled: boolean,
   versionsPerGeneration: number,
+  initialPhonePrefixes: PhonePrefixOption[],
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -153,7 +155,7 @@ function useDemoState(
     try {
       const saved = window.localStorage.getItem(paymentInfoKey);
       if (saved) {
-        const parsed = demoPaymentDraftSchema.safeParse(JSON.parse(saved));
+        const parsed = buildDemoPaymentDraftSchema(initialPhonePrefixes).safeParse(JSON.parse(saved));
         if (parsed.success) {
           const restored = parsed.data;
           window.queueMicrotask(() => {
@@ -174,7 +176,7 @@ function useDemoState(
     return () => {
       active = false;
     };
-  }, [paymentInfoKey]);
+  }, [paymentInfoKey, initialPhonePrefixes]);
   useEffect(() => {
     let active = true;
     let restoredChoices: Record<string, string> | null = null;
@@ -281,6 +283,7 @@ function useDemoState(
   const recipientRelations = initialRecipientRelations;
   const libraryCollections = initialLibraryCollections;
   const interfaceLanguages = initialInterfaceLanguages;
+  const phonePrefixes = initialPhonePrefixes;
   const lyricsLanguages = initialLyricsLanguages;
   const occasionEmoji = (name: string) => occasions.find((occasion) => occasion.name === name)?.emoji ?? "";
   /**
@@ -605,6 +608,7 @@ function useDemoState(
     libraryCollections,
     interfaceLanguages,
     lyricsLanguages,
+    phonePrefixes,
     occasionEmoji,
     displayName,
     favorites,
@@ -677,6 +681,7 @@ export function DemoProvider({
   persistenceId,
   paymentBypassEnabled = false,
   versionsPerGeneration = 1,
+  initialPhonePrefixes,
 }: {
   children: ReactNode;
   mode: "demo" | "real";
@@ -693,6 +698,7 @@ export function DemoProvider({
   persistenceId: string;
   paymentBypassEnabled?: boolean;
   versionsPerGeneration?: number;
+  initialPhonePrefixes: PhonePrefixOption[];
 }) {
   const state = useDemoState(
     mode,
@@ -709,6 +715,7 @@ export function DemoProvider({
     persistenceId,
     paymentBypassEnabled,
     versionsPerGeneration,
+    initialPhonePrefixes,
   );
   const [offline, setOffline] = useState(false);
   useEffect(() => {
