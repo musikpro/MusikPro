@@ -351,7 +351,17 @@
   line-height: 1.3;
 }
 
-.admin-panel-heading > a {
+.admin-panel-heading-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0 0 auto;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+.admin-panel-heading > a,
+.admin-panel-heading-links a {
   min-height: 40px;
   display: inline-flex;
   flex: 0 0 auto;
@@ -4574,7 +4584,8 @@ body:has(.admin-app),
   line-height: 1.45;
 }
 
-.admin-panel-heading > a {
+.admin-panel-heading > a,
+.admin-panel-heading-links a {
   min-height: 42px;
   padding: 0 4px;
   font-size: 11px;
@@ -5088,7 +5099,8 @@ body:has(.admin-app),
     align-items: flex-start;
   }
 
-  .admin-panel-heading > a {
+  .admin-panel-heading > a,
+  .admin-panel-heading-links a {
     white-space: nowrap;
   }
 }
@@ -5363,6 +5375,7 @@ body:has(.admin-app),
 .admin-inline-form > button,
 .admin-catalog-card footer a,
 .admin-panel-heading > a,
+.admin-panel-heading-links a,
 .admin-data-table tbody tr,
 .admin-user-mobile-card {
   transition:
@@ -5468,7 +5481,8 @@ body:has(.admin-app),
 
   .admin-client-link:hover,
   .admin-topbar-client:hover,
-  .admin-panel-heading > a:hover {
+  .admin-panel-heading > a:hover,
+  .admin-panel-heading-links a:hover {
     color: var(--admin-primary);
     border-color: rgb(244 95 32 / 22%);
     background: #fff7f2;

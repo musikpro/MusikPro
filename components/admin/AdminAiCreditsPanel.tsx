@@ -100,6 +100,15 @@ export default function AdminAiCreditsPanel({
             <Icon i="activity" size={15} />
             {musicful.configured ? "Rafraîchir (tester la connexion)" : "Configurer Musicful"}
           </Link>
+          <a
+            className="admin-secondary-action"
+            href="https://fr.musicful.ai/api/payment/balance/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <Icon i="external-link" size={15} />
+            Gérer / recharger le compte
+          </a>
         </div>
       </article>
 
@@ -116,6 +125,16 @@ export default function AdminAiCreditsPanel({
                 exposé par l’API Anthropic — consulte console.anthropic.com pour ce chiffre.
               </p>
             </div>
+          </div>
+          <div className="admin-panel-heading-links">
+            <a href="https://console.anthropic.com/settings/admin-keys" target="_blank" rel="noreferrer">
+              <Icon i="external-link" size={16} />
+              Récupérer une clé
+            </a>
+            <a href="https://platform.claude.com/dashboard" target="_blank" rel="noreferrer">
+              <Icon i="external-link" size={16} />
+              Recharger le compte
+            </a>
           </div>
         </div>
 
