@@ -5,18 +5,24 @@ import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
 import { getNameInitials } from "@/lib/profile/name-initials";
+import { listCustomRoles } from "@/lib/auth/custom-roles";
+import { CUSTOM_ROLE_COLOR_HEX, type CustomRoleColor } from "@/lib/auth/custom-role-colors";
 import {
   ADMIN_ROLES,
   ADMIN_ROLE_META,
   ALL_MODULES,
   MODULE_META,
   ROLE_PERMISSIONS,
+  hasAppRole,
   type AdminAppRole,
 } from "@/lib/auth/permissions";
 
 export default async function AdminRolesPage() {
-  await requireAdmin();
+  const session = await requireAdmin();
+  const isSuperAdmin = hasAppRole((session.user as { role?: string }).role, "admin");
   const db = getServiceDb();
+  const customRolesList = await listCustomRoles();
+  const customSlugs = customRolesList.map((role) => `custom:${role.id}`);
   const admins = await db
     .select({
       id: user.id,
@@ -27,16 +33,21 @@ export default async function AdminRolesPage() {
       role: user.role,
     })
     .from(user)
-    .where(inArray(user.role, ADMIN_ROLES))
+    .where(inArray(user.role, [...ADMIN_ROLES, ...customSlugs]))
     .orderBy(desc(user.createdAt));
-  const roleLabel = (role: string | null) =>
-    role && role in ADMIN_ROLE_META ? ADMIN_ROLE_META[role as AdminAppRole].label : "Rôle inconnu";
+  const customRoleBySlug = new Map(customRolesList.map((role) => [`custom:${role.id}`, role]));
+  const roleLabel = (role: string | null) => {
+    if (role && role in ADMIN_ROLE_META) return ADMIN_ROLE_META[role as AdminAppRole].label;
+    if (role && customRoleBySlug.has(role)) return customRoleBySlug.get(role)!.name;
+    return "Rôle inconnu";
+  };
   return (
     <AdminPage>
       <AdminPageHeader
         eyebrow="Sécurité"
         title="Rôles & accès"
         description="Consulte les rôles disponibles, l’équipe administratrice et la matrice de permissions."
+        action={isSuperAdmin ? { href: "/admin/roles/new", label: "Ajouter un rôle" } : undefined}
       />
       <section className="admin-insight-grid">
         <article className="admin-panel">
@@ -61,6 +72,22 @@ export default async function AdminRolesPage() {
                   <strong>{ADMIN_ROLE_META[role].label}</strong>
                   <small>{ADMIN_ROLE_META[role].description}</small>
                 </div>
+              </div>
+            ))}
+            {customRolesList.map((role) => (
+              <div key={role.id}>
+                <span style={{ color: CUSTOM_ROLE_COLOR_HEX[role.color as CustomRoleColor] }}>
+                  <Icon i="tag" size={17} />
+                </span>
+                <div>
+                  <strong>{role.name}</strong>
+                  <small>{role.description || "Rôle personnalisé"}</small>
+                </div>
+                {isSuperAdmin ? (
+                  <a href={`/admin/roles/${role.id}/edit`} className="admin-secondary-action">
+                    Modifier
+                  </a>
+                ) : null}
               </div>
             ))}
             <div>
@@ -137,6 +164,9 @@ export default async function AdminRolesPage() {
                 {ADMIN_ROLES.map((role) => (
                   <th key={role}>{ADMIN_ROLE_META[role].label}</th>
                 ))}
+                {customRolesList.map((role) => (
+                  <th key={role.id}>{role.name}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
@@ -152,6 +182,18 @@ export default async function AdminRolesPage() {
                       )}
                     </td>
                   ))}
+                  {customRolesList.map((role) => {
+                    const permissions = Array.isArray(role.permissions) ? (role.permissions as string[]) : [];
+                    return (
+                      <td key={role.id} style={{ textAlign: "center" }}>
+                        {permissions.includes(module) ? (
+                          <Icon i="check" size={16} />
+                        ) : (
+                          <span aria-hidden="true">—</span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
