@@ -1,5 +1,5 @@
-import { hasAppRole } from "@/lib/auth/permissions";
+import { isAdminRole } from "@/lib/auth/permissions";
 
 export function authenticatedDestination(role: string | null | undefined) {
-  return hasAppRole(role, "admin") ? "/admin" : "/dashboard";
+  return isAdminRole(role) ? "/admin" : "/dashboard";
 }
