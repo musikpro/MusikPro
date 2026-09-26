@@ -5519,3 +5519,12 @@ body:has(.admin-app),
   border-radius: 50%;
   display: inline-block;
 }
+
+.admin-danger-zone {
+  border-color: var(--admin-danger);
+}
+
+.admin-danger-zone h3 {
+  color: var(--admin-danger);
+  margin: 0 0 8px;
+}
