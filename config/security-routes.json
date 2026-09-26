@@ -122,7 +122,7 @@
       "rateLimit": "distributed-or-fail-closed",
       "markers": [
         "auth.api.getSession",
-        "hasAppRole",
+        "isAdminRole",
         "musicStyleDescriptionRequestSchema.safeParse",
         "rateLimit(",
         "rejectCrossSiteMutation",
