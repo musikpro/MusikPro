@@ -1,10 +1,18 @@
-import { desc, eq } from "drizzle-orm";
+import { desc, inArray } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { user } from "@/db/schema";
-import { AdminPage, AdminPageHeader, AdminSourceNotice } from "@/components/admin/AdminPage";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
 import { getNameInitials } from "@/lib/profile/name-initials";
+import {
+  ADMIN_ROLES,
+  ADMIN_ROLE_META,
+  ALL_MODULES,
+  MODULE_META,
+  ROLE_PERMISSIONS,
+  type AdminAppRole,
+} from "@/lib/auth/permissions";
 
 export default async function AdminRolesPage() {
   await requireAdmin();
@@ -16,21 +24,20 @@ export default async function AdminRolesPage() {
       email: user.email,
       verified: user.emailVerified,
       createdAt: user.createdAt,
+      role: user.role,
     })
     .from(user)
-    .where(eq(user.role, "admin"))
+    .where(inArray(user.role, ADMIN_ROLES))
     .orderBy(desc(user.createdAt));
+  const roleLabel = (role: string | null) =>
+    role && role in ADMIN_ROLE_META ? ADMIN_ROLE_META[role as AdminAppRole].label : "Rôle inconnu";
   return (
     <AdminPage>
       <AdminPageHeader
         eyebrow="Sécurité"
         title="Rôles & accès"
-        description="Consulte les comptes disposant actuellement du rôle administrateur."
+        description="Consulte les rôles disponibles, l’équipe administratrice et la matrice de permissions."
       />
-      <AdminSourceNotice>
-        Le schéma actuel distingue les rôles user et admin. La matrice détaillée de permissions montrée dans Banani
-        nécessite un modèle d’autorisation supplémentaire.
-      </AdminSourceNotice>
       <section className="admin-insight-grid">
         <article className="admin-panel">
           <div className="admin-panel-heading">
@@ -45,15 +52,17 @@ export default async function AdminRolesPage() {
             </div>
           </div>
           <div className="admin-role-list">
-            <div>
-              <span>
-                <Icon i="shield" size={17} />
-              </span>
-              <div>
-                <strong>Administrateur</strong>
-                <small>Accès aux routes /admin et actions protégées</small>
+            {ADMIN_ROLES.map((role) => (
+              <div key={role}>
+                <span>
+                  <Icon i={ADMIN_ROLE_META[role].icon} size={17} />
+                </span>
+                <div>
+                  <strong>{ADMIN_ROLE_META[role].label}</strong>
+                  <small>{ADMIN_ROLE_META[role].description}</small>
+                </div>
               </div>
-            </div>
+            ))}
             <div>
               <span>
                 <Icon i="user" size={17} />
@@ -91,7 +100,7 @@ export default async function AdminRolesPage() {
                     <small>{entry.email}</small>
                   </div>
                   <div className="admin-record-value">
-                    <strong>{entry.createdAt.toLocaleDateString("fr-FR")}</strong>
+                    <strong>{roleLabel(entry.role)}</strong>
                     <span className={`admin-status ${entry.verified ? "is-success" : "is-pending"}`}>
                       {entry.verified ? "Vérifié" : "À vérifier"}
                     </span>
@@ -108,6 +117,47 @@ export default async function AdminRolesPage() {
           )}
         </article>
       </section>
+      <article className="admin-panel admin-permission-matrix">
+        <div className="admin-panel-heading">
+          <div>
+            <span className="admin-panel-icon">
+              <Icon i="table" size={18} />
+            </span>
+            <div>
+              <h2>Matrice de permissions</h2>
+              <p>Vue en lecture seule, définie dans le code — pas encore appliquée aux accès réels.</p>
+            </div>
+          </div>
+        </div>
+        <div className="admin-data-table-wrap">
+          <table className="admin-data-table">
+            <thead>
+              <tr>
+                <th>Permission</th>
+                {ADMIN_ROLES.map((role) => (
+                  <th key={role}>{ADMIN_ROLE_META[role].label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {ALL_MODULES.map((module) => (
+                <tr key={module}>
+                  <td>{MODULE_META[module].label}</td>
+                  {ADMIN_ROLES.map((role) => (
+                    <td key={role} style={{ textAlign: "center" }}>
+                      {ROLE_PERMISSIONS[role].includes(module) ? (
+                        <Icon i="check" size={16} />
+                      ) : (
+                        <span aria-hidden="true">—</span>
+                      )}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </article>
     </AdminPage>
   );
 }
