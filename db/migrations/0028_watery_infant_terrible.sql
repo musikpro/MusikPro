@@ -7,3 +7,5 @@ CREATE TABLE "custom_role" (
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
+--> statement-breakpoint
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE "custom_role" TO musikpro_service;

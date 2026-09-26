@@ -5528,3 +5528,9 @@ body:has(.admin-app),
   color: var(--admin-danger);
   margin: 0 0 8px;
 }
+
+.admin-permission-notice {
+  display: block;
+  color: var(--admin-warning);
+  margin-bottom: 8px;
+}

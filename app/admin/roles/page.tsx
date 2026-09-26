@@ -152,7 +152,10 @@ export default async function AdminRolesPage() {
             </span>
             <div>
               <h2>Matrice de permissions</h2>
-              <p>Vue en lecture seule, définie dans le code — pas encore appliquée aux accès réels.</p>
+              <p>
+                Vue en lecture seule (rôles système définis dans le code, rôles personnalisés en base) —
+                pas encore appliquée aux accès réels.
+              </p>
             </div>
           </div>
         </div>

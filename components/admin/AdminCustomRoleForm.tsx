@@ -53,6 +53,11 @@ export default function AdminCustomRoleForm({
       </div>
       <div className="admin-editor-field is-wide">
         <span>Permissions</span>
+        <small className="admin-permission-notice">
+          Ces cases sont informatives : elles n’appliquent pas encore de restriction réelle. Un rôle
+          personnalisé donne accès à l’ensemble du tableau de bord /admin, comme les rôles système
+          actuels.
+        </small>
         {ALL_MODULES.map((module) => (
           <label className="admin-editor-check" key={module}>
             <input type="checkbox" name="permissions" value={module} defaultChecked={role?.permissions.includes(module)} />

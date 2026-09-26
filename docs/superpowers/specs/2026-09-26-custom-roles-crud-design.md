@@ -39,16 +39,16 @@ export const customRoles = pgTable("custom_role", {
 
 ## Adaptation du design Banani — RÉUTILISER / ADAPTER / CRÉER / retiré
 
-| Élément Banani | Décision |
-|---|---|
-| Formulaire nom/description | RÉUTILISÉ tel quel (champs texte standards) |
-| Sélecteur de couleur (6 couleurs) | ADAPTÉ — 6 couleurs propres à notre palette (`orange`, `bleu`, `vert`, `violet`, `rouge`, `gris`), pas les couleurs exactes de la maquette qui ne sont pas documentées dans notre design system |
-| 8 permissions cochables | **RETIRÉ tel quel, remplacé** par nos 7 vrais modules (`MODULE_META` : Paramètres, Utilisateurs, Rôles, Paiements, Catalogue & contenu, Modération, Analytique). Les 8 libellés Banani (ex. "Logs d'activité") ne correspondent à aucune page ni fonctionnalité réelle du produit ; les inclure tromperait l'admin qui les cocherait |
-| Rôle d'exemple pré-rempli "Modérateur" avec permissions et compteurs fictifs | RETIRÉ — chaque écran charge de vraies données DB |
-| "N permissions activées sur 8" | ADAPTÉ → "sur 7" (nombre réel de modules) |
-| "Membres assignés" (5 personnes fictives) | ADAPTÉ — vraie requête `user` où `role = 'custom:<id>'` (nom + email réels). Pas d'ajout/retrait de membre depuis cet écran : la réassignation de rôle existe déjà sur `/admin/users` (menu déroulant de rôle) et ce chantier l'étend pour proposer aussi les rôles personnalisés, plutôt que de dupliquer cette gestion sur deux pages |
-| "Zone dangereuse" / suppression | RÉUTILISÉ dans l'esprit, ADAPTÉ pour une vraie règle : suppression bloquée si le rôle a encore des membres, avec message explicite (cf. section Sécurité) |
-| "État actuel" (créé le / modifié le) | RÉUTILISÉ avec les vraies dates `createdAt`/`updatedAt` de la ligne DB |
+| Élément Banani                                                               | Décision                                                                                                                                                                                                                                                                                                                                |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Formulaire nom/description                                                   | RÉUTILISÉ tel quel (champs texte standards)                                                                                                                                                                                                                                                                                             |
+| Sélecteur de couleur (6 couleurs)                                            | ADAPTÉ — 6 couleurs propres à notre palette (`orange`, `bleu`, `vert`, `violet`, `rouge`, `gris`), pas les couleurs exactes de la maquette qui ne sont pas documentées dans notre design system                                                                                                                                         |
+| 8 permissions cochables                                                      | **RETIRÉ tel quel, remplacé** par nos 7 vrais modules (`MODULE_META` : Paramètres, Utilisateurs, Rôles, Paiements, Catalogue & contenu, Modération, Analytique). Les 8 libellés Banani (ex. "Logs d'activité") ne correspondent à aucune page ni fonctionnalité réelle du produit ; les inclure tromperait l'admin qui les cocherait    |
+| Rôle d'exemple pré-rempli "Modérateur" avec permissions et compteurs fictifs | RETIRÉ — chaque écran charge de vraies données DB                                                                                                                                                                                                                                                                                       |
+| "N permissions activées sur 8"                                               | ADAPTÉ → "sur 7" (nombre réel de modules)                                                                                                                                                                                                                                                                                               |
+| "Membres assignés" (5 personnes fictives)                                    | ADAPTÉ — vraie requête `user` où `role = 'custom:<id>'` (nom + email réels). Pas d'ajout/retrait de membre depuis cet écran : la réassignation de rôle existe déjà sur `/admin/users` (menu déroulant de rôle) et ce chantier l'étend pour proposer aussi les rôles personnalisés, plutôt que de dupliquer cette gestion sur deux pages |
+| "Zone dangereuse" / suppression                                              | RÉUTILISÉ dans l'esprit, ADAPTÉ pour une vraie règle : suppression bloquée si le rôle a encore des membres, avec message explicite (cf. section Sécurité)                                                                                                                                                                               |
+| "État actuel" (créé le / modifié le)                                         | RÉUTILISÉ avec les vraies dates `createdAt`/`updatedAt` de la ligne DB                                                                                                                                                                                                                                                                  |
 
 ## Accès `/admin` pour un rôle personnalisé
 
@@ -88,7 +88,7 @@ La config `admin({ defaultRole: "user", adminRoles: ["admin"] })` de `lib/auth/i
 
 ## Actions serveur
 
-Le schéma Zod et le parsing de `FormData` vivent dans un fichier **sans import DB**, pour rester unitairement testables (importer `@/db` lève immédiatement `Missing required environment variable: DATABASE_URL` hors d'un environnement configuré — confirmé sur `db/index.ts:9`, même contrainte déjà rencontrée avec `lib/auth/index.ts` pendant le chantier précédent). Nouveau fichier `lib/validation/custom-roles.ts`, suivant la convention déjà établie (`lib/validation/clients.ts`, AGENTS.md : *"Partager les schémas dans lib/validation/ lorsqu'un contrat sert au client et au serveur"*) :
+Le schéma Zod et le parsing de `FormData` vivent dans un fichier **sans import DB**, pour rester unitairement testables (importer `@/db` lève immédiatement `Missing required environment variable: DATABASE_URL` hors d'un environnement configuré — confirmé sur `db/index.ts:9`, même contrainte déjà rencontrée avec `lib/auth/index.ts` pendant le chantier précédent). Nouveau fichier `lib/validation/custom-roles.ts`, suivant la convention déjà établie (`lib/validation/clients.ts`, AGENTS.md : _"Partager les schémas dans lib/validation/ lorsqu'un contrat sert au client et au serveur"_) :
 
 ```ts
 import { z } from "zod";
@@ -144,7 +144,9 @@ export async function createCustomRole(_previous: AdminActionState, formData: Fo
     requireSuperAdmin((session.user as { role?: string }).role);
     const parsed = readCustomRoleForm(formData);
     const id = randomUUID();
-    await getServiceDb().insert(customRoles).values({ id, ...parsed });
+    await getServiceDb()
+      .insert(customRoles)
+      .values({ id, ...parsed });
     await writeAuditLog({
       action: "role.custom.created",
       actorId: session.user.id,
@@ -170,7 +172,10 @@ export async function updateCustomRole(_previous: AdminActionState, formData: Fo
     const parsed = readCustomRoleForm(formData);
     // defaultNow() ne s'applique qu'à l'INSERT ; convention déjà en place (app/admin/coupons/actions.ts,
     // app/admin/ai-providers/actions.ts, ...) : passer updatedAt explicitement à chaque UPDATE.
-    await getServiceDb().update(customRoles).set({ ...parsed, updatedAt: new Date() }).where(eq(customRoles.id, id));
+    await getServiceDb()
+      .update(customRoles)
+      .set({ ...parsed, updatedAt: new Date() })
+      .where(eq(customRoles.id, id));
     await writeAuditLog({
       action: "role.custom.updated",
       actorId: session.user.id,
@@ -200,7 +205,12 @@ export async function deleteCustomRole(_previous: AdminActionState, formData: Fo
     if (Number(memberCount) > 0)
       throw new Error(`Réassignez d’abord les ${memberCount} membre(s) de ce rôle avant de le supprimer.`);
     await getServiceDb().delete(customRoles).where(eq(customRoles.id, id));
-    await writeAuditLog({ action: "role.custom.deleted", actorId: session.user.id, targetType: "custom_role", targetId: id });
+    await writeAuditLog({
+      action: "role.custom.deleted",
+      actorId: session.user.id,
+      targetType: "custom_role",
+      targetId: id,
+    });
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer ce rôle.") };
   }
@@ -209,6 +219,7 @@ export async function deleteCustomRole(_previous: AdminActionState, formData: Fo
 ```
 
 Notes :
+
 - `readCustomRoleForm` utilise `formData.getAll("permissions")` (plusieurs cases à cocher partagent `name="permissions"`) — jamais `Object.fromEntries(formData)`, qui écraserait les valeurs multiples.
 - `createCustomRole`/`deleteCustomRole` redirigent avec `withAdminNotice` (règle obligatoire du dashboard propriétaire pour toute création/suppression suivie d'un retour sur une autre page) ; `updateCustomRole` reste sur place et retourne l'état pour le toast, comme `updatePlan`.
 - Nouveau fichier `lib/auth/custom-role-colors.ts` :
@@ -245,7 +256,11 @@ const isCustomRole = parsed.role.startsWith("custom:");
 if (!knownSystemRoles.includes(parsed.role) && !isCustomRole) throw new Error("Rôle invalide.");
 if (isCustomRole) {
   const customRoleId = parsed.role.slice("custom:".length);
-  const [existing] = await getServiceDb().select({ id: customRoles.id }).from(customRoles).where(eq(customRoles.id, customRoleId)).limit(1);
+  const [existing] = await getServiceDb()
+    .select({ id: customRoles.id })
+    .from(customRoles)
+    .where(eq(customRoles.id, customRoleId))
+    .limit(1);
   if (!existing) throw new Error("Ce rôle personnalisé n’existe plus.");
 }
 ```

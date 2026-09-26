@@ -34,10 +34,12 @@
 ## Task 1: Table `custom_role` et migration
 
 **Files:**
+
 - Modify: `db/schema/index.ts` (append at end of file, after `musicGenerationJobs`)
 - Generate: `db/migrations/00XX_*.sql` (via `npm run db:generate`, filename decided by drizzle-kit)
 
 **Interfaces:**
+
 - Produces: `customRoles` Drizzle table export from `@/db/schema`, columns `id: text`, `name: text`, `description: text`, `color: text`, `permissions: jsonb`, `createdAt: timestamp`, `updatedAt: timestamp`.
 
 - [ ] **Step 1: Add the table definition**
@@ -79,12 +81,14 @@ git commit -m "feat: ajouter la table custom_role (rôles personnalisés)"
 ## Task 2: Fondations pures — couleurs et validation
 
 **Files:**
+
 - Create: `lib/auth/custom-role-colors.ts`
 - Create: `lib/validation/custom-roles.ts`
 - Test: `tests/custom-role-colors.test.ts`
 - Test: `tests/custom-roles-validation.test.ts`
 
 **Interfaces:**
+
 - Consumes: `ALL_MODULES`, `PermissionModule` from `@/lib/auth/permissions` (already exist, unchanged).
 - Produces: `CUSTOM_ROLE_COLORS: readonly string[]`, `CustomRoleColor` type, `CUSTOM_ROLE_COLOR_HEX: Record<CustomRoleColor, string>` from `@/lib/auth/custom-role-colors`; `customRoleFormSchema` (Zod object `{name, description, color, permissions}`) and `readCustomRoleForm(formData: FormData)` from `@/lib/validation/custom-roles` — both later tasks depend on these exact names.
 
@@ -242,11 +246,13 @@ git commit -m "feat: couleurs et validation Zod des rôles personnalisés"
 ## Task 3: Extension du modèle de rôles
 
 **Files:**
+
 - Modify: `lib/auth/permissions.ts` (add second param to `isAdminRole`, add `canDeleteCustomRole`)
 - Modify: `tests/admin-roles-permissions.test.ts` (add new test cases, keep existing ones unchanged)
 - Create: `lib/auth/custom-roles.ts`
 
 **Interfaces:**
+
 - Consumes: `customRoles` table from `@/db/schema` (Task 1), `getServiceDb` from `@/db`.
 - Produces: `isAdminRole(role, extraAdminSlugs?: string[])` (2nd param optional, defaults to `[]` — 100% backward compatible), `canDeleteCustomRole(memberCount: number): boolean`, `listCustomRoles(): Promise<{id,name,description,color,permissions,createdAt,updatedAt}[]>`, `getActiveCustomRoleSlugs(): Promise<string[]>` (each slug formatted `custom:<id>`) from `@/lib/auth/custom-roles` — Task 4 consumes `getActiveCustomRoleSlugs`; Task 5 consumes `canDeleteCustomRole`; Task 8 consumes `listCustomRoles`.
 
@@ -365,6 +371,7 @@ git commit -m "feat: étendre isAdminRole aux rôles personnalisés, ajouter can
 ## Task 4: Brancher les slugs personnalisés sur les points d'accès réels
 
 **Files:**
+
 - Modify: `lib/auth/session.ts:50-60` (`requireAdmin`)
 - Modify: `lib/auth/destination.ts` (`authenticatedDestination`)
 - Modify: `app/(auth)/auth/continue/page.tsx:10` (single call site of `authenticatedDestination`)
@@ -373,6 +380,7 @@ git commit -m "feat: étendre isAdminRole aux rôles personnalisés, ajouter can
 - Modify: `tests/auth-destination.test.ts` (adapt to the new async signature)
 
 **Interfaces:**
+
 - Consumes: `getActiveCustomRoleSlugs()` from `@/lib/auth/custom-roles` (Task 3), `isAdminRole(role, extraSlugs)` (Task 3).
 - Produces: `requireAdmin()` keeps its existing return type (`Awaited<ReturnType<typeof requireUser>>`) — no caller of `requireAdmin()` changes. `authenticatedDestination` gets the same optional second parameter as `isAdminRole` and **stays synchronous and DB-free** — `tests/auth-destination.test.ts` currently imports it directly with zero DB dependency (confirmed by reading the file: it calls `authenticatedDestination("admin")` etc. synchronously), and must keep working unmodified. Fetching the custom role slugs is the caller's job, exactly like `requireAdmin()` already does for `isAdminRole`.
 
@@ -473,9 +481,11 @@ git commit -m "feat: reconnaître les rôles personnalisés dans les gardes d'ac
 ## Task 5: Actions serveur — créer / modifier / supprimer un rôle personnalisé
 
 **Files:**
+
 - Create: `app/admin/roles/actions.ts`
 
 **Interfaces:**
+
 - Consumes: `readCustomRoleForm` (Task 2), `canDeleteCustomRole` (Task 3), `hasAppRole` (existing, unchanged), `customRoles`/`user` from `@/db/schema`, `requireAdmin` (Task 4), `actionErrorMessage`, `withAdminNotice`, `writeAuditLog`, `AdminActionState` (all existing, unchanged).
 - Produces: `createCustomRole`, `updateCustomRole`, `deleteCustomRole` — each `(previous: AdminActionState, formData: FormData) => Promise<AdminActionState>` — consumed by Tasks 6 and 7.
 
@@ -511,7 +521,9 @@ export async function createCustomRole(_previous: AdminActionState, formData: Fo
     requireSuperAdmin((session.user as { role?: string }).role);
     const parsed = readCustomRoleForm(formData);
     const id = randomUUID();
-    await getServiceDb().insert(customRoles).values({ id, ...parsed });
+    await getServiceDb()
+      .insert(customRoles)
+      .values({ id, ...parsed });
     await writeAuditLog({
       action: "role.custom.created",
       actorId: session.user.id,
@@ -603,11 +615,13 @@ git commit -m "feat: actions serveur pour créer/modifier/supprimer un rôle per
 ## Task 6: Page `/admin/roles/new`
 
 **Files:**
+
 - Create: `components/admin/AdminCustomRoleForm.tsx`
 - Create: `app/admin/roles/new/page.tsx`
 - Modify: `app/admin/admin.css` (append new rules, do not edit existing ones)
 
 **Interfaces:**
+
 - Consumes: `createCustomRole` (Task 5), `updateCustomRole` (Task 5, used by Task 7 with the same form component), `CUSTOM_ROLE_COLORS`/`CUSTOM_ROLE_COLOR_HEX` (Task 2), `ALL_MODULES`/`MODULE_META` from `@/lib/auth/permissions` (existing), `AdminActionForm`, `AdminBackLink`, `AdminPage`, `AdminPageHeader`, `Icon` (existing).
 - Produces: `AdminCustomRoleForm` component, reused as-is by Task 7 with a `role` prop for pre-filling.
 
@@ -673,7 +687,12 @@ export default function AdminCustomRoleForm({
         <span>Permissions</span>
         {ALL_MODULES.map((module) => (
           <label className="admin-editor-check" key={module}>
-            <input type="checkbox" name="permissions" value={module} defaultChecked={role?.permissions.includes(module)} />
+            <input
+              type="checkbox"
+              name="permissions"
+              value={module}
+              defaultChecked={role?.permissions.includes(module)}
+            />
             <span>{MODULE_META[module].label}</span>
           </label>
         ))}
@@ -772,10 +791,12 @@ git commit -m "feat: page de création d'un rôle personnalisé"
 ## Task 7: Page `/admin/roles/[id]/edit`
 
 **Files:**
+
 - Create: `app/admin/roles/[id]/edit/page.tsx`
 - Modify: `app/admin/admin.css` (append new rules)
 
 **Interfaces:**
+
 - Consumes: `AdminCustomRoleForm` (Task 6), `updateCustomRole`/`deleteCustomRole` (Task 5), `customRoles`/`user` from `@/db/schema`.
 
 - [ ] **Step 1: Add the page**
@@ -813,7 +834,11 @@ export default async function AdminEditCustomRolePage({ params }: { params: Prom
   return (
     <AdminPage>
       <AdminBackLink href="/admin/roles" />
-      <AdminPageHeader eyebrow="Rôles & accès" title={`Modifier « ${role.name} »`} description={role.description || "Rôle personnalisé"} />
+      <AdminPageHeader
+        eyebrow="Rôles & accès"
+        title={`Modifier « ${role.name} »`}
+        description={role.description || "Rôle personnalisé"}
+      />
       <section className="admin-insight-grid">
         <article className="admin-panel admin-editor-card">
           <AdminCustomRoleForm
@@ -846,7 +871,9 @@ export default async function AdminEditCustomRolePage({ params }: { params: Prom
             </div>
             <div>
               <dt>Permissions actives</dt>
-              <dd>{permissions.length} sur {ALL_MODULES.length}</dd>
+              <dd>
+                {permissions.length} sur {ALL_MODULES.length}
+              </dd>
             </div>
             <div>
               <dt>Créé le</dt>
@@ -867,7 +894,9 @@ export default async function AdminEditCustomRolePage({ params }: { params: Prom
             </span>
             <div>
               <h2>Membres assignés</h2>
-              <p>{members.length} compte{members.length > 1 ? "s" : ""}</p>
+              <p>
+                {members.length} compte{members.length > 1 ? "s" : ""}
+              </p>
             </div>
           </div>
         </div>
@@ -900,7 +929,12 @@ export default async function AdminEditCustomRolePage({ params }: { params: Prom
             ? `Réassigne d’abord les ${members.length} membre(s) de ce rôle depuis la page Utilisateurs avant de pouvoir le supprimer.`
             : "Cette action est définitive."}
         </p>
-        <button type="submit" form={deleteFormId} className="admin-secondary-action is-danger" disabled={members.length > 0}>
+        <button
+          type="submit"
+          form={deleteFormId}
+          className="admin-secondary-action is-danger"
+          disabled={members.length > 0}
+        >
           <Icon i="trash-2" size={16} />
           Supprimer ce rôle
         </button>
@@ -942,9 +976,11 @@ git commit -m "feat: page d'édition et de suppression d'un rôle personnalisé"
 ## Task 8: Mise à jour de `/admin/roles`
 
 **Files:**
+
 - Modify: `app/admin/roles/page.tsx`
 
 **Interfaces:**
+
 - Consumes: `listCustomRoles` (Task 3), `CUSTOM_ROLE_COLOR_HEX` (Task 2), `ALL_MODULES`/`MODULE_META`/`ADMIN_ROLES`/`ADMIN_ROLE_META`/`ROLE_PERMISSIONS` (existing, unchanged).
 
 - [ ] **Step 1: Read the current file**
@@ -1019,22 +1055,24 @@ Change the header:
 Extend the "Rôles disponibles" list, right after the `ADMIN_ROLES.map(...)` block and before the hardcoded "Utilisateur" entry:
 
 ```tsx
-{customRolesList.map((role) => (
-  <div key={role.id}>
-    <span style={{ color: CUSTOM_ROLE_COLOR_HEX[role.color as CustomRoleColor] }}>
-      <Icon i="tag" size={17} />
-    </span>
-    <div>
-      <strong>{role.name}</strong>
-      <small>{role.description || "Rôle personnalisé"}</small>
+{
+  customRolesList.map((role) => (
+    <div key={role.id}>
+      <span style={{ color: CUSTOM_ROLE_COLOR_HEX[role.color as CustomRoleColor] }}>
+        <Icon i="tag" size={17} />
+      </span>
+      <div>
+        <strong>{role.name}</strong>
+        <small>{role.description || "Rôle personnalisé"}</small>
+      </div>
+      {isSuperAdmin ? (
+        <a href={`/admin/roles/${role.id}/edit`} className="admin-secondary-action">
+          Modifier
+        </a>
+      ) : null}
     </div>
-    {isSuperAdmin ? (
-      <a href={`/admin/roles/${role.id}/edit`} className="admin-secondary-action">
-        Modifier
-      </a>
-    ) : null}
-  </div>
-))}
+  ));
+}
 ```
 
 - [ ] **Step 4: Extend the permission matrix**
@@ -1042,22 +1080,24 @@ Extend the "Rôles disponibles" list, right after the `ADMIN_ROLES.map(...)` blo
 In the matrix `<thead>`, after the `ADMIN_ROLES.map((role) => <th key={role}>...)` block:
 
 ```tsx
-{customRolesList.map((role) => (
-  <th key={role.id}>{role.name}</th>
-))}
+{
+  customRolesList.map((role) => <th key={role.id}>{role.name}</th>);
+}
 ```
 
 In the matrix `<tbody>`, after the `ADMIN_ROLES.map((role) => <td...)` block, inside the same row:
 
 ```tsx
-{customRolesList.map((role) => {
-  const permissions = Array.isArray(role.permissions) ? (role.permissions as string[]) : [];
-  return (
-    <td key={role.id} style={{ textAlign: "center" }}>
-      {permissions.includes(module) ? <Icon i="check" size={16} /> : <span aria-hidden="true">—</span>}
-    </td>
-  );
-})}
+{
+  customRolesList.map((role) => {
+    const permissions = Array.isArray(role.permissions) ? (role.permissions as string[]) : [];
+    return (
+      <td key={role.id} style={{ textAlign: "center" }}>
+        {permissions.includes(module) ? <Icon i="check" size={16} /> : <span aria-hidden="true">—</span>}
+      </td>
+    );
+  });
+}
 ```
 
 - [ ] **Step 5: Type-check and lint**
@@ -1081,11 +1121,13 @@ git commit -m "feat: afficher et gérer les rôles personnalisés sur /admin/rol
 ## Task 9: Intégration `/admin/users` — assigner un rôle personnalisé
 
 **Files:**
+
 - Modify: `app/admin/users/actions.ts` (`setRole`)
 - Modify: `app/admin/users/page.tsx` (build extended `roleOptions`)
 - Modify: `components/admin/AdminUsersTable.tsx` (accept `roleOptions` prop, resolve role label for display)
 
 **Interfaces:**
+
 - Consumes: `listCustomRoles` (Task 3), `customRoles` from `@/db/schema`.
 - Produces: `AdminUsersTable` now takes a `roleOptions: { value: string; label: string }[]` prop instead of computing it internally — this is a breaking change to that component's props, contained entirely within this task (its single caller, `app/admin/users/page.tsx`, is updated in the same task).
 
@@ -1176,7 +1218,10 @@ export default function AdminUsersTable({
 Build a lookup once inside the component, right after the existing `filtered` memo:
 
 ```tsx
-const roleLabelByValue = useMemo(() => new Map(roleOptions.map((option) => [option.value, option.label])), [roleOptions]);
+const roleLabelByValue = useMemo(
+  () => new Map(roleOptions.map((option) => [option.value, option.label])),
+  [roleOptions],
+);
 ```
 
 The current file has exactly one place that displays the raw role string: the desktop table's `<td>{row.role}</td>` (the mobile card's `<dl>` shows Inscription/Vérification/2FA only — no role field to fix there). Replace that single line with:
