@@ -2197,6 +2197,84 @@
       ],
       "integrations": [],
       "notes": "Nouvel écran sélectionné par l'utilisateur le 23 septembre 2026, à insérer dans le flow creation-payment-preview juste après GeneratingScreen.jsx (paiement confirmé). Le produit actuel ne dispose d'aucun moteur de génération audio réel (confirmé par app/admin/generations : « Le schéma Neon ne contient pas encore de table de générations musicales »). demo.generateSong() existant est synchrone et instantané, et crée déjà 2 versions avant de rediriger vers /dashboard/songs. Durée réelle de l'animation, et légitimité d'un délai borné pour l'expérience utilisateur (vs. règle « jamais de délai artificiel » du Skeleton Loader Gate), restent À CONFIRMER avant implémentation."
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/AdminCreateNewRole.jsx",
+      "name": "Créer un nouveau rôle",
+      "route": "/admin/roles/new",
+      "auth": "admin",
+      "purpose": "Créer un rôle personnalisé en choisissant son nom, sa description, sa couleur et un jeu de permissions parmi une liste fixe de 8",
+      "states": ["default"],
+      "viewport": "desktop",
+      "keyElements": [
+        "Créer un nouveau rôle",
+        "Nom du rôle",
+        "Description",
+        "Couleur",
+        "Gestion des occasions — Ajouter, modifier et supprimer les occasions",
+        "Gestion des utilisateurs — Gérer les comptes utilisateurs",
+        "Gestion des styles musicaux — Créer et modifier les styles musicaux",
+        "Gestion des paiements — Gérer les paiements et factures",
+        "Logs d'activité — Consulter les logs d'activité",
+        "Paramètres système — Configurer les paramètres système",
+        "Création de contenu — Créer et publier du contenu",
+        "Modération — Modérer le contenu et les utilisateurs",
+        "Résumé des permissions",
+        "Créer le rôle",
+        "Annuler"
+      ],
+      "interactions": [
+        "Sélection de couleur parmi 6 couleurs nommées visible",
+        "Cases à cocher de permissions visibles, toutes précochées par défaut dans le design",
+        "Actions par boutons visibles ; validation et retour serveur NON VÉRIFIÉS"
+      ],
+      "dataNeeds": [
+        "8 permissions nommées avec libellé et description, fixes dans le design (pas de champ pour en ajouter une 9e)",
+        "Nom, description et couleur du rôle ; règles de validation et unicité du nom NON VÉRIFIÉES"
+      ],
+      "integrations": [],
+      "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire, sélectionné le 26 septembre 2026. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Le design montre un système de rôles personnalisés dynamiques (création libre, 8 permissions concrètes) matériellement différent de la matrice V1 lue seule et à 5 rôles fixes définis dans le code (lib/auth/permissions.ts, docs/superpowers/specs/2026-09-26-admin-roles-permissions-design.md). DÉCISION UTILISATEUR du 26 septembre 2026 : rester sur la V1 — cet écran n'est pas implémenté tel quel (pas de création libre de rôle)."
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/AdminEditRole.jsx",
+      "name": "Modifier un rôle",
+      "route": "/admin/roles/[id]/edit",
+      "auth": "admin",
+      "purpose": "Modifier le nom, la description, la couleur et les permissions d’un rôle existant, consulter son état et ses membres assignés, ou le supprimer",
+      "states": ["default"],
+      "viewport": "desktop",
+      "keyElements": [
+        "Modifier un rôle",
+        "Nom du rôle (exemple : Modérateur)",
+        "Description",
+        "Couleur (exemple : violet)",
+        "Gestion des occasions — Ajouter, modifier et supprimer les occasions",
+        "Gestion des utilisateurs — Gérer les comptes utilisateurs",
+        "Gestion des styles musicaux — Créer et modifier les styles musicaux",
+        "Gestion des paiements — Gérer les paiements et factures",
+        "Logs d'activité — Consulter les logs d'activité",
+        "Paramètres système — Configurer les paramètres système",
+        "Création de contenu — Créer et publier du contenu",
+        "Modération — Modérer le contenu et les utilisateurs",
+        "N permissions activées sur 8",
+        "État actuel",
+        "Membres, permissions actives, statut, créé le, modifié le",
+        "Membres assignés (exemple : 5 membres nommés avec e-mail)",
+        "Zone dangereuse",
+        "Supprimer ce rôle"
+      ],
+      "interactions": [
+        "Cases à cocher de permissions visibles avec compteur live",
+        "Sélection de couleur visible",
+        "Action destructive « Supprimer ce rôle » visible ; confirmation et règles serveur NON VÉRIFIÉES",
+        "Actions par boutons visibles ; sauvegarde et retour serveur NON VÉRIFIÉS"
+      ],
+      "dataNeeds": [
+        "Rôle existant fictif (« Modérateur », 5 membres, permissions mixtes) utilisé comme fixture de maquette",
+        "Liste de membres assignés au rôle avec nom et e-mail ; source de données et réattribution NON VÉRIFIÉES"
+      ],
+      "integrations": [],
+      "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire, sélectionné le 26 septembre 2026. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Comme AdminCreateNewRole.jsx, cet écran présuppose des rôles personnalisés dynamiques (édition libre du nom/couleur/permissions, suppression, gestion des membres par rôle) — hors périmètre de la matrice V1 lue seule et à 5 rôles fixes déjà livrée dans le code. DÉCISION UTILISATEUR du 26 septembre 2026 : rester sur la V1 — cet écran n'est pas implémenté tel quel (pas d'édition libre ni de suppression de rôle)."
     }
   ],
   "designSystem": {
@@ -2279,9 +2357,11 @@
         "QMj5OQRWpKXU/screens/AdminMobileApps.jsx",
         "QMj5OQRWpKXU/screens/AdminPayments.jsx",
         "QMj5OQRWpKXU/screens/AdminRolesAccess.jsx",
-        "QMj5OQRWpKXU/screens/AdminAnalytics.jsx"
+        "QMj5OQRWpKXU/screens/AdminAnalytics.jsx",
+        "QMj5OQRWpKXU/screens/AdminCreateNewRole.jsx",
+        "QMj5OQRWpKXU/screens/AdminEditRole.jsx"
       ],
-      "notes": "Navigation commune observée via AdminSidebar et Menu Admin Mobile. L’ordre des tâches, les droits par rôle et les transitions après mutation restent NON VÉRIFIÉS."
+      "notes": "Navigation commune observée via AdminSidebar et Menu Admin Mobile. L’ordre des tâches, les droits par rôle et les transitions après mutation restent NON VÉRIFIÉS. AdminCreateNewRole.jsx et AdminEditRole.jsx sont accessibles depuis AdminRolesAccess.jsx (boutons « Ajouter un rôle » et « Modifier ») ; leur modèle de rôles personnalisés dynamiques dépasse la matrice V1 à 5 rôles fixes déjà livrée dans le code, voir notes des écrans."
     },
     {
       "id": "owner-two-factor-entry",
@@ -2354,6 +2434,8 @@
     "La variante desktop de Vérification Double Facteur n’a pas été fournie par Banani ; adaptation responsive à créer avec le design system MusikPro.",
     "Le design montre un code envoyé par e-mail et Google Authenticator. Seul le TOTP Better Auth est démontré dans le code actuel ; l’e-mail 2FA, son expiration et son renvoi restent À CONFIRMER.",
     "Nouvel écran new_screen2.jsx (Génération en cours — Attente) sélectionné le 23 septembre 2026 : chrono (00:42) et barre de progression (72%) codés en dur dans le design Banani, sans valeur réelle côté produit à ce jour.",
-    "Aucun moteur de génération audio réel n'existe dans le produit (confirmé côté app/admin/generations) ; la durée et le contenu de l'animation d'attente restent À CONFIRMER, de même que sa compatibilité avec la règle « jamais de délai artificiel » du Skeleton Loader Gate (AGENTS.md)."
+    "Aucun moteur de génération audio réel n'existe dans le produit (confirmé côté app/admin/generations) ; la durée et le contenu de l'animation d'attente restent À CONFIRMER, de même que sa compatibilité avec la règle « jamais de délai artificiel » du Skeleton Loader Gate (AGENTS.md).",
+    "Nouvelle sélection Banani du 26 septembre 2026 : AdminCreateNewRole.jsx (Créer un nouveau rôle) et AdminEditRole.jsx (Modifier un rôle) observés, avec 8 permissions nommées (occasions, utilisateurs, styles musicaux, paiements, logs d'activité, paramètres système, création de contenu, modération), sélecteur de couleur, et pour l'édition un rôle fictif « Modérateur », un compteur de permissions actives, un état récapitulatif et une liste de membres assignés.",
+    "Écart matériel entre le design Banani (rôles personnalisés créés/modifiés/supprimés dynamiquement par l'admin, avec réattribution de membres) et la fondation RBAC V1 déjà livrée en code (lib/auth/permissions.ts) le 26 septembre 2026 : 5 rôles fixes définis dans le code, matrice de permissions en lecture seule, aucune UI de création/édition/suppression de rôle. Ce choix V1 a été explicitement validé par l'utilisateur (« RBAC léger, défini dans le code », « garder les 5 rôles de la maquette Banani », « fondations d'abord, cloisonnement dans un second temps »). DÉCISION UTILISATEUR du 26 septembre 2026, après présentation du gap-analysis : rester sur la V1. AdminCreateNewRole.jsx et AdminEditRole.jsx ne sont pas implémentés tels quels (pas de rôles dynamiques créés/supprimés par l'admin). Une V2 « rôles personnalisés en base » reste possible plus tard, sur demande explicite."
   ]
 }
