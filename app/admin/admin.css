@@ -1733,7 +1733,8 @@
 
 .admin-editor-field > span,
 .admin-field-label-row > span,
-.admin-choice-fieldset legend {
+.admin-choice-fieldset legend,
+.admin-trending-label {
   color: var(--admin-muted);
   font-size: 10px;
   font-weight: 850;
@@ -2701,6 +2702,11 @@
 
 .admin-form-submit {
   padding: 9px 13px;
+}
+
+.admin-store-links-form .admin-form-submit {
+  justify-self: end;
+  padding: 9px 18px;
 }
 
 .admin-route-list,
@@ -5594,4 +5600,244 @@ body:has(.admin-app),
   display: block;
   color: var(--admin-warning);
   margin-bottom: 8px;
+}
+
+.admin-trending-form {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-trending-section {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-trending-modes {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+@media (min-width: 560px) {
+  .admin-trending-modes {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.admin-trending-mode-card {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+  padding: 14px 16px;
+  border: 1.5px solid var(--admin-border);
+  border-radius: 16px;
+  background: var(--admin-card);
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.admin-trending-mode-card strong {
+  font-size: 13px;
+  color: var(--admin-foreground);
+}
+
+.admin-trending-mode-card span {
+  font-size: 11px;
+  color: var(--admin-muted);
+  line-height: 1.4;
+}
+
+.admin-trending-mode-card svg {
+  color: var(--admin-muted);
+}
+
+.admin-trending-mode-card.is-selected {
+  border-color: var(--admin-primary);
+  background: rgb(242 101 34 / 6%);
+}
+
+.admin-trending-mode-card.is-selected svg {
+  color: var(--admin-primary);
+}
+
+.admin-trending-count {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.admin-trending-count-option {
+  min-width: 46px;
+  min-height: 40px;
+  border-radius: 12px;
+  border: 1.5px solid var(--admin-border);
+  background: var(--admin-card);
+  color: var(--admin-foreground);
+  font-size: 13px;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.admin-trending-count-option.is-selected {
+  border-color: var(--admin-primary);
+  background: var(--admin-primary);
+  color: white;
+}
+
+.admin-trending-picker {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-trending-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-trending-picker-row .admin-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.admin-trending-picker-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 11px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-card);
+  color: var(--admin-muted);
+  cursor: pointer;
+}
+
+.admin-trending-picker-remove:hover {
+  border-color: var(--admin-danger);
+  color: var(--admin-danger);
+}
+
+.admin-trending-add {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: fit-content;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 11px;
+  border: 1.5px dashed var(--admin-border);
+  background: transparent;
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-trending-add:hover {
+  border-color: var(--admin-primary);
+  color: var(--admin-primary);
+}
+
+.admin-trending-random-toggle {
+  align-items: flex-start !important;
+  min-height: 0 !important;
+  padding: 12px !important;
+}
+
+.admin-trending-random-toggle input {
+  margin-top: 2px;
+}
+
+.admin-trending-random-toggle > span {
+  display: grid;
+  gap: 3px;
+  color: var(--admin-foreground);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-trending-random-toggle small {
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.admin-trending-empty-hint {
+  font-size: 12px;
+  color: var(--admin-muted);
+}
+
+.admin-trending-preview {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .admin-trending-preview {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.admin-trending-preview-card {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-trending-preview-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #efece7;
+}
+
+.admin-trending-preview-brand {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fff1e6, #ffe0cc);
+}
+
+.admin-trending-preview-brand img {
+  width: 38%;
+  height: 38%;
+  object-fit: contain;
+}
+
+.admin-trending-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  padding: 9px;
+  background: linear-gradient(to top, rgb(0 0 0 / 72%), rgb(0 0 0 / 0%) 60%);
+  color: white;
+}
+
+.admin-trending-preview-overlay strong {
+  font-size: 11px;
+  line-height: 1.25;
+}
+
+.admin-trending-preview-overlay span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: rgb(255 255 255 / 80%);
+}
+
+.admin-trending-actions {
+  display: flex;
+  justify-content: flex-end;
 }

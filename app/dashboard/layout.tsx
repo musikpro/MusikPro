@@ -17,6 +17,7 @@ import { getActivePhonePrefixes } from "@/lib/phone-prefixes/server";
 import { detectCurrency, detectInterfaceLanguage } from "@/lib/languages/detection";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
 import { getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
+import { getStoreLinks } from "@/lib/settings/store-links";
 import { headers } from "next/headers";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
@@ -44,6 +45,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
   const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
   const versionsPerGeneration = await getMusicfulVersionsPerGeneration();
+  const storeLinks = await getStoreLinks();
   const balance = demo
     ? 0
     : Number(
@@ -60,6 +62,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialBalance={balance}
       paymentBypassEnabled={paymentBypassEnabled}
       versionsPerGeneration={versionsPerGeneration}
+      storeLinks={storeLinks}
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
       initialMusicStyles={musicStyleOptions}

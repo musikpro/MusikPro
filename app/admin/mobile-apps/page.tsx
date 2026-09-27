@@ -1,5 +1,9 @@
-import AdminCatalogPage from "@/components/admin/AdminCatalogPage";
+import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
+import { AdminCatalogBody } from "@/components/admin/AdminCatalogPage";
+import StoreLinksPanel from "@/components/admin/StoreLinksPanel";
 import { requireAdmin } from "@/lib/auth/session";
+import { getStoreLinks } from "@/lib/settings/store-links";
 
 const apps = [
   {
@@ -38,14 +42,32 @@ const apps = [
 
 export default async function AdminMobileAppsPage() {
   await requireAdmin();
+  const storeLinks = await getStoreLinks();
   return (
-    <AdminCatalogPage
-      eyebrow="Distribution"
-      title="Applications mobiles"
-      description="Suit les canaux de diffusion sans dupliquer le backend du SaaS."
-      searchLabel="Rechercher une plateforme"
-      sourceNote="Le Web responsive reste le produit actif. Android et iOS sont optionnels et utiliseront l’URL HTTPS du SaaS via Capacitor WebView lorsque la Phase 21 sera activée."
-      items={apps}
-    />
+    <AdminPage>
+      <AdminPageHeader
+        eyebrow="Distribution"
+        title="Applications mobiles"
+        description="Suit les canaux de diffusion et configure les liens de téléchargement affichés aux clients."
+      />
+      <AdminTabs
+        ariaLabel="Applications mobiles"
+        tabs={[
+          { id: "channels", label: "Canaux de diffusion" },
+          { id: "store-links", label: "Liens des stores" },
+        ]}
+      >
+        <AdminTabPanel id="channels">
+          <AdminCatalogBody
+            items={apps}
+            searchLabel="Rechercher une plateforme"
+            sourceNote="Le Web responsive reste le produit actif. Android et iOS sont optionnels et utiliseront l’URL HTTPS du SaaS via Capacitor WebView lorsque la Phase 21 sera activée."
+          />
+        </AdminTabPanel>
+        <AdminTabPanel id="store-links">
+          <StoreLinksPanel status={storeLinks} />
+        </AdminTabPanel>
+      </AdminTabs>
+    </AdminPage>
   );
 }

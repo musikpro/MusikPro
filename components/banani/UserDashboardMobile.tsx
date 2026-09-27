@@ -16,6 +16,8 @@ import Image from "./Image";
 import StoreDownloadCard from "./StoreDownloadCard";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import SocialProofBadge from "./SocialProofBadge";
+import { formatPlays } from "@/lib/trending/format";
+import type { TrendingSong } from "@/lib/trending/server";
 
 const trendingSongs = [
   {
@@ -40,9 +42,25 @@ const trendingSongs = [
   },
 ];
 
-export default function UserDashboardMobile() {
+type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; href: string | null };
+
+export default function UserDashboardMobile({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
-  const visibleTrends = demo.isDemo ? trendingSongs : [];
+  const visibleTrends: TrendCard[] = demo.isDemo
+    ? trendingSongs.map((tc) => ({
+        key: tc.title,
+        title: tc.title,
+        playsLabel: tc.plays,
+        coverPrompt: tc.img,
+        href: null,
+      }))
+    : trending.map((song) => ({
+        key: song.slug,
+        title: song.title,
+        playsLabel: formatPlays(song.plays),
+        coverPrompt: null,
+        href: `/s/${song.slug}`,
+      }));
   const [launching, setLaunching] = useState(false);
   const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -204,28 +222,47 @@ export default function UserDashboardMobile() {
           {visibleTrends.length === 0 && (
             <div className="col-span-2 rounded-xl border border-border bg-card px-5 py-7 text-center">
               <Icon i="headphones" size={24} className="mx-auto mb-2 text-primary" />
-              <p className="text-sm font-semibold text-foreground">Aucune tendance disponible</p>
+              <p className="text-sm font-semibold text-foreground">{t("Aucune tendance disponible")}</p>
               <p className="mt-1 text-xs text-muted-foreground">{t("Les chansons publiées apparaîtront ici.")}</p>
             </div>
           )}
           {visibleTrends.map((t2) => (
-            <div key={t2.title} className="rounded-xl overflow-hidden relative">
-              <Image ar="1:1" prompt={t2.img} className="w-full" />
+            <div key={t2.key} className="rounded-xl overflow-hidden relative">
+              {t2.coverPrompt ? (
+                <Image ar="1:1" prompt={t2.coverPrompt} className="w-full" />
+              ) : (
+                <div className="musik-trend-brand-cover w-full aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/icon.svg" alt="" />
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-3">
                 <p className="text-white font-bold text-xs">{t2.title}</p>
                 <p className="text-white/70 text-xs flex items-center gap-1">
-                  <Icon i="headphones" size={10} /> {t2.plays}
+                  <Icon i="headphones" size={10} /> {t2.playsLabel}
                 </p>
               </div>
-              <button
-                type="button"
-                data-demo-ready
-                onClick={() => demo.openSong(t2.title)}
-                aria-label="Écouter la chanson"
-                className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
-              >
-                <Icon i="play" size={12} className="text-primary-foreground" />
-              </button>
+              {t2.href ? (
+                <a
+                  href={t2.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Écouter la chanson"
+                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                >
+                  <Icon i="play" size={12} className="text-primary-foreground" />
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  data-demo-ready
+                  onClick={() => demo.openSong(t2.title)}
+                  aria-label="Écouter la chanson"
+                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                >
+                  <Icon i="play" size={12} className="text-primary-foreground" />
+                </button>
+              )}
             </div>
           ))}
         </div>

@@ -2288,7 +2288,8 @@
   gap: 10px;
 }
 
-.musik-store-actions button {
+.musik-store-actions button,
+.musik-store-actions a {
   min-width: 0;
   min-height: 52px;
   display: flex;
@@ -2300,10 +2301,12 @@
   border-radius: 13px;
   background: #111;
   color: #fff;
+  text-decoration: none;
   box-shadow: 0 7px 18px rgb(0 0 0 / 16%);
 }
 
-.musik-store-actions button > span {
+.musik-store-actions button > span,
+.musik-store-actions a > span {
   min-width: 0;
   display: grid;
   text-align: left;
@@ -2339,6 +2342,21 @@
 
 .musik-store-card-compact .musik-store-actions {
   grid-template-columns: 1fr;
+}
+
+.musik-trend-brand-cover {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #fff1e6, #ffe0cc);
+}
+
+.musik-trend-brand-cover img {
+  width: 42%;
+  height: 42%;
+  object-fit: contain;
 }
 
 .story-mic-button {

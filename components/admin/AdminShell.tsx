@@ -42,6 +42,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/languages", icon: "languages", label: "Langues et Monnaies" },
       { href: "/admin/ai-providers", icon: "cpu", label: "Fournisseurs IA" },
       { href: "/admin/ambient-music", icon: "music-4", label: "Musique d'ambiance" },
+      { href: "/admin/trending", icon: "trending-up", label: "Tendances" },
     ],
   },
   {

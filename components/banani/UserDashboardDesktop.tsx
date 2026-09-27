@@ -17,6 +17,8 @@ import AmbientPlayerButton from "./AmbientPlayerButton";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
 import SocialProofBadge from "./SocialProofBadge";
+import { formatPlays } from "@/lib/trending/format";
+import type { TrendingSong } from "@/lib/trending/server";
 
 const trendingCards = [
   {
@@ -41,9 +43,25 @@ const trendingCards = [
   },
 ];
 
-export default function UserDashboardDesktop() {
+type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; href: string | null };
+
+export default function UserDashboardDesktop({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
-  const visibleTrends = demo.isDemo ? trendingCards : [];
+  const visibleTrends: TrendCard[] = demo.isDemo
+    ? trendingCards.map((tc) => ({
+        key: tc.title,
+        title: tc.title,
+        playsLabel: tc.plays,
+        coverPrompt: tc.img,
+        href: null,
+      }))
+    : trending.map((song) => ({
+        key: song.slug,
+        title: song.title,
+        playsLabel: formatPlays(song.plays),
+        coverPrompt: null,
+        href: `/s/${song.slug}`,
+      }));
   const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recentSongs = demo.songs.slice(0, 2).map((song) => {
@@ -240,23 +258,42 @@ export default function UserDashboardDesktop() {
                   </div>
                 )}
                 {visibleTrends.map((tc) => (
-                  <div key={tc.title} className="rounded-xl overflow-hidden relative h-28">
-                    <Image ar="16:9" prompt={tc.img} className="w-full h-full object-cover" />
+                  <div key={tc.key} className="rounded-xl overflow-hidden relative h-28">
+                    {tc.coverPrompt ? (
+                      <Image ar="16:9" prompt={tc.coverPrompt} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="musik-trend-brand-cover">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src="/icon.svg" alt="" />
+                      </div>
+                    )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">
                       <p className="text-white font-bold text-sm">{tc.title}</p>
                       <p className="text-white/70 text-xs flex items-center gap-1">
-                        <Icon i="headphones" size={10} /> {tc.plays}
+                        <Icon i="headphones" size={10} /> {tc.playsLabel}
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      data-demo-ready
-                      onClick={() => demo.openSong(tc.title)}
-                      aria-label="Écouter la chanson"
-                      className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
-                    >
-                      <Icon i="play" size={12} className="text-primary-foreground" />
-                    </button>
+                    {tc.href ? (
+                      <a
+                        href={tc.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Écouter la chanson"
+                        className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                      >
+                        <Icon i="play" size={12} className="text-primary-foreground" />
+                      </a>
+                    ) : (
+                      <button
+                        type="button"
+                        data-demo-ready
+                        onClick={() => demo.openSong(tc.title)}
+                        aria-label="Écouter la chanson"
+                        className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                      >
+                        <Icon i="play" size={12} className="text-primary-foreground" />
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>

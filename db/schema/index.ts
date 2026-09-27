@@ -340,6 +340,28 @@ export const ambientBackgroundTrack = pgTable("ambient_background_track", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/** Réglage global unique : liens vers les fiches Google Play / App Store affichés dans la boîte "Télécharger l'application" du tableau de bord client. */
+export const mobileStoreLinks = pgTable("mobile_store_links", {
+  id: text("id").primaryKey().default("global"),
+  googlePlayUrl: text("google_play_url"),
+  appStoreUrl: text("app_store_url"),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/** Réglage global unique : mode d'alimentation du widget "Tendances" du tableau de bord client. */
+export const trendingSettings = pgTable("trending_settings", {
+  id: text("id").primaryKey().default("global"),
+  mode: text("mode").notNull().default("auto"),
+  count: integer("count").notNull().default(3),
+  /** Si vrai, `count` chansons sont tirées au hasard parmi le vivier (jusqu'à 10) à chaque visite. */
+  randomize: boolean("randomize").notNull().default(false),
+  /** Vivier manuel ordonné (jusqu'à 10 songGroupId) — voir lib/trending/server.ts. */
+  manualSelection: jsonb("manual_selection").notNull().default([]),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const paymentCountryRoutes = pgTable(
   "payment_country_routes",
   {

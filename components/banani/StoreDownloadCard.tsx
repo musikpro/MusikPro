@@ -28,25 +28,46 @@ function AppleLogo() {
 export default function StoreDownloadCard({ compact = false }: { compact?: boolean }) {
   const demo = useDemo();
   const unavailable = () => demo.notify("L’application MusikPro sera bientôt disponible sur les stores.");
+  const { googlePlayUrl, appStoreUrl } = demo.storeLinks;
   return (
     <section className={`musik-store-card ${compact ? "musik-store-card-compact" : ""}`}>
       <h2>{t("Télécharger l’application MusikPro")}</h2>
       <p>{t("Créez vos chansons partout, à tout moment.")}</p>
       <div className="musik-store-actions">
-        <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur Google Play">
-          <GooglePlayLogo />
-          <span>
-            <small>Disponible sur</small>
-            <strong>Google Play</strong>
-          </span>
-        </button>
-        <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur l’App Store">
-          <AppleLogo />
-          <span>
-            <small>Télécharger dans</small>
-            <strong>l’App Store</strong>
-          </span>
-        </button>
+        {googlePlayUrl ? (
+          <a href={googlePlayUrl} target="_blank" rel="noopener noreferrer" aria-label="Télécharger MusikPro sur Google Play">
+            <GooglePlayLogo />
+            <span>
+              <small>Disponible sur</small>
+              <strong>Google Play</strong>
+            </span>
+          </a>
+        ) : (
+          <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur Google Play">
+            <GooglePlayLogo />
+            <span>
+              <small>Disponible sur</small>
+              <strong>Google Play</strong>
+            </span>
+          </button>
+        )}
+        {appStoreUrl ? (
+          <a href={appStoreUrl} target="_blank" rel="noopener noreferrer" aria-label="Télécharger MusikPro sur l’App Store">
+            <AppleLogo />
+            <span>
+              <small>Télécharger dans</small>
+              <strong>l’App Store</strong>
+            </span>
+          </a>
+        ) : (
+          <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur l’App Store">
+            <AppleLogo />
+            <span>
+              <small>Télécharger dans</small>
+              <strong>l’App Store</strong>
+            </span>
+          </button>
+        )}
       </div>
     </section>
   );

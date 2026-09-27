@@ -69,6 +69,7 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
 }
 
 type DemoProfile = { name: string; email: string; location: string };
+type StoreLinks = { googlePlayUrl: string | null; appStoreUrl: string | null };
 
 function useDemoState(
   mode: "demo" | "real",
@@ -87,6 +88,7 @@ function useDemoState(
   versionsPerGeneration: number,
   initialPhonePrefixes: PhonePrefixOption[],
   initialDetectedCurrency: CreditCurrencyCode | null,
+  storeLinks: StoreLinks,
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -630,6 +632,7 @@ function useDemoState(
     isDemo,
     paymentBypassEnabled,
     versionsPerGeneration,
+    storeLinks,
     balance,
     pathname,
     href,
@@ -763,6 +766,7 @@ export function DemoProvider({
   versionsPerGeneration = 1,
   initialPhonePrefixes,
   initialDetectedCurrency,
+  storeLinks = { googlePlayUrl: null, appStoreUrl: null },
 }: {
   children: ReactNode;
   mode: "demo" | "real";
@@ -781,6 +785,7 @@ export function DemoProvider({
   versionsPerGeneration?: number;
   initialPhonePrefixes: PhonePrefixOption[];
   initialDetectedCurrency: CreditCurrencyCode | null;
+  storeLinks?: StoreLinks;
 }) {
   const state = useDemoState(
     mode,
@@ -799,6 +804,7 @@ export function DemoProvider({
     versionsPerGeneration,
     initialPhonePrefixes,
     initialDetectedCurrency,
+    storeLinks,
   );
   const [offline, setOffline] = useState(false);
   useEffect(() => {

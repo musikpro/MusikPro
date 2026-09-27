@@ -23,26 +23,21 @@ const statusLabels = {
   beta: "Bêta",
 };
 
-export default function AdminCatalogPage({
-  eyebrow,
-  title,
-  description,
-  searchLabel,
+/**
+ * Toolbar + filterable grid shared by AdminCatalogPage below. Exposed on its own so a page that
+ * needs the catalog alongside another box (e.g. under AdminTabs, per CLAUDE.md's tabs rule) can
+ * reuse it without the extra AdminPage/AdminPageHeader wrapper.
+ */
+export function AdminCatalogBody({
   items,
-  action,
+  searchLabel,
   sourceNote,
-  banner,
   emptyTitle = "Aucun résultat",
   emptyDescription = "Modifie la recherche ou le statut sélectionné.",
 }: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  searchLabel: string;
   items: AdminCatalogItem[];
-  action?: { href: string; label: string };
+  searchLabel: string;
   sourceNote?: string;
-  banner?: ReactNode;
   emptyTitle?: string;
   emptyDescription?: string;
 }) {
@@ -63,11 +58,9 @@ export default function AdminCatalogPage({
   }, [items, query, status]);
 
   return (
-    <AdminPage>
-      <AdminPageHeader eyebrow={eyebrow} title={title} description={description} action={action} />
-      {banner}
+    <>
       {sourceNote && hasUnconnectedItems ? <AdminSourceNotice>{sourceNote}</AdminSourceNotice> : null}
-      <section className="admin-catalog-toolbar" aria-label={`Filtres ${title}`}>
+      <section className="admin-catalog-toolbar" aria-label={`Filtres ${searchLabel}`}>
         <label className="admin-search-field">
           <Icon i="search" size={17} />
           <span className="sr-only">{searchLabel}</span>
@@ -135,6 +128,44 @@ export default function AdminCatalogPage({
           <p>{emptyDescription}</p>
         </div>
       )}
+    </>
+  );
+}
+
+export default function AdminCatalogPage({
+  eyebrow,
+  title,
+  description,
+  searchLabel,
+  items,
+  action,
+  sourceNote,
+  banner,
+  emptyTitle,
+  emptyDescription,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  searchLabel: string;
+  items: AdminCatalogItem[];
+  action?: { href: string; label: string };
+  sourceNote?: string;
+  banner?: ReactNode;
+  emptyTitle?: string;
+  emptyDescription?: string;
+}) {
+  return (
+    <AdminPage>
+      <AdminPageHeader eyebrow={eyebrow} title={title} description={description} action={action} />
+      {banner}
+      <AdminCatalogBody
+        items={items}
+        searchLabel={searchLabel}
+        sourceNote={sourceNote}
+        emptyTitle={emptyTitle}
+        emptyDescription={emptyDescription}
+      />
     </AdminPage>
   );
 }

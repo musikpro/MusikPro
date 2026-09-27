@@ -1,0 +1,1 @@
+ALTER TABLE "trending_settings" ADD COLUMN "randomize" boolean DEFAULT false NOT NULL;
