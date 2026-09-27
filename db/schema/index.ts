@@ -327,6 +327,19 @@ export const paymentBypassSettings = pgTable("payment_bypass_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/** Réglage global unique : la chanson jouée en fond sonore sur l'accueil du tableau de bord (démo et comptes réels). */
+export const ambientBackgroundTrack = pgTable("ambient_background_track", {
+  id: text("id").primaryKey().default("global"),
+  enabled: boolean("enabled").notNull().default(false),
+  songGroupId: text("song_group_id"),
+  jobId: text("job_id"),
+  title: text("title"),
+  audioUrl: text("audio_url"),
+  volumePercent: integer("volume_percent").notNull().default(20),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const paymentCountryRoutes = pgTable(
   "payment_country_routes",
   {

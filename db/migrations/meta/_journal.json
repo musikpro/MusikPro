@@ -246,6 +246,13 @@
       "when": 1790504051000,
       "tag": "0034_song_publications_grant",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1790529221585,
+      "tag": "0035_panoramic_kronos",
+      "breakpoints": true
     }
   ]
 }
