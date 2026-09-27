@@ -253,6 +253,13 @@
       "when": 1790529221585,
       "tag": "0035_panoramic_kronos",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1790529629948,
+      "tag": "0036_ambient_track_grants",
+      "breakpoints": true
     }
   ]
 }
