@@ -5648,29 +5648,33 @@ span.musik-user-avatar {
 .ambient-player-button {
   width: 36px;
   height: 36px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   flex-shrink: 0;
 }
 
 .ambient-player-button.is-compact {
   width: 28px;
   height: 28px;
+  gap: 1px;
 }
 
 .ambient-player-button-waveform {
-  position: absolute;
-  bottom: 2px;
-  right: 0;
-  height: 8px;
+  display: flex;
   align-items: flex-end;
-  gap: 1.5px;
+  justify-content: center;
+  gap: 2px;
+  height: 7px;
+  width: 100%;
   pointer-events: none;
 }
 
 .ambient-player-button-bar {
   display: block;
-  width: 2px;
+  width: 3px;
   border-radius: 1px;
   background: var(--color-primary);
   transform: scaleY(0.45);

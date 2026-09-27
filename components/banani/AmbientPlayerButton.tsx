@@ -19,7 +19,7 @@ export default function AmbientPlayerButton({ compact = false }: { compact?: boo
       type="button"
       onClick={toggleMuted}
       aria-label={muted ? t("Réactiver le son de la musique d'ambiance") : t("Couper le son de la musique d'ambiance")}
-      className={`ambient-player-button relative ${compact ? "is-compact" : ""}`}
+      className={`ambient-player-button ${compact ? "is-compact" : ""}`}
     >
       <Icon i={muted ? "volume-x" : "volume-2"} size={compact ? 15 : 18} className="text-muted-foreground" />
       <span
