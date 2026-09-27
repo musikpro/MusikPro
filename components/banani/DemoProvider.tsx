@@ -686,13 +686,18 @@ function useDemoState(
         notify("Impossible de retirer cette chanson pour le moment.");
       }
     },
-    publishSong: async (id: string | number): Promise<string | null> => {
+    publishSong: async (id: string | number, jobId?: string): Promise<string | null> => {
       if (isDemo) {
         notify("Action de démonstration : aucune opération réelle effectuée.");
         return null;
       }
       try {
-        const result = await apiFetch<{ url: string }>(`/api/songs/${id}/publish`, { method: "POST" });
+        const result = await apiFetch<{ url: string }>(`/api/songs/${id}/publish`, {
+          method: "POST",
+          ...(jobId
+            ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId }) }
+            : {}),
+        });
         return result.url;
       } catch (error) {
         notify(error instanceof ApiClientError ? error.message : t("Impossible de publier cette chanson pour le moment."));

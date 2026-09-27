@@ -11,6 +11,7 @@ export const runtime = "nodejs";
 type Ctx = { params: Promise<{ groupId: string }> };
 
 const groupIdSchema = z.string().uuid();
+const bodySchema = z.object({ jobId: z.string().min(1).max(200).optional() });
 
 export async function POST(request: Request, ctx: Ctx) {
   const originFailure = rejectCrossSiteMutation(request);
@@ -22,6 +23,14 @@ export async function POST(request: Request, ctx: Ctx) {
   const parsedId = groupIdSchema.safeParse((await ctx.params).groupId);
   if (!parsedId.success) return NextResponse.json({ error: "Identifiant invalide." }, { status: 400 });
 
+  let rawBody: unknown = {};
+  const contentLength = request.headers.get("content-length");
+  if (contentLength && contentLength !== "0") {
+    rawBody = await request.json().catch(() => ({}));
+  }
+  const parsedBody = bodySchema.safeParse(rawBody);
+  if (!parsedBody.success) return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
+
   const limit = await rateLimit(`songs:publish:${session.user.id}:${clientIp(request)}`, 20);
   if (limit.backend === "unavailable")
     return NextResponse.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
@@ -29,7 +38,7 @@ export async function POST(request: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
 
   try {
-    const { slug } = await publishSongGroup(session.user.id, parsedId.data);
+    const { slug } = await publishSongGroup(session.user.id, parsedId.data, parsedBody.data.jobId);
     await writeAuditLog({
       action: "musicful.song.published",
       actorId: session.user.id,

@@ -33,6 +33,10 @@ export default function MySongsGenerated() {
   const coverInputRef = useRef<HTMLInputElement | null>(null);
   const [coverTargetId, setCoverTargetId] = useState<string | number | null>(null);
   const [uploadingCoverId, setUploadingCoverId] = useState<string | number | null>(null);
+  const [versionPickerTarget, setVersionPickerTarget] = useState<{
+    songId: string | number;
+    action: "publish" | "download";
+  } | null>(null);
 
   useEffect(() => {
     if (demo.isDemo) return;
@@ -40,6 +44,20 @@ export default function MySongsGenerated() {
     // Refresh once on mount only: the interval below takes over polling while a song is still processing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo.isDemo]);
+
+  useEffect(() => {
+    if (!versionPickerTarget) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setVersionPickerTarget(null);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [versionPickerTarget]);
 
   const hasPendingSong = demo.songs.some((song) => song.status === "processing");
   useEffect(() => {
@@ -78,22 +96,73 @@ export default function MySongsGenerated() {
     if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
   };
 
-  const publishCard = async (song: (typeof demo.songs)[number]) => {
+  const publishCard = async (
+    song: (typeof demo.songs)[number],
+    version?: (typeof demo.songs)[number]["versions"][number],
+  ) => {
+    if (demo.isDemo) {
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      return;
+    }
+    const chosen = version ?? song.versions[0];
+    if (!chosen?.audioUrl) {
+      demo.notify(t("Cette chanson n'est pas encore prête à être publiée."));
+      return;
+    }
+    const url = await demo.publishSong(song.id, version?.jobId);
+    if (!url) return;
+    const result = await shareLink(url, song.title, "Écoute ma chanson créée sur MusikPro !");
+    if (result === "copied") demo.notify(t("Lien public copié dans le presse-papiers."));
+    if (result === "shared") demo.notify(t("Chanson publiée et partagée !"));
+    if (result === "failed") demo.notify(translateTemplate("Chanson publiée : {url}", { url }));
+  };
+
+  // "Publier" et "Télécharger" proposent tous les deux le même petit choix de version quand la
+  // chanson a plusieurs versions prêtes (une seule boîte réutilisée pour les deux actions).
+  // Republier avec une version différente met à jour le même lien déjà partagé plutôt que d'en
+  // créer un second (voir publishSongGroup dans lib/ai/songs.ts).
+  const handlePublishClick = (song: (typeof demo.songs)[number]) => {
+    if (demo.isDemo) {
+      void publishCard(song);
+      return;
+    }
+    const readyVersions = song.versions.filter((v) => v.audioUrl && v.status === "completed");
+    if (readyVersions.length > 1) {
+      setVersionPickerTarget({ songId: song.id, action: "publish" });
+      return;
+    }
+    void publishCard(song, readyVersions[0]);
+  };
+
+  const handleDownloadClick = (song: (typeof demo.songs)[number]) => {
     const primary = song.versions[0];
     if (demo.isDemo) {
       demo.notify("Action de démonstration : aucune opération réelle effectuée.");
       return;
     }
     if (!primary?.audioUrl) {
-      demo.notify(t("Cette chanson n'est pas encore prête à être publiée."));
+      demo.notify("Cette chanson n'est pas encore prête à être téléchargée.");
       return;
     }
-    const url = await demo.publishSong(song.id);
-    if (!url) return;
-    const result = await shareLink(url, song.title, "Écoute ma chanson créée sur MusikPro !");
-    if (result === "copied") demo.notify(t("Lien public copié dans le presse-papiers."));
-    if (result === "shared") demo.notify(t("Chanson publiée et partagée !"));
-    if (result === "failed") demo.notify(translateTemplate("Chanson publiée : {url}", { url }));
+    const readyVersions = song.versions.filter((v) => v.audioUrl && v.status === "completed");
+    if (readyVersions.length > 1) {
+      setVersionPickerTarget({ songId: song.id, action: "download" });
+      return;
+    }
+    void downloadVersion(song.title, primary.label, primary.audioUrl);
+  };
+
+  const chooseVersionForPicker = (
+    song: (typeof demo.songs)[number],
+    version: (typeof demo.songs)[number]["versions"][number],
+  ) => {
+    const action = versionPickerTarget?.action;
+    setVersionPickerTarget(null);
+    if (action === "download") {
+      if (version.audioUrl) void downloadVersion(song.title, version.label, version.audioUrl);
+      return;
+    }
+    void publishCard(song, version);
   };
 
   const openPosterPicker = (songId: string | number) => {
@@ -372,31 +441,13 @@ export default function MySongsGenerated() {
             {/* Divider */}
             <div className="border-t border-border mx-4" />
 
-            {/* Share / Publish / Download / Poster */}
+            {/* Publish / Download / Poster */}
             <div className="song-share-actions px-4 pt-3 flex items-center gap-2">
               <button
                 type="button"
                 data-demo-ready="true"
                 disabled={!demo.isDemo && !primaryVersion?.audioUrl}
-                onClick={() => {
-                  if (demo.isDemo) {
-                    demo.notify("Action de démonstration : aucune opération réelle effectuée.");
-                  } else if (!primaryVersion?.audioUrl) {
-                    demo.notify("Cette chanson n'est pas encore prête à être partagée.");
-                  } else {
-                    void shareVersion(song.title, primaryVersion.label, primaryVersion.audioUrl);
-                  }
-                }}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-full bg-coral text-white px-3 py-2 text-xs font-semibold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
-              >
-                <Icon i="share-2" size={14} />
-                {t("Partager")}
-              </button>
-              <button
-                type="button"
-                data-demo-ready="true"
-                disabled={!demo.isDemo && !primaryVersion?.audioUrl}
-                onClick={() => void publishCard(song)}
+                onClick={() => handlePublishClick(song)}
                 className={`flex-1 flex items-center justify-center gap-1.5 rounded-full bg-foreground text-background px-3 py-2 text-xs font-semibold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
               >
                 <Icon i="globe" size={14} />
@@ -406,15 +457,7 @@ export default function MySongsGenerated() {
                 type="button"
                 data-demo-ready="true"
                 disabled={!demo.isDemo && !primaryVersion?.audioUrl}
-                onClick={() => {
-                  if (demo.isDemo) {
-                    demo.notify("Action de démonstration : aucune opération réelle effectuée.");
-                  } else if (!primaryVersion?.audioUrl) {
-                    demo.notify("Cette chanson n'est pas encore prête à être téléchargée.");
-                  } else {
-                    void downloadVersion(song.title, primaryVersion.label, primaryVersion.audioUrl);
-                  }
-                }}
+                onClick={() => handleDownloadClick(song)}
                 className={`flex-1 flex items-center justify-center gap-1.5 rounded-full border border-border bg-input px-3 py-2 text-xs font-semibold text-foreground ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
               >
                 <Icon i="download" size={14} />
@@ -488,6 +531,59 @@ export default function MySongsGenerated() {
         onChange={(event) => void handleCoverFileChange(event)}
         className="hidden"
       />
+
+      {/* Fenêtre flottante commune — "Publier" et "Télécharger" y renvoient tous les deux quand
+          la chanson a 2+ versions prêtes, pour choisir laquelle envoyer/télécharger. */}
+      {versionPickerTarget
+        ? (() => {
+            const pickerSong = demo.songs.find((s) => s.id === versionPickerTarget.songId);
+            if (!pickerSong) return null;
+            const readyVersions = pickerSong.versions.filter((v) => v.audioUrl && v.status === "completed");
+            return (
+              <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
+                <button
+                  type="button"
+                  aria-label={t("Fermer")}
+                  onClick={() => setVersionPickerTarget(null)}
+                  className="absolute inset-0 bg-black/50"
+                />
+                <div
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="version-picker-title"
+                  className="relative w-full max-w-xs rounded-xl bg-card border border-border p-4 flex flex-col gap-3 shadow-xl"
+                >
+                  <p id="version-picker-title" className="text-sm font-semibold text-foreground">
+                    {versionPickerTarget.action === "download"
+                      ? t("Quelle version télécharger ?")
+                      : t("Quelle version envoyer ?")}
+                  </p>
+                  <div className="flex flex-col gap-1.5">
+                    {readyVersions.map((v) => (
+                      <button
+                        key={v.jobId}
+                        type="button"
+                        onClick={() => chooseVersionForPicker(pickerSong, v)}
+                        className="flex items-center justify-between gap-2 rounded-md border border-border bg-input px-3 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary"
+                      >
+                        <span>{v.label}</span>
+                        <span className="font-normal text-muted-foreground">{v.duration}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setVersionPickerTarget(null)}
+                    className="self-center text-xs text-muted-foreground underline"
+                  >
+                    {t("Annuler")}
+                  </button>
+                </div>
+              </div>
+            );
+          })()
+        : null}
+
       <MobileBottomNav activeTab={t("Mes chansons")} />
     </div>
   );

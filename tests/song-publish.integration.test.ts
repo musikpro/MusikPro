@@ -95,4 +95,62 @@ describe.runIf(process.env.RUN_DB_INTEGRATION_TESTS === "1")("Song publication (
       await db.delete(user).where(eq(user.id, otherId));
     }
   }, 30000);
+
+  it("lets a republish switch which version the existing slug serves", async () => {
+    const { db, getServiceDb } = await import("@/db");
+    const { publishSongGroup, getPublicSongBySlug, SongNotReadyError } = await import("@/lib/ai/songs");
+    const service = getServiceDb();
+
+    const ownerId = randomUUID();
+    const groupId = randomUUID();
+    const version1JobId = randomUUID();
+    const version2JobId = randomUUID();
+
+    try {
+      await db.insert(user).values({ id: ownerId, name: "Publish version-switch owner", email: `${ownerId}@example.invalid` });
+      await service.insert(musicGenerationJobs).values([
+        {
+          id: version1JobId,
+          userId: ownerId,
+          model: "test",
+          status: "completed",
+          audioUrl: "https://cdn.example.invalid/version-1.mp3",
+          title: "Chanson à deux versions",
+          songGroupId: groupId,
+          versionLabel: "Version 1",
+        },
+        {
+          id: version2JobId,
+          userId: ownerId,
+          model: "test",
+          status: "completed",
+          audioUrl: "https://cdn.example.invalid/version-2.mp3",
+          title: "Chanson à deux versions",
+          songGroupId: groupId,
+          versionLabel: "Version 2",
+        },
+      ]);
+
+      // An unknown jobId (not part of this group) is rejected rather than silently falling
+      // back to the first version.
+      await expect(publishSongGroup(ownerId, groupId, "not-a-real-job-id")).rejects.toThrow(SongNotReadyError);
+
+      // Publishing with an explicit jobId picks that version, not versions[0].
+      const first = await publishSongGroup(ownerId, groupId, version2JobId);
+      expect((await getPublicSongBySlug(first.slug))?.audioUrl).toBe("https://cdn.example.invalid/version-2.mp3");
+
+      // Republishing with a different jobId keeps the SAME slug (link stays valid) but now
+      // serves the newly chosen version.
+      const second = await publishSongGroup(ownerId, groupId, version1JobId);
+      expect(second.slug).toBe(first.slug);
+      expect((await getPublicSongBySlug(second.slug))?.audioUrl).toBe("https://cdn.example.invalid/version-1.mp3");
+
+      const rows = await service.select().from(songPublications).where(eq(songPublications.songGroupId, groupId));
+      expect(rows).toHaveLength(1);
+    } finally {
+      await service.delete(songPublications).where(eq(songPublications.songGroupId, groupId));
+      await service.delete(musicGenerationJobs).where(eq(musicGenerationJobs.songGroupId, groupId));
+      await db.delete(user).where(eq(user.id, ownerId));
+    }
+  }, 30000);
 });

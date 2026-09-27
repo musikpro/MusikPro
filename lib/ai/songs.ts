@@ -238,23 +238,35 @@ export async function setSongGroupCover(userId: string, songGroupId: string, cov
 
 export class SongNotReadyError extends Error {}
 
-export async function publishSongGroup(userId: string, songGroupId: string): Promise<{ slug: string }> {
+/**
+ * `jobId` lets the caller pick which version (when a song has more than one) becomes the one
+ * served at the public link. Omitting it keeps the original behavior (first version, and a
+ * pure idempotent no-op if already published). Passing it on a song that's already published
+ * updates which version that SAME slug serves, rather than minting a second link — a link once
+ * shared stays valid, it just starts playing the newly chosen take.
+ */
+export async function publishSongGroup(userId: string, songGroupId: string, jobId?: string): Promise<{ slug: string }> {
   const database = getServiceDb();
   const [existing] = await database
     .select({ slug: songPublications.slug })
     .from(songPublications)
     .where(and(eq(songPublications.songGroupId, songGroupId), eq(songPublications.userId, userId)));
-  if (existing) return { slug: existing.slug };
+  if (existing && !jobId) return { slug: existing.slug };
 
   const group = await getSongGroupForUser(userId, songGroupId);
   if (!group) throw new MusicJobOwnershipError();
-  const primary = group.versions[0];
-  if (!primary?.audioUrl || primary.status !== "completed") throw new SongNotReadyError();
+  const chosen = jobId ? group.versions.find((version) => version.jobId === jobId) : group.versions[0];
+  if (!chosen?.audioUrl || chosen.status !== "completed") throw new SongNotReadyError();
+
+  if (existing) {
+    await database.update(songPublications).set({ jobId: chosen.jobId }).where(eq(songPublications.songGroupId, songGroupId));
+    return { slug: existing.slug };
+  }
 
   for (let attempt = 0; attempt < 3; attempt++) {
     const slug = randomBytes(6).toString("base64url");
     try {
-      await database.insert(songPublications).values({ songGroupId, userId, slug, jobId: primary.jobId });
+      await database.insert(songPublications).values({ songGroupId, userId, slug, jobId: chosen.jobId });
       return { slug };
     } catch (error) {
       if (attempt === 2) throw error;

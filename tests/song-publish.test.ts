@@ -10,13 +10,13 @@ describe("Song publication (static regression)", () => {
   it("returns the existing slug instead of creating a second row (idempotent publish)", async () => {
     const source = await fs.readFile("lib/ai/songs.ts", "utf8");
     expect(source).toContain("export async function publishSongGroup(");
-    expect(source).toContain("if (existing) return { slug: existing.slug };");
+    expect(source).toContain("if (existing && !jobId) return { slug: existing.slug };");
   });
 
-  it("refuses to publish a song whose primary version isn't completed", async () => {
+  it("refuses to publish a song whose chosen version isn't completed", async () => {
     const source = await fs.readFile("lib/ai/songs.ts", "utf8");
     expect(source).toContain("export class SongNotReadyError extends Error {}");
-    expect(source).toContain("if (!primary?.audioUrl || primary.status !== \"completed\") throw new SongNotReadyError();");
+    expect(source).toContain('if (!chosen?.audioUrl || chosen.status !== "completed") throw new SongNotReadyError();');
   });
 
   it("never selects a public song row without a completed, audio-ready job", async () => {
