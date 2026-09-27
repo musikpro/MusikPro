@@ -77,6 +77,13 @@ export default async function PublicSongPage({ params }: Params) {
           seekLabel={t("Progression de la lecture")}
         />
       </div>
+      <div className="psp-cta">
+        <p className="psp-cta-text">{t("Toi aussi, offre une chanson unique à tes proches.")}</p>
+        <Link href="/register" className="psp-cta-button">
+          <Icon i="sparkles" size={17} />
+          {t("Créer ma musique avec MusikPro")}
+        </Link>
+      </div>
       <p className="psp-footer">
         {t("Créé avec")}{" "}
         <Link href="/">MusikPro</Link>
