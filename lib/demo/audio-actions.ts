@@ -31,19 +31,24 @@ export async function downloadAudioFile(audioUrl: string, baseName: string): Pro
   }
 }
 
-export async function shareAudioFile(
-  audioUrl: string,
+export async function shareLink(
+  url: string,
   title: string,
+  text: string,
 ): Promise<"shared" | "copied" | "cancelled" | "failed"> {
   try {
     if (navigator.share) {
-      await navigator.share({ title, text: "Écoute cette chanson créée sur MusikPro !", url: audioUrl });
+      await navigator.share({ title, text, url });
       return "shared";
     }
-    await navigator.clipboard.writeText(audioUrl);
+    await navigator.clipboard.writeText(url);
     return "copied";
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") return "cancelled";
     return "failed";
   }
+}
+
+export async function shareAudioFile(audioUrl: string, title: string) {
+  return shareLink(audioUrl, title, "Écoute cette chanson créée sur MusikPro !");
 }

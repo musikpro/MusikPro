@@ -20,5 +20,6 @@ export type WorkspaceSong = {
   date: string;
   lyrics: string;
   status?: "processing" | "completed" | "failed";
+  coverUrl?: string | null;
   versions: WorkspaceSongVersion[];
 };
