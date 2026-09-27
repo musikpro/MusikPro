@@ -5644,3 +5644,39 @@ span.musik-user-avatar {
     transition: none !important;
   }
 }
+
+.ambient-player-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: var(--color-card);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+}
+
+.ambient-player-waveform {
+  height: 16px;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.ambient-player-title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ambient-player-mute-button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: var(--color-input);
+  color: var(--color-foreground);
+  flex-shrink: 0;
+}
