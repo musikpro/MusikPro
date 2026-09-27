@@ -2,7 +2,7 @@ import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";
 
-type Locale = "fr" | "en" | "es" | "pt";
+export type Locale = "fr" | "en" | "es" | "pt";
 
 /**
  * Shape stored in an admin-managed catalog row's `translations` jsonb column (occasions, music
@@ -19,10 +19,20 @@ export type CatalogTranslations = Partial<Record<Exclude<Locale, "fr">, Record<s
  */
 const dictionaries: Record<Exclude<Locale, "fr">, Record<string, string>> = { en, es, pt };
 
+/**
+ * Locale-driven core shared by translate() (client-side, reads document.documentElement.lang)
+ * and request-locale.ts's Accept-Language-driven resolution for pages with no client-side
+ * language detector mounted (e.g. app/s/[slug], which has no authenticated session or
+ * DemoProvider to read a saved preference from).
+ */
+export function translateForLocale(text: string, locale: Locale): string {
+  return locale === "fr" ? text : (dictionaries[locale]?.[text] ?? text);
+}
+
 export function translate(text: string): string {
   if (typeof document === "undefined") return text;
   const locale = document.documentElement.lang.split("-")[0] as Locale;
-  return locale === "fr" ? text : (dictionaries[locale]?.[text] ?? text);
+  return translateForLocale(text, locale);
 }
 
 /**
@@ -32,11 +42,21 @@ export function translate(text: string): string {
  * scriptable translation key (scripts/i18n-sync.mts only extracts literal t("...") strings).
  * Example: translateTemplate("Maximum {count} mots", { count: MAX_WORDS })
  */
-export function translateTemplate(text: string, params: Record<string, string | number>): string {
+export function translateTemplateForLocale(
+  text: string,
+  params: Record<string, string | number>,
+  locale: Locale,
+): string {
   return Object.entries(params).reduce(
     (result, [key, value]) => result.replaceAll(`{${key}}`, String(value)),
-    translate(text),
+    translateForLocale(text, locale),
   );
+}
+
+export function translateTemplate(text: string, params: Record<string, string | number>): string {
+  if (typeof document === "undefined") return translateTemplateForLocale(text, params, "fr");
+  const locale = document.documentElement.lang.split("-")[0] as Locale;
+  return translateTemplateForLocale(text, params, locale);
 }
 
 /**

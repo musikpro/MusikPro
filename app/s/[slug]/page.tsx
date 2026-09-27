@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getPublicSongBySlug } from "@/lib/ai/songs";
+import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
+import { translateForLocale, translateTemplateForLocale } from "@/lib/i18n/translate";
 import PublicSongPlayer from "./PublicSongPlayer";
 
 export const runtime = "nodejs";
@@ -10,13 +13,18 @@ type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
+  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const t = (text: string) => translateForLocale(text, locale);
+  const translateTemplate = (text: string, values: Record<string, string | number>) =>
+    translateTemplateForLocale(text, values, locale);
+
   const song = await getPublicSongBySlug(slug);
-  if (!song) return buildMetadata({ title: "Chanson indisponible", path: `/s/${slug}`, noIndex: true });
+  if (!song) return buildMetadata({ title: t("Chanson indisponible"), path: `/s/${slug}`, noIndex: true });
   return buildMetadata({
-    title: `${song.title} — écoute sur MusikPro`,
+    title: `${song.title}${t(" — écoute sur MusikPro")}`,
     description: song.occasion
-      ? `Une chanson créée pour ${song.occasion} avec MusikPro.`
-      : "Une chanson créée avec MusikPro.",
+      ? translateTemplate("Une chanson créée pour {occasion} avec MusikPro.", { occasion: song.occasion })
+      : t("Une chanson créée avec MusikPro."),
     path: `/s/${slug}`,
     image: song.coverUrl ?? undefined,
   });
@@ -24,6 +32,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function PublicSongPage({ params }: Params) {
   const { slug } = await params;
+  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const t = (text: string) => translateForLocale(text, locale);
+
   const song = await getPublicSongBySlug(slug);
   if (!song) notFound();
 
@@ -49,7 +60,7 @@ export default async function PublicSongPage({ params }: Params) {
         </div>
       </div>
       <p className="mt-6 text-xs text-muted-foreground">
-        Créé avec{" "}
+        {t("Créé avec")}{" "}
         <a href="/" className="font-semibold text-foreground underline">
           MusikPro
         </a>

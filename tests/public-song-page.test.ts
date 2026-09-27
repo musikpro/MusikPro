@@ -27,4 +27,23 @@ describe("Public song page /s/[slug]", () => {
     const source = await fs.readFile("app/s/[slug]/not-found.tsx", "utf8");
     expect(source).toContain("Chanson indisponible");
   });
+
+  it("resolves the visitor's locale from the request and wraps fixed UI strings for translation", async () => {
+    const pageSource = await fs.readFile("app/s/[slug]/page.tsx", "utf8");
+    expect(pageSource).toContain("resolveLocaleFromAcceptLanguage");
+    expect(pageSource).toContain("t(");
+    expect(pageSource).toContain("translateTemplate(");
+    // song.title (user-generated content) must never be passed through t()/translateTemplate().
+    expect(pageSource).not.toContain("t(song.title)");
+    expect(pageSource).not.toContain("translateTemplate(song.title");
+
+    const notFoundSource = await fs.readFile("app/s/[slug]/not-found.tsx", "utf8");
+    expect(notFoundSource).toContain("resolveLocaleFromAcceptLanguage");
+    expect(notFoundSource).toContain("t(");
+  });
+
+  it("scans app/s for i18n:sync so these keys actually get synced", async () => {
+    const source = await fs.readFile("scripts/i18n-sync.mts", "utf8");
+    expect(source).toContain("app/s");
+  });
 });
