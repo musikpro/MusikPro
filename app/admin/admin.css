@@ -2669,6 +2669,21 @@
   gap: 12px;
 }
 
+.admin-ambient-field {
+  display: grid;
+  gap: 6px;
+}
+
+@media (min-width: 640px) {
+  .admin-ambient-form {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+  }
+  .admin-ambient-form .admin-btn-row {
+    grid-column: 1 / -1;
+  }
+}
+
 .admin-form-submit {
   padding: 9px 13px;
 }

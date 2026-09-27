@@ -42,29 +42,33 @@ export default function AmbientMusicPanel({
       <AdminActionForm
         key={`${currentSongGroupId ?? "none"}-${status.volumePercent}`}
         action={setAmbientTrack}
-        className="admin-stack-form"
+        className="admin-stack-form admin-ambient-form"
       >
-        <label htmlFor="ambient-song-select">Chanson</label>
-        <select id="ambient-song-select" name="songGroupId" defaultValue={currentSongGroupId ?? ""} required>
-          <option value="" disabled>
-            Choisis une chanson
-          </option>
-          {songOptions.map((song) => (
-            <option key={song.songGroupId} value={song.songGroupId}>
-              {song.title}
-              {song.styleLabel ? ` — ${song.styleLabel}` : ""}
+        <div className="admin-ambient-field">
+          <label htmlFor="ambient-song-select">Chanson</label>
+          <select id="ambient-song-select" name="songGroupId" defaultValue={currentSongGroupId ?? ""} required>
+            <option value="" disabled>
+              Choisis une chanson
             </option>
-          ))}
-        </select>
-        <label htmlFor="ambient-volume-input">Volume (5 à 50 %)</label>
-        <input
-          id="ambient-volume-input"
-          type="range"
-          name="volumePercent"
-          min={5}
-          max={50}
-          defaultValue={status.volumePercent}
-        />
+            {songOptions.map((song) => (
+              <option key={song.songGroupId} value={song.songGroupId}>
+                {song.title}
+                {song.styleLabel ? ` — ${song.styleLabel}` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="admin-ambient-field">
+          <label htmlFor="ambient-volume-input">Volume (5 à 50 %)</label>
+          <input
+            id="ambient-volume-input"
+            type="range"
+            name="volumePercent"
+            min={5}
+            max={50}
+            defaultValue={status.volumePercent}
+          />
+        </div>
         <div className="admin-btn-row">
           <button type="submit" className="admin-primary-action">
             <Icon i="save" size={15} />
