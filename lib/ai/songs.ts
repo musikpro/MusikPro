@@ -1,8 +1,8 @@
 import "server-only";
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { musicGenerationJobs } from "@/db/schema";
+import { musicGenerationJobs, songPublications } from "@/db/schema";
 import { createMusicJob, submitSongGroupJobs, pollMusicJob, MusicJobOwnershipError } from "./music-jobs";
 
 type JobRow = typeof musicGenerationJobs.$inferSelect;
@@ -234,4 +234,56 @@ export async function setSongGroupCover(userId: string, songGroupId: string, cov
     .where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)))
     .returning({ id: musicGenerationJobs.id });
   if (!result.length) throw new MusicJobOwnershipError();
+}
+
+export class SongNotReadyError extends Error {}
+
+export async function publishSongGroup(userId: string, songGroupId: string): Promise<{ slug: string }> {
+  const database = getServiceDb();
+  const [existing] = await database
+    .select({ slug: songPublications.slug })
+    .from(songPublications)
+    .where(and(eq(songPublications.songGroupId, songGroupId), eq(songPublications.userId, userId)));
+  if (existing) return { slug: existing.slug };
+
+  const group = await getSongGroupForUser(userId, songGroupId);
+  if (!group) throw new MusicJobOwnershipError();
+  const primary = group.versions[0];
+  if (!primary?.audioUrl || primary.status !== "completed") throw new SongNotReadyError();
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const slug = randomBytes(6).toString("base64url");
+    try {
+      await database.insert(songPublications).values({ songGroupId, userId, slug, jobId: primary.jobId });
+      return { slug };
+    } catch (error) {
+      if (attempt === 2) throw error;
+    }
+  }
+  throw new Error("unreachable");
+}
+
+export type PublicSongView = {
+  title: string;
+  style: string | null;
+  occasion: string | null;
+  coverUrl: string | null;
+  audioUrl: string;
+};
+
+export async function getPublicSongBySlug(slug: string): Promise<PublicSongView | null> {
+  const database = getServiceDb();
+  const [row] = await database
+    .select({ job: musicGenerationJobs })
+    .from(songPublications)
+    .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
+    .where(eq(songPublications.slug, slug));
+  if (!row || row.job.status !== "completed" || !row.job.audioUrl) return null;
+  return {
+    title: row.job.title || "Chanson MusikPro",
+    style: extractGenreLabel(row.job.style),
+    occasion: row.job.occasion,
+    coverUrl: row.job.coverUrl,
+    audioUrl: row.job.audioUrl,
+  };
 }
