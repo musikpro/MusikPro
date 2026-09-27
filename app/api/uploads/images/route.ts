@@ -34,7 +34,12 @@ export async function POST(request: Request) {
   if (!limit.success) return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
   if (!isCloudinaryConfigured()) return NextResponse.json({ error: "L'envoi d'image n'est pas disponible pour le moment." }, { status: 503 });
 
-  const form = await request.formData();
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return NextResponse.json({ error: "Impossible de lire le fichier envoyé." }, { status: 400 });
+  }
   const parsed = uploadFormSchema.safeParse({ file: form.get("file") });
   if (!parsed.success)
     return NextResponse.json({ error: "Un fichier image est requis.", details: parsed.error.flatten() }, { status: 400 });
