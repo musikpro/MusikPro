@@ -11,7 +11,7 @@ const WAVEFORM_BARS = [4, 7, 5];
  * AmbientPlayerContext plutôt que d'en instancier un nouveau (ce composant peut être monté à la
  * fois dans UserDashboardMobile et UserDashboardDesktop, montés simultanément dans le DOM).
  */
-export default function AmbientPlayerButton() {
+export default function AmbientPlayerButton({ compact = false }: { compact?: boolean }) {
   const { enabled, isPlaying, muted, toggleMuted } = useAmbientPlayer();
   if (!enabled) return null;
   return (
@@ -19,9 +19,9 @@ export default function AmbientPlayerButton() {
       type="button"
       onClick={toggleMuted}
       aria-label={muted ? t("Réactiver le son de la musique d'ambiance") : t("Couper le son de la musique d'ambiance")}
-      className="ambient-player-button relative"
+      className={`ambient-player-button relative ${compact ? "is-compact" : ""}`}
     >
-      <Icon i={muted ? "volume-x" : "volume-2"} size={18} className="text-muted-foreground" />
+      <Icon i={muted ? "volume-x" : "volume-2"} size={compact ? 15 : 18} className="text-muted-foreground" />
       <span
         className={`song-inline-waveform ambient-player-button-waveform ${isPlaying && !muted ? "is-playing" : ""}`}
       >

@@ -17,10 +17,10 @@ describe("AmbientPlayerProvider — moteur audio unique sur la page d'accueil", 
     expect(desktop).not.toContain("AmbientPlayerContext");
   });
 
-  it("le bouton de contrôle est présent dans la barre du haut mobile et desktop", async () => {
-    const mobile = await fs.readFile("components/banani/UserDashboardMobile.tsx", "utf8");
+  it("le bouton de contrôle est présent dans la barre du haut mobile (MobileTopBar) et desktop", async () => {
+    const mobileTopBar = await fs.readFile("components/banani/MobileTopBar.tsx", "utf8");
     const desktop = await fs.readFile("components/banani/UserDashboardDesktop.tsx", "utf8");
-    expect(mobile).toContain("<AmbientPlayerButton");
+    expect(mobileTopBar).toContain("<AmbientPlayerButton");
     expect(desktop).toContain("<AmbientPlayerButton");
   });
 });

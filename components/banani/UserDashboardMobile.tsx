@@ -16,7 +16,6 @@ import Image from "./Image";
 import StoreDownloadCard from "./StoreDownloadCard";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import SocialProofBadge from "./SocialProofBadge";
-import AmbientPlayerButton from "./AmbientPlayerButton";
 
 const trendingSongs = [
   {
@@ -125,10 +124,7 @@ export default function UserDashboardMobile() {
               : t("Aucun crédit disponible")}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <AmbientPlayerButton />
-          <QuickLanguageSelect compact />
-        </div>
+        <QuickLanguageSelect compact />
       </div>
 
       {/* CTA Créer */}

@@ -5653,6 +5653,11 @@ span.musik-user-avatar {
   flex-shrink: 0;
 }
 
+.ambient-player-button.is-compact {
+  width: 28px;
+  height: 28px;
+}
+
 .ambient-player-button-waveform {
   position: absolute;
   bottom: 2px;

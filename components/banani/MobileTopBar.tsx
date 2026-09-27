@@ -5,6 +5,7 @@ import { translate as t } from "@/lib/i18n/translate";
 
 import Icon from "./Icon";
 import MobileMenuDrawer from "./MobileMenuDrawer";
+import AmbientPlayerButton from "./AmbientPlayerButton";
 
 export const displayName = "Mobile Top Bar";
 export const shortDescription = "Top bar for mobile with logo, credits and notifications";
@@ -35,7 +36,7 @@ export default function MobileTopBar({ credits = 0 }) {
             <span className="font-headings font-bold text-base text-foreground">{t("MusikPro")}</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             type="button"
             data-demo-ready
@@ -48,6 +49,7 @@ export default function MobileTopBar({ credits = 0 }) {
               {credits} {t("crédits")}
             </span>
           </button>
+          <AmbientPlayerButton compact />
           <button
             type="button"
             data-demo-ready
