@@ -40,8 +40,8 @@ describe("ROLE_PERMISSIONS", () => {
 
   it("ne référence que des modules existants pour chaque rôle", () => {
     for (const role of ADMIN_ROLES) {
-      for (const module of ROLE_PERMISSIONS[role]) {
-        expect(ALL_MODULES).toContain(module);
+      for (const mod of ROLE_PERMISSIONS[role]) {
+        expect(ALL_MODULES).toContain(mod);
       }
     }
   });
