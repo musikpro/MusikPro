@@ -1,5 +1,6 @@
 import "server-only";
 
+import { randomInt } from "node:crypto";
 import { and, desc, eq, gt } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs, songPublications } from "@/db/schema";
@@ -15,7 +16,7 @@ export type TrendingSong = {
 function shuffle<T>(items: T[]): T[] {
   const shuffled = items.slice();
   for (let i = shuffled.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = randomInt(0, i + 1);
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
   return shuffled;

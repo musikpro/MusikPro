@@ -18,7 +18,7 @@ export default function AmbientMusicPanel({
   if (songOptions.length === 0) {
     return (
       <section className="admin-panel">
-        <p>Tu n'as encore aucune chanson terminée à utiliser comme fond sonore.</p>
+        <p>Tu n&apos;as encore aucune chanson terminée à utiliser comme fond sonore.</p>
       </section>
     );
   }
@@ -30,10 +30,10 @@ export default function AmbientMusicPanel({
           <Icon i="music-4" size={20} />
         </span>
         <div>
-          <h2>Musique d'ambiance du tableau de bord</h2>
+          <h2>Musique d&apos;ambiance du tableau de bord</h2>
           <p>
-            Jouée automatiquement, à faible volume, sur l'écran d'accueil du tableau de bord (démo publique et comptes
-            réels). Elle s'arrête dès que la personne quitte l'accueil.
+            Jouée automatiquement, à faible volume, sur l&apos;écran d&apos;accueil du tableau de bord (démo publique
+            et comptes réels). Elle s&apos;arrête dès que la personne quitte l&apos;accueil.
           </p>
         </div>
         <span className={`admin-status ${status.enabled ? "is-success" : "is-pending"}`}>
