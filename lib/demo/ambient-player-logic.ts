@@ -22,3 +22,14 @@ export function resolveAutoplayOutcome(playSucceeded: boolean, storedMutePrefere
   if (!playSucceeded) return true;
   return storedMutePreference;
 }
+
+/**
+ * Décide si un événement `error` sur l'élément `<audio>` doit masquer définitivement la bande.
+ * `MediaError.MEDIA_ERR_ABORTED` (code 1) signifie que le chargement a été interrompu — par un
+ * `pause()`/démontage normal du cycle de vie du composant (notamment le double montage de React
+ * Strict Mode en développement), pas par un fichier cassé — donc ignoré. Les autres codes
+ * (réseau, décodage, source non supportée) et l'absence de code signalent un vrai problème.
+ */
+export function isFatalAudioError(errorCode: number | null | undefined): boolean {
+  return errorCode !== 1;
+}

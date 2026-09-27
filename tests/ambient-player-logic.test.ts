@@ -5,6 +5,7 @@ import {
   readStoredMutePreference,
   writeStoredMutePreference,
   resolveAutoplayOutcome,
+  isFatalAudioError,
 } from "@/lib/demo/ambient-player-logic";
 
 describe("shouldShowAmbientBar", () => {
@@ -71,5 +72,28 @@ describe("resolveAutoplayOutcome", () => {
 
   it("reste muet si l'autoplay a échoué et que l'utilisateur avait déjà choisi le son coupé", () => {
     expect(resolveAutoplayOutcome(false, true)).toBe(true);
+  });
+});
+
+describe("isFatalAudioError", () => {
+  it("ignore une erreur d'abandon (MEDIA_ERR_ABORTED, code 1) — provoquée par un simple pause()/démontage, pas un fichier cassé", () => {
+    expect(isFatalAudioError(1)).toBe(false);
+  });
+
+  it("traite une erreur réseau (MEDIA_ERR_NETWORK, code 2) comme fatale", () => {
+    expect(isFatalAudioError(2)).toBe(true);
+  });
+
+  it("traite une erreur de décodage (MEDIA_ERR_DECODE, code 3) comme fatale", () => {
+    expect(isFatalAudioError(3)).toBe(true);
+  });
+
+  it("traite une source non supportée (MEDIA_ERR_SRC_NOT_SUPPORTED, code 4) comme fatale", () => {
+    expect(isFatalAudioError(4)).toBe(true);
+  });
+
+  it("traite l'absence de code d'erreur comme fatale (par prudence)", () => {
+    expect(isFatalAudioError(null)).toBe(true);
+    expect(isFatalAudioError(undefined)).toBe(true);
   });
 });

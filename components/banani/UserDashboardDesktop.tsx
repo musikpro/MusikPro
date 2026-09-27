@@ -13,6 +13,7 @@ import Icon from "./Icon";
 import Image from "./Image";
 import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
+import AmbientPlayerButton from "./AmbientPlayerButton";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
 import SocialProofBadge from "./SocialProofBadge";
@@ -127,6 +128,7 @@ export default function UserDashboardDesktop() {
           </div>
           <div className="flex items-center gap-4">
             <QuickLanguageSelect />
+            <AmbientPlayerButton />
             <button
               type="button"
               data-demo-ready

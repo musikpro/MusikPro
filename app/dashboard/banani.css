@@ -5645,38 +5645,41 @@ span.musik-user-avatar {
   }
 }
 
-.ambient-player-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: var(--color-card);
-  border-bottom: 1px solid var(--color-border);
-  font-size: 12px;
-  color: var(--color-muted-foreground);
-}
-
-.ambient-player-waveform {
-  height: 16px;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.ambient-player-title {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ambient-player-mute-button {
-  width: 28px;
-  height: 28px;
+.ambient-player-button {
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  border: 1px solid var(--color-border);
-  background: var(--color-input);
-  color: var(--color-foreground);
   flex-shrink: 0;
+}
+
+.ambient-player-button-waveform {
+  position: absolute;
+  bottom: 2px;
+  right: 0;
+  height: 8px;
+  align-items: flex-end;
+  gap: 1.5px;
+  pointer-events: none;
+}
+
+.ambient-player-button-bar {
+  display: block;
+  width: 2px;
+  border-radius: 1px;
+  background: var(--color-primary);
+  transform: scaleY(0.45);
+}
+
+.ambient-player-button-waveform.is-playing > .ambient-player-button-bar {
+  transform-origin: bottom;
+  animation: musik-inline-wave 720ms ease-in-out infinite alternate;
+}
+
+.ambient-player-button-waveform.is-playing > .ambient-player-button-bar:nth-child(2) {
+  animation-delay: -240ms;
+}
+
+.ambient-player-button-waveform.is-playing > .ambient-player-button-bar:nth-child(3) {
+  animation-delay: -480ms;
 }
