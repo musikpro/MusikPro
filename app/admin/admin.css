@@ -944,6 +944,7 @@
 }
 
 .admin-primary-action {
+  border: none;
   color: white;
   background: linear-gradient(145deg, var(--admin-primary), var(--admin-coral));
   box-shadow: 0 10px 22px rgb(242 101 34 / 20%);
@@ -2674,13 +2675,27 @@
   gap: 6px;
 }
 
+.admin-ambient-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.admin-ambient-actions .admin-secondary-action {
+  width: auto;
+  min-height: 46px;
+  padding: 11px 16px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
 @media (min-width: 640px) {
   .admin-ambient-form {
     grid-template-columns: 1fr 1fr;
     column-gap: 20px;
-  }
-  .admin-ambient-form .admin-btn-row {
-    grid-column: 1 / -1;
   }
 }
 

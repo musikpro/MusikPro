@@ -22,6 +22,7 @@ export default function AmbientMusicPanel({
       </section>
     );
   }
+  const formId = "ambient-settings-form";
   return (
     <section className={`admin-panel ${status.enabled ? "is-active" : ""}`}>
       <div className="admin-provider-heading">
@@ -40,6 +41,7 @@ export default function AmbientMusicPanel({
         </span>
       </div>
       <AdminActionForm
+        id={formId}
         key={`${currentSongGroupId ?? "none"}-${status.volumePercent}`}
         action={setAmbientTrack}
         className="admin-stack-form admin-ambient-form"
@@ -69,21 +71,21 @@ export default function AmbientMusicPanel({
             defaultValue={status.volumePercent}
           />
         </div>
-        <div className="admin-btn-row">
-          <button type="submit" className="admin-primary-action">
-            <Icon i="save" size={15} />
-            Enregistrer
-          </button>
-        </div>
       </AdminActionForm>
-      {status.enabled ? (
-        <AdminActionForm action={disableAmbientTrack} className="admin-btn-row">
-          <button type="submit" className="admin-secondary-action">
-            <Icon i="power-off" size={15} />
-            Désactiver
-          </button>
-        </AdminActionForm>
-      ) : null}
+      <div className="admin-ambient-actions">
+        <button type="submit" form={formId} className="admin-primary-action">
+          <Icon i="save" size={15} />
+          Enregistrer
+        </button>
+        {status.enabled ? (
+          <AdminActionForm action={disableAmbientTrack}>
+            <button type="submit" className="admin-secondary-action">
+              <Icon i="power-off" size={15} />
+              Désactiver
+            </button>
+          </AdminActionForm>
+        ) : null}
+      </div>
     </section>
   );
 }
