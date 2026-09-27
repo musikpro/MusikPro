@@ -142,3 +142,17 @@ export async function transcodeRemoteAudioToMp3(remoteUrl: string, options?: { f
     throw new Error(`Cloudinary returned unexpected format: ${data.format}`);
   return { url: data.secure_url, bytes: data.bytes ?? null };
 }
+
+/**
+ * Guards `coverUrl` before it becomes publicly visible (see /s/[slug]): only URLs actually
+ * hosted on Cloudinary's CDN are accepted, regardless of which cloud name. A naive host-string
+ * check (e.g. `.includes("res.cloudinary.com")`) would accept a lookalike host like
+ * `res.cloudinary.com.evil.example`, so this parses the URL and compares the exact hostname.
+ */
+export function isTrustedImageUrl(url: string): boolean {
+  try {
+    return new URL(url).hostname === "res.cloudinary.com";
+  } catch {
+    return false;
+  }
+}
