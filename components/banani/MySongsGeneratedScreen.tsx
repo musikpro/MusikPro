@@ -1,11 +1,12 @@
 "use client";
 import { translate as t } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
-import { downloadAudioFile, shareAudioFile } from "@/lib/demo/audio-actions";
+import { downloadAudioFile, shareAudioFile, shareLink } from "@/lib/demo/audio-actions";
+import { uploadCoverImage } from "@/lib/demo/cover-actions";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ChangeEvent } from "react";
 
 export const displayName = "Mes Chansons Générées";
 export const screenSize = "mobile";
@@ -29,6 +30,9 @@ export default function MySongsGenerated() {
   const [playingVersion, setPlayingVersion] = useState<string | null>(null);
   const [sortByPlays, setSortByPlays] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const coverInputRef = useRef<HTMLInputElement | null>(null);
+  const [coverTargetId, setCoverTargetId] = useState<string | number | null>(null);
+  const [uploadingCoverId, setUploadingCoverId] = useState<string | number | null>(null);
 
   useEffect(() => {
     if (demo.isDemo) return;
@@ -72,6 +76,49 @@ export default function MySongsGenerated() {
     const result = await shareAudioFile(audioUrl, `${title} — ${label}`);
     if (result === "copied") demo.notify("Lien de la chanson copié dans le presse-papiers.");
     if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
+  };
+
+  const publishCard = async (song: (typeof demo.songs)[number]) => {
+    const primary = song.versions[0];
+    if (demo.isDemo) {
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      return;
+    }
+    if (!primary?.audioUrl) {
+      demo.notify("Cette chanson n'est pas encore prête à être publiée.");
+      return;
+    }
+    const url = await demo.publishSong(song.id);
+    if (!url) return;
+    const result = await shareLink(url, song.title, "Écoute ma chanson créée sur MusikPro !");
+    if (result === "copied") demo.notify("Lien public copié dans le presse-papiers.");
+    if (result === "shared") demo.notify("Chanson publiée et partagée !");
+    if (result === "failed") demo.notify(`Chanson publiée : ${url}`);
+  };
+
+  const openPosterPicker = (songId: string | number) => {
+    if (demo.isDemo) {
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      return;
+    }
+    setCoverTargetId(songId);
+    coverInputRef.current?.click();
+  };
+
+  const handleCoverFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || coverTargetId === null) return;
+    setUploadingCoverId(coverTargetId);
+    try {
+      const url = await uploadCoverImage(file);
+      await demo.setSongCover(coverTargetId, url);
+    } catch {
+      demo.notify("Impossible d'envoyer cette image pour le moment.");
+    } finally {
+      setUploadingCoverId(null);
+      setCoverTargetId(null);
+    }
   };
 
   const totalPlays = (song: (typeof demo.songs)[number]) => song.versions.reduce((n, v) => n + v.plays, 0);
@@ -163,7 +210,9 @@ export default function MySongsGenerated() {
               : "Aucune chanson pour cette recherche."}
           </p>
         )}
-        {generatedSongs.map((song) => (
+        {generatedSongs.map((song) => {
+          const primaryVersion = song.versions[0];
+          return (
           <div
             key={song.id}
             className="bg-card border border-border rounded-xl overflow-hidden"
@@ -172,6 +221,10 @@ export default function MySongsGenerated() {
             {/* Card Header */}
             <div className="px-4 pt-4 pb-3">
               <div className="flex items-center gap-2 mb-1">
+                {song.coverUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={song.coverUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                ) : null}
                 <h2 className="font-headings font-bold text-base text-foreground truncate">{song.title}</h2>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
@@ -316,6 +369,75 @@ export default function MySongsGenerated() {
               })}
             </div>
 
+            {/* Divider */}
+            <div className="border-t border-border mx-4" />
+
+            {/* Share / Publish / Download / Poster */}
+            <div className="song-share-actions px-4 pt-3 flex items-center gap-2">
+              <button
+                type="button"
+                data-demo-ready="true"
+                disabled={!demo.isDemo && !primaryVersion?.audioUrl}
+                onClick={() => {
+                  if (demo.isDemo) {
+                    demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                  } else if (!primaryVersion?.audioUrl) {
+                    demo.notify("Cette chanson n'est pas encore prête à être partagée.");
+                  } else {
+                    void shareVersion(song.title, primaryVersion.label, primaryVersion.audioUrl);
+                  }
+                }}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-full bg-coral text-white px-3 py-2 text-xs font-semibold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
+              >
+                <Icon i="share-2" size={14} />
+                {t("Partager")}
+              </button>
+              <button
+                type="button"
+                data-demo-ready="true"
+                disabled={!demo.isDemo && !primaryVersion?.audioUrl}
+                onClick={() => void publishCard(song)}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-full bg-foreground text-background px-3 py-2 text-xs font-semibold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
+              >
+                <Icon i="globe" size={14} />
+                {t("Publier")}
+              </button>
+              <button
+                type="button"
+                data-demo-ready="true"
+                disabled={!demo.isDemo && !primaryVersion?.audioUrl}
+                onClick={() => {
+                  if (demo.isDemo) {
+                    demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                  } else if (!primaryVersion?.audioUrl) {
+                    demo.notify("Cette chanson n'est pas encore prête à être téléchargée.");
+                  } else {
+                    void downloadVersion(song.title, primaryVersion.label, primaryVersion.audioUrl);
+                  }
+                }}
+                className={`flex-1 flex items-center justify-center gap-1.5 rounded-full border border-border bg-input px-3 py-2 text-xs font-semibold text-foreground ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
+              >
+                <Icon i="download" size={14} />
+                {t("Télécharger")}
+              </button>
+            </div>
+            <div className="song-poster-action px-4 pt-2 pb-3">
+              <button
+                type="button"
+                data-demo-ready="true"
+                disabled={uploadingCoverId === song.id}
+                onClick={() => openPosterPicker(song.id)}
+                className={`w-full flex items-center justify-center gap-1.5 rounded-full border border-dashed border-border bg-input px-3 py-2 text-xs font-semibold text-foreground ${uploadingCoverId === song.id ? "opacity-50" : ""}`}
+              >
+                <Icon
+                  i={uploadingCoverId === song.id ? "loader-circle" : "image"}
+                  size={14}
+                  className={uploadingCoverId === song.id ? "animate-spin" : ""}
+                />
+                {t("Poster")}
+              </button>
+            </div>
+
             {/* Card Footer Actions */}
             <div className="border-t border-border mx-4 mb-3" />
             <div className="song-card-actions px-4 pb-3">
@@ -355,9 +477,17 @@ export default function MySongsGenerated() {
               </button>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
+      <input
+        ref={coverInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(event) => void handleCoverFileChange(event)}
+        className="hidden"
+      />
       <MobileBottomNav activeTab={t("Mes chansons")} />
     </div>
   );
