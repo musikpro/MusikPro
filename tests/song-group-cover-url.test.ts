@@ -11,4 +11,11 @@ describe("SongGroupView exposes coverUrl end-to-end", () => {
     const source = await fs.readFile("lib/ai/songs.ts", "utf8");
     expect(source).toContain("coverUrl: first.coverUrl,");
   });
+
+  it("exposes setSongGroupCover, scoped by userId and songGroupId, updating every version's cover", async () => {
+    const source = await fs.readFile("lib/ai/songs.ts", "utf8");
+    expect(source).toContain("export async function setSongGroupCover(");
+    expect(source).toContain("eq(musicGenerationJobs.songGroupId, songGroupId)");
+    expect(source).toContain("if (!result.length) throw new MusicJobOwnershipError();");
+  });
 });

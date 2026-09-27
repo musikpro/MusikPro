@@ -225,3 +225,13 @@ export async function incrementSongVersionPlays(userId: string, jobId: string): 
   if (!job) throw new MusicJobOwnershipError();
   return toVersionView(job);
 }
+
+export async function setSongGroupCover(userId: string, songGroupId: string, coverUrl: string): Promise<void> {
+  const database = getServiceDb();
+  const result = await database
+    .update(musicGenerationJobs)
+    .set({ coverUrl, updatedAt: new Date() })
+    .where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)))
+    .returning({ id: musicGenerationJobs.id });
+  if (!result.length) throw new MusicJobOwnershipError();
+}
