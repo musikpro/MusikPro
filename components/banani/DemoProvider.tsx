@@ -366,6 +366,20 @@ function useDemoState(
     notify("");
     router.push(href(route));
   };
+  /**
+   * "Régénérer" doit renvoyer directement à la dernière étape de l'assistant (résumé "Prêt à
+   * générer") avec les préférences de LA chanson concernée déjà en place, plutôt qu'à l'étape 1
+   * avec un assistant vide. `song.occasion`/`song.style` sont déjà les valeurs canoniques
+   * stockées (mêmes chaînes que celles utilisées par les catalogues occasions/styles), donc
+   * elles se branchent directement sur `choices.occasion`/`choices.genre`. Voix/langue/humeur ne
+   * sont pas conservées sur une chanson générée : elles restent à leur valeur actuelle.
+   */
+  const startRegenerate = (song: { occasion: string; style: string; lyrics: string }) => {
+    choose("occasion", song.occasion);
+    choose("genre", song.style);
+    field("lyrics", song.lyrics);
+    go("/dashboard/create/confirm");
+  };
   const exitAccount = async () => {
     notify("");
     if (!isDemo) await authClient.signOut();
@@ -724,6 +738,7 @@ function useDemoState(
       }
     },
     go,
+    startRegenerate,
     exitAccount,
   };
 }

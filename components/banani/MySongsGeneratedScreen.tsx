@@ -487,7 +487,10 @@ export default function MySongsGenerated() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.go("/dashboard/create/lyrics/edit")}
+                onClick={() => {
+                  demo.field("lyrics", song.lyrics);
+                  demo.go("/dashboard/create/lyrics/edit");
+                }}
                 className="song-edit-lyrics-button flex min-w-0 items-center justify-center gap-2 rounded-lg px-2.5 py-2.5 text-xs font-semibold"
               >
                 <span className="song-edit-lyrics-icon">
@@ -498,7 +501,7 @@ export default function MySongsGenerated() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.go("/dashboard/create")}
+                onClick={() => demo.startRegenerate(song)}
                 className="song-regenerate-button flex min-w-0 items-center justify-center gap-1.5 rounded-lg border border-border bg-input px-2.5 py-2 text-xs font-semibold text-foreground"
               >
                 <span className="song-card-action-icon">
