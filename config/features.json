@@ -700,6 +700,41 @@
         "La page « Mes chansons » et le lecteur affichent un badge « En cours de génération » et sondent /api/songs/[groupId] tant qu’une version n’est pas terminée, au lieu d’afficher une durée fictive."
       ]
     },
+    "song-public-link-sharing": {
+      "description": "Rangée Partager/Publier/Télécharger/Changer la pochette sous chaque carte chanson : lien public /s/[slug] lisible sans compte (sans option de téléchargement), pochette modifiable via upload Cloudinary restreint (isTrustedImageUrl).",
+      "optional": true,
+      "env": [],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0033_luxuriant_human_torch.sql",
+        "db/migrations/0034_song_publications_grant.sql",
+        "lib/ai/songs.ts",
+        "lib/storage/cloudinary.ts",
+        "lib/demo/audio-actions.ts",
+        "lib/demo/cover-actions.ts",
+        "lib/demo/song-types.ts",
+        "app/api/songs/[groupId]/publish/route.ts",
+        "app/api/songs/[groupId]/cover/route.ts",
+        "app/api/uploads/images/route.ts",
+        "app/s/[slug]/page.tsx",
+        "app/s/[slug]/PublicSongPlayer.tsx",
+        "app/s/[slug]/not-found.tsx",
+        "components/banani/MySongsGeneratedScreen.tsx",
+        "components/banani/DemoProvider.tsx",
+        "lib/i18n/request-locale.ts",
+        "lib/i18n/translate.ts"
+      ],
+      "routes": ["/api/songs/[groupId]/publish", "/api/songs/[groupId]/cover"],
+      "dependsOn": ["database", "auth", "real-song-generation-journey", "cloudinary"],
+      "removalComplexity": "medium",
+      "disableBehavior": "Retirer la rangée d'actions du composant carte chanson désactive l'entrée utilisateur ; la table song_publications et la page /s/[slug] peuvent rester en base sans effet de bord (liens déjà publiés restent lisibles). Aucun impact sur le parcours de génération/paiement (real-song-generation-journey).",
+      "notes": [
+        "song_publications (songGroupId PK, userId, slug unique, jobId, createdAt) n'est jamais interrogée directement par le client : toujours via lib/ai/songs.ts côté serveur, filtrée par userId pour les opérations propriétaire (publishSongGroup) et par slug seul pour la lecture publique volontairement anonyme (getPublicSongBySlug, consommée par /s/[slug]).",
+        "La pochette (coverUrl) n'accepte que des URLs isTrustedImageUrl (hôte res.cloudinary.com) : jamais d'hébergement d'image hors Cloudinary.",
+        "La page publique /s/[slug] ne propose aucune option de téléchargement dans les contrôles du lecteur et affiche « Chanson indisponible » (pas une 404 Next brute) pour un slug inconnu ou révoqué.",
+        "/api/songs/[groupId]/publish et /api/songs/[groupId]/cover réutilisent les mêmes gardes que /api/songs/[groupId] (session Better Auth, rate-limit distribué à défaut fermé, rejectCrossSiteMutation)."
+      ]
+    },
     "funnel-tracking": {
       "description": "Page /admin/funnel branchée sur de vraies données Neon : comptes créés, créations commencées (funnel_events), paiements confirmés et générations terminées (music_generation_jobs), avec taux de conversion réels entre chaque étape.",
       "optional": false,

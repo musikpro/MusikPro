@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
 import { translateForLocale } from "@/lib/i18n/translate";
 
@@ -12,9 +13,9 @@ export default async function PublicSongNotFound() {
       <p className="text-sm text-muted-foreground mb-6">
         {t("Ce lien n'existe plus ou n'est plus accessible publiquement.")}
       </p>
-      <a href="/" className="font-semibold text-foreground underline">
+      <Link href="/" className="font-semibold text-foreground underline">
         {t("Découvrir MusikPro")}
-      </a>
+      </Link>
     </main>
   );
 }

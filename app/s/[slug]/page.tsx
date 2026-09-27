@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getPublicSongBySlug } from "@/lib/ai/songs";
 import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
@@ -61,9 +62,9 @@ export default async function PublicSongPage({ params }: Params) {
       </div>
       <p className="mt-6 text-xs text-muted-foreground">
         {t("Créé avec")}{" "}
-        <a href="/" className="font-semibold text-foreground underline">
+        <Link href="/" className="font-semibold text-foreground underline">
           MusikPro
-        </a>
+        </Link>
       </p>
     </main>
   );
