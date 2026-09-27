@@ -460,7 +460,7 @@ export async function pollMusicJob(jobId: string, userId: string) {
       audioUrl: isCompleted ? mp3Result.url : job.audioUrl,
       audioMimeType: isCompleted ? mp3Result.mimeType : job.audioMimeType,
       audioNormalized: isCompleted ? mp3Result.normalized : job.audioNormalized,
-      coverUrl: task.cover_url || job.coverUrl,
+      coverUrl: job.coverUrl || task.cover_url,
       providerStatus: task.status,
       responsePayload: task,
       status: isCompleted

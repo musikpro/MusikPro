@@ -310,7 +310,12 @@ if (!cloudinaryText.includes("MAX_IMAGE_BYTES") || !cloudinaryText.includes("ima
 if (!cloudinaryText.includes("CLOUDINARY_API_SECRET") || !cloudinaryText.includes("image/upload"))
   errors.push("Cloudinary signed server upload integration missing");
 const cloudinaryRoute = fs.readFileSync("app/api/uploads/images/route.ts", "utf8");
-if (!cloudinaryRoute.includes("auth.api.getSession") || !cloudinaryRoute.includes("Unauthorized"))
+// Error copy is French per the mandatory i18n rule (CLAUDE.md), so this checks the actual guard
+// (session lookup guarding a 401 response) instead of a hard-coded English literal.
+if (
+  !cloudinaryRoute.includes("auth.api.getSession") ||
+  !/if\s*\(\s*!session\?\.user\s*\)[\s\S]{0,80}status:\s*401/.test(cloudinaryRoute)
+)
   errors.push("Cloudinary upload endpoint must require an authenticated session");
 const healthRouteText = fs.readFileSync("app/api/health/route.ts", "utf8");
 const readyRouteText = fs.readFileSync("app/api/readyz/route.ts", "utf8");

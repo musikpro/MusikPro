@@ -136,3 +136,13 @@ describe("frontières des saisies de démonstration MusikPro", () => {
     ).not.toHaveProperty("role");
   });
 });
+
+describe("câblage coverUrl dans DemoProvider (mode réel)", () => {
+  it("propagates coverUrl through the real-mode song mapping", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+      fs.readFile("components/banani/DemoProvider.tsx", "utf8"),
+    );
+    expect(source).toContain("coverUrl: song.coverUrl,");
+    expect(source).toContain("coverUrl: string | null;");
+  });
+});

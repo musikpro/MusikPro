@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   if (typeFailure) return typeFailure;
 
   const session = await auth.api.getSession({ headers: await headers() });
-  if (!session?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!session?.user) return NextResponse.json({ error: "Authentification requise." }, { status: 401 });
 
   const ip = clientIp(request);
   const level = getSecurityLevel();
@@ -31,20 +31,20 @@ export async function POST(request: Request) {
   );
   if (limit.backend === "unavailable")
     return NextResponse.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
-  if (!limit.success) return NextResponse.json({ error: "Too many upload requests" }, { status: 429 });
-  if (!isCloudinaryConfigured()) return NextResponse.json({ error: "Cloudinary is not enabled" }, { status: 503 });
+  if (!limit.success) return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
+  if (!isCloudinaryConfigured()) return NextResponse.json({ error: "L'envoi d'image n'est pas disponible pour le moment." }, { status: 503 });
 
   const form = await request.formData();
   const parsed = uploadFormSchema.safeParse({ file: form.get("file") });
   if (!parsed.success)
-    return NextResponse.json({ error: "Image file is required", details: parsed.error.flatten() }, { status: 400 });
+    return NextResponse.json({ error: "Un fichier image est requis.", details: parsed.error.flatten() }, { status: 400 });
   const { file } = parsed.data;
 
   try {
     const uploaded = await uploadImageToCloudinary(file, { folder: `users/${session.user.id}` });
     return NextResponse.json(uploaded, { status: 201 });
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Image upload failed";
+    const message = error instanceof Error ? error.message : "L'envoi de l'image a échoué.";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

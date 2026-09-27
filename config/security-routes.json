@@ -193,6 +193,25 @@
       "rateLimit": "distributed-or-fail-closed",
       "markers": ["auth.api.getSession", "groupIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
     },
+    "app/api/songs/[groupId]/publish/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "groupIdSchema.safeParse", "rateLimit(", "rejectCrossSiteMutation"]
+    },
+    "app/api/songs/[groupId]/cover/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "groupIdSchema.safeParse",
+        "coverSchema.safeParse",
+        "isTrustedImageUrl",
+        "rateLimit(",
+        "rejectCrossSiteMutation"
+      ]
+    },
     "app/api/support/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

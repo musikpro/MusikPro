@@ -16,7 +16,7 @@ import type { LibraryCollectionOption } from "@/lib/library-collections/catalog"
 import type { LanguageOption } from "@/lib/languages/catalog";
 import type { PhonePrefixOption } from "@/lib/phone-prefixes/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
-import { localizeField, type CatalogTranslations } from "@/lib/i18n/translate";
+import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 
 type SongGroupResponse = {
@@ -27,6 +27,7 @@ type SongGroupResponse = {
   lyrics: string | null;
   status: "processing" | "completed" | "failed";
   createdAt: string;
+  coverUrl: string | null;
   versions: Array<{
     jobId: string;
     label: string;
@@ -53,6 +54,7 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
     }),
     lyrics: song.lyrics || "",
     status: song.status,
+    coverUrl: song.coverUrl,
     versions: song.versions.map((v) => ({
       jobId: v.jobId,
       label: v.label,
@@ -682,6 +684,38 @@ function useDemoState(
         notify("Chanson retirée.");
       } catch {
         notify("Impossible de retirer cette chanson pour le moment.");
+      }
+    },
+    publishSong: async (id: string | number): Promise<string | null> => {
+      if (isDemo) {
+        notify("Action de démonstration : aucune opération réelle effectuée.");
+        return null;
+      }
+      try {
+        const result = await apiFetch<{ url: string }>(`/api/songs/${id}/publish`, { method: "POST" });
+        return result.url;
+      } catch (error) {
+        notify(error instanceof ApiClientError ? error.message : t("Impossible de publier cette chanson pour le moment."));
+        return null;
+      }
+    },
+    setSongCover: async (id: string | number, coverUrl: string): Promise<boolean> => {
+      if (isDemo) {
+        notify("Action de démonstration : aucune opération réelle effectuée.");
+        return false;
+      }
+      try {
+        await apiFetch(`/api/songs/${id}/cover`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coverUrl }),
+        });
+        await refreshSongs();
+        notify(t("Pochette mise à jour."));
+        return true;
+      } catch {
+        notify(t("Impossible de mettre à jour la pochette pour le moment."));
+        return false;
       }
     },
     go,

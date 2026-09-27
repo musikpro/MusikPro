@@ -542,6 +542,14 @@ export const musicGenerationJobs = pgTable(
   }),
 );
 
+export const songPublications = pgTable("song_publications", {
+  songGroupId: text("song_group_id").primaryKey(),
+  userId: text("user_id").notNull(),
+  slug: text("slug").notNull().unique(),
+  jobId: text("job_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const customRoles = pgTable("custom_role", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),

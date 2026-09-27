@@ -31,6 +31,7 @@
     "ai_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
     "audio_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
     "music_generation_jobs": "user-owned generation ledger; never queried directly by clients — always accessed server-side via getServiceDb() with an explicit user_id filter (same pattern as app/api/payments/checkout/route.ts), not direct RLS",
+    "song_publications": "user-owned publication ledger; never queried directly by clients — always accessed server-side via lib/ai/songs.ts, filtered by user_id for owner mutations (publishSongGroup, setSongGroupCover) and intentionally by slug alone for the anonymous public read path (getPublicSongBySlug, consumed by GET /s/[slug]), not direct RLS",
     "user": "Better Auth framework-owned table; enforce authorization through Better Auth",
     "session": "Better Auth framework-owned table; framework/session server access only",
     "account": "Better Auth framework-owned credential table; server access only",
