@@ -232,6 +232,13 @@
       "when": 1790453038625,
       "tag": "0032_omniscient_sebastian_shaw",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790504050989,
+      "tag": "0033_luxuriant_human_torch",
+      "breakpoints": true
     }
   ]
 }

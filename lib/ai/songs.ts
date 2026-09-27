@@ -28,6 +28,7 @@ export type SongGroupView = {
   occasion: string | null;
   style: string | null;
   lyrics: string | null;
+  coverUrl: string | null;
   status: "processing" | "completed" | "failed";
   createdAt: Date;
   versions: SongVersionView[];
@@ -81,6 +82,7 @@ function toGroupView(jobs: JobRow[]): SongGroupView {
     occasion: first.occasion,
     style: extractGenreLabel(first.style),
     lyrics: first.lyrics,
+    coverUrl: first.coverUrl,
     status,
     createdAt: jobs.reduce((min, job) => (job.createdAt < min ? job.createdAt : min), first.createdAt),
     versions: jobs
