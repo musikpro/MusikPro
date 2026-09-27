@@ -434,7 +434,7 @@ export default function MySongsGenerated() {
                   size={14}
                   className={uploadingCoverId === song.id ? "animate-spin" : ""}
                 />
-                {t("Poster")}
+                {t("Changer la pochette")}
               </button>
             </div>
 
