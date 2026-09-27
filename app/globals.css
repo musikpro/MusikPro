@@ -1805,3 +1805,382 @@ button {
   background: #fff8e8;
   color: #805b13;
 }
+
+/* Page de partage publique d'une chanson (/s/[slug]) — lien envoyé sur WhatsApp etc. */
+.public-song-page {
+  --psp-bg: #0e0c11;
+  --psp-fg: #f6f2ec;
+  --psp-muted: #b9b2a8;
+  --psp-primary: #f26522;
+  --psp-primary-fg: #ffffff;
+  --psp-card-bg: rgba(255, 255, 255, 0.06);
+  --psp-card-border: rgba(255, 255, 255, 0.12);
+  --psp-track-bg: rgba(255, 255, 255, 0.16);
+  position: relative;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px max(24px, env(safe-area-inset-bottom));
+  background: var(--psp-bg);
+  color: var(--psp-fg);
+  font-family: "DM Sans", Inter, ui-sans-serif, system-ui, sans-serif;
+  overflow: hidden;
+  isolation: isolate;
+}
+@media (prefers-color-scheme: light) {
+  .public-song-page {
+    --psp-bg: #fafaf7;
+    --psp-fg: #1a1a1a;
+    --psp-muted: #706a62;
+    --psp-card-bg: rgba(255, 255, 255, 0.72);
+    --psp-card-border: rgba(26, 26, 26, 0.08);
+    --psp-track-bg: rgba(26, 26, 26, 0.1);
+  }
+}
+.psp-backdrop {
+  position: absolute;
+  inset: -10%;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  filter: blur(60px) saturate(1.4) brightness(0.55);
+  transform: scale(1.1);
+  animation: psp-breathe 18s ease-in-out infinite alternate;
+}
+.public-song-page:has(.psp-backdrop) .psp-backdrop-fallback {
+  display: none;
+}
+.psp-backdrop-fallback {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--psp-primary) 35%, transparent), transparent 60%),
+    var(--psp-bg);
+}
+.psp-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(ellipse at center, transparent 0%, color-mix(in srgb, var(--psp-bg) 55%, transparent) 55%, var(--psp-bg) 100%);
+}
+@keyframes psp-breathe {
+  from {
+    transform: scale(1.05) rotate(0deg);
+  }
+  to {
+    transform: scale(1.18) rotate(2deg);
+  }
+}
+.psp-card {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  border-radius: 28px;
+  border: 1px solid var(--psp-card-border);
+  background: var(--psp-card-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  animation: psp-card-in 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@keyframes psp-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.psp-cover-wrap {
+  position: relative;
+  width: 168px;
+  height: 168px;
+}
+.psp-cover-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: 26px;
+  background: radial-gradient(circle, color-mix(in srgb, var(--psp-primary) 55%, transparent), transparent 70%);
+  filter: blur(14px);
+  opacity: 0.55;
+  transition: opacity 300ms ease;
+}
+.psp-card:has(.psp-player.is-playing) .psp-cover-glow {
+  opacity: 0.9;
+  animation: psp-glow-pulse 2.4s ease-in-out infinite;
+}
+@keyframes psp-glow-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+.psp-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: var(--psp-track-bg);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+.psp-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.psp-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--psp-muted);
+}
+.psp-title {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 20px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--psp-fg);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+.psp-badges {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -8px;
+}
+.psp-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--psp-primary) 16%, transparent);
+  color: color-mix(in srgb, var(--psp-primary) 85%, var(--psp-fg) 15%);
+  white-space: nowrap;
+}
+.psp-badge-muted {
+  background: transparent;
+  border: 1px solid var(--psp-card-border);
+  color: var(--psp-muted);
+}
+a.psp-badge {
+  text-decoration: none;
+  margin-top: 6px;
+}
+.psp-player {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-top: 4px;
+}
+.psp-play-button {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(155deg, var(--psp-primary), color-mix(in srgb, var(--psp-primary) 70%, #ff8a3d));
+  color: var(--psp-primary-fg);
+  cursor: pointer;
+  box-shadow: 0 10px 28px color-mix(in srgb, var(--psp-primary) 45%, transparent);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+  flex-shrink: 0;
+}
+.psp-play-button:hover {
+  transform: scale(1.04);
+}
+.psp-play-button:active {
+  transform: scale(0.96);
+}
+.psp-play-button:focus-visible {
+  outline: 2px solid var(--psp-fg);
+  outline-offset: 3px;
+}
+.psp-play-button::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: inherit;
+  border: 2px solid color-mix(in srgb, var(--psp-primary) 60%, transparent);
+  opacity: 0;
+}
+.psp-play-button.is-playing::after {
+  animation: psp-ring 1.8s ease-out infinite;
+}
+@keyframes psp-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+}
+.psp-play-button svg {
+  width: 26px;
+  height: 26px;
+}
+.psp-waveform {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  height: 28px;
+  width: 100%;
+  padding: 0 8px;
+}
+.psp-waveform-bar {
+  flex: 1 1 auto;
+  max-width: 4px;
+  min-height: 3px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--psp-primary) 55%, var(--psp-muted) 45%);
+  transform: scaleY(0.35);
+  transform-origin: center;
+  transition: background-color 200ms ease;
+}
+.psp-waveform.is-playing .psp-waveform-bar {
+  background: var(--psp-primary);
+}
+.psp-waveform.is-playing.is-css-fallback .psp-waveform-bar {
+  animation: psp-wave 1s ease-in-out infinite alternate;
+}
+.psp-waveform.is-playing.is-css-fallback .psp-waveform-bar:nth-child(3n + 1) {
+  animation-delay: -0.7s;
+}
+.psp-waveform.is-playing.is-css-fallback .psp-waveform-bar:nth-child(3n + 2) {
+  animation-delay: -0.35s;
+}
+@keyframes psp-wave {
+  from {
+    transform: scaleY(0.3);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+.psp-progress {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.psp-progress-track {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--psp-track-bg);
+  cursor: pointer;
+  outline-offset: 4px;
+}
+.psp-progress-track::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--psp-fg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--psp-primary) 60%, transparent);
+  cursor: pointer;
+  margin-top: -4px;
+}
+.psp-progress-track::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: none;
+  border-radius: 999px;
+  background: var(--psp-fg);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--psp-primary) 60%, transparent);
+  cursor: pointer;
+}
+.psp-progress-track::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    var(--psp-primary) 0%,
+    var(--psp-primary) var(--psp-progress, 0%),
+    var(--psp-track-bg) var(--psp-progress, 0%),
+    var(--psp-track-bg) 100%
+  );
+}
+.psp-progress-track::-moz-range-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--psp-primary);
+}
+.psp-progress-times {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--psp-muted);
+}
+.psp-footer {
+  margin-top: 22px;
+  font-size: 12px;
+  color: var(--psp-muted);
+  text-align: center;
+}
+.psp-footer a {
+  font-weight: 700;
+  color: var(--psp-fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.psp-notfound-title {
+  font-weight: 700;
+  font-size: 20px;
+  margin: 0 0 8px;
+  text-align: center;
+}
+.psp-notfound-text {
+  font-size: 14px;
+  color: var(--psp-muted);
+  text-align: center;
+  margin: 0 0 22px;
+  max-width: 320px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .psp-backdrop,
+  .psp-card,
+  .psp-cover-glow,
+  .psp-play-button::after,
+  .psp-waveform-bar {
+    animation: none !important;
+  }
+}

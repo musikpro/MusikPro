@@ -6,6 +6,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { getPublicSongBySlug } from "@/lib/ai/songs";
 import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
 import { translateForLocale, translateTemplateForLocale } from "@/lib/i18n/translate";
+import Icon from "@/components/banani/Icon";
 import PublicSongPlayer from "./PublicSongPlayer";
 
 export const runtime = "nodejs";
@@ -40,31 +41,45 @@ export default async function PublicSongPage({ params }: Params) {
   if (!song) notFound();
 
   return (
-    <main className="min-h-screen bg-background flex flex-col items-center justify-center px-4 py-10 font-body">
-      <div
-        className="w-full max-w-sm bg-card border border-border rounded-2xl overflow-hidden"
-        style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}
-      >
-        <div className="aspect-square w-full bg-muted">
-          {song.coverUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={song.coverUrl} alt={song.title} className="w-full h-full object-cover" />
-          ) : null}
-        </div>
-        <div className="p-5 flex flex-col gap-3">
-          <h1 className="font-headings font-bold text-xl text-foreground truncate">{song.title}</h1>
-          <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
-            {song.style ? <span className="font-semibold">{song.style}</span> : null}
-            {song.occasion ? <span>· {song.occasion}</span> : null}
+    <main className="public-song-page">
+      {song.coverUrl ? (
+        <div className="psp-backdrop" style={{ backgroundImage: `url(${song.coverUrl})` }} />
+      ) : (
+        <div className="psp-backdrop-fallback" />
+      )}
+      <div className="psp-scrim" />
+      <div className="psp-card">
+        <div className="psp-cover-wrap">
+          <div className="psp-cover-glow" />
+          <div className="psp-cover">
+            {song.coverUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={song.coverUrl} alt={song.title} />
+            ) : (
+              <div className="psp-cover-placeholder">
+                <Icon i="music-2" size={40} />
+              </div>
+            )}
           </div>
-          <PublicSongPlayer audioUrl={song.audioUrl} title={song.title} />
         </div>
+        <h1 className="psp-title">{song.title}</h1>
+        {song.style || song.occasion ? (
+          <div className="psp-badges">
+            {song.style ? <span className="psp-badge">{song.style}</span> : null}
+            {song.occasion ? <span className="psp-badge psp-badge-muted">{song.occasion}</span> : null}
+          </div>
+        ) : null}
+        <PublicSongPlayer
+          audioUrl={song.audioUrl}
+          title={song.title}
+          playLabel={t("Écouter")}
+          pauseLabel={t("Mettre en pause")}
+          seekLabel={t("Progression de la lecture")}
+        />
       </div>
-      <p className="mt-6 text-xs text-muted-foreground">
+      <p className="psp-footer">
         {t("Créé avec")}{" "}
-        <Link href="/" className="font-semibold text-foreground underline">
-          MusikPro
-        </Link>
+        <Link href="/">MusikPro</Link>
       </p>
     </main>
   );
