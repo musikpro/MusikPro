@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const song = await getPublicSongBySlug(slug);
   if (!song) return buildMetadata({ title: t("Chanson indisponible"), path: `/s/${slug}`, noIndex: true });
   return buildMetadata({
-    title: `${song.title}${t(" — écoute sur MusikPro")}`,
+    title: translateTemplate("{title} — écoute sur MusikPro", { title: song.title }),
     description: song.occasion
       ? translateTemplate("Une chanson créée pour {occasion} avec MusikPro.", { occasion: song.occasion })
       : t("Une chanson créée avec MusikPro."),

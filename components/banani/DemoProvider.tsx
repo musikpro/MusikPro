@@ -16,7 +16,7 @@ import type { LibraryCollectionOption } from "@/lib/library-collections/catalog"
 import type { LanguageOption } from "@/lib/languages/catalog";
 import type { PhonePrefixOption } from "@/lib/phone-prefixes/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
-import { localizeField, type CatalogTranslations } from "@/lib/i18n/translate";
+import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 
 type SongGroupResponse = {
@@ -695,7 +695,7 @@ function useDemoState(
         const result = await apiFetch<{ url: string }>(`/api/songs/${id}/publish`, { method: "POST" });
         return result.url;
       } catch (error) {
-        notify(error instanceof ApiClientError ? error.message : "Impossible de publier cette chanson pour le moment.");
+        notify(error instanceof ApiClientError ? error.message : t("Impossible de publier cette chanson pour le moment."));
         return null;
       }
     },
@@ -711,10 +711,10 @@ function useDemoState(
           body: JSON.stringify({ coverUrl }),
         });
         await refreshSongs();
-        notify("Pochette mise à jour.");
+        notify(t("Pochette mise à jour."));
         return true;
       } catch {
-        notify("Impossible de mettre à jour la pochette pour le moment.");
+        notify(t("Impossible de mettre à jour la pochette pour le moment."));
         return false;
       }
     },

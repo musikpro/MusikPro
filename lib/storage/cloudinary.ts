@@ -144,14 +144,24 @@ export async function transcodeRemoteAudioToMp3(remoteUrl: string, options?: { f
 }
 
 /**
- * Guards `coverUrl` before it becomes publicly visible (see /s/[slug]): only URLs actually
- * hosted on Cloudinary's CDN are accepted, regardless of which cloud name. A naive host-string
- * check (e.g. `.includes("res.cloudinary.com")`) would accept a lookalike host like
- * `res.cloudinary.com.evil.example`, so this parses the URL and compares the exact hostname.
+ * Guards `coverUrl` before it becomes publicly visible (see /s/[slug]): only URLs hosted on our
+ * own configured Cloudinary account are accepted. A naive host-string check (e.g.
+ * `.includes("res.cloudinary.com")`) would accept a lookalike host like
+ * `res.cloudinary.com.evil.example`, so this parses the URL and compares the exact hostname; a
+ * bare hostname check would still accept any other Cloudinary customer's `cloud_name` (free to
+ * create) or the `/image/fetch/` delivery type (which can proxy an arbitrary external URL), so the
+ * path is also required to start with `/${CLOUDINARY_CLOUD_NAME}/image/upload/`.
  */
 export function isTrustedImageUrl(url: string): boolean {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  if (!cloudName) return false;
   try {
-    return new URL(url).hostname === "res.cloudinary.com";
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === "https:" &&
+      parsed.hostname === "res.cloudinary.com" &&
+      parsed.pathname.startsWith(`/${cloudName}/image/upload/`)
+    );
   } catch {
     return false;
   }

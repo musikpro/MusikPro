@@ -276,7 +276,10 @@ export async function getPublicSongBySlug(slug: string): Promise<PublicSongView 
   const [row] = await database
     .select({ job: musicGenerationJobs })
     .from(songPublications)
-    .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
+    .innerJoin(
+      musicGenerationJobs,
+      and(eq(musicGenerationJobs.id, songPublications.jobId), eq(musicGenerationJobs.userId, songPublications.userId)),
+    )
     .where(eq(songPublications.slug, slug));
   if (!row || row.job.status !== "completed" || !row.job.audioUrl) return null;
   return {

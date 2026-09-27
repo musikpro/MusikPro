@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
 import { downloadAudioFile, shareAudioFile, shareLink } from "@/lib/demo/audio-actions";
 import { uploadCoverImage } from "@/lib/demo/cover-actions";
@@ -85,15 +85,15 @@ export default function MySongsGenerated() {
       return;
     }
     if (!primary?.audioUrl) {
-      demo.notify("Cette chanson n'est pas encore prête à être publiée.");
+      demo.notify(t("Cette chanson n'est pas encore prête à être publiée."));
       return;
     }
     const url = await demo.publishSong(song.id);
     if (!url) return;
     const result = await shareLink(url, song.title, "Écoute ma chanson créée sur MusikPro !");
-    if (result === "copied") demo.notify("Lien public copié dans le presse-papiers.");
-    if (result === "shared") demo.notify("Chanson publiée et partagée !");
-    if (result === "failed") demo.notify(`Chanson publiée : ${url}`);
+    if (result === "copied") demo.notify(t("Lien public copié dans le presse-papiers."));
+    if (result === "shared") demo.notify(t("Chanson publiée et partagée !"));
+    if (result === "failed") demo.notify(translateTemplate("Chanson publiée : {url}", { url }));
   };
 
   const openPosterPicker = (songId: string | number) => {
@@ -114,7 +114,7 @@ export default function MySongsGenerated() {
       const url = await uploadCoverImage(file);
       await demo.setSongCover(coverTargetId, url);
     } catch {
-      demo.notify("Impossible d'envoyer cette image pour le moment.");
+      demo.notify(t("Impossible d'envoyer cette image pour le moment."));
     } finally {
       setUploadingCoverId(null);
       setCoverTargetId(null);
@@ -425,9 +425,9 @@ export default function MySongsGenerated() {
               <button
                 type="button"
                 data-demo-ready="true"
-                disabled={uploadingCoverId === song.id}
+                disabled={uploadingCoverId === song.id || (!demo.isDemo && !primaryVersion?.audioUrl)}
                 onClick={() => openPosterPicker(song.id)}
-                className={`w-full flex items-center justify-center gap-1.5 rounded-full border border-dashed border-border bg-input px-3 py-2 text-xs font-semibold text-foreground ${uploadingCoverId === song.id ? "opacity-50" : ""}`}
+                className={`w-full flex items-center justify-center gap-1.5 rounded-full border border-dashed border-border bg-input px-3 py-2 text-xs font-semibold text-foreground ${uploadingCoverId === song.id || (!demo.isDemo && !primaryVersion?.audioUrl) ? "opacity-50" : ""}`}
               >
                 <Icon
                   i={uploadingCoverId === song.id ? "loader-circle" : "image"}
