@@ -1039,6 +1039,33 @@
         "credit-catalog"
       ],
       "disableBehavior": "Sans cette feature, / retombe sur un titre/description minimal (comportement précédent)."
+    },
+    "admin-trending-menu": {
+      "description": "Menu Tendances du tableau de bord propriétaire — sélection automatique (chansons publiées les plus écoutées) ou manuelle (n'importe quelle génération terminée, ajoutée par identifiant alphanumérique) des chansons mises en avant.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "lib/trending/admin.ts",
+        "lib/trending/server.ts",
+        "app/admin/trending/page.tsx",
+        "app/admin/trending/actions.ts",
+        "app/api/admin/trending/lookup/route.ts",
+        "components/admin/TrendingPanel.tsx"
+      ],
+      "routes": [
+        "/api/admin/trending/lookup"
+      ],
+      "notes": [
+        "L'identifiant d'une génération (songGroupId) n'est affiché que sur /admin/generations; /api/admin/trending/lookup permet de retrouver une chanson par cet identifiant même hors de la liste des générations récentes.",
+        "Choisir une chanson en mode manuel publie automatiquement sa version (publishSongGroup) si elle ne l'était pas déjà, sans changer le widget public /s/[slug]."
+      ],
+      "removalComplexity": "low",
+      "dependsOn": [
+        "database",
+        "auth",
+        "real-song-generation-journey"
+      ],
+      "disableBehavior": "Sans cette feature, la landing page retombe sur les chansons publiées les plus écoutées telles qu'affichées par défaut (comportement précédent du bloc tendances)."
     }
   },
   "removalProtocol": [
