@@ -11,8 +11,16 @@ import { heroAnimatedTexts } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { getHeroSettings } from "@/lib/hero-animation/settings";
 
-export default async function AdminAnimatedTextsPage() {
+const TAB_IDS = ["headline", "animation", "texts"] as const;
+
+export default async function AdminAnimatedTextsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   await requireAdmin();
+  const { tab } = await searchParams;
+  const defaultTab = (TAB_IDS as readonly string[]).includes(tab ?? "") ? tab : undefined;
   const [rows, heroSettings] = await Promise.all([
     getServiceDb().select().from(heroAnimatedTexts).orderBy(asc(heroAnimatedTexts.sortOrder), asc(heroAnimatedTexts.label)),
     getHeroSettings(),
@@ -27,6 +35,7 @@ export default async function AdminAnimatedTextsPage() {
       />
       <AdminTabs
         ariaLabel="Réglages du Hero"
+        defaultTab={defaultTab}
         tabs={[
           { id: "headline", label: "Titre principal" },
           { id: "animation", label: "Animation" },

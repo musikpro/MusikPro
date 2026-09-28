@@ -43,6 +43,7 @@ export function AmbientPlayerProvider({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const startedRef = useRef(false);
   const pendingPauseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const duckedRef = useRef(false);
   const [muted, setMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [loadError, setLoadError] = useState(false);
@@ -92,6 +93,39 @@ export function AmbientPlayerProvider({
     // Le volume/URL ne changent jamais pendant la vie de ce composant (démonté/remonté par
     // page.tsx à chaque changement de réglage admin via revalidatePath) : un seul montage suffit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled]);
+
+  useEffect(() => {
+    if (!enabled) return undefined;
+    const audio = audioRef.current;
+    if (!audio) return undefined;
+    // The native play/pause/ended events don't bubble, but they do fire during the capture phase
+    // on every ancestor — one listener here can therefore duck the ambient track the instant ANY
+    // other <audio>/<video> on the dashboard (a song card, a future player, ...) starts, and bring
+    // it back the instant none of them are playing anymore, with no change needed at each of those
+    // call sites and no risk of missing a future one.
+    const reconcile = (event: Event) => {
+      if (event.target === audio) return;
+      const others = Array.from(document.querySelectorAll("audio, video")).filter((el) => el !== audio);
+      const otherPlaying = others.some((el) => !(el as HTMLMediaElement).paused && !(el as HTMLMediaElement).ended);
+      if (otherPlaying) {
+        if (!audio.paused) {
+          duckedRef.current = true;
+          audio.pause();
+        }
+      } else if (duckedRef.current) {
+        duckedRef.current = false;
+        void audio.play().catch(() => {});
+      }
+    };
+    document.addEventListener("play", reconcile, true);
+    document.addEventListener("pause", reconcile, true);
+    document.addEventListener("ended", reconcile, true);
+    return () => {
+      document.removeEventListener("play", reconcile, true);
+      document.removeEventListener("pause", reconcile, true);
+      document.removeEventListener("ended", reconcile, true);
+    };
   }, [enabled]);
 
   const toggleMuted = () => {

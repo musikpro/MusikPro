@@ -1812,7 +1812,24 @@ button {
   color: #805b13;
 }
 
-/* Page de partage publique d'une chanson (/s/[slug]) — lien envoyé sur WhatsApp etc. */
+/* Page de partage publique d'une chanson (/s/[slug]) — lien envoyé sur WhatsApp etc.
+   Sur mobile, dépasser en glissant sous le bas réel de la page révèle furtivement le fond de
+   <html>/<body> (gris clair, hérité du :root plus haut) au lieu du fond sombre de cette page —
+   d'où la bande blanche visible en mode sombre pendant le "rubber-band" du navigateur. On aligne
+   ce fond sur --psp-bg (dupliqué ici : les custom properties ne remontent pas d'un descendant vers
+   ses ancêtres) et on désactive le rebond lui-même via overscroll-behavior, scoping les deux au
+   :has() de cette page pour ne rien changer sur le reste du site. */
+html:has(.public-song-page),
+body:has(.public-song-page) {
+  overscroll-behavior-y: none;
+  background: #0e0c11;
+}
+@media (prefers-color-scheme: light) {
+  html:has(.public-song-page),
+  body:has(.public-song-page) {
+    background: #fafaf7;
+  }
+}
 .public-song-page {
   --psp-bg: #0e0c11;
   --psp-fg: #f6f2ec;
@@ -1862,14 +1879,20 @@ button {
   position: absolute;
   inset: 0;
   z-index: -2;
-  background: radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--psp-primary) 35%, transparent), transparent 60%),
+  background:
+    radial-gradient(circle at 30% 20%, color-mix(in srgb, var(--psp-primary) 35%, transparent), transparent 60%),
     var(--psp-bg);
 }
 .psp-scrim {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: radial-gradient(ellipse at center, transparent 0%, color-mix(in srgb, var(--psp-bg) 55%, transparent) 55%, var(--psp-bg) 100%);
+  background: radial-gradient(
+    ellipse at center,
+    transparent 0%,
+    color-mix(in srgb, var(--psp-bg) 55%, transparent) 55%,
+    var(--psp-bg) 100%
+  );
 }
 @keyframes psp-breathe {
   from {

@@ -9,9 +9,7 @@ import { getSession } from "@/lib/auth/session";
 import { localizeFieldForLocale, translateForLocale, translateTemplateForLocale, type Locale } from "@/lib/i18n/translate";
 import { getActiveOccasions } from "@/lib/occasions/server";
 import { getActiveMusicStyles } from "@/lib/music-styles/server";
-import { getActiveCreditPlans } from "@/lib/credit-plans/server";
-import { CREDITS_PER_GENERATION, VERSIONS_PER_GENERATION, getGenerationCount } from "@/lib/credit-plans/catalog";
-import { formatCreditPrice } from "@/lib/credit-plans/currency";
+import { CREDITS_PER_GENERATION, VERSIONS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 import { getLandingLibrarySongs, getLandingShowcaseSongs } from "@/lib/landing-features/server";
 import { getActiveHeroAnimatedTexts } from "@/lib/hero-animated-texts/server";
 import { getHeroSettings } from "@/lib/hero-animation/settings";
@@ -59,29 +57,21 @@ export default async function Home() {
   // same batch, so it only adds the cost of one indexed country_languages lookup, not a repeat of
   // any geo-IP/network work.
   const languageCatalogPromise = getActiveLanguageCatalog();
-  const [
-    occasions,
-    musicStyles,
-    creditPlans,
-    showcaseSongs,
-    librarySongs,
-    heroAnimatedTexts,
-    heroSettings,
-    storeLinks,
-    languageCatalog,
-    currency,
-  ] = await Promise.all([
-    getActiveOccasions(),
-    getActiveMusicStyles(),
-    getActiveCreditPlans(),
-    getLandingShowcaseSongs(),
-    getLandingLibrarySongs(),
-    getActiveHeroAnimatedTexts(),
-    getHeroSettings(),
-    getStoreLinks(),
-    languageCatalogPromise,
-    detectCurrency(requestHeaders),
-  ]);
+  // detectCurrency's return value isn't needed here anymore (it only ever fed the removed
+  // pricing section), but the call itself stays in this batch: it's what warms the request-scoped
+  // geo-IP memoization (see comment above) that detectInterfaceLanguage below reuses.
+  const [occasions, musicStyles, showcaseSongs, librarySongs, heroAnimatedTexts, heroSettings, storeLinks, languageCatalog] =
+    await Promise.all([
+      getActiveOccasions(),
+      getActiveMusicStyles(),
+      getLandingShowcaseSongs(),
+      getLandingLibrarySongs(),
+      getActiveHeroAnimatedTexts(),
+      getHeroSettings(),
+      getStoreLinks(),
+      languageCatalogPromise,
+      detectCurrency(requestHeaders),
+    ]);
   const detectedLanguage = await detectInterfaceLanguage(requestHeaders, languageCatalog.interfaceLanguages);
 
   // A visitor who explicitly switched language via LandingLanguageSwitcher takes priority over
@@ -118,24 +108,6 @@ export default async function Home() {
     label: localizeFieldForLocale(text.label, text.translations, "label", locale),
   }));
   const heroHeadline = localizeFieldForLocale(heroSettings.headline, heroSettings.translations, "headline", locale);
-  const displayCurrency = currency ?? "XOF";
-  const landingCreditPlans = creditPlans.slice(0, 3).map((plan) => {
-    const songs = getGenerationCount(plan.credits, plan.generationCost);
-    const perSong = songs > 0 ? plan.priceValue / songs : plan.priceValue;
-    return {
-      id: plan.id,
-      name: localizeFieldForLocale(plan.name, plan.translations, "name", locale),
-      songsLabel: tt("{count} chansons", { count: songs }),
-      priceLabel: formatCreditPrice(plan.priceValue, displayCurrency),
-      perSongLabel: tt("{price} / chanson", { price: formatCreditPrice(perSong, displayCurrency) }),
-      badge: plan.popular
-        ? t("Le plus choisi")
-        : plan.bonus
-          ? localizeFieldForLocale(plan.bonus, plan.translations, "bonus", locale)
-          : null,
-      highlight: plan.popular,
-    };
-  });
 
   const versionsLabel = tt("1 génération = {versions} versions", { versions: VERSIONS_PER_GENERATION });
   const creditsExplainerLabel = tt("Chaque chanson complète ({versions} versions) coûte {cost} crédits.", {
@@ -152,7 +124,6 @@ export default async function Home() {
     languageOptions,
     occasions: landingOccasions,
     musicStyles: landingMusicStyles,
-    creditPlans: landingCreditPlans,
     showcaseSongs,
     librarySongs,
     heroHeadline,

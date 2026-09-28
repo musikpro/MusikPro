@@ -61,7 +61,7 @@ export default function AdminHeroAnimatedTextForm({
           />
         </div>
         <div className="admin-editor-actions is-wide">
-          <AdminBackLink href="/admin/animated-texts" label="Annuler" />
+          <AdminBackLink href="/admin/animated-texts?tab=texts" label="Annuler" />
           <button type="submit" disabled={pending}>
             <Icon i={editing ? "save" : "plus"} size={17} />
             {editing ? "Enregistrer les modifications" : "Enregistrer le texte"}

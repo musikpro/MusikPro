@@ -4,12 +4,14 @@ import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { landingSongFeatures, musicGenerationJobs, songPublications } from "@/db/schema";
+import { landingSongFeatures } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { isTrustedImageUrl } from "@/lib/storage/cloudinary";
 import { writeAuditLog } from "@/lib/security/audit";
 import { LANDING_SONG_FEATURE_SECTIONS, MAX_LANDING_SONG_FEATURES_PER_SECTION } from "@/lib/landing-features/admin";
+import { getGeneratedSongOptionById } from "@/lib/trending/admin";
+import { publishSongGroup } from "@/lib/ai/songs";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 const sectionSchema = z.enum(LANDING_SONG_FEATURE_SECTIONS);
@@ -49,14 +51,16 @@ function revalidateLandingFeatures() {
   revalidatePath("/");
 }
 
-async function songIsPublished(songGroupId: string): Promise<boolean> {
-  const [row] = await getServiceDb()
-    .select({ status: musicGenerationJobs.status })
-    .from(songPublications)
-    .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
-    .where(eq(songPublications.songGroupId, songGroupId))
-    .limit(1);
-  return row?.status === "completed";
+/**
+ * The songGroupId picked here can come from any completed generation, not only an
+ * already-published one (see lib/trending/admin.ts's listRecentGeneratedSongsForAdmin) — both
+ * the admin grid and the public landing page INNER JOIN against song_publications, so publish it
+ * now (idempotent — a no-op if it's already published) rather than rejecting the pick.
+ */
+async function publishPickedSong(songGroupId: string): Promise<void> {
+  const option = await getGeneratedSongOptionById(songGroupId);
+  if (!option) throw new Error("Chanson introuvable ou non terminée.");
+  await publishSongGroup(option.userId, option.songGroupId, option.jobId);
 }
 
 export async function createLandingSongFeature(
@@ -76,8 +80,7 @@ export async function createLandingSongFeature(
       return { ok: false, message: `Cette section affiche déjà ${MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes au maximum.` };
     if (existing.some((row) => row.songGroupId === parsed.songGroupId))
       return { ok: false, message: "Cette chanson est déjà assignée à cette section." };
-    if (!(await songIsPublished(parsed.songGroupId)))
-      return { ok: false, message: "Cette chanson n’est plus publiée — choisis-en une autre." };
+    await publishPickedSong(parsed.songGroupId);
 
     const nextSortOrder = existing.reduce((max, row) => Math.max(max, row.sortOrder), 0) + 10;
     const id = randomUUID();
@@ -124,8 +127,7 @@ export async function updateLandingSongFeature(
       )
       .limit(1);
     if (duplicate.length) return { ok: false, message: "Cette chanson est déjà assignée à cette section." };
-    if (!(await songIsPublished(parsed.songGroupId)))
-      return { ok: false, message: "Cette chanson n’est plus publiée — choisis-en une autre." };
+    await publishPickedSong(parsed.songGroupId);
 
     await database
       .update(landingSongFeatures)

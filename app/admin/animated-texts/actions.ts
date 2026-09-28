@@ -9,6 +9,7 @@ import { heroAnimatedTexts, heroAnimationSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
+import { withAdminNotice } from "@/lib/admin/notice-redirect";
 import { HERO_ANIMATION_TYPES, HERO_TEXT_SIZES } from "@/lib/hero-animation/types";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
@@ -61,7 +62,7 @@ export async function createHeroAnimatedText(
     metadata: { label: parsed.label },
   });
   revalidateHeroAnimatedTexts();
-  redirect("/admin/animated-texts");
+  redirect(withAdminNotice("/admin/animated-texts?tab=texts", "Texte animé ajouté."));
 }
 
 export async function updateHeroAnimatedText(

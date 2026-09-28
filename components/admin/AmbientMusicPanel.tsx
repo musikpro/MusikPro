@@ -1,27 +1,81 @@
 "use client";
+import { useMemo, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import { setAmbientTrack, disableAmbientTrack } from "@/app/admin/ambient-music/actions";
+import { apiFetch } from "@/lib/api/client";
 import type { AmbientTrackStatus } from "@/lib/settings/ambient-track";
+import type { GeneratedSongOption } from "@/lib/trending/admin";
 
-type SongOption = { songGroupId: string; title: string; styleLabel: string | null };
+type SongDisplay = { songGroupId: string; title: string; styleLabel: string | null; audioUrl: string | null };
 
+/**
+ * `songs` is the recent platform-wide catalog (lib/trending/admin.ts's
+ * listRecentGeneratedSongsForAdmin — same pool as Trending/landing-features, not just this admin's
+ * own songs) capped at AMBIENT_SONG_POOL_SIZE. A song outside that window is reachable by pasting
+ * its "Identifiant" from /admin/generations, same lookup endpoint and pattern as TrendingPanel's
+ * "Ajouter par identifiant".
+ */
 export default function AmbientMusicPanel({
   status,
-  songOptions,
-  currentSongGroupId,
+  songs,
 }: {
   status: AmbientTrackStatus;
-  songOptions: SongOption[];
-  currentSongGroupId: string | null;
+  songs: GeneratedSongOption[];
 }) {
-  if (songOptions.length === 0) {
+  const [extraSongs, setExtraSongs] = useState<Record<string, SongDisplay>>({});
+  const [songGroupId, setSongGroupId] = useState(status.songGroupId ?? songs[0]?.songGroupId ?? "");
+  const [idInput, setIdInput] = useState("");
+  const [idLookupPending, setIdLookupPending] = useState(false);
+  const [idLookupError, setIdLookupError] = useState("");
+  const [playing, setPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const allSongs = useMemo<SongDisplay[]>(() => {
+    const map = new Map<string, SongDisplay>(songs.map((song) => [song.songGroupId, song]));
+    for (const extra of Object.values(extraSongs)) if (!map.has(extra.songGroupId)) map.set(extra.songGroupId, extra);
+    return Array.from(map.values());
+  }, [songs, extraSongs]);
+  const selectedSong = allSongs.find((song) => song.songGroupId === songGroupId) ?? null;
+
+  const addSongById = async () => {
+    const trimmed = idInput.trim();
+    if (!trimmed) return;
+    setIdLookupPending(true);
+    setIdLookupError("");
+    try {
+      const option = await apiFetch<SongDisplay>("/api/admin/trending/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ songGroupId: trimmed }),
+        timeoutMs: 15_000,
+      });
+      setExtraSongs((prev) => ({ ...prev, [option.songGroupId]: option }));
+      setSongGroupId(option.songGroupId);
+      setPlaying(false);
+      setIdInput("");
+    } catch (error) {
+      setIdLookupError(error instanceof Error ? error.message : "Identifiant introuvable.");
+    } finally {
+      setIdLookupPending(false);
+    }
+  };
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) audio.pause();
+    else void audio.play().catch(() => setPlaying(false));
+  };
+
+  if (songs.length === 0) {
     return (
       <section className="admin-panel">
         <p>Tu n&apos;as encore aucune chanson terminée à utiliser comme fond sonore.</p>
       </section>
     );
   }
+
   const formId = "ambient-settings-form";
   return (
     <section className={`admin-panel ${status.enabled ? "is-active" : ""}`}>
@@ -42,23 +96,88 @@ export default function AmbientMusicPanel({
       </div>
       <AdminActionForm
         id={formId}
-        key={`${currentSongGroupId ?? "none"}-${status.volumePercent}`}
+        key={`${status.songGroupId ?? "none"}-${status.volumePercent}`}
         action={setAmbientTrack}
         className="admin-stack-form admin-ambient-form"
       >
         <div className="admin-ambient-field">
           <label htmlFor="ambient-song-select">Chanson</label>
-          <select id="ambient-song-select" name="songGroupId" defaultValue={currentSongGroupId ?? ""} required>
-            <option value="" disabled>
-              Choisis une chanson
-            </option>
-            {songOptions.map((song) => (
-              <option key={song.songGroupId} value={song.songGroupId}>
-                {song.title}
-                {song.styleLabel ? ` — ${song.styleLabel}` : ""}
+          <div className="admin-btn-row">
+            <select
+              id="ambient-song-select"
+              name="songGroupId"
+              value={songGroupId}
+              onChange={(event) => {
+                setSongGroupId(event.target.value);
+                setPlaying(false);
+              }}
+              required
+            >
+              <option value="" disabled>
+                Choisis une chanson
               </option>
-            ))}
-          </select>
+              {allSongs.map((song) => (
+                <option key={song.songGroupId} value={song.songGroupId}>
+                  {song.title}
+                  {song.styleLabel ? ` — ${song.styleLabel}` : ""}
+                </option>
+              ))}
+            </select>
+            <button type="button" className="admin-secondary-action" disabled={!selectedSong?.audioUrl} onClick={togglePlay}>
+              <Icon i={playing ? "pause" : "play"} size={15} />
+              {playing ? "Pause" : "Lecture"}
+            </button>
+          </div>
+          {selectedSong?.audioUrl ? (
+            <audio
+              ref={audioRef}
+              src={selectedSong.audioUrl}
+              onPlay={() => setPlaying(true)}
+              onPause={() => setPlaying(false)}
+              onEnded={() => setPlaying(false)}
+              className="sr-only"
+            />
+          ) : null}
+        </div>
+        <div className="admin-trending-add-by-id">
+          <label htmlFor="ambient-add-by-id">Ajouter par identifiant</label>
+          <div className="admin-trending-add-by-id-row">
+            <input
+              id="ambient-add-by-id"
+              type="text"
+              value={idInput}
+              onChange={(event) => {
+                setIdInput(event.target.value);
+                setIdLookupError("");
+              }}
+              placeholder="Colle l’identifiant depuis la page « Générations »"
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void addSongById();
+                }
+              }}
+            />
+            <button
+              type="button"
+              className="admin-trending-add"
+              disabled={idLookupPending || !idInput.trim()}
+              onClick={() => void addSongById()}
+            >
+              <Icon
+                i={idLookupPending ? "loader-circle" : "plus"}
+                size={14}
+                className={idLookupPending ? "animate-spin" : undefined}
+              />
+              Ajouter
+            </button>
+          </div>
+          <small>
+            Seules les {songs.length} générations les plus récentes apparaissent dans la liste ci-dessus — le
+            catalogue peut en contenir bien plus ; pour une chanson plus ancienne, copie son identifiant depuis
+            « Générations » et colle-le ici.
+          </small>
+          {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
         </div>
         <div className="admin-ambient-field">
           <label htmlFor="ambient-volume-input">Volume (5 à 50 %)</label>

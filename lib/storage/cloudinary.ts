@@ -2,6 +2,12 @@ import crypto from "node:crypto";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"]);
+// Every image (song covers, media library, ...) is delivered at 2 MB or less so the site never
+// gets weighed down by a heavy upload — Cloudinary re-compresses in place, no separate file kept.
+const DEFAULT_TARGET_MAX_BYTES = 2 * 1024 * 1024;
+// AVIF only: smaller than WebP/JPEG at equal quality, which also makes the 2 MB cap below easier
+// to hit, and is supported by every current major browser.
+const COMPRESSION_STEPS = ["q_auto:good,f_avif", "q_auto:eco,f_avif", "w_1600,c_limit,q_auto:low,f_avif", "w_1000,c_limit,q_auto:low,f_avif"];
 
 function startsWith(bytes: Uint8Array, signature: number[]) {
   return signature.every((value, index) => bytes[index] === value);
@@ -47,7 +53,56 @@ export function isCloudinaryConfigured() {
   );
 }
 
-export async function uploadImageToCloudinary(file: File, options?: { folder?: string }) {
+type CloudinaryUploadResult = {
+  publicId: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+  format: string | null;
+  bytes: number;
+};
+
+async function cloudinaryExplicit(
+  publicId: string,
+  eager: string,
+  cloudName: string,
+  apiKey: string,
+  apiSecret: string,
+) {
+  const timestamp = Math.floor(Date.now() / 1000);
+  const params = { eager, public_id: publicId, timestamp, type: "upload" };
+  const signature = signParams(params, apiSecret);
+  const body = new URLSearchParams({
+    public_id: publicId,
+    type: "upload",
+    eager,
+    api_key: apiKey,
+    timestamp: String(timestamp),
+    signature,
+  });
+  const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/explicit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!response.ok) throw new Error(`Cloudinary transform failed with HTTP ${response.status}`);
+  const data = (await response.json()) as {
+    eager?: Array<{ secure_url?: string; width?: number; height?: number; bytes?: number }>;
+  };
+  return data.eager?.[0] ?? null;
+}
+
+/**
+ * Uploads with Cloudinary's "incoming transformation" so the delivered asset — not a separate
+ * derivative — is already `q_auto,f_avif`-optimized, then escalates through cheaper/smaller
+ * `explicit` transformations (no re-upload of the source bytes) until the asset is at or under
+ * `maxBytes` (2 MB by default) so no image weighs down the site. A cover photo essentially always
+ * clears this within the first one or two steps; the last step also caps pixel dimensions.
+ */
+export async function uploadImageToCloudinary(
+  file: File,
+  options?: { folder?: string; maxBytes?: number },
+): Promise<CloudinaryUploadResult> {
   if (!ALLOWED_TYPES.has(file.type)) throw new Error("Unsupported image type");
   if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) throw new Error("Image must be between 1 byte and 10 MB");
   const detectedType = await detectImageType(file);
@@ -55,18 +110,21 @@ export async function uploadImageToCloudinary(file: File, options?: { folder?: s
     throw new Error("Image content does not match its declared MIME type");
 
   const { cloudName, apiKey, apiSecret } = requireCloudinaryEnv();
+  const maxBytes = options?.maxBytes ?? DEFAULT_TARGET_MAX_BYTES;
   const timestamp = Math.floor(Date.now() / 1000);
   const folder = (options?.folder || process.env.CLOUDINARY_FOLDER || "africa-saas-kit").replace(
     /[^a-zA-Z0-9_\-/]/g,
     "-",
   );
-  const params = { folder, timestamp };
+  const transformation = COMPRESSION_STEPS[0];
+  const params = { folder, timestamp, transformation };
   const signature = signParams(params, apiSecret);
   const form = new FormData();
   form.set("file", file);
   form.set("api_key", apiKey);
   form.set("timestamp", String(timestamp));
   form.set("folder", folder);
+  form.set("transformation", transformation);
   form.set("signature", signature);
 
   const response = await fetch(`https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`, {
@@ -83,7 +141,8 @@ export async function uploadImageToCloudinary(file: File, options?: { folder?: s
     bytes?: number;
   };
   if (!data.public_id || !data.secure_url) throw new Error("Cloudinary returned an incomplete upload response");
-  return {
+
+  let result: CloudinaryUploadResult = {
     publicId: data.public_id,
     url: data.secure_url,
     width: data.width ?? null,
@@ -91,6 +150,67 @@ export async function uploadImageToCloudinary(file: File, options?: { folder?: s
     format: data.format ?? null,
     bytes: data.bytes ?? file.size,
   };
+
+  for (const step of COMPRESSION_STEPS.slice(1)) {
+    if (result.bytes <= maxBytes) break;
+    const eager = await cloudinaryExplicit(result.publicId, step, cloudName, apiKey, apiSecret);
+    if (!eager?.secure_url || !eager.bytes) continue;
+    result = { ...result, url: eager.secure_url, width: eager.width ?? result.width, height: eager.height ?? result.height, bytes: eager.bytes };
+  }
+
+  if (result.bytes > maxBytes)
+    throw new Error(`Impossible de compresser cette image sous ${Math.round(maxBytes / 1024 / 1024)} Mo. Essaie une image plus légère.`);
+
+  return result;
+}
+
+export async function deleteCloudinaryImage(publicId: string): Promise<void> {
+  const { cloudName, apiKey, apiSecret } = requireCloudinaryEnv();
+  const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/resources/image/upload?public_ids[]=${encodeURIComponent(publicId)}`,
+    { method: "DELETE", headers: { Authorization: `Basic ${auth}` } },
+  );
+  if (!response.ok) throw new Error(`Cloudinary delete failed with HTTP ${response.status}`);
+}
+
+export type CloudinaryMediaAsset = {
+  publicId: string;
+  url: string;
+  width: number | null;
+  height: number | null;
+  format: string | null;
+  bytes: number;
+  createdAt: string;
+};
+
+export async function listCloudinaryImages(folder: string, maxResults = 200): Promise<CloudinaryMediaAsset[]> {
+  const { cloudName, apiKey, apiSecret } = requireCloudinaryEnv();
+  const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+  const prefix = folder.replace(/[^a-zA-Z0-9_\-/]/g, "-");
+  const url = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/resources/image?type=upload&prefix=${encodeURIComponent(prefix + "/")}&max_results=${maxResults}&direction=desc`;
+  const response = await fetch(url, { headers: { Authorization: `Basic ${auth}` } });
+  if (!response.ok) throw new Error(`Cloudinary list failed with HTTP ${response.status}`);
+  const data = (await response.json()) as {
+    resources?: Array<{
+      public_id: string;
+      secure_url: string;
+      width?: number;
+      height?: number;
+      format?: string;
+      bytes?: number;
+      created_at?: string;
+    }>;
+  };
+  return (data.resources ?? []).map((resource) => ({
+    publicId: resource.public_id,
+    url: resource.secure_url,
+    width: resource.width ?? null,
+    height: resource.height ?? null,
+    format: resource.format ?? null,
+    bytes: resource.bytes ?? 0,
+    createdAt: resource.created_at ?? new Date(0).toISOString(),
+  }));
 }
 
 /**

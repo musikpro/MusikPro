@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { getServiceDb } from "@/db";
 import { ambientBackgroundTrack } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { listSongGroupsForUser } from "@/lib/ai/songs";
+import { getGeneratedSongOptionById } from "@/lib/trending/admin";
 import { setAmbientTrackSchema } from "@/lib/validation/ambient-track";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
@@ -16,17 +16,18 @@ export async function setAmbientTrack(_previous: AdminActionState, formData: For
       songGroupId: formData.get("songGroupId"),
       volumePercent: formData.get("volumePercent"),
     });
-    const groups = await listSongGroupsForUser(session.user.id);
-    const group = groups.find((g) => g.songGroupId === parsed.songGroupId);
-    const primary = group?.versions[0];
-    if (!group || !primary?.audioUrl) throw new Error("Cette chanson n'est plus disponible.");
+    // Any completed generation platform-wide is eligible here (not just the admin's own songs —
+    // see lib/trending/admin.ts's listRecentGeneratedSongsForAdmin), matching the same
+    // catalog-wide pool the Trending and landing-features pickers already use.
+    const option = await getGeneratedSongOptionById(parsed.songGroupId);
+    if (!option || !option.audioUrl) throw new Error("Cette chanson n'est plus disponible.");
     const db = getServiceDb();
     const fields = {
       enabled: true,
-      songGroupId: group.songGroupId,
-      jobId: primary.jobId,
-      title: group.title,
-      audioUrl: primary.audioUrl,
+      songGroupId: option.songGroupId,
+      jobId: option.jobId,
+      title: option.title,
+      audioUrl: option.audioUrl,
       volumePercent: parsed.volumePercent,
       updatedBy: session.user.id,
       updatedAt: new Date(),
@@ -40,7 +41,7 @@ export async function setAmbientTrack(_previous: AdminActionState, formData: For
       actorId: session.user.id,
       targetType: "ambient_background_track",
       targetId: "global",
-      metadata: { songGroupId: group.songGroupId, volumePercent: parsed.volumePercent },
+      metadata: { songGroupId: option.songGroupId, volumePercent: parsed.volumePercent },
     });
     revalidatePath("/admin/ambient-music");
     revalidatePath("/dashboard", "layout");

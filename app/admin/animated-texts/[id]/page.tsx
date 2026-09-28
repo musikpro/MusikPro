@@ -14,7 +14,7 @@ export default async function AdminEditHeroAnimatedTextPage({ params }: { params
   if (!row) notFound();
   return (
     <AdminPage>
-      <AdminBackLink href="/admin/animated-texts" />
+      <AdminBackLink href="/admin/animated-texts?tab=texts" />
       <AdminPageHeader
         eyebrow="Textes animés"
         title={`Modifier « ${row.label} »`}

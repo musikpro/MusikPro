@@ -7,7 +7,7 @@ export default async function AdminNewHeroAnimatedTextPage() {
   await requireAdmin();
   return (
     <AdminPage>
-      <AdminBackLink href="/admin/animated-texts" />
+      <AdminBackLink href="/admin/animated-texts?tab=texts" />
       <AdminPageHeader
         eyebrow="Textes animés"
         title="Nouveau texte animé"

@@ -1066,6 +1066,28 @@
         "real-song-generation-journey"
       ],
       "disableBehavior": "Sans cette feature, la landing page retombe sur les chansons publiées les plus écoutées telles qu'affichées par défaut (comportement précédent du bloc tendances)."
+    },
+    "admin-media-library": {
+      "description": "Menu Médias du tableau de bord propriétaire — médiathèque Cloudinary réutilisable (pochettes de chansons et autres visuels) : chaque import est converti en AVIF et recompressé sous 2 Mo automatiquement, sans nouvelle table (liste/suppression via l'API Admin Cloudinary).",
+      "optional": true,
+      "env": ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"],
+      "files": [
+        "lib/storage/cloudinary.ts",
+        "lib/media/admin.ts",
+        "app/admin/media/page.tsx",
+        "app/admin/media/actions.ts",
+        "components/admin/AdminMediaAssetGrid.tsx",
+        "components/admin/AdminDeleteMediaAssetButton.tsx"
+      ],
+      "routes": [],
+      "notes": [
+        "Dossier Cloudinary dédié `media-library/`, distinct du dossier `users/{id}` utilisé par /api/uploads/images pour les envois côté client.",
+        "La compression AVIF (q_auto puis, si besoin, réduction de largeur) est appliquée dans uploadImageToCloudinary, donc profite aussi à l'envoi de pochette déjà existant sur /admin/landing-features.",
+        "Aucune table dédiée : la liste/suppression passe par l'API Admin Cloudinary (resources/destroy), pas par la base de données."
+      ],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "auth"],
+      "disableBehavior": "Sans cette feature, le menu Médias disparaît; les formulaires qui uploadent déjà leur propre image (ex. Chansons mises en avant) continuent de fonctionner via /api/uploads/images, désormais toujours compressé en AVIF sous 2 Mo."
     }
   },
   "removalProtocol": [

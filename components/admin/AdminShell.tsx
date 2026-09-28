@@ -45,6 +45,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/trending", icon: "trending-up", label: "Tendances" },
       { href: "/admin/animated-texts", icon: "sparkles", label: "Textes animés" },
       { href: "/admin/landing-features", icon: "layout-grid", label: "Chansons mises en avant" },
+      { href: "/admin/media", icon: "images", label: "Médias" },
     ],
   },
   {

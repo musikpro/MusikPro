@@ -12,8 +12,9 @@ export const runtime = "nodejs";
 const lookupSchema = z.object({ songGroupId: z.string().trim().min(1).max(200) });
 
 /** Resolves an admin-typed song identifier (the songGroupId shown on /admin/generations) to a
- * displayable label for the Trending manual picker, so a song outside the top results returned
- * by listRecentGeneratedSongsForAdmin can still be added by ID. */
+ * displayable label for a manual song picker — shared by Trending, /admin/landing-features and
+ * /admin/ambient-music — so a song outside the top results returned by
+ * listRecentGeneratedSongsForAdmin can still be added by ID. */
 export async function POST(request: Request) {
   const originFailure = rejectCrossSiteMutation(request);
   if (originFailure) return originFailure;
@@ -44,5 +45,6 @@ export async function POST(request: Request) {
     title: option.title,
     styleLabel: option.styleLabel,
     plays: option.plays,
+    audioUrl: option.audioUrl,
   });
 }

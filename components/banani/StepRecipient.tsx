@@ -236,6 +236,8 @@ export default function StepRecipient() {
               ariaLabel={t("Lien avec cette personne")}
               placeholder={t("Sélectionner une relation")}
               value={demo.choices.recipientRelation}
+              portal
+              menuClassName="story-relation-menu"
               ariaInvalid={Boolean(fieldErrors.relation)}
               describedBy={fieldErrors.relation ? "recipient-relation-error" : undefined}
               onChange={(value) => {
@@ -268,7 +270,7 @@ export default function StepRecipient() {
 
           <div className="story-name-row">
             <div className="story-recipient-field">
-              <label htmlFor="sender-name">{t("Nom de l'expéditeur")}</label>
+              <label htmlFor="sender-name">{t("Votre nom")}</label>
               <input
                 id="sender-name"
                 type="text"

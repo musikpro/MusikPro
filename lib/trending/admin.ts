@@ -48,6 +48,8 @@ export type GeneratedSongOption = {
   plays: number;
   userId: string;
   jobId: string;
+  /** Direct MP3 URL for this version — lets a picker (e.g. /admin/ambient-music) offer a preview play button. */
+  audioUrl: string | null;
 };
 
 /** How many completed jobs to scan (most recent first) before de-duping by song group — matches /admin/generations' own row cap. */
@@ -60,6 +62,7 @@ function toGeneratedSongOption(row: {
   title: string | null;
   style: string | null;
   plays: number;
+  audioUrl: string | null;
 }): GeneratedSongOption | null {
   if (!row.songGroupId || !row.userId) return null;
   return {
@@ -69,6 +72,7 @@ function toGeneratedSongOption(row: {
     plays: row.plays,
     userId: row.userId,
     jobId: row.id,
+    audioUrl: row.audioUrl,
   };
 }
 
@@ -88,6 +92,7 @@ export async function listRecentGeneratedSongsForAdmin(limit: number): Promise<G
       title: musicGenerationJobs.title,
       style: musicGenerationJobs.style,
       plays: musicGenerationJobs.plays,
+      audioUrl: musicGenerationJobs.audioUrl,
     })
     .from(musicGenerationJobs)
     .where(and(eq(musicGenerationJobs.status, "completed"), isNotNull(musicGenerationJobs.songGroupId)))
@@ -117,6 +122,7 @@ export async function getGeneratedSongOptionById(songGroupId: string): Promise<G
       title: musicGenerationJobs.title,
       style: musicGenerationJobs.style,
       plays: musicGenerationJobs.plays,
+      audioUrl: musicGenerationJobs.audioUrl,
     })
     .from(musicGenerationJobs)
     .where(and(eq(musicGenerationJobs.songGroupId, trimmed), eq(musicGenerationJobs.status, "completed")))

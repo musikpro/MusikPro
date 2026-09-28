@@ -4,14 +4,18 @@ import AdminLandingSongFeatureForm from "@/components/admin/AdminLandingSongFeat
 import AdminLandingSongFeatureSortableGrid from "@/components/admin/AdminLandingSongFeatureSortableGrid";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
-import { listPublishedSongsForAdmin } from "@/lib/trending/admin";
-import { listLandingSongFeatures, MAX_LANDING_SONG_FEATURES_PER_SECTION } from "@/lib/landing-features/admin";
+import { listRecentGeneratedSongsForAdmin } from "@/lib/trending/admin";
+import {
+  listLandingSongFeatures,
+  LANDING_SONG_POOL_SIZE,
+  MAX_LANDING_SONG_FEATURES_PER_SECTION,
+} from "@/lib/landing-features/admin";
 import { createLandingSongFeature } from "./actions";
 
 export default async function AdminLandingFeaturesPage() {
   await requireAdmin();
   const [songs, showcaseRows, libraryRows] = await Promise.all([
-    listPublishedSongsForAdmin(),
+    listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
     listLandingSongFeatures("showcase"),
     listLandingSongFeatures("library"),
   ]);
@@ -21,7 +25,7 @@ export default async function AdminLandingFeaturesPage() {
       <AdminPageHeader
         eyebrow="Landing publique"
         title="Chansons mises en avant"
-        description="Choisis quelles chansons publiées apparaissent dans « Ils ont créé avec MusikPro » et « Bibliothèque populaire » sur la page d’accueil, et dans quel ordre."
+        description="Choisis quelles chansons apparaissent dans « Ils ont créé avec MusikPro » et « Bibliothèque populaire » sur la page d’accueil, et dans quel ordre. Une chanson non publiée l’est automatiquement dès qu’elle est assignée ici."
       />
       <AdminTabs
         ariaLabel="Sections de la landing page"
@@ -37,7 +41,7 @@ export default async function AdminLandingFeaturesPage() {
               <strong>
                 {showcaseRows.length}/{MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes assignées
               </strong>
-              <p>La chanson, son style/occasion et son nombre d’écoutes viennent du vrai catalogue publié.</p>
+              <p>La chanson, son style/occasion et son nombre d’écoutes viennent des vraies générations du catalogue.</p>
             </div>
           </div>
           <section className="admin-panel">
@@ -65,7 +69,7 @@ export default async function AdminLandingFeaturesPage() {
               <strong>
                 {libraryRows.length}/{MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes assignées
               </strong>
-              <p>La chanson, son style/occasion et son nombre d’écoutes viennent du vrai catalogue publié.</p>
+              <p>La chanson, son style/occasion et son nombre d’écoutes viennent des vraies générations du catalogue.</p>
             </div>
           </div>
           <section className="admin-panel">

@@ -5,8 +5,12 @@ import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/Ad
 import { getServiceDb } from "@/db";
 import { landingSongFeatures } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { listPublishedSongsForAdmin } from "@/lib/trending/admin";
-import { listLandingSongFeatures, type LandingSongFeatureSection } from "@/lib/landing-features/admin";
+import { getGeneratedSongOptionById, listRecentGeneratedSongsForAdmin } from "@/lib/trending/admin";
+import {
+  listLandingSongFeatures,
+  LANDING_SONG_POOL_SIZE,
+  type LandingSongFeatureSection,
+} from "@/lib/landing-features/admin";
 import { updateLandingSongFeature } from "../actions";
 
 const SECTION_LABELS: Record<LandingSongFeatureSection, string> = {
@@ -20,7 +24,17 @@ export default async function AdminEditLandingSongFeaturePage({ params }: { para
   const [row] = await getServiceDb().select().from(landingSongFeatures).where(eq(landingSongFeatures.id, id)).limit(1);
   if (!row) notFound();
   const section = row.section as LandingSongFeatureSection;
-  const [songs, sectionRows] = await Promise.all([listPublishedSongsForAdmin(), listLandingSongFeatures(section)]);
+  const [recentSongs, sectionRows] = await Promise.all([
+    listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
+    listLandingSongFeatures(section),
+  ]);
+  // The card's current song can have aged out of the "most recent" window above — resolve it
+  // directly so the picker still shows its real title instead of a blank "Sélectionner".
+  let songs = recentSongs;
+  if (!recentSongs.some((song) => song.songGroupId === row.songGroupId)) {
+    const currentSong = await getGeneratedSongOptionById(row.songGroupId);
+    if (currentSong) songs = [...recentSongs, currentSong];
+  }
 
   return (
     <AdminPage>

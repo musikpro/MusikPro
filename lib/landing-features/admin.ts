@@ -7,6 +7,14 @@ import { landingSongFeatures, musicGenerationJobs, songPublications } from "@/db
 export type LandingSongFeatureSection = "showcase" | "library";
 export const LANDING_SONG_FEATURE_SECTIONS = ["showcase", "library"] as const;
 export const MAX_LANDING_SONG_FEATURES_PER_SECTION = 4;
+/**
+ * How many recent completed generations feed the "Chanson" picker (via
+ * listRecentGeneratedSongsForAdmin) — the platform can hold far more songs than this, so an
+ * older one is reachable through the "Ajouter par identifiant" fallback in
+ * AdminLandingSongFeatureForm instead of an ever-growing dropdown. Matches the same convention as
+ * TRENDING_POOL_SIZE.
+ */
+export const LANDING_SONG_POOL_SIZE = 30;
 
 export type LandingSongFeatureRow = {
   id: string;

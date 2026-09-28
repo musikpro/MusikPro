@@ -1,20 +1,27 @@
 "use client";
-import { useActionState, useRef, useState, type ChangeEvent } from "react";
+import { useActionState, useMemo, useRef, useState, type ChangeEvent } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import { useAdminActionToast, type AdminActionState } from "@/components/admin/useAdminActionToast";
 import { uploadCoverImage } from "@/lib/demo/cover-actions";
-import type { PublishedSongOption } from "@/lib/trending/admin";
+import { apiFetch } from "@/lib/api/client";
+import type { GeneratedSongOption } from "@/lib/trending/admin";
 import type { LandingSongFeatureSection } from "@/lib/landing-features/admin";
 
+type SongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number };
 type Values = { id?: string; songGroupId?: string; coverUrlOverride?: string | null };
 
 /**
- * Assigns one real published song (lib/trending/admin.ts's listPublishedSongsForAdmin — the same
- * catalog /admin/trending uses) to a landing-page card slot, with an optional cover image
- * override uploaded via the existing authenticated /api/uploads/images route (lib/demo/cover-
- * actions.ts's uploadCoverImage, reused as-is rather than a second upload path). Used both for
- * adding a new slot inline and for editing an existing one at /admin/landing-features/[id].
+ * Assigns one real generated song (lib/trending/admin.ts's listRecentGeneratedSongsForAdmin — the
+ * same recent-generations pool /admin/trending's manual picker uses) to a landing-page card slot.
+ * A song outside that recent window can still be reached by pasting its "Identifiant" from
+ * /admin/generations — same lookup endpoint and pattern as TrendingPanel's "Ajouter par
+ * identifiant". Picking an unpublished song auto-publishes it on save (see actions.ts), so the
+ * pool isn't limited to already-published songs the way it used to be. Also supports an optional
+ * cover image override uploaded via the existing authenticated /api/uploads/images route (lib/
+ * demo/cover-actions.ts's uploadCoverImage, reused as-is rather than a second upload path). Used
+ * both for adding a new slot inline and for editing an existing one at
+ * /admin/landing-features/[id].
  */
 export default function AdminLandingSongFeatureForm({
   section,
@@ -25,7 +32,7 @@ export default function AdminLandingSongFeatureForm({
 }: {
   section: LandingSongFeatureSection;
   action: (previous: AdminActionState, formData: FormData) => Promise<AdminActionState>;
-  songs: PublishedSongOption[];
+  songs: GeneratedSongOption[];
   usedSongGroupIds: string[];
   values?: Values;
 }) {
@@ -37,13 +44,54 @@ export default function AdminLandingSongFeatureForm({
   const [uploadError, setUploadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const usedElsewhere = new Set(usedSongGroupIds.filter((id) => id !== values.songGroupId));
-  const options = songs
-    .filter((song) => !usedElsewhere.has(song.songGroupId))
-    .map((song) => ({
-      value: song.songGroupId,
-      label: `${song.title}${song.styleLabel ? ` — ${song.styleLabel}` : ""} · ${song.plays} écoute${song.plays > 1 ? "s" : ""}`,
-    }));
+  // A song added via "Ajouter par identifiant" that isn't already in `songs` (outside the recent
+  // window fetched server-side) — merged into the picker's options below.
+  const [extraSongs, setExtraSongs] = useState<Record<string, SongDisplay>>({});
+  const [idInput, setIdInput] = useState("");
+  const [idLookupPending, setIdLookupPending] = useState(false);
+  const [idLookupError, setIdLookupError] = useState("");
+
+  const usedElsewhere = useMemo(
+    () => new Set(usedSongGroupIds.filter((id) => id !== values.songGroupId)),
+    [usedSongGroupIds, values.songGroupId],
+  );
+  const options = useMemo(() => {
+    const map = new Map<string, SongDisplay>(songs.map((song) => [song.songGroupId, song]));
+    for (const extra of Object.values(extraSongs)) if (!map.has(extra.songGroupId)) map.set(extra.songGroupId, extra);
+    return Array.from(map.values())
+      .filter((song) => !usedElsewhere.has(song.songGroupId))
+      .map((song) => ({
+        value: song.songGroupId,
+        label: `${song.title}${song.styleLabel ? ` — ${song.styleLabel}` : ""} · ${song.plays} écoute${song.plays > 1 ? "s" : ""}`,
+      }));
+  }, [songs, extraSongs, usedElsewhere]);
+  const [songGroupId, setSongGroupId] = useState(() => values.songGroupId ?? options[0]?.value ?? "");
+
+  const addSongById = async () => {
+    const trimmed = idInput.trim();
+    if (!trimmed) return;
+    if (usedElsewhere.has(trimmed)) {
+      setIdLookupError("Cette chanson est déjà assignée à cette section.");
+      return;
+    }
+    setIdLookupPending(true);
+    setIdLookupError("");
+    try {
+      const option = await apiFetch<SongDisplay>("/api/admin/trending/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ songGroupId: trimmed }),
+        timeoutMs: 15_000,
+      });
+      setExtraSongs((prev) => ({ ...prev, [option.songGroupId]: option }));
+      setSongGroupId(option.songGroupId);
+      setIdInput("");
+    } catch (error) {
+      setIdLookupError(error instanceof Error ? error.message : "Identifiant introuvable.");
+    } finally {
+      setIdLookupPending(false);
+    }
+  };
 
   const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -60,16 +108,6 @@ export default function AdminLandingSongFeatureForm({
     }
   };
 
-  if (options.length === 0) {
-    return (
-      <p className="admin-trending-empty-hint">
-        {songs.length === 0
-          ? "Aucune chanson publiée pour l’instant — publie une chanson depuis « Mes chansons » côté client pour pouvoir l’assigner ici."
-          : "Toutes les chansons publiées sont déjà assignées à cette section."}
-      </p>
-    );
-  }
-
   return (
     <form action={formAction} className="admin-editor-grid admin-landing-feature-form">
       <input type="hidden" name="section" value={section} />
@@ -77,8 +115,60 @@ export default function AdminLandingSongFeatureForm({
       <input type="hidden" name="coverUrlOverride" value={coverUrl} />
       <label className="admin-editor-field">
         <span>Chanson</span>
-        <AdminSelect name="songGroupId" ariaLabel="Chanson à assigner à cette carte" defaultValue={values.songGroupId} options={options} />
+        <AdminSelect
+          name="songGroupId"
+          ariaLabel="Chanson à assigner à cette carte"
+          options={options}
+          value={songGroupId}
+          onValueChange={setSongGroupId}
+        />
+        {options.length === 0 ? (
+          <small className="admin-field-error">
+            {songs.length === 0
+              ? "Aucune chanson générée pour l’instant — crée une chanson depuis le tableau de bord client pour pouvoir l’assigner ici."
+              : "Toutes les chansons récentes sont déjà assignées à cette section — ajoute-en une par identifiant ci-dessous."}
+          </small>
+        ) : null}
       </label>
+      <div className="admin-trending-add-by-id">
+        <label htmlFor={`${section}-add-by-id`}>Ajouter par identifiant</label>
+        <div className="admin-trending-add-by-id-row">
+          <input
+            id={`${section}-add-by-id`}
+            type="text"
+            value={idInput}
+            onChange={(event) => {
+              setIdInput(event.target.value);
+              setIdLookupError("");
+            }}
+            placeholder="Colle l’identifiant depuis la page « Générations »"
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                void addSongById();
+              }
+            }}
+          />
+          <button
+            type="button"
+            className="admin-trending-add"
+            disabled={idLookupPending || !idInput.trim()}
+            onClick={() => void addSongById()}
+          >
+            <Icon
+              i={idLookupPending ? "loader-circle" : "plus"}
+              size={14}
+              className={idLookupPending ? "animate-spin" : undefined}
+            />
+            Ajouter
+          </button>
+        </div>
+        <small>
+          Seules les {songs.length} chansons les plus récentes apparaissent dans la liste ci-dessus — pour une
+          chanson plus ancienne, copie son identifiant depuis « Générations » et colle-le ici.
+        </small>
+        {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
+      </div>
       <div className="admin-editor-field">
         <span>Image de la carte (optionnel)</span>
         {coverUrl ? (
@@ -107,7 +197,7 @@ export default function AdminLandingSongFeatureForm({
         <small>Sans image, la pochette générée automatiquement pour cette chanson reste utilisée. Choisis une image liée à la musique, cohérente avec l’identité visuelle du site.</small>
       </div>
       <div className="admin-editor-actions is-wide">
-        <button type="submit" disabled={pending || uploading}>
+        <button type="submit" disabled={pending || uploading || !songGroupId}>
           <Icon i={editing ? "save" : "plus"} size={17} />
           {editing ? "Enregistrer" : "Ajouter cette carte"}
         </button>
