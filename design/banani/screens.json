@@ -2541,7 +2541,7 @@
       "states": [
         "default"
       ],
-      "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire, sélectionné le 26 septembre 2026. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Le design montre un système de rôles personnalisés dynamiques (création libre, 8 permissions concrètes) matériellement différent de la matrice V1 lue seule et à 5 rôles fixes définis dans le code (lib/auth/permissions.ts, docs/superpowers/specs/2026-09-26-admin-roles-permissions-design.md), qui excluait explicitement toute UI d’édition. Écart À CONFIRMER avec l’utilisateur avant toute implémentation ; mutations, permissions serveur et modèle de données pour des rôles arbitraires restent NON VÉRIFIÉS.",
+      "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire, sélectionné le 26 septembre 2026. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Le design montre un système de rôles personnalisés dynamiques (création libre, 8 permissions concrètes) matériellement différent de la matrice V1 lue seule et à 5 rôles fixes définis dans le code (lib/auth/permissions.ts, docs/superpowers/specs/2026-09-26-admin-roles-permissions-design.md). DÉCISION UTILISATEUR du 26 septembre 2026 : rester sur la V1 — cet écran n'est pas implémenté tel quel (pas de création libre de rôle).",
       "viewport": "desktop",
       "keyElements": [
         "Créer un nouveau rôle",
@@ -2580,7 +2580,7 @@
       "states": [
         "default"
       ],
-      "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire, sélectionné le 26 septembre 2026. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Comme AdminCreateNewRole.jsx, cet écran présuppose des rôles personnalisés dynamiques (édition libre du nom/couleur/permissions, suppression, gestion des membres par rôle) — hors périmètre de la matrice V1 lue seule et à 5 rôles fixes déjà livrée dans le code. Écart À CONFIRMER avec l’utilisateur avant toute implémentation.",
+      "notes": "Écran réellement observé dans la sélection Banani du tableau de bord propriétaire, sélectionné le 26 septembre 2026. Route proposée depuis l’architecture actuelle ; Banani n’expose pas d’URL. Comme AdminCreateNewRole.jsx, cet écran présuppose des rôles personnalisés dynamiques (édition libre du nom/couleur/permissions, suppression, gestion des membres par rôle) — hors périmètre de la matrice V1 lue seule et à 5 rôles fixes déjà livrée dans le code. DÉCISION UTILISATEUR du 26 septembre 2026 : rester sur la V1 — cet écran n'est pas implémenté tel quel (pas d'édition libre ni de suppression de rôle).",
       "viewport": "desktop",
       "keyElements": [
         "Modifier un rôle",
@@ -2613,6 +2613,80 @@
         "Liste de membres assignés au rôle avec nom et e-mail ; source de données et réattribution NON VÉRIFIÉES"
       ],
       "integrations": []
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/LandingPageMobile_next2.jsx",
+      "name": "Page d'accueil publique (Mobile, Next)",
+      "route": "/",
+      "auth": "public",
+      "purpose": "Transforme votre histoire en chanson ; Comment ça marche ; Pour toutes les occasions ; Tarifs simples ; Questions fréquentes",
+      "states": [
+        "default"
+      ],
+      "notes": "Écran réellement sélectionné et observé via Banani MCP le 28 septembre 2026 (genType composants, pas un export d'écran de démonstration). Réutilise AppLogo (déjà `components/banani/AppLogo.tsx`), Icon et Image (déjà `components/banani/Icon.tsx` / `Image.tsx`) et les tokens de design déjà documentés (mêmes couleurs/typo/rayons que le reste du kit). Textes 'Musika' à harmoniser en 'MusikPro' comme pour les écrans précédents. Les packs tarifaires ('Découverte 2 chansons', 'Populaire 5 chansons', 'Maxi 10 chansons') ne correspondent pas au catalogue de crédits déjà implémenté (credit-catalog) ; à harmoniser ou documenter comme contenu marketing distinct, À CONFIRMER. Les prompts d'images de fond (exemples de chansons) ne correspondent à aucune entrée existante de `components/banani/assets.json` ; nouvelles images NON VÉRIFIÉES tant qu'elles ne sont pas fournies. Aucune redirection pour utilisateur déjà connecté vers /dashboard n'est démontrée ; comportement À CONFIRMER. Loading/empty/error/offline non importés.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Nav : logo, sélecteur de langue, bouton Connexion, menu",
+        "Hero : accroche, sous-titre, CTA Créer ma chanson, mention prix/paiement",
+        "Exemples de chansons (grille 2 colonnes, image + lecture)",
+        "Emporte ta musique partout (badges Google Play / App Store)",
+        "Comment ça marche (3 étapes numérotées)",
+        "Pour toutes les occasions (grille d'emoji + libellé)",
+        "Tous les styles africains (liste de tags de styles)",
+        "Pourquoi choisir Musika (grille d'avantages iconographiés)",
+        "Bibliothèque populaire (liste de chansons + lecture)",
+        "Tarifs simples (3 packs avec badge Le plus choisi / Meilleure valeur)",
+        "Questions fréquentes (FAQ)",
+        "CTA final + footer (liens Confidentialité/Conditions/Support)"
+      ],
+      "interactions": [
+        "Boutons Connexion, Créer ma chanson, lecture, Découvrir la bibliothèque et Choisir ce pack visibles ; navigation et handlers métier non démontrés par l'export statique",
+        "Sélecteur de langue visible ; branchement sur le sélecteur i18n réel existant À CONFIRMER"
+      ],
+      "dataNeeds": [
+        "Exemples de chansons, avantages, bibliothèque populaire, packs tarifaires et FAQ sont des données fictives codées en dur dans le JSX importé ; branchement réel À CONFIRMER"
+      ],
+      "integrations": [
+        "Google Play / App Store — badges visuels déjà couverts par mobileAppPipeline et StoreDownloadCard existants ; aucune preuve de publication",
+        "Mobile Money — mention visuelle du mode de paiement ; fournisseur réel NON VÉRIFIÉ ici (voir paiements existants)"
+      ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/LandingPage.jsx",
+      "name": "Page d'accueil publique (Desktop)",
+      "route": "/",
+      "auth": "public",
+      "purpose": "Transforme votre histoire en chanson ; Comment ça marche ; Pour toutes les occasions ; Tarifs simples et transparents ; Questions fréquentes",
+      "states": [
+        "default"
+      ],
+      "notes": "Variante desktop du même écran, réellement sélectionnée et observée via Banani MCP le 28 septembre 2026, partage exactement les mêmes composants/tokens/réserves que la variante mobile ci-dessus. Section 'Concours' absente de cette variante (contrairement au dashboard existant qui l'affiche) ; cohérence éditoriale entre page publique et dashboard À CONFIRMER.",
+      "viewport": "desktop",
+      "keyElements": [
+        "Nav : logo, liens Exemples/Comment ça marche/Tarifs/FAQ, sélecteur de langue, bouton Connexion",
+        "Hero plein écran : accroche, sous-titre, CTA Créer ma chanson, mention prix/paiement",
+        "Exemples de chansons (grille 3 colonnes, cartes avec lecture)",
+        "Emporte ta musique partout (badges Google Play / App Store)",
+        "Comment ça marche (3 étapes numérotées)",
+        "Pour toutes les occasions (grille 8 colonnes)",
+        "Tous les styles africains et plus (liste de tags)",
+        "Pourquoi choisir Musika (grille 3 colonnes d'avantages)",
+        "Bibliothèque populaire (liste de chansons + lecture)",
+        "Tarifs simples et transparents (3 packs)",
+        "Questions fréquentes (grille 3 colonnes)",
+        "CTA final + footer"
+      ],
+      "interactions": [
+        "Boutons Connexion, Créer ma chanson, lecture, Découvrir la bibliothèque et Choisir ce pack visibles ; navigation et handlers métier non démontrés par l'export statique",
+        "Liens de navigation ancrés (Exemples/Comment ça marche/Tarifs/FAQ) visibles ; défilement réel NON VÉRIFIÉ"
+      ],
+      "dataNeeds": [
+        "Exemples de chansons, avantages, bibliothèque populaire, packs tarifaires et FAQ sont des données fictives codées en dur dans le JSX importé ; branchement réel À CONFIRMER"
+      ],
+      "integrations": [
+        "Google Play / App Store — badges visuels déjà couverts par mobileAppPipeline et StoreDownloadCard existants ; aucune preuve de publication",
+        "Mobile Money — mention visuelle du mode de paiement ; fournisseur réel NON VÉRIFIÉ ici (voir paiements existants)"
+      ]
     }
   ]
 }

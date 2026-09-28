@@ -4,6 +4,7 @@ import { randomInt } from "node:crypto";
 import { and, desc, eq, gt } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs, songPublications } from "@/db/schema";
+import { extractGenreLabel } from "@/lib/ai/songs";
 import { getTrendingSettings } from "./settings";
 import { TRENDING_POOL_SIZE } from "./types";
 
@@ -11,6 +12,9 @@ export type TrendingSong = {
   slug: string;
   title: string;
   plays: number;
+  coverUrl: string | null;
+  style: string | null;
+  occasion: string | null;
 };
 
 function shuffle<T>(items: T[]): T[] {
@@ -25,13 +29,27 @@ function shuffle<T>(items: T[]): T[] {
 async function autoPool(limit: number): Promise<TrendingSong[]> {
   const database = getServiceDb();
   const rows = await database
-    .select({ slug: songPublications.slug, title: musicGenerationJobs.title, plays: musicGenerationJobs.plays })
+    .select({
+      slug: songPublications.slug,
+      title: musicGenerationJobs.title,
+      plays: musicGenerationJobs.plays,
+      coverUrl: musicGenerationJobs.coverUrl,
+      style: musicGenerationJobs.style,
+      occasion: musicGenerationJobs.occasion,
+    })
     .from(songPublications)
     .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
     .where(and(eq(musicGenerationJobs.status, "completed"), gt(musicGenerationJobs.plays, 0)))
     .orderBy(desc(musicGenerationJobs.plays))
     .limit(limit);
-  return rows.map((row) => ({ slug: row.slug, title: row.title || "Chanson MusikPro", plays: row.plays }));
+  return rows.map((row) => ({
+    slug: row.slug,
+    title: row.title || "Chanson MusikPro",
+    plays: row.plays,
+    coverUrl: row.coverUrl,
+    style: extractGenreLabel(row.style),
+    occasion: row.occasion,
+  }));
 }
 
 async function manualPool(songGroupIds: string[]): Promise<TrendingSong[]> {
@@ -43,6 +61,9 @@ async function manualPool(songGroupIds: string[]): Promise<TrendingSong[]> {
       slug: songPublications.slug,
       title: musicGenerationJobs.title,
       plays: musicGenerationJobs.plays,
+      coverUrl: musicGenerationJobs.coverUrl,
+      style: musicGenerationJobs.style,
+      occasion: musicGenerationJobs.occasion,
     })
     .from(songPublications)
     .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
@@ -51,7 +72,14 @@ async function manualPool(songGroupIds: string[]): Promise<TrendingSong[]> {
   return songGroupIds
     .map((id) => bySongGroupId.get(id))
     .filter((row): row is NonNullable<typeof row> => Boolean(row))
-    .map((row) => ({ slug: row.slug, title: row.title || "Chanson MusikPro", plays: row.plays }));
+    .map((row) => ({
+      slug: row.slug,
+      title: row.title || "Chanson MusikPro",
+      plays: row.plays,
+      coverUrl: row.coverUrl,
+      style: extractGenreLabel(row.style),
+      occasion: row.occasion,
+    }));
 }
 
 /**

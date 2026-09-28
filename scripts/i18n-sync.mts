@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 import type { TranslationLocale } from "../lib/i18n/ai-translate";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url)) + "/..";
-const SCAN_DIRS = ["app/dashboard", "app/s", "components/banani", "components/mobile-bottom-nav.tsx"];
+const SCAN_DIRS = ["app/dashboard", "app/s", "app/page.tsx", "components/banani", "components/mobile-bottom-nav.tsx"];
 const LOCALES: TranslationLocale[] = ["en", "es", "pt"];
 const BATCH_SIZE = 40;
 const CHECK_ONLY = process.argv.includes("--check");

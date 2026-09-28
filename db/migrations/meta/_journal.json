@@ -295,6 +295,55 @@
       "when": 1790548440595,
       "tag": "0041_young_prima",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1790600765495,
+      "tag": "0042_silent_vulture",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1790601864031,
+      "tag": "0043_hero_animated_texts_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1790602682480,
+      "tag": "0044_sturdy_silk_fever",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1790602691118,
+      "tag": "0045_hero_animation_settings_grants",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1790602759397,
+      "tag": "0046_public_changeling",
+      "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1790608806655,
+      "tag": "0047_cooing_blur",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1790608831930,
+      "tag": "0048_landing_song_features_grants",
+      "breakpoints": true
     }
   ]
 }

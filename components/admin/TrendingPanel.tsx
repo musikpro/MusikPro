@@ -5,41 +5,96 @@ import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { setTrendingSettings } from "@/app/admin/trending/actions";
 import { TRENDING_COUNT_OPTIONS, TRENDING_POOL_SIZE, type TrendingSettingsValue, type TrendingCount } from "@/lib/trending/types";
-import type { PublishedSongOption } from "@/lib/trending/admin";
+import type { GeneratedSongOption, PublishedSongOption } from "@/lib/trending/admin";
+import { apiFetch } from "@/lib/api/client";
+
+type TrendingSongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number };
+
+function toDisplay(song: { songGroupId: string; title: string; styleLabel: string | null; plays: number }): TrendingSongDisplay {
+  return { songGroupId: song.songGroupId, title: song.title, styleLabel: song.styleLabel, plays: song.plays };
+}
 
 export default function TrendingPanel({
   settings,
   songs,
+  publishedSongs,
 }: {
   settings: TrendingSettingsValue;
-  songs: PublishedSongOption[];
+  /** Every completed generation platform-wide (published or not) — feeds the manual picker. */
+  songs: GeneratedSongOption[];
+  /** Published songs only — feeds the automatic-mode preview, matching lib/trending/server.ts's real ranking. */
+  publishedSongs: PublishedSongOption[];
 }) {
   const [mode, setMode] = useState(settings.mode);
   const [count, setCount] = useState<TrendingCount>(settings.count);
   const [randomize, setRandomize] = useState(settings.randomize);
   const [manualPicks, setManualPicks] = useState<string[]>(() => settings.manualSelection.slice(0, TRENDING_POOL_SIZE));
+  const [extraSongs, setExtraSongs] = useState<Record<string, TrendingSongDisplay>>({});
+  const [idInput, setIdInput] = useState("");
+  const [idLookupPending, setIdLookupPending] = useState(false);
+  const [idLookupError, setIdLookupError] = useState("");
 
-  const bySongGroupId = useMemo(() => new Map(songs.map((song) => [song.songGroupId, song])), [songs]);
+  // `songs` only lists the most recent generations (see listRecentGeneratedSongsForAdmin) — a
+  // song added by pasting its "Identifiant" from /admin/generations lands here instead, so its
+  // label still resolves even though it's outside that recent window.
+  const allSongs = useMemo<TrendingSongDisplay[]>(() => {
+    const map = new Map<string, TrendingSongDisplay>(songs.map((song) => [song.songGroupId, toDisplay(song)]));
+    for (const extra of Object.values(extraSongs)) if (!map.has(extra.songGroupId)) map.set(extra.songGroupId, extra);
+    return Array.from(map.values());
+  }, [songs, extraSongs]);
+
+  const bySongGroupId = useMemo(() => new Map(allSongs.map((song) => [song.songGroupId, song])), [allSongs]);
 
   const songOptions = useMemo(
     () =>
-      songs.map((song) => ({
+      allSongs.map((song) => ({
         value: song.songGroupId,
         label: `${song.title}${song.styleLabel ? ` — ${song.styleLabel}` : ""} · ${song.plays} écoute${song.plays > 1 ? "s" : ""}`,
       })),
-    [songs],
+    [allSongs],
   );
 
+  const publishedDisplay = useMemo(() => publishedSongs.map(toDisplay), [publishedSongs]);
   const autoPool = useMemo(
-    () => songs.filter((song) => song.plays > 0).slice(0, randomize ? TRENDING_POOL_SIZE : count),
-    [songs, count, randomize],
+    () => publishedDisplay.filter((song) => song.plays > 0).slice(0, randomize ? TRENDING_POOL_SIZE : count),
+    [publishedDisplay, count, randomize],
   );
   const manualPool = useMemo(
-    () => manualPicks.map((id) => bySongGroupId.get(id)).filter((song): song is PublishedSongOption => Boolean(song)),
+    () => manualPicks.map((id) => bySongGroupId.get(id)).filter((song): song is TrendingSongDisplay => Boolean(song)),
     [manualPicks, bySongGroupId],
   );
   const pool = mode === "manual" ? manualPool : autoPool;
   const preview = randomize ? pool : pool.slice(0, count);
+
+  const addSongById = async () => {
+    const trimmed = idInput.trim();
+    if (!trimmed) return;
+    if (manualPicks.includes(trimmed)) {
+      setIdLookupError("Cette chanson est déjà dans ta sélection.");
+      return;
+    }
+    if (manualPicks.length >= TRENDING_POOL_SIZE) {
+      setIdLookupError(`Tu as déjà atteint la limite de ${TRENDING_POOL_SIZE} chansons.`);
+      return;
+    }
+    setIdLookupPending(true);
+    setIdLookupError("");
+    try {
+      const option = await apiFetch<TrendingSongDisplay>("/api/admin/trending/lookup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ songGroupId: trimmed }),
+        timeoutMs: 15_000,
+      });
+      setExtraSongs((prev) => ({ ...prev, [option.songGroupId]: option }));
+      setManualPicks((prev) => [...prev, option.songGroupId]);
+      setIdInput("");
+    } catch (error) {
+      setIdLookupError(error instanceof Error ? error.message : "Identifiant introuvable.");
+    } finally {
+      setIdLookupPending(false);
+    }
+  };
 
   return (
     <section className="admin-panel">
@@ -122,9 +177,9 @@ export default function TrendingPanel({
             <span className="admin-trending-label">
               Chansons éligibles ({manualPicks.length}/{TRENDING_POOL_SIZE})
             </span>
-            {songOptions.length === 0 ? (
+            {songOptions.length === 0 && manualPicks.length === 0 ? (
               <p className="admin-trending-empty-hint">
-                Aucune chanson publiée pour l’instant — publie une chanson depuis « Mes chansons » côté client pour
+                Aucune chanson générée pour l’instant — crée une chanson depuis le tableau de bord client pour
                 pouvoir la choisir ici.
               </p>
             ) : (
@@ -154,21 +209,65 @@ export default function TrendingPanel({
                     </div>
                   );
                 })}
-                {manualPicks.length < TRENDING_POOL_SIZE ? (
+                {manualPicks.length < TRENDING_POOL_SIZE && manualPicks.length < songOptions.length ? (
                   <button
                     type="button"
                     className="admin-trending-add"
                     onClick={() => {
                       const next = songOptions.find((option) => !manualPicks.includes(option.value));
-                      setManualPicks((prev) => [...prev, next?.value ?? ""]);
+                      if (!next) return;
+                      setManualPicks((prev) => [...prev, next.value]);
                     }}
                   >
                     <Icon i="plus" size={14} />
                     Ajouter une chanson
                   </button>
                 ) : null}
+                {songOptions.length > 0 && manualPicks.length >= songOptions.length && manualPicks.length < TRENDING_POOL_SIZE ? (
+                  <p className="admin-trending-empty-hint">
+                    Les {songOptions.length} chansons récentes affichées ici sont déjà assignées — ajoute-en une par
+                    identifiant ci-dessous, ou génères-en d’autres depuis le tableau de bord client.
+                  </p>
+                ) : null}
               </div>
             )}
+            {manualPicks.length < TRENDING_POOL_SIZE ? (
+              <div className="admin-trending-add-by-id">
+                <label htmlFor="trending-add-by-id">Ajouter par identifiant</label>
+                <div className="admin-trending-add-by-id-row">
+                  <input
+                    id="trending-add-by-id"
+                    type="text"
+                    value={idInput}
+                    onChange={(event) => {
+                      setIdInput(event.target.value);
+                      setIdLookupError("");
+                    }}
+                    placeholder="Colle l’identifiant depuis la page « Générations »"
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        void addSongById();
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="admin-trending-add"
+                    disabled={idLookupPending || !idInput.trim()}
+                    onClick={() => void addSongById()}
+                  >
+                    <Icon i={idLookupPending ? "loader-circle" : "plus"} size={14} className={idLookupPending ? "animate-spin" : undefined} />
+                    Ajouter
+                  </button>
+                </div>
+                <small>
+                  Seules les {TRENDING_POOL_SIZE} générations les plus récentes apparaissent ci-dessus — pour une
+                  chanson plus ancienne, copie son identifiant depuis « Générations » et colle-le ici.
+                </small>
+                {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
+              </div>
+            ) : null}
           </div>
         ) : null}
 
@@ -176,6 +275,13 @@ export default function TrendingPanel({
           <span className="admin-trending-label">
             {randomize ? `Vivier — ${count} seront tirées au hasard à chaque visite` : "Aperçu — ce que voient les clients"}
           </span>
+          {preview.length > 0 && pool.length < count ? (
+            <p className="admin-trending-empty-hint">
+              {mode === "manual"
+                ? `Seulement ${pool.length} chanson${pool.length > 1 ? "s" : ""} choisie${pool.length > 1 ? "s" : ""} sur ${count} — ajoute-en pour compléter.`
+                : `Seulement ${pool.length} chanson${pool.length > 1 ? "s" : ""} publiée${pool.length > 1 ? "s" : ""} avec au moins une écoute sur ${count} demandées — publie-en d’autres depuis « Mes chansons » côté client pour compléter.`}
+            </p>
+          ) : null}
           {preview.length === 0 ? (
             <p className="admin-trending-empty-hint">
               {mode === "manual" ? "Choisis au moins une chanson ci-dessus." : "Aucune chanson publiée n’a encore d’écoute."}

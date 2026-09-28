@@ -4,7 +4,13 @@ import { useState, useTransition } from "react";
 import Icon from "@/components/banani/Icon";
 import { refreshCatalogTranslations } from "@/app/admin/languages/actions";
 
-type Counts = { occasions: number; musicStyles: number; recipientRelations: number; plans: number };
+type Counts = {
+  occasions: number;
+  musicStyles: number;
+  recipientRelations: number;
+  plans: number;
+  heroAnimatedTexts: number;
+};
 
 export default function RefreshCatalogTranslationsButton() {
   const [pending, startTransition] = useTransition();
@@ -32,7 +38,8 @@ export default function RefreshCatalogTranslationsButton() {
       {counts && !pending ? (
         <p className="admin-language-detection-hint">
           Traductions à jour : {counts.occasions} occasions, {counts.musicStyles} styles musicaux,{" "}
-          {counts.recipientRelations} relations, {counts.plans} offres de crédits.
+          {counts.recipientRelations} relations, {counts.plans} offres de crédits, {counts.heroAnimatedTexts} textes
+          animés.
         </p>
       ) : null}
       {error ? <p className="admin-field-error">{error}</p> : null}

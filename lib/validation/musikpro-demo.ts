@@ -74,6 +74,10 @@ export const demoRecipientSchema = z.object({
   // so this only bounds length/emptiness — the select already constrains the choice client-side.
   relation: z.string().trim().min(1, "Choisis à qui la chanson est destinée.").max(100),
 });
+export const demoSenderSchema = z.object({
+  name: z.string().trim().min(2, "Indique ton nom (l'expéditeur de la chanson).").max(100),
+  pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
+});
 export const demoLyricsSchema = z
   .string()
   .trim()

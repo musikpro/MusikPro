@@ -1,4 +1,4 @@
-export const LYRICS_MAX_WORDS = 900;
+export const LYRICS_MAX_WORDS = 450;
 export const LYRICS_MAX_DURATION_SECONDS = 4 * 60;
 const ESTIMATED_SUNG_WORDS_PER_MINUTE = 150;
 

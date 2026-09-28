@@ -7,6 +7,8 @@ import { z } from "zod";
 import { getServiceDb } from "@/db";
 import {
   countryLanguages,
+  heroAnimatedTexts,
+  heroAnimationSettings,
   languages,
   localizationSettings,
   musicStyles,
@@ -267,38 +269,50 @@ export async function refreshCatalogTranslations() {
   const session = await requireAdmin();
   const serviceDb = getServiceDb();
 
-  const [occasionRows, styleRows, relationRows, planRows, prefixRows] = await Promise.all([
-    serviceDb.select().from(occasions),
-    serviceDb.select().from(musicStyles),
-    serviceDb.select().from(recipientRelations),
-    serviceDb.select().from(plans),
-    serviceDb.select().from(phonePrefixes),
-  ]);
-
-  const [occasionTranslations, styleTranslations, relationTranslations, planTranslations, prefixTranslations] =
+  const [occasionRows, styleRows, relationRows, planRows, prefixRows, heroTextRows, heroSettingsRows] =
     await Promise.all([
-      translateCatalogTable(
-        occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-      ),
-      translateCatalogTable(
-        styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-      ),
-      translateCatalogTable(relationRows.map((row) => ({ id: row.id, fields: { name: row.name } }))),
-      translateCatalogTable(
-        planRows.map((row) => {
-          const features = creditPlanFeaturesSchema.safeParse(row.features);
-          return {
-            id: row.id,
-            fields: {
-              name: row.name,
-              description: row.description,
-              bonus: features.success ? features.data.bonus : null,
-            },
-          };
-        }),
-      ),
-      translateCatalogTable(prefixRows.map((row) => ({ id: row.id, fields: { countryName: row.countryName } }))),
+      serviceDb.select().from(occasions),
+      serviceDb.select().from(musicStyles),
+      serviceDb.select().from(recipientRelations),
+      serviceDb.select().from(plans),
+      serviceDb.select().from(phonePrefixes),
+      serviceDb.select().from(heroAnimatedTexts),
+      serviceDb.select().from(heroAnimationSettings),
     ]);
+
+  const [
+    occasionTranslations,
+    styleTranslations,
+    relationTranslations,
+    planTranslations,
+    prefixTranslations,
+    heroTextTranslations,
+    heroSettingsTranslations,
+  ] = await Promise.all([
+    translateCatalogTable(
+      occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+    ),
+    translateCatalogTable(
+      styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+    ),
+    translateCatalogTable(relationRows.map((row) => ({ id: row.id, fields: { name: row.name } }))),
+    translateCatalogTable(
+      planRows.map((row) => {
+        const features = creditPlanFeaturesSchema.safeParse(row.features);
+        return {
+          id: row.id,
+          fields: {
+            name: row.name,
+            description: row.description,
+            bonus: features.success ? features.data.bonus : null,
+          },
+        };
+      }),
+    ),
+    translateCatalogTable(prefixRows.map((row) => ({ id: row.id, fields: { countryName: row.countryName } }))),
+    translateCatalogTable(heroTextRows.map((row) => ({ id: row.id, fields: { label: row.label } }))),
+    translateCatalogTable(heroSettingsRows.map((row) => ({ id: row.id, fields: { headline: row.headline } }))),
+  ]);
 
   await Promise.all([
     ...occasionRows.map((row) =>
@@ -331,6 +345,18 @@ export async function refreshCatalogTranslations() {
         .set({ translations: prefixTranslations.get(row.id) ?? {}, updatedAt: new Date() })
         .where(eq(phonePrefixes.id, row.id)),
     ),
+    ...heroTextRows.map((row) =>
+      serviceDb
+        .update(heroAnimatedTexts)
+        .set({ translations: heroTextTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(heroAnimatedTexts.id, row.id)),
+    ),
+    ...heroSettingsRows.map((row) =>
+      serviceDb
+        .update(heroAnimationSettings)
+        .set({ translations: heroSettingsTranslations.get(row.id) ?? {} })
+        .where(eq(heroAnimationSettings.id, row.id)),
+    ),
   ]);
 
   const counts = {
@@ -339,6 +365,7 @@ export async function refreshCatalogTranslations() {
     recipientRelations: relationRows.length,
     plans: planRows.length,
     phonePrefixes: prefixRows.length,
+    heroAnimatedTexts: heroTextRows.length,
   };
 
   await writeAuditLog({

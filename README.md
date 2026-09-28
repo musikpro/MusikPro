@@ -211,7 +211,7 @@ Chaque écran doit être construit et vérifié d’abord à 320/360/390/430 px,
 
 Le kit démarre maintenant directement sur un tableau de préparation local : aucun compte ni formulaire d’inscription n’est requis pour accéder au starter. Le setup est piloté par `/setup-saas` dans l’IA ou par les commandes terminal.
 
-`http://localhost:3000/` et `/setup` affichent en lecture seule l’état du kit avec voyants verts/rouges. La configuration n’est plus écrite par une API web.
+`http://localhost:3000/setup` affiche en lecture seule l’état du kit avec voyants verts/rouges (`/` reste la landing page publique du SaaS une fois celui-ci construit). La configuration n’est plus écrite par une API web.
 
 En production, `/setup` est désactivé et le tableau interne du kit n’est pas exposé. Utilisez les variables d’environnement de l’hébergeur pour la production.
 

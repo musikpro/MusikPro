@@ -14,6 +14,8 @@ export function promptFor(task: AiLyricsTask) {
     `Destinataire: ${input.recipientName || "non précisé"}`,
     `Relation avec le destinataire: ${input.recipientRelation || "non précisée"}`,
     `Prononciation exacte du nom à utiliser dans les passages chantés: ${input.recipientPronunciation || "aucune"}`,
+    `De la part de: ${input.senderName || "non précisé"}`,
+    `Prononciation exacte du nom de l'expéditeur à utiliser dans les passages chantés: ${input.senderPronunciation || "aucune"}`,
     `Style musical: ${input.genre}`,
     `Ambiance: ${input.mood || "libre"}`,
     `Langue: ${input.language}`,
@@ -26,7 +28,7 @@ export function promptFor(task: AiLyricsTask) {
   if (task.task === "lyrics.rewrite") {
     return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nConsigne de révision: ${task.input.instruction}`;
   }
-  return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain, pont si pertinent, et un court outro final qui referme la chanson en douceur — par exemple une reprise atténuée du refrain ou une dernière phrase conclusive — plutôt qu'une fin abrupte), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.`;
+  return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain, pont si pertinent, et un court outro final qui referme la chanson en douceur — par exemple une reprise atténuée du refrain ou une dernière phrase conclusive — plutôt qu'une fin abrupte), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, à l'expéditeur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire ou celui de l'expéditeur est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.`;
 }
 
 export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
@@ -40,7 +42,7 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
     throw new Error("AI_CAPABILITY_DISABLED");
   }
 
-  const requestText = [task.input.story, task.input.additionalDetails, task.input.recipientName]
+  const requestText = [task.input.story, task.input.additionalDetails, task.input.recipientName, task.input.senderName]
     .filter(Boolean)
     .join("\n");
   const requestVerdict = await moderateText(

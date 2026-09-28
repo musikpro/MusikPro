@@ -270,11 +270,12 @@ if (!robotsText.includes("/dashboard/") || !robotsText.includes("/admin/") || !r
 const emailText = fs.readFileSync("lib/email/index.ts", "utf8");
 if (/console\.(?:info|log)\([^\n]*input\)/.test(emailText)) errors.push("Auth email payload/tokens must not be logged");
 
-const homeText = fs.readFileSync("app/page.tsx", "utf8");
-if (homeText.includes('href="/register"') || homeText.includes('href="/login"'))
-  errors.push("Local kit home must not require registration/login");
-if (!homeText.includes('process.env.NODE_ENV === "production"'))
-  errors.push("Kit readiness dashboard must not be exposed by default in production");
+// app/page.tsx is the SaaS's own public landing page (register/login CTAs are expected there
+// once a kit user has built their product); the generic kit readiness dashboard now lives at
+// app/setup/page.tsx instead, so that route is what must stay gated out of production.
+const setupPageText = fs.readFileSync("app/setup/page.tsx", "utf8");
+if (!setupPageText.includes('process.env.NODE_ENV === "production"') || !setupPageText.includes("notFound()"))
+  errors.push("Kit readiness dashboard (app/setup) must not be exposed by default in production");
 const agentsText = fs.readFileSync("AGENTS.md", "utf8");
 if (!agentsText.includes("/setup-saas") || !pkgJson.scripts?.["setup-saas"])
   errors.push("/setup-saas IA entry point and npm fallback are required");

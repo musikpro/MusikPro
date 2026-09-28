@@ -241,6 +241,45 @@ export const recipientRelations = pgTable(
   }),
 );
 
+/**
+ * Mots/phrases courtes qui défilent en boucle sous le titre du Hero de la landing publique (voir
+ * components/banani/HeroRotatingText.tsx) — gérés par le propriétaire dans /admin/animated-texts.
+ */
+export const heroAnimatedTexts = pgTable(
+  "hero_animated_texts",
+  {
+    id: text("id").primaryKey(),
+    label: text("label").notNull(),
+    emoji: text("emoji").notNull().default("🎵"),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(100),
+    /** AI-generated per-locale { en: { label }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    activeOrderIndex: index("hero_animated_texts_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
+
+/**
+ * Global setting (single "global" row, same pattern as trendingSettings) for the landing Hero:
+ * the main headline text, and how HeroRotatingText cycles through hero_animated_texts — all set
+ * from /admin/animated-texts.
+ */
+export const heroAnimationSettings = pgTable("hero_animation_settings", {
+  id: text("id").primaryKey().default("global"),
+  /** Canonical French Hero H1 — replaces the old hardcoded t("...") string, editable by the owner. */
+  headline: text("headline").notNull().default("Crée ta chanson personnalisée"),
+  /** AI-generated per-locale { en: { headline }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+  translations: jsonb("translations"),
+  animationType: text("animation_type").notNull().default("fade"),
+  textSize: text("text_size").notNull().default("md"),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 export const languages = pgTable(
   "languages",
   {
@@ -361,6 +400,31 @@ export const trendingSettings = pgTable("trending_settings", {
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+/**
+ * Owner-curated song slots for the two showcase sections of the public landing page ("Ils ont
+ * créé avec MusikPro" and "Bibliothèque populaire") — see /admin/landing-features. Independent
+ * from trendingSettings above (which only feeds the client dashboard's "Tendances" widget): each
+ * row pins one real published song (songGroupId, validated against song_publications at write
+ * time) to one section, in order, with an optional cover image override for the showcase card.
+ */
+export const landingSongFeatures = pgTable(
+  "landing_song_features",
+  {
+    id: text("id").primaryKey(),
+    section: text("section").notNull(),
+    songGroupId: text("song_group_id").notNull(),
+    /** Cloudinary URL replacing the song's own auto-generated cover on this card only; null keeps the song's real cover. */
+    coverUrlOverride: text("cover_url_override"),
+    sortOrder: integer("sort_order").notNull().default(100),
+    updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    sectionOrderIndex: index("landing_song_features_section_order_idx").on(table.section, table.sortOrder),
+  }),
+);
 
 export const paymentCountryRoutes = pgTable(
   "payment_country_routes",

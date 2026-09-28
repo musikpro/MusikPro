@@ -62,6 +62,7 @@ export default function AdminSelect({
   };
 
   const openMenu = (index?: number) => {
+    if (options.length === 0) return;
     placeMenu();
     const selectedIndex = options.findIndex((item) => item.value === currentValue);
     setHighlighted(index ?? Math.max(0, selectedIndex));
@@ -163,8 +164,10 @@ export default function AdminSelect({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-controls={menuId}
+        disabled={options.length === 0}
         onClick={() => (open ? setOpen(false) : openMenu())}
         onKeyDown={(event) => {
+          if (options.length === 0) return;
           if (event.key === "ArrowDown" || event.key === "ArrowUp" || event.key === "Enter" || event.key === " ") {
             event.preventDefault();
             const selectedIndex = Math.max(
@@ -175,7 +178,7 @@ export default function AdminSelect({
           }
         }}
       >
-        <span>{selected?.label ?? "Sélectionner"}</span>
+        <span>{selected?.label ?? (options.length === 0 ? "Aucune option disponible" : "Sélectionner")}</span>
         <Icon i="chevron-down" size={15} />
       </button>
       {typeof document !== "undefined" ? createPortal(menu, document.body) : null}

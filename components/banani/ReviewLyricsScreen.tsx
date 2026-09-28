@@ -99,20 +99,6 @@ export default function ReviewLyricsScreen() {
           </button>
         </div>
 
-        {/* Extend Lyrics Button */}
-        <button
-          type="button"
-          data-demo-ready="true"
-          disabled={demo.lyricsPending}
-          onClick={() => void demo.generateLyrics("lyrics.extend")}
-          className="w-full py-3 bg-background border border-border rounded-lg flex items-center justify-center gap-2 mb-6"
-        >
-          <Icon i="plus" size={16} className="text-muted-foreground" />
-          <span className="font-semibold text-sm text-foreground">
-            {demo.lyricsPending ? t("Rallongement…") : t("Rallonger les paroles")}
-          </span>
-        </button>
-
         {/* Info */}
         <div className="bg-secondary/60 rounded-xl px-4 py-3">
           <p className="text-sm text-foreground leading-relaxed">

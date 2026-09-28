@@ -9,6 +9,7 @@ export const totpCodeSchema = z
 
 export const loginSchema = z.object({ email: emailSchema, password: passwordSchema });
 export const registerSchema = loginSchema.extend({ name: z.string().trim().min(2).max(120) });
+export const registerIdentitySchema = registerSchema.pick({ name: true, email: true });
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 export const resetPasswordSchema = z.object({ password: passwordSchema, token: z.string().min(1).max(4096) });
 export const twoFactorCodeSchema = z.object({ code: totpCodeSchema });

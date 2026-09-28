@@ -1,7 +1,7 @@
 "use client";
 import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
-import { downloadAudioFile, shareAudioFile, shareLink } from "@/lib/demo/audio-actions";
+import { downloadAudioFile, shareAudioFile } from "@/lib/demo/audio-actions";
 import { uploadCoverImage } from "@/lib/demo/cover-actions";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
@@ -14,6 +14,7 @@ export const screenSize = "mobile";
 import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
+import WhatsAppLogo from "./WhatsAppLogo";
 
 const styleColors: Record<string, string> = {
   Afrobeat: "bg-orange-50 text-coral",
@@ -106,15 +107,17 @@ export default function MySongsGenerated() {
     }
     const chosen = version ?? song.versions[0];
     if (!chosen?.audioUrl) {
-      demo.notify(t("Cette chanson n'est pas encore prête à être publiée."));
+      demo.notify(t("Cette chanson n'est pas encore prête à être partagée."));
       return;
     }
     const url = await demo.publishSong(song.id, version?.jobId);
     if (!url) return;
-    const result = await shareLink(url, song.title, "Écoute ma chanson créée sur MusikPro !");
-    if (result === "copied") demo.notify(t("Lien public copié dans le presse-papiers."));
-    if (result === "shared") demo.notify(t("Chanson publiée et partagée !"));
-    if (result === "failed") demo.notify(translateTemplate("Chanson publiée : {url}", { url }));
+    const message = translateTemplate("Écoute ma chanson « {title} » créée sur MusikPro : {url}", {
+      title: song.title,
+      url,
+    });
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    demo.notify(t("Chanson publiée — ouverture de WhatsApp…"));
   };
 
   // "Publier" et "Télécharger" proposent tous les deux le même petit choix de version quand la
@@ -448,10 +451,10 @@ export default function MySongsGenerated() {
                 data-demo-ready="true"
                 disabled={!demo.isDemo && !primaryVersion?.audioUrl}
                 onClick={() => handlePublishClick(song)}
-                className={`flex-1 flex items-center justify-center gap-1.5 rounded-full bg-foreground text-background px-3 py-2 text-xs font-semibold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
+                className={`song-whatsapp-button flex-1 flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-bold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
               >
-                <Icon i="globe" size={14} />
-                {t("Publier")}
+                <WhatsAppLogo size={17} />
+                {t("Partager sur WhatsApp")}
               </button>
               <button
                 type="button"

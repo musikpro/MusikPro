@@ -7,8 +7,8 @@ import {
 } from "@/lib/ai/lyrics-policy";
 
 describe("lyrics policy", () => {
-  it("limits provider output to 900 words", () => {
-    const result = enforceLyricsWordLimit(Array(901).fill("mot").join(" "));
+  it(`limits provider output to ${LYRICS_MAX_WORDS} words`, () => {
+    const result = enforceLyricsWordLimit(Array(LYRICS_MAX_WORDS + 1).fill("mot").join(" "));
     expect(result.split(/\s+/)).toHaveLength(LYRICS_MAX_WORDS);
   });
 

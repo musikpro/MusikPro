@@ -109,6 +109,643 @@
   padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px));
 }
 
+/* The public landing page (app/page.tsx) reuses the .banani-mobile/.banani-desktop breakpoint
+   switch but has no MobileBottomNav, so it doesn't need the bottom nav clearance above. */
+.banani-mobile:has(.landing-page) {
+  padding-bottom: 0;
+}
+
+/* app/globals.css sets `a { color: inherit }` outside any @layer, which (per CSS cascade
+   layers) always wins over the Tailwind text-primary-foreground utility (in @layer utilities)
+   — so landing-page CTA links rendered dark text on their orange background instead of white.
+   Scoped fix, doesn't touch the global reset used elsewhere in the app. */
+.landing-page a[class*="text-primary-foreground"] {
+  color: var(--color-primary-foreground);
+}
+
+/* app/globals.css also defines a plain, unlayered `.grid { grid-template-columns: repeat(auto-fit,
+   minmax(220px,1fr)) }` (the legacy kit-dashboard card grid, now used at /setup). Same cascade-layers
+   issue as above: since it's unlayered, it wins over Tailwind's layered `.grid-cols-N` utilities
+   whenever both classes land on the same element — which the landing page's `grid grid-cols-N` markup
+   does. Whichever of the two unlayered rules a bundler happens to emit last wins, so this even flips
+   between `next dev` and a production build. Pin it down deterministically, scoped to the landing page. */
+.landing-page .grid.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.landing-page .grid.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.landing-page .grid.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+.landing-page .grid.grid-cols-8 {
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+}
+
+/* ============================================================
+   Public landing page — motion & color system. Everything below
+   is scoped to .landing-page (or already-prefixed landing-*
+   classes) so it never touches the dashboard/admin screens that
+   share this stylesheet. All colors stay within the brand tokens
+   defined in @theme above — no second palette.
+   ============================================================ */
+
+/* Scroll reveal driven by components/banani/Reveal.tsx */
+.reveal-up {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal-up-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero headline: words fade/slide up in sequence on load (animation-delay set inline per word) */
+@keyframes landingWordUp {
+  from {
+    opacity: 0;
+    transform: translateY(0.6em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.landing-page .hero-word {
+  display: inline-block;
+  opacity: 0;
+  animation: landingWordUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Hero badge pill: fade in first, with a softly pulsing dot */
+@keyframes landingFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.landing-page .hero-badge {
+  opacity: 0;
+  animation: landingFadeIn 0.6s ease forwards;
+}
+@keyframes landingDotPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.5;
+  }
+}
+.landing-page .hero-badge-dot {
+  animation: landingDotPulse 1.8s ease-in-out infinite;
+}
+
+/* Hero: rotating word/phrase line under the title (components/banani/HeroRotatingText.tsx) —
+   admin-managed via /admin/animated-texts (headline, animation type, text size, all in one place).
+   Each new word plays its animation on remount (React `key` swap). Four selectable types share the
+   base `.hero-rotate-word` class plus one `.hero-rotate-<type>` modifier. */
+.landing-page .hero-rotate-line {
+  min-height: 1.4em;
+  overflow: hidden;
+}
+.landing-page .hero-rotate-word {
+  display: inline-block;
+}
+.landing-page .hero-rotate-fade {
+  animation: landingFadeIn 0.5s ease forwards;
+}
+@keyframes heroRotateSlideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.landing-page .hero-rotate-slide {
+  animation: heroRotateSlideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes heroRotateZoomIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.landing-page .hero-rotate-zoom {
+  animation: heroRotateZoomIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes heroRotateTyping {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+@keyframes heroRotateCaret {
+  50% {
+    border-color: transparent;
+  }
+}
+.landing-page .hero-rotate-typewriter {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  border-right: 0.08em solid currentColor;
+  width: 0;
+  animation:
+    heroRotateTyping 1.1s steps(var(--hero-type-chars, 12), end) forwards,
+    heroRotateCaret 0.8s step-end infinite;
+}
+
+/* Hero: gently floating decorative icons */
+@keyframes landingFloat {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(4deg);
+  }
+}
+.landing-page .hero-float {
+  animation: landingFloat 5s ease-in-out infinite;
+}
+
+/* Hero: slow-drifting blurred gradient orbs (pure CSS, no images) for depth */
+@keyframes landingOrbDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(4%, -6%) scale(1.08);
+  }
+}
+.landing-page .hero-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(60px);
+  pointer-events: none;
+  animation: landingOrbDrift 12s ease-in-out infinite;
+}
+
+/* Hero background: vibrant purple-to-orange gradient with concentric rings, dimmed
+   under a black overlay so the (now light-colored) hero text/CTA stay readable. */
+.landing-page .hero-glow {
+  position: relative;
+  isolation: isolate;
+}
+.landing-page .hero-glow::before,
+.landing-page .hero-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.landing-page .hero-glow::before {
+  background-image:
+    repeating-radial-gradient(
+      circle at 74% 38%,
+      rgba(255, 255, 255, 0.14) 0,
+      rgba(255, 255, 255, 0.14) 1.5px,
+      transparent 1.5px,
+      transparent 48px
+    ),
+    linear-gradient(135deg, #2a1a5e 0%, #5c2a8f 30%, #a83a1e 66%, var(--color-primary) 100%);
+}
+.landing-page .hero-glow::after {
+  background: linear-gradient(180deg, rgba(8, 5, 18, 0.42) 0%, rgba(8, 5, 18, 0.62) 100%);
+}
+.landing-page .hero-glow > *:not(.hero-orb):not(.hero-float) {
+  position: relative;
+  z-index: 1;
+}
+.landing-page .hero-glow .hero-orb,
+.landing-page .hero-glow .hero-float {
+  z-index: 1;
+}
+
+/* Primary CTAs: soft pulsing glow ring + hover lift */
+@keyframes landingGlowPulse {
+  0%,
+  100% {
+    box-shadow:
+      0 8px 24px rgba(242, 101, 34, 0.35),
+      0 0 0 0 rgba(242, 101, 34, 0.28);
+  }
+  50% {
+    box-shadow:
+      0 8px 28px rgba(242, 101, 34, 0.45),
+      0 0 0 10px rgba(242, 101, 34, 0);
+  }
+}
+.landing-page .cta-glow {
+  position: relative;
+  animation: landingGlowPulse 2.6s ease-in-out infinite;
+  transition:
+    transform 0.25s ease,
+    filter 0.25s ease;
+}
+.landing-page .cta-glow:hover {
+  transform: translateY(-2px) scale(1.03);
+  filter: brightness(1.05);
+}
+.landing-page .cta-glow:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Inline preview player on the "Ils ont créé avec MusikPro"/"Bibliothèque populaire" cards — a
+   labelled pill (not a bare icon) so a visitor understands it plays music in place, instead of
+   navigating away like the rest of the card. */
+.landing-page .landing-inline-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border: none;
+  border-radius: 999px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.landing-page .landing-inline-play:hover {
+  filter: brightness(1.05);
+}
+.landing-page .landing-inline-play.is-compact {
+  padding: 7px 12px;
+  font-size: 11px;
+  gap: 4px;
+}
+.landing-page .landing-inline-play.is-playing {
+  background: color-mix(in srgb, var(--color-primary) 82%, black);
+}
+
+/* Generic card elevation + hover-lift for grid/list cards across the page —
+   a resting shadow so cards read as raised surfaces, not just bordered boxes. */
+.landing-page .landing-card-hover {
+  box-shadow: 0 1px 2px rgba(26, 26, 26, 0.04), 0 2px 8px rgba(26, 26, 26, 0.05);
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
+}
+.landing-page .landing-card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 32px rgba(26, 26, 26, 0.1);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+
+/* Sticky, blurred nav bar — a soft shadow marks the separation from the content scrolling under it */
+.landing-page .landing-nav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: color-mix(in srgb, var(--color-background) 85%, transparent);
+  box-shadow:
+    0 1px 0 rgba(26, 26, 26, 0.04),
+    0 6px 16px rgba(26, 26, 26, 0.05);
+  /* Forcer une couche de composition dédiée : sur iOS Safari, un `position: sticky` avec
+     backdrop-filter sans cette promotion GPU peut disparaître/scintiller pendant le scroll. */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: transform;
+  transition: padding 0.25s ease, box-shadow 0.25s ease;
+}
+
+/* Toggled by LandingNavScrollEffect once the page scrolls past a small threshold —
+   a slightly shorter bar with a marked shadow signals the scroll depth. */
+.landing-page .landing-nav.landing-nav-scrolled {
+  padding-top: 0.65rem;
+  padding-bottom: 0.65rem;
+  box-shadow:
+    0 1px 0 rgba(26, 26, 26, 0.06),
+    0 8px 20px rgba(26, 26, 26, 0.08);
+}
+
+/* Nav links: an underline that draws itself in on hover, left to right */
+.landing-page .landing-nav-link {
+  position: relative;
+  padding-bottom: 4px;
+  transition: color 0.2s ease;
+}
+.landing-page .landing-nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-primary);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.landing-page .landing-nav-link:hover {
+  color: var(--color-foreground);
+}
+.landing-page .landing-nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* Nav "Connexion" button: a bit of lift + glow on hover instead of a flat, static button */
+.landing-page .landing-nav-cta {
+  transition:
+    transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.25s ease,
+    filter 0.25s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+.landing-page .landing-nav-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--color-primary) 38%, transparent);
+  filter: brightness(1.05);
+}
+
+/* Landing language switcher: <details>/<summary> dropdown; a small client-side listener closes
+   it on outside click, but it still works natively (toggle + focus-out) without JS */
+.landing-page .landing-lang-select > summary {
+  list-style: none;
+}
+.landing-page .landing-lang-select > summary::-webkit-details-marker {
+  display: none;
+}
+.landing-page .landing-lang-chevron {
+  transition: transform 0.25s ease;
+}
+.landing-page .landing-lang-select[open] .landing-lang-chevron {
+  transform: rotate(180deg);
+}
+
+/* Mobile nav menu: hamburger button + panel that unfolds from the top, out of flow so it never
+   stretches the sticky nav bar itself. */
+.landing-page .landing-mobile-menu-btn {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+.landing-page .landing-mobile-menu-btn:hover {
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--color-background));
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+}
+.landing-page .landing-mobile-menu-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--color-background);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: 0 16px 28px rgba(26, 26, 26, 0.1);
+  overflow: hidden;
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition:
+    max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.25s ease,
+    transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 39;
+}
+.landing-page .landing-mobile-menu-panel.landing-mobile-menu-open {
+  max-height: 320px;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+.landing-page .landing-mobile-menu-link {
+  display: block;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-foreground);
+}
+.landing-page .landing-mobile-menu-link:last-child {
+  border-bottom: none;
+}
+.landing-page .landing-mobile-menu-link:active {
+  background: color-mix(in srgb, var(--color-primary) 6%, transparent);
+}
+.landing-page .landing-lang-panel {
+  box-shadow: 0 12px 28px rgba(26, 26, 26, 0.12);
+  animation: landingFadeIn 0.18s ease;
+}
+/* Tailwind's preflight reset isn't imported in this project, so a bare <button> keeps its
+   native OS chrome (border + shadow) — reset it explicitly instead of one box per option. */
+.landing-page .landing-lang-panel > form + form {
+  border-top: 1px solid var(--color-border);
+}
+.landing-page .landing-lang-option {
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.landing-page .landing-lang-option:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+
+/* Small pill/chip hover (style tags, language selector, …) */
+.landing-page .landing-chip-hover {
+  transition: transform 0.2s ease;
+}
+.landing-page .landing-chip-hover:hover {
+  transform: scale(1.07);
+}
+
+/* Section color treatments — richer than a flat surface tint, still built from brand tokens */
+.landing-section-tint {
+  background: linear-gradient(180deg, var(--color-surface) 0%, #ffffff 100%);
+}
+.landing-section-dotted {
+  background-color: var(--color-surface);
+  background-image: radial-gradient(color-mix(in srgb, var(--color-primary) 16%, transparent) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+/* Faint graph-paper grid — used for app/library-flavored sections */
+.landing-section-grid {
+  background-color: var(--color-surface);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-border) 70%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-border) 70%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+/* Thin diagonal hairlines */
+.landing-section-diagonal {
+  background-color: var(--color-background);
+  background-image: repeating-linear-gradient(
+    45deg,
+    color-mix(in srgb, var(--color-primary) 7%, transparent) 0,
+    color-mix(in srgb, var(--color-primary) 7%, transparent) 1px,
+    transparent 1px,
+    transparent 14px
+  );
+}
+/* Soft concentric rings, echoing the hero's motif, offset into a corner */
+.landing-section-waves {
+  background-color: var(--color-surface);
+  background-image: repeating-radial-gradient(
+    circle at 88% 15%,
+    color-mix(in srgb, var(--color-coral) 12%, transparent) 0,
+    color-mix(in srgb, var(--color-coral) 12%, transparent) 1px,
+    transparent 1px,
+    transparent 34px
+  );
+}
+/* Diamond crosshatch */
+.landing-section-cross {
+  background-color: var(--color-background);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--color-success) 8%, transparent) 0,
+      color-mix(in srgb, var(--color-success) 8%, transparent) 1px,
+      transparent 1px,
+      transparent 18px
+    ),
+    repeating-linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--color-success) 8%, transparent) 0,
+      color-mix(in srgb, var(--color-success) 8%, transparent) 1px,
+      transparent 1px,
+      transparent 18px
+    );
+}
+/* Fine horizontal rule lines */
+.landing-section-lines {
+  background-color: var(--color-surface);
+  background-image: repeating-linear-gradient(
+    0deg,
+    color-mix(in srgb, var(--color-primary) 9%, transparent) 0,
+    color-mix(in srgb, var(--color-primary) 9%, transparent) 1px,
+    transparent 1px,
+    transparent 22px
+  );
+}
+.landing-icon-gradient {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-coral) 100%);
+}
+
+/* Occasion chips: rotating soft brand tints instead of flat white cards */
+.landing-tint-0 {
+  background: color-mix(in srgb, var(--color-primary) 10%, white);
+  border-color: color-mix(in srgb, var(--color-primary) 25%, var(--color-border));
+}
+.landing-tint-1 {
+  background: color-mix(in srgb, var(--color-coral) 12%, white);
+  border-color: color-mix(in srgb, var(--color-coral) 28%, var(--color-border));
+}
+.landing-tint-2 {
+  background: color-mix(in srgb, var(--color-success) 10%, white);
+  border-color: color-mix(in srgb, var(--color-success) 25%, var(--color-border));
+}
+.landing-tint-3 {
+  background: var(--color-secondary);
+  border-color: color-mix(in srgb, var(--color-primary) 20%, var(--color-border));
+}
+
+/* Pricing cards (imported reference: name pill straddling the top edge, bold price, "save" pill,
+   checklist, full-width pill CTA). The highlighted plan gets a full brand-gradient fill instead
+   of a plain white card, adapted from the reference's solid-purple middle card. */
+.landing-page .landing-pricing-card {
+  overflow: visible;
+}
+.landing-page .landing-pricing-highlight {
+  background: linear-gradient(160deg, var(--color-primary) 0%, var(--color-coral) 100%);
+  box-shadow: 0 20px 40px color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+/* Final CTA band: bold brand gradient with soft glow blobs instead of a flat tint */
+.landing-final-cta {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-coral) 55%, #d9530f 100%);
+}
+.landing-final-cta::before,
+.landing-final-cta::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.16);
+  filter: blur(50px);
+  pointer-events: none;
+}
+.landing-final-cta::before {
+  width: 260px;
+  height: 260px;
+  top: -80px;
+  left: -60px;
+}
+.landing-final-cta::after {
+  width: 220px;
+  height: 220px;
+  bottom: -70px;
+  right: -40px;
+}
+.landing-page .cta-invert {
+  background: #ffffff;
+  color: var(--color-primary);
+}
+.landing-page .cta-invert:hover {
+  transform: translateY(-2px) scale(1.03);
+  filter: brightness(1.02);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up,
+  .landing-page .hero-word,
+  .landing-page .hero-badge,
+  .landing-page .hero-badge-dot,
+  .landing-page .hero-float,
+  .landing-page .hero-orb,
+  .landing-page .hero-rotate-word,
+  .landing-page .cta-glow {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  /* Typewriter's `width: 0` is a static property, not an animation — without this override the
+     reduced-motion rule above would leave the rotating text permanently clipped to zero width. */
+  .landing-page .hero-rotate-typewriter {
+    width: auto !important;
+    border-right: none !important;
+  }
+  /* .cta-glow's blanket `transform: none !important` above is meant to cancel its hover/active
+     lift, but the centered inline play button also relies on a transform to stay positioned over
+     the cover image (not an animation) — without this it would jump to the card's top-left corner. */
+  .landing-page .landing-inline-play.is-centered {
+    transform: translate(-50%, -50%) !important;
+  }
+}
+
 .banani-bottom-nav {
   position: fixed;
   z-index: 50;
@@ -2069,6 +2706,22 @@
   background: var(--color-secondary);
   color: var(--color-primary);
   box-shadow: 0 4px 12px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+
+.song-whatsapp-button {
+  background: #1fae56;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px rgba(31, 174, 86, 0.4);
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.song-whatsapp-button:hover:not(:disabled) {
+  background: #189249;
+}
+
+.song-whatsapp-button:active:not(:disabled) {
+  transform: scale(0.98);
 }
 
 .banani-copy .song-edit-lyrics-button {
@@ -4335,6 +4988,10 @@ span.musik-user-avatar {
   z-index: 2;
   padding: 16px;
   overflow: visible;
+}
+
+.recipient-form-shell .recipient-page-card + .recipient-page-card {
+  margin-top: 14px;
 }
 
 .banani-copy .recipient-page-card .story-recipient-field input:focus,

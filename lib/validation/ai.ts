@@ -120,6 +120,8 @@ const lyricsContextSchema = z.object({
   recipientName: z.string().trim().max(120).optional().default(""),
   recipientRelation: z.string().trim().max(120).optional().default(""),
   recipientPronunciation: z.string().trim().max(300).optional().default(""),
+  senderName: z.string().trim().max(120).optional().default(""),
+  senderPronunciation: z.string().trim().max(300).optional().default(""),
   genre: z.string().trim().min(1).max(100),
   mood: z.string().trim().max(100).optional().default(""),
   language: z.string().trim().min(1).max(50),

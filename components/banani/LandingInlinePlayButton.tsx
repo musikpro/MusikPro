@@ -1,0 +1,70 @@
+"use client";
+
+import { useRef, useState } from "react";
+import Icon from "./Icon";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+
+// Module-scope (not React state) on purpose: only one inline preview should ever play at a time
+// across the whole landing page, and cards are plain, independent instances of this component —
+// no shared provider is mounted above them (unlike the single persistent AmbientPlayerContext
+// track on /dashboard, these are short user-initiated previews scoped to whichever viewport tree
+// is actually visible).
+let stopActive: (() => void) | null = null;
+
+export default function LandingInlinePlayButton({
+  audioUrl,
+  title,
+  compact = false,
+  className = "",
+}: {
+  audioUrl: string;
+  title: string;
+  compact?: boolean;
+  className?: string;
+}) {
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [playing, setPlaying] = useState(false);
+
+  const stop = () => {
+    audioRef.current?.pause();
+    setPlaying(false);
+  };
+
+  const toggle = (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) {
+      stop();
+      return;
+    }
+    if (stopActive && stopActive !== stop) stopActive();
+    stopActive = stop;
+    void audio.play().catch(() => {});
+  };
+
+  return (
+    <>
+      <audio
+        ref={audioRef}
+        src={audioUrl}
+        preload="none"
+        onPlaying={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        onError={() => setPlaying(false)}
+        className="sr-only"
+      />
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? t("Mettre en pause") : translateTemplate("Écouter {title}", { title })}
+        className={`cta-glow landing-inline-play ${compact ? "is-compact" : ""} ${playing ? "is-playing" : ""} ${className}`}
+      >
+        <Icon i={playing ? "pause" : "play"} size={compact ? 14 : 18} />
+        <span className="landing-inline-play-label">{playing ? t("En lecture") : t("Écouter")}</span>
+      </button>
+    </>
+  );
+}

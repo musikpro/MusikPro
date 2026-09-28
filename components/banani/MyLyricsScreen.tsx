@@ -112,7 +112,10 @@ export default function MyLyricsScreen() {
                     <button
                       type="button"
                       data-demo-ready="true"
-                      onClick={() => demo.go("/dashboard/create/lyrics/edit")}
+                      onClick={() => {
+                        demo.field("lyrics", song.lyrics);
+                        demo.go("/dashboard/create/lyrics/edit");
+                      }}
                       className="flex-1 py-2 bg-input border border-border text-foreground font-semibold text-xs rounded-lg flex items-center justify-center gap-1.5"
                     >
                       <Icon i="pencil" size={14} />

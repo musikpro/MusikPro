@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { TurnstileWidget } from "@/components/turnstile-widget";
-import { emailSchema, loginSchema, registerSchema } from "@/lib/validation/auth";
+import { emailSchema, loginSchema, registerIdentitySchema, registerSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
 import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
 
@@ -22,23 +22,37 @@ export function AuthForm({
   const [busy, setBusy] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [loginStep, setLoginStep] = useState<"email" | "password">("email");
-  const [loginEmail, setLoginEmail] = useState("");
+  // Both modes now collect identity (name for register, email for both) on a first step and the
+  // password on a second — mirrors the login flow this file already had, extended to register.
+  const [step, setStep] = useState<"identity" | "password">("identity");
+  const [identityEmail, setIdentityEmail] = useState("");
+  const [identityName, setIdentityName] = useState("");
   const captchaEnabled = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY);
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
     const f = new FormData(e.currentTarget);
-    const submittedEmail = String(f.get("email") || loginEmail);
+    const submittedEmail = String(f.get("email") || identityEmail);
+    const submittedName = String(f.get("name") || identityName);
 
-    if (mode === "login" && loginStep === "email") {
-      const parsedEmail = emailSchema.safeParse(submittedEmail);
-      if (!parsedEmail.success) {
-        setError(parsedEmail.error.issues[0]?.message || "E-mail invalide");
-        return;
+    if (step === "identity") {
+      if (mode === "register") {
+        const parsedIdentity = registerIdentitySchema.safeParse({ name: submittedName, email: submittedEmail });
+        if (!parsedIdentity.success) {
+          setError(parsedIdentity.error.issues[0]?.message || "Données invalides");
+          return;
+        }
+        setIdentityName(parsedIdentity.data.name);
+        setIdentityEmail(parsedIdentity.data.email);
+      } else {
+        const parsedEmail = emailSchema.safeParse(submittedEmail);
+        if (!parsedEmail.success) {
+          setError(parsedEmail.error.issues[0]?.message || "E-mail invalide");
+          return;
+        }
+        setIdentityEmail(parsedEmail.data);
       }
-      setLoginEmail(parsedEmail.data);
-      setLoginStep("password");
+      setStep("password");
       return;
     }
 
@@ -49,7 +63,7 @@ export function AuthForm({
       return;
     }
     const raw = {
-      name: String(f.get("name") || ""),
+      name: submittedName,
       email: submittedEmail,
       password: String(f.get("password") || ""),
     };
@@ -121,8 +135,8 @@ export function AuthForm({
     }
   }
   const isLogin = mode === "login";
-  const isLoginEmailStep = isLogin && loginStep === "email";
-  const isLoginPasswordStep = isLogin && loginStep === "password";
+  const isIdentityStep = step === "identity";
+  const isPasswordStep = step === "password";
   return (
     <div className="auth-page">
       <div className="auth-panel">
@@ -130,28 +144,28 @@ export function AuthForm({
           <AuthLogo />
         </div>
         <form className="auth-form" onSubmit={submit} noValidate>
-          <div className="auth-stage" key={isLogin ? loginStep : "register"}>
-            {isLoginPasswordStep && (
+          <div className="auth-stage" key={step}>
+            {isPasswordStep && (
               <button
                 className="auth-step-back"
                 type="button"
                 onClick={() => {
-                  setLoginStep("email");
+                  setStep("identity");
                   setError("");
                 }}
               >
                 <Icon i="arrow-left" size={17} /> Retour
               </button>
             )}
-            <h1>{isLoginPasswordStep ? "Votre mot de passe" : isLogin ? "Connexion" : "Créer un compte"}</h1>
+            <h1>{isPasswordStep ? "Votre mot de passe" : isLogin ? "Connexion" : "Créer un compte"}</h1>
             <p className="auth-subtitle">
-              {isLoginPasswordStep
+              {isPasswordStep
                 ? "Saisissez votre mot de passe pour continuer"
                 : isLogin
                   ? "Renseignez votre adresse email pour accéder à votre compte"
                   : "Rejoignez MusikPro et créez votre première chanson"}
             </p>
-            {googleEnabled && !isLoginPasswordStep && (
+            {googleEnabled && !isPasswordStep && (
               <>
                 <button className="auth-google" type="button" disabled={busy} onClick={googleSignIn}>
                   <GoogleLogo />
@@ -162,16 +176,25 @@ export function AuthForm({
                 </div>
               </>
             )}
-            {mode === "register" && (
+            {mode === "register" && isIdentityStep && (
               <label className="auth-field">
                 <span>Nom complet</span>
                 <span className="auth-input">
                   <Icon i="user" size={17} />
-                  <input name="name" autoComplete="name" placeholder="Votre nom complet" required minLength={2} />
+                  <input
+                    name="name"
+                    autoComplete="name"
+                    placeholder="Votre nom complet"
+                    value={identityName}
+                    onChange={(event) => setIdentityName(event.target.value)}
+                    autoFocus
+                    required
+                    minLength={2}
+                  />
                 </span>
               </label>
             )}
-            {(mode === "register" || isLoginEmailStep) && (
+            {isIdentityStep && (
               <label className="auth-field">
                 <span>Adresse email</span>
                 <span className="auth-input">
@@ -181,22 +204,22 @@ export function AuthForm({
                     type="email"
                     autoComplete="email"
                     placeholder="votre@email.com"
-                    value={isLogin ? loginEmail : undefined}
-                    onChange={isLogin ? (event) => setLoginEmail(event.target.value) : undefined}
-                    autoFocus={isLoginEmailStep}
+                    value={identityEmail}
+                    onChange={(event) => setIdentityEmail(event.target.value)}
+                    autoFocus={isLogin}
                     required
                   />
                 </span>
               </label>
             )}
-            {isLoginPasswordStep && (
-              <button className="auth-email-summary" type="button" onClick={() => setLoginStep("email")}>
+            {isPasswordStep && (
+              <button className="auth-email-summary" type="button" onClick={() => setStep("identity")}>
                 <Icon i="mail" size={17} />
-                <span>{loginEmail}</span>
+                <span>{identityEmail}</span>
                 <span>Modifier</span>
               </button>
             )}
-            {(mode === "register" || isLoginPasswordStep) && (
+            {isPasswordStep && (
               <label className="auth-field">
                 <span>Mot de passe</span>
                 <span className="auth-input">
@@ -206,7 +229,7 @@ export function AuthForm({
                     type={passwordVisible ? "text" : "password"}
                     autoComplete={isLogin ? "current-password" : "new-password"}
                     placeholder="Votre mot de passe"
-                    autoFocus={isLoginPasswordStep}
+                    autoFocus
                     required
                     minLength={10}
                   />
@@ -222,7 +245,7 @@ export function AuthForm({
                 {!isLogin && <small>Minimum 10 caractères</small>}
               </label>
             )}
-            {isLoginPasswordStep && (
+            {isLogin && isPasswordStep && (
               <div className="auth-options">
                 <label className="auth-check">
                   <input type="checkbox" defaultChecked />
@@ -231,22 +254,22 @@ export function AuthForm({
                 <Link href="/forgot-password">Mot de passe oublié ?</Link>
               </div>
             )}
-            {(mode === "register" || isLoginPasswordStep) && <TurnstileWidget onToken={setCaptchaToken} />}
+            {isPasswordStep && <TurnstileWidget onToken={setCaptchaToken} />}
             {error && (
               <p className="auth-alert auth-alert-error" role="alert">
                 {error}
               </p>
             )}
             <button className="auth-submit" disabled={busy}>
-              {busy ? "Traitement…" : isLoginEmailStep ? "Continuer" : mode === "login" ? "Se connecter" : "Continuer"}
+              {busy ? "Traitement…" : isIdentityStep ? "Continuer" : mode === "login" ? "Se connecter" : "Continuer"}
             </button>
-            {!isLogin && (
+            {!isLogin && isPasswordStep && (
               <p className="auth-legal">
                 En créant un compte, vous acceptez nos <Link href="/terms">conditions d’utilisation</Link> et notre{" "}
                 <Link href="/privacy">politique de confidentialité</Link>.
               </p>
             )}
-            {!isLoginPasswordStep && (
+            {!isPasswordStep && (
               <p className="auth-switch">
                 {isLogin ? "Pas de compte ? " : "Vous avez déjà un compte ? "}
                 <Link href={isLogin ? "/register" : "/login"}>{isLogin ? "Créer un compte" : "Se connecter"}</Link>

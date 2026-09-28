@@ -77,3 +77,19 @@ export function localizeField(
   if (locale === "fr") return base;
   return translations?.[locale]?.[field] || base;
 }
+
+/**
+ * Server-rendered counterpart of localizeField() for a page with no authenticated session and no
+ * client-side language detector mounted (see request-locale.ts's resolveLocaleFromAcceptLanguage),
+ * e.g. the public landing page. Same jsonb `translations` shape, locale passed explicitly instead
+ * of read from `document`.
+ */
+export function localizeFieldForLocale(
+  base: string,
+  translations: CatalogTranslations | null | undefined,
+  field: string,
+  locale: Locale,
+): string {
+  if (locale === "fr") return base;
+  return translations?.[locale]?.[field] || base;
+}

@@ -3,7 +3,7 @@
 import { useDemo } from "./DemoProvider";
 import { translate as t } from "@/lib/i18n/translate";
 
-function GooglePlayLogo() {
+export function GooglePlayLogo() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="store-logo">
       <path fill="#4285F4" d="M3.7 2.4C3.25 2.83 3 3.53 3 4.4v15.2c0 .87.25 1.57.7 2L14 12 3.7 2.4Z" />
@@ -14,7 +14,7 @@ function GooglePlayLogo() {
   );
 }
 
-function AppleLogo() {
+export function AppleLogo() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" className="store-logo store-logo-apple">
       <path

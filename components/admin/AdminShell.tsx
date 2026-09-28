@@ -43,6 +43,8 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/ai-providers", icon: "cpu", label: "Fournisseurs IA" },
       { href: "/admin/ambient-music", icon: "music-4", label: "Musique d'ambiance" },
       { href: "/admin/trending", icon: "trending-up", label: "Tendances" },
+      { href: "/admin/animated-texts", icon: "sparkles", label: "Textes animés" },
+      { href: "/admin/landing-features", icon: "layout-grid", label: "Chansons mises en avant" },
     ],
   },
   {

@@ -112,6 +112,8 @@ function useDemoState(
     story: "",
     recipientName: "",
     recipientPronunciation: "",
+    senderName: "",
+    senderPronunciation: "",
     lyrics: isDemo ? demoLyrics : "",
     detail: "",
     "profile.name": initialProfile.name,
@@ -122,8 +124,8 @@ function useDemoState(
     "support.message": "",
     "support.email": initialProfile.email,
     "support.phone": "",
-    "payment.name": "",
-    "payment.email": "",
+    "payment.name": initialProfile.name,
+    "payment.email": initialProfile.email,
     "payment.phone": "",
   });
   const [choices, setChoices] = useState<Record<string, string>>({
@@ -600,6 +602,8 @@ function useDemoState(
             recipientName: fields.recipientName,
             recipientRelation: choices.recipientRelation,
             recipientPronunciation: fields.recipientPronunciation,
+            senderName: fields.senderName,
+            senderPronunciation: fields.senderPronunciation,
             genre: choices.genre,
             mood: choices.mood,
             language: choices.language,

@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
+import { useAdminToast } from "@/components/admin/AdminToastProvider";
 
 export type AdminGenerationRow = {
   id: string;
@@ -48,6 +49,16 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
   const [status, setStatus] = useState("all");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const showToast = useAdminToast();
+
+  const copyId = async (songGroupId: string) => {
+    try {
+      await navigator.clipboard.writeText(songGroupId);
+      showToast({ message: "Identifiant copié — colle-le dans « Tendances » pour ajouter cette chanson.", tone: "success" });
+    } catch {
+      showToast({ message: "Impossible de copier l’identifiant.", tone: "error" });
+    }
+  };
 
   const filtered = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase("fr");
@@ -117,6 +128,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
               <th>Date</th>
               <th>Utilisateur</th>
               <th>Chanson</th>
+              <th className="admin-generation-id-col">Identifiant</th>
               <th>Style</th>
               <th>Fournisseur</th>
               <th>Durée</th>
@@ -140,6 +152,22 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
                   {row.status === "failed" && row.failureReason ? (
                     <small className="admin-generation-failure">{row.failureReason}</small>
                   ) : null}
+                </td>
+                <td data-label="Identifiant">
+                  {row.songGroupId ? (
+                    <button
+                      type="button"
+                      className="admin-generation-id"
+                      onClick={() => void copyId(row.songGroupId!)}
+                      aria-label={`Copier l’identifiant ${row.songGroupId}`}
+                      title={`${row.songGroupId} — copier pour l’ajouter dans « Tendances » par identifiant`}
+                    >
+                      <code>{row.songGroupId}</code>
+                      <Icon i="copy" size={12} />
+                    </button>
+                  ) : (
+                    "—"
+                  )}
                 </td>
                 <td className="admin-generation-style" data-label="Style" title={row.style ?? undefined}>
                   {row.styleLabel ?? "—"}

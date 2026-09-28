@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { demoRecipientSchema } from "@/lib/validation/musikpro-demo";
+import { demoRecipientSchema, demoSenderSchema } from "@/lib/validation/musikpro-demo";
 import { apiFetch } from "@/lib/api/client";
 import CreationTopNav from "./CreationTopNav";
 import { useDemo } from "./DemoProvider";
@@ -25,11 +25,16 @@ function localPronunciationGuess(name: string) {
 
 const PRONUNCIATION_DEBOUNCE_MS = 600;
 
+type RecipientField = "name" | "pronunciation" | "relation";
+type SenderField = "senderName" | "senderPronunciation";
+
 export default function StepRecipient() {
   const demo = useDemo();
-  const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "pronunciation" | "relation", string>>>({});
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecipientField | SenderField, string>>>({});
   const [pronunciationLoading, setPronunciationLoading] = useState(false);
+  const [senderPronunciationLoading, setSenderPronunciationLoading] = useState(false);
   const latestRequestedName = useRef("");
+  const latestRequestedSenderName = useRef("");
 
   useEffect(() => {
     if (Object.keys(fieldErrors).length === 0) return;
@@ -65,7 +70,35 @@ export default function StepRecipient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo.fields.recipientName, demo.isDemo]);
 
-  const clearFieldError = (field: "name" | "pronunciation" | "relation") => {
+  useEffect(() => {
+    if (demo.isDemo) return;
+    const name = demo.fields.senderName.trim();
+    if (!name) return;
+    const timer = window.setTimeout(async () => {
+      latestRequestedSenderName.current = name;
+      setSenderPronunciationLoading(true);
+      try {
+        const result = await apiFetch<{ pronunciation: string }>("/api/ai/pronunciation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, language: demo.choices.language }),
+          timeoutMs: 15_000,
+        });
+        // Ignore a stale response if the user kept typing a different name meanwhile.
+        if (latestRequestedSenderName.current === name && result.pronunciation) {
+          demo.field("senderPronunciation", result.pronunciation);
+        }
+      } catch {
+        // Keep the instant local guess already shown — the AI suggestion is a best-effort upgrade.
+      } finally {
+        if (latestRequestedSenderName.current === name) setSenderPronunciationLoading(false);
+      }
+    }, PRONUNCIATION_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo.fields.senderName, demo.isDemo]);
+
+  const clearFieldError = (field: RecipientField | SenderField) => {
     setFieldErrors((current) => {
       if (!current[field]) return current;
       const next = { ...current };
@@ -75,26 +108,36 @@ export default function StepRecipient() {
   };
 
   const continueToStyle = () => {
-    const parsed = demoRecipientSchema.safeParse({
+    const parsedRecipient = demoRecipientSchema.safeParse({
       name: demo.fields.recipientName,
       pronunciation: demo.fields.recipientPronunciation,
       relation: demo.choices.recipientRelation,
     });
-    if (!parsed.success) {
-      const nextErrors: Partial<Record<"name" | "pronunciation" | "relation", string>> = {};
-      for (const issue of parsed.error.issues) {
+    const parsedSender = demoSenderSchema.safeParse({
+      name: demo.fields.senderName,
+      pronunciation: demo.fields.senderPronunciation,
+    });
+    if (!parsedRecipient.success || !parsedSender.success) {
+      const nextErrors: Partial<Record<RecipientField | SenderField, string>> = {};
+      for (const issue of parsedRecipient.success ? [] : parsedRecipient.error.issues) {
         const field = issue.path[0];
         if ((field === "name" || field === "pronunciation" || field === "relation") && !nextErrors[field]) {
           nextErrors[field] = issue.message;
         }
       }
+      for (const issue of parsedSender.success ? [] : parsedSender.error.issues) {
+        const field = issue.path[0] === "name" ? "senderName" : issue.path[0] === "pronunciation" ? "senderPronunciation" : undefined;
+        if (field && !nextErrors[field]) nextErrors[field] = issue.message;
+      }
       setFieldErrors(nextErrors);
       return;
     }
     setFieldErrors({});
-    demo.field("recipientName", parsed.data.name);
-    demo.field("recipientPronunciation", parsed.data.pronunciation);
-    demo.choose("recipientRelation", parsed.data.relation);
+    demo.field("recipientName", parsedRecipient.data.name);
+    demo.field("recipientPronunciation", parsedRecipient.data.pronunciation);
+    demo.choose("recipientRelation", parsedRecipient.data.relation);
+    demo.field("senderName", parsedSender.data.name);
+    demo.field("senderPronunciation", parsedSender.data.pronunciation);
     demo.go("/dashboard/create/style");
   };
 
@@ -209,6 +252,70 @@ export default function StepRecipient() {
                 {fieldErrors.relation}
               </InlineNotice>
             )}
+          </div>
+        </section>
+
+        <section className="story-recipient-card recipient-page-card" aria-labelledby="sender-form-title">
+          <div className="story-recipient-heading">
+            <span className="story-recipient-heading-icon">
+              <Icon i="user-round-pen" size={17} />
+            </span>
+            <div>
+              <h2 id="sender-form-title">{t("De la part de qui")}</h2>
+              <p>{t("Indique ton nom et sa prononciation.")}</p>
+            </div>
+          </div>
+
+          <div className="story-name-row">
+            <div className="story-recipient-field">
+              <label htmlFor="sender-name">{t("Nom de l'expéditeur")}</label>
+              <input
+                id="sender-name"
+                type="text"
+                value={demo.fields.senderName}
+                maxLength={100}
+                autoComplete="name"
+                placeholder={t("Ex. Moussa")}
+                aria-invalid={Boolean(fieldErrors.senderName)}
+                aria-describedby={fieldErrors.senderName ? "sender-name-error" : undefined}
+                onChange={(event) => {
+                  const name = event.target.value;
+                  demo.field("senderName", name);
+                  demo.field("senderPronunciation", localPronunciationGuess(name));
+                  clearFieldError("senderName");
+                  clearFieldError("senderPronunciation");
+                }}
+              />
+              {fieldErrors.senderName && (
+                <InlineNotice id="sender-name-error" tone="error" className="field-notice">
+                  {fieldErrors.senderName}
+                </InlineNotice>
+              )}
+            </div>
+            <div className="story-recipient-field is-pronunciation">
+              <span id="sender-pronunciation-label" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                {t("Prononciation suggérée")}
+                {senderPronunciationLoading ? (
+                  <Icon i="loader-circle" size={12} className="animate-spin" aria-label={t("Suggestion IA en cours")} />
+                ) : null}
+              </span>
+              <input
+                type="text"
+                value={demo.fields.senderPronunciation}
+                placeholder="Mou-ssa"
+                aria-labelledby="sender-pronunciation-label"
+                aria-readonly="true"
+                aria-invalid={Boolean(fieldErrors.senderPronunciation)}
+                aria-describedby={fieldErrors.senderPronunciation ? "sender-pronunciation-error" : undefined}
+                readOnly
+                tabIndex={-1}
+              />
+              {fieldErrors.senderPronunciation && (
+                <InlineNotice id="sender-pronunciation-error" tone="error" className="field-notice">
+                  {fieldErrors.senderPronunciation}
+                </InlineNotice>
+              )}
+            </div>
           </div>
         </section>
       </div>
