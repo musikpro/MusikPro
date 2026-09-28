@@ -22,23 +22,27 @@ const DISABLED: AmbientTrackStatus = {
 
 /** Réglage global : la chanson d'ambiance jouée sur l'accueil du tableau de bord (démo et comptes réels). */
 export async function getAmbientTrackStatus(): Promise<AmbientTrackStatus> {
-  const [row] = await db
-    .select({
-      enabled: ambientBackgroundTrack.enabled,
-      songGroupId: ambientBackgroundTrack.songGroupId,
-      title: ambientBackgroundTrack.title,
-      audioUrl: ambientBackgroundTrack.audioUrl,
-      volumePercent: ambientBackgroundTrack.volumePercent,
-    })
-    .from(ambientBackgroundTrack)
-    .where(eq(ambientBackgroundTrack.id, "global"))
-    .limit(1);
-  if (!row || !row.enabled || !row.audioUrl) return DISABLED;
-  return {
-    enabled: true,
-    songGroupId: row.songGroupId,
-    title: row.title,
-    audioUrl: row.audioUrl,
-    volumePercent: row.volumePercent,
-  };
+  try {
+    const [row] = await db
+      .select({
+        enabled: ambientBackgroundTrack.enabled,
+        songGroupId: ambientBackgroundTrack.songGroupId,
+        title: ambientBackgroundTrack.title,
+        audioUrl: ambientBackgroundTrack.audioUrl,
+        volumePercent: ambientBackgroundTrack.volumePercent,
+      })
+      .from(ambientBackgroundTrack)
+      .where(eq(ambientBackgroundTrack.id, "global"))
+      .limit(1);
+    if (!row || !row.enabled || !row.audioUrl) return DISABLED;
+    return {
+      enabled: true,
+      songGroupId: row.songGroupId,
+      title: row.title,
+      audioUrl: row.audioUrl,
+      volumePercent: row.volumePercent,
+    };
+  } catch {
+    return DISABLED;
+  }
 }
