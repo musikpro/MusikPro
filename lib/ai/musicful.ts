@@ -222,12 +222,16 @@ export async function getMusicfulProvider() {
  * client-facing props (unlike getMusicfulProvider(), which decrypts the API key).
  */
 export async function getMusicfulVersionsPerGeneration(): Promise<number> {
-  const [stored] = await getServiceDb()
-    .select({ versionsPerGeneration: audioProviderConfigs.versionsPerGeneration })
-    .from(audioProviderConfigs)
-    .where(eq(audioProviderConfigs.provider, "musicful"))
-    .limit(1);
-  return stored?.versionsPerGeneration ?? 1;
+  try {
+    const [stored] = await getServiceDb()
+      .select({ versionsPerGeneration: audioProviderConfigs.versionsPerGeneration })
+      .from(audioProviderConfigs)
+      .where(eq(audioProviderConfigs.provider, "musicful"))
+      .limit(1);
+    return stored?.versionsPerGeneration ?? 1;
+  } catch {
+    return 1;
+  }
 }
 
 export function createMusicfulClient(apiKey: string, baseUrl?: string, timeoutMs?: number) {
