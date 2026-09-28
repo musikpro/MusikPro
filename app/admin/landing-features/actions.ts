@@ -196,5 +196,5 @@ async function reorderSection(section: "showcase" | "library", formData: FormDat
   revalidateLandingFeatures();
 }
 
-export const reorderLandingShowcaseFeatures = (formData: FormData) => reorderSection("showcase", formData);
-export const reorderLandingLibraryFeatures = (formData: FormData) => reorderSection("library", formData);
+export const reorderLandingShowcaseFeatures = async (formData: FormData) => reorderSection("showcase", formData);
+export const reorderLandingLibraryFeatures = async (formData: FormData) => reorderSection("library", formData);
