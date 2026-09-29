@@ -6,7 +6,8 @@ import { GooglePlayLogo, AppleLogo } from "./StoreDownloadCard";
 import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLanguageSwitcher";
 import MobileLandingMenu from "./MobileLandingMenu";
 import HeroRotatingText, { type HeroRotatingTextItem } from "./HeroRotatingText";
-import LandingInlinePlayButton from "./LandingInlinePlayButton";
+import LandingSongCarousel from "./LandingSongCarousel";
+import LandingLibraryCard from "./LandingLibraryCard";
 import { HERO_TEXT_SIZE_CLASSES, type HeroAnimationType, type HeroTextSize } from "@/lib/hero-animation/types";
 import type { LandingFeaturedSong } from "@/lib/landing-features/server";
 
@@ -103,7 +104,8 @@ export default function LandingPageMobile({
   ];
   const navLinks = [
     { href: "#accueil", label: t("Accueil") },
-    { href: "#exemples", label: t("Créations") },
+    { href: "#exemples", label: t("Réalisations") },
+    { href: "#bibliotheque", label: t("Bibliothèque") },
     { href: "#faq", label: t("FAQ") },
   ];
 
@@ -202,32 +204,10 @@ export default function LandingPageMobile({
             <h2 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Ils ont créé avec MusikPro")}</h2>
             <p className="text-sm text-muted-foreground">{t("Chansons créées pour des moments uniques")}</p>
           </Reveal>
-          <div className="grid grid-cols-2 gap-3">
-            {showcaseSongs.map((s, i) => (
-              <Reveal key={s.slug} delay={i * 90}>
-                <Link
-                  href={`/s/${s.slug}`}
-                  className="landing-card-hover rounded-2xl overflow-hidden relative aspect-square group block"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={s.coverUrl ?? undefined}
-                    alt={s.title}
-                    className="w-full h-full object-cover"
-                    style={{ aspectRatio: "1 / 1" }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-between p-3">
-                    {s.audioUrl ? (
-                      <LandingInlinePlayButton audioUrl={s.audioUrl} title={s.title} compact className="self-end" />
-                    ) : null}
-                    <div className="flex flex-col gap-1">
-                      <p className="font-semibold text-sm text-white">{s.title}</p>
-                    </div>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
+          <LandingSongCarousel
+            songs={showcaseSongs}
+            labels={{ listen: t("Écouter"), navigation: t("Navigation des chansons") }}
+          />
         </section>
       ) : null}
 
@@ -285,7 +265,7 @@ export default function LandingPageMobile({
       ) : null}
 
       {librarySongs.length ? (
-        <section className="landing-section-soft px-4 py-10">
+        <section id="bibliotheque" className="landing-section-soft px-4 py-10">
           <Reveal className="text-center mb-6">
             <h2 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Bibliothèque populaire")}</h2>
             <p className="text-sm text-muted-foreground">{t("Les chansons les plus écoutées")}</p>
@@ -293,23 +273,7 @@ export default function LandingPageMobile({
           <div className="flex flex-col gap-3">
             {librarySongs.map((s, i) => (
               <Reveal key={s.slug} delay={i * 80}>
-                <Link
-                  href={`/s/${s.slug}`}
-                  className="landing-card-hover bg-card border border-border rounded-xl p-3 flex items-center gap-3"
-                >
-                  <div className="landing-icon-gradient w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon i="music-2" size={18} className="text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm text-foreground truncate">{s.title}</p>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Icon i="headphones" size={10} /> {s.plays}
-                    </span>
-                  </div>
-                  {s.audioUrl ? (
-                    <LandingInlinePlayButton audioUrl={s.audioUrl} title={s.title} compact className="flex-shrink-0" />
-                  ) : null}
-                </Link>
+                <LandingLibraryCard song={s} size="sm" />
               </Reveal>
             ))}
           </div>

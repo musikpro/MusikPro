@@ -1,5 +1,6 @@
 "use client";
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
+import { buildSongTitle } from "@/lib/ai/song-title";
+import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { demoLibrarySongs, demoDiscoverSongs, demoFavoriteSongs, demoLyrics } from "@/lib/demo/musikpro-data";
 import { InlineNotice } from "@/components/ui/inline-notice";
@@ -8,18 +9,19 @@ import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
 import { demoCreationChoicesSchema, buildDemoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
-import { creditCurrencies, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
+import { DEFAULT_CURRENCIES, type CreditCurrency, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
 import type { OccasionOption } from "@/lib/occasions/catalog";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import type { RecipientRelationOption } from "@/lib/recipient-relations/catalog";
-import type { LibraryCollectionOption } from "@/lib/library-collections/catalog";
+import type { DiscoverSong } from "@/lib/discover/types";
+import { formatPlays } from "@/lib/trending/format";
 import type { LanguageOption } from "@/lib/languages/catalog";
 import type { PhonePrefixOption } from "@/lib/phone-prefixes/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
 import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 
-type SongGroupResponse = {
+export type SongGroupResponse = {
   songGroupId: string;
   title: string;
   occasion: string | null;
@@ -79,7 +81,7 @@ function useDemoState(
   initialOccasions: OccasionOption[],
   initialMusicStyles: MusicStyleOption[],
   initialRecipientRelations: RecipientRelationOption[],
-  initialLibraryCollections: LibraryCollectionOption[],
+  initialDiscoverSongs: DiscoverSong[],
   initialInterfaceLanguages: LanguageOption[],
   initialLyricsLanguages: LanguageOption[],
   initialDetectedInterfaceLanguage: LanguageOption | null,
@@ -88,7 +90,10 @@ function useDemoState(
   versionsPerGeneration: number,
   initialPhonePrefixes: PhonePrefixOption[],
   initialDetectedCurrency: CreditCurrencyCode | null,
+  currencies: CreditCurrency[],
   storeLinks: StoreLinks,
+  generationRedirectDelaySeconds: number,
+  generationPollIntervalMs: number,
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -238,9 +243,9 @@ function useDemoState(
   useEffect(() => {
     let active = true;
     const savedCurrency = window.localStorage.getItem(`musikpro:currency:${persistenceId}`);
-    const savedValid = creditCurrencies.some((currency) => currency.code === savedCurrency);
+    const savedValid = currencies.some((currency) => currency.code === savedCurrency);
     const detectedValid = initialDetectedCurrency
-      ? creditCurrencies.some((currency) => currency.code === initialDetectedCurrency)
+      ? currencies.some((currency) => currency.code === initialDetectedCurrency)
       : false;
     const selected = savedValid
       ? (savedCurrency as CreditCurrencyCode)
@@ -254,9 +259,55 @@ function useDemoState(
     return () => {
       active = false;
     };
-  }, [initialDetectedCurrency, persistenceId]);
+  }, [initialDetectedCurrency, persistenceId, currencies]);
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);
+  // Keeps the displayed credits in sync with the database (payments credited by the gateway webhook,
+  // generations debiting 2 credits, refunds) without a page reload. Real workspace only: the demo
+  // has its own local, simulated balance.
+  useEffect(() => {
+    if (isDemo) return;
+    let stopped = false;
+    let inFlight = false;
+    let lastBalance: number | undefined;
+    const refresh = async () => {
+      if (stopped || inFlight || document.visibilityState === "hidden") return;
+      inFlight = true;
+      try {
+        const result = await apiFetch<{ balance: number }>("/api/credits/balance", { timeoutMs: 8_000, retries: 0 });
+        if (!stopped && Number.isFinite(result.balance)) {
+          // A higher balance means a purchase was credited: also refresh the server-rendered parts of the page
+          // (e.g. the purchase history on the credits page).
+          if (lastBalance !== undefined && result.balance > lastBalance) router.refresh();
+          lastBalance = result.balance;
+          setBalance(result.balance);
+        }
+      } catch {
+        // Informative refresh only: keep the last known balance on any network or auth error.
+      } finally {
+        inFlight = false;
+      }
+    };
+    void refresh();
+    const steady = window.setInterval(refresh, 15_000);
+    // Coming back from the payment page: the gateway confirmation can lag a few seconds, poll faster for a while.
+    const justPaid = new URLSearchParams(window.location.search).get("payment") === "success";
+    const fast = justPaid ? window.setInterval(refresh, 3_000) : undefined;
+    const stopFast = justPaid ? window.setTimeout(() => fast && window.clearInterval(fast), 120_000) : undefined;
+    const onVisible = () => {
+      if (document.visibilityState === "visible") void refresh();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("focus", onVisible);
+    return () => {
+      stopped = true;
+      window.clearInterval(steady);
+      if (fast) window.clearInterval(fast);
+      if (stopFast) window.clearTimeout(stopFast);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("focus", onVisible);
+    };
+  }, [isDemo, router]);
   const [songs, setSongs] = useState(() => defaults.songs);
   const [favorites, setFavorites] = useState<(string | number)[]>(() => defaults.favorites);
   const [versionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
@@ -281,6 +332,7 @@ function useDemoState(
   const [coupon, setCoupon] = useState<{ code: string; discountAmount: number; finalAmount: number } | null>(null);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [lyricsPending, setLyricsPending] = useState(false);
+  const [removedDiscoverIds, setRemovedDiscoverIds] = useState<string[]>([]);
   const library = isDemo
     ? [
         ...demoLibrarySongs,
@@ -304,12 +356,35 @@ function useDemoState(
             likes: 0,
           })),
       ]
-    : [];
+    : initialDiscoverSongs
+        .filter((song) => !removedDiscoverIds.includes(song.songGroupId))
+        .map((song) => ({
+          id: song.songGroupId as string | number,
+          title: song.title,
+          plays: formatPlays(song.plays),
+          style: song.style ?? "",
+          img: "",
+          cover: song.coverUrl,
+          duration: "",
+          artist: "Communauté MusikPro",
+          likes: 0,
+          audioUrl: song.audioUrl as string | null,
+          mine: song.mine,
+        }));
+  /** Owner-side removal from "Découvrir": the song stays in "Mes chansons", it just stops being listed. */
+  const removeFromDiscover = async (songGroupId: string) => {
+    try {
+      await apiFetch(`/api/songs/${songGroupId}/discover`, { method: "DELETE", timeoutMs: 15_000 });
+      setRemovedDiscoverIds((prev) => [...prev, songGroupId]);
+      notify("Chanson retirée de Découvrir.");
+    } catch (error) {
+      notify(error instanceof ApiClientError ? error.message : "Impossible de retirer cette chanson pour le moment.");
+    }
+  };
   const songPacks = initialCreditPlans;
   const occasions = initialOccasions;
   const musicStyles = initialMusicStyles;
   const recipientRelations = initialRecipientRelations;
-  const libraryCollections = initialLibraryCollections;
   const interfaceLanguages = initialInterfaceLanguages;
   const phonePrefixes = initialPhonePrefixes;
   const lyricsLanguages = initialLyricsLanguages;
@@ -346,6 +421,7 @@ function useDemoState(
           title: owned.title,
           style: owned.style,
           img: "",
+          cover: owned.coverUrl ?? null,
           duration: ownedVersion?.duration ?? "1m 32s",
           artist: profile.name,
           likes: ownedVersion?.plays ?? 0,
@@ -354,6 +430,7 @@ function useDemoState(
         }
       : {
           audioUrl: null as string | null,
+          cover: null as string | null,
           status: "completed" as const,
           ...(library.find((s) => s.id === selectedSongId) ?? {
             id: selectedSongId,
@@ -500,13 +577,78 @@ function useDemoState(
   };
   const refreshSongs = async () => {
     if (isDemo) return;
-    try {
-      const result = await apiFetch<{ songs: SongGroupResponse[] }>("/api/songs", { timeoutMs: 20_000 });
-      setSongs(result.songs.map(mapSongGroup));
-    } catch {
-      // A failed background refresh must not disrupt the current screen.
+    // A failed background refresh must not disrupt the current screen, but it must not leave the library
+    // stale either (a generating song would stay invisible): retry a couple of times before giving up.
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const result = await apiFetch<{ songs: SongGroupResponse[] }>("/api/songs", { timeoutMs: 45_000 });
+        setSongs(result.songs.map(mapSongGroup));
+        return;
+      } catch {
+        await new Promise((resolve) => window.setTimeout(resolve, 3_000));
+      }
     }
   };
+  /**
+   * Drops one freshly polled song straight into the library so the generation screen can leave the
+   * instant its MP3 is delivered, instead of first waiting on a full-list refresh (which itself
+   * re-polls Musicful for every pending job and can take many seconds).
+   */
+  const applySongGroup = (group: SongGroupResponse) => {
+    if (isDemo) return;
+    const mapped = mapSongGroup(group);
+    setSongs((prev) => (prev.some((s) => s.id === mapped.id) ? prev.map((s) => (s.id === mapped.id ? mapped : s)) : [mapped, ...prev]));
+  };
+  // A generation takes a few minutes: while any song still has a version "processing", keep it fresh from
+  // here (one poller for every screen: player, "Mes chansons", home...) so a finished song shows up by
+  // itself, without reloading the page. Only the pending song(s) are fetched (light /api/songs/[groupId]),
+  // never the whole library. Requests never overlap (the next one is scheduled after the previous ended)
+  // and the loop pauses while the tab is hidden.
+  const processingIds = songs
+    .filter((song) => song.status === "processing" || song.versions.some((version) => version.status === "processing"))
+    .map((song) => String(song.id));
+  const processingKey = processingIds.join("|");
+  const applySongGroupRef = useRef(applySongGroup);
+  useEffect(() => {
+    applySongGroupRef.current = applySongGroup;
+  });
+  useEffect(() => {
+    if (isDemo || !processingKey) return;
+    const ids = processingKey.split("|");
+    let stopped = false;
+    let timer: number | undefined;
+    const tick = async () => {
+      if (stopped) return;
+      if (document.visibilityState !== "hidden") {
+        await Promise.all(
+          ids.map(async (id) => {
+            try {
+              const result = await apiFetch<{ song: SongGroupResponse }>(`/api/songs/${encodeURIComponent(id)}`, {
+                timeoutMs: 25_000,
+                retries: 0,
+              });
+              if (!stopped) applySongGroupRef.current(result.song);
+            } catch {
+              // Background refresh only: try again on the next tick.
+            }
+          }),
+        );
+      }
+      if (!stopped) timer = window.setTimeout(tick, 4_000);
+    };
+    timer = window.setTimeout(tick, 4_000);
+    const onVisible = () => {
+      if (document.visibilityState !== "visible" || stopped) return;
+      window.clearTimeout(timer);
+      void tick();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      stopped = true;
+      window.clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+  }, [isDemo, processingKey]);
   useEffect(() => {
     // Real songs otherwise only ever load once a page happens to fetch them itself (e.g. the
     // full "Mes chansons" screen) — every other dashboard page (home, player, ...) reads
@@ -517,7 +659,7 @@ function useDemoState(
   }, [isDemo]);
   /** Demo-only instant fake generation, unchanged from the original scaffold. */
   const generateSong = async () => {
-    const title = `Ma chanson — ${choices.occasion}`;
+    const title = buildSongTitle({ recipientName: fields.recipientName, occasion: choices.occasion, genre: choices.genre });
     const existingId = songs.find((s) => s.title === title)?.id;
     const newId = existingId ?? songs.length + 1000;
     setSongs((prev) =>
@@ -559,6 +701,7 @@ function useDemoState(
         body: JSON.stringify({
           occasion: choices.occasion,
           genre: choices.genre,
+          recipientName: fields.recipientName,
           mood: choices.mood,
           voice: choices.voice,
           lyrics: fields.lyrics,
@@ -636,7 +779,10 @@ function useDemoState(
     isDemo,
     paymentBypassEnabled,
     versionsPerGeneration,
+    generationRedirectDelaySeconds,
+    generationPollIntervalMs,
     storeLinks,
+    currencies,
     balance,
     pathname,
     href,
@@ -654,7 +800,7 @@ function useDemoState(
     occasions,
     musicStyles,
     recipientRelations,
-    libraryCollections,
+    removeFromDiscover,
     interfaceLanguages,
     lyricsLanguages,
     phonePrefixes,
@@ -689,6 +835,7 @@ function useDemoState(
     generateLyrics,
     lyricsPending,
     refreshSongs,
+    applySongGroup,
     removeSong: async (id: string | number) => {
       const song = songs.find((s) => s.id === id);
       if (!song) return;
@@ -703,8 +850,14 @@ function useDemoState(
         await apiFetch(`/api/songs/${id}`, { method: "DELETE" });
         await refreshSongs();
         notify("Chanson retirée.");
-      } catch {
-        notify("Impossible de retirer cette chanson pour le moment.");
+      } catch (error) {
+        // A song the owner has placed somewhere (landing sections, Tendances, ambient music) is
+        // protected server-side; its message names where it is used.
+        notify(
+          error instanceof ApiClientError && error.code === "SONG_IN_USE"
+            ? error.message
+            : "Impossible de retirer cette chanson pour le moment.",
+        );
       }
     },
     publishSong: async (id: string | number, jobId?: string): Promise<string | null> => {
@@ -761,15 +914,18 @@ export function DemoProvider({
   initialOccasions,
   initialMusicStyles,
   initialRecipientRelations,
-  initialLibraryCollections,
+  initialDiscoverSongs,
   initialInterfaceLanguages,
   initialLyricsLanguages,
   initialDetectedInterfaceLanguage,
   persistenceId,
   paymentBypassEnabled = false,
   versionsPerGeneration = 1,
+  generationRedirectDelaySeconds = 180,
+  generationPollIntervalMs = 5_000,
   initialPhonePrefixes,
   initialDetectedCurrency,
+  initialCurrencies = DEFAULT_CURRENCIES,
   storeLinks = { googlePlayUrl: null, appStoreUrl: null },
 }: {
   children: ReactNode;
@@ -780,15 +936,18 @@ export function DemoProvider({
   initialOccasions: OccasionOption[];
   initialMusicStyles: MusicStyleOption[];
   initialRecipientRelations: RecipientRelationOption[];
-  initialLibraryCollections: LibraryCollectionOption[];
+  initialDiscoverSongs: DiscoverSong[];
   initialInterfaceLanguages: LanguageOption[];
   initialLyricsLanguages: LanguageOption[];
   initialDetectedInterfaceLanguage: LanguageOption | null;
   persistenceId: string;
   paymentBypassEnabled?: boolean;
   versionsPerGeneration?: number;
+  generationRedirectDelaySeconds?: number;
+  generationPollIntervalMs?: number;
   initialPhonePrefixes: PhonePrefixOption[];
   initialDetectedCurrency: CreditCurrencyCode | null;
+  initialCurrencies?: CreditCurrency[];
   storeLinks?: StoreLinks;
 }) {
   const state = useDemoState(
@@ -799,7 +958,7 @@ export function DemoProvider({
     initialOccasions,
     initialMusicStyles,
     initialRecipientRelations,
-    initialLibraryCollections,
+    initialDiscoverSongs,
     initialInterfaceLanguages,
     initialLyricsLanguages,
     initialDetectedInterfaceLanguage,
@@ -808,7 +967,10 @@ export function DemoProvider({
     versionsPerGeneration,
     initialPhonePrefixes,
     initialDetectedCurrency,
+    initialCurrencies,
     storeLinks,
+    generationRedirectDelaySeconds,
+    generationPollIntervalMs,
   );
   const [offline, setOffline] = useState(false);
   useEffect(() => {

@@ -15,6 +15,8 @@ export type TrendingSong = {
   coverUrl: string | null;
   style: string | null;
   occasion: string | null;
+  /** Published MP3 of this song — lets the client dashboard play it in its own internal player. */
+  audioUrl: string | null;
 };
 
 function shuffle<T>(items: T[]): T[] {
@@ -36,6 +38,7 @@ async function autoPool(limit: number): Promise<TrendingSong[]> {
       coverUrl: musicGenerationJobs.coverUrl,
       style: musicGenerationJobs.style,
       occasion: musicGenerationJobs.occasion,
+      audioUrl: musicGenerationJobs.audioUrl,
     })
     .from(songPublications)
     .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
@@ -49,6 +52,7 @@ async function autoPool(limit: number): Promise<TrendingSong[]> {
     coverUrl: row.coverUrl,
     style: extractGenreLabel(row.style),
     occasion: row.occasion,
+    audioUrl: row.audioUrl,
   }));
 }
 
@@ -64,6 +68,7 @@ async function manualPool(songGroupIds: string[]): Promise<TrendingSong[]> {
       coverUrl: musicGenerationJobs.coverUrl,
       style: musicGenerationJobs.style,
       occasion: musicGenerationJobs.occasion,
+      audioUrl: musicGenerationJobs.audioUrl,
     })
     .from(songPublications)
     .innerJoin(musicGenerationJobs, eq(musicGenerationJobs.id, songPublications.jobId))
@@ -79,6 +84,7 @@ async function manualPool(songGroupIds: string[]): Promise<TrendingSong[]> {
       coverUrl: row.coverUrl,
       style: extractGenreLabel(row.style),
       occasion: row.occasion,
+      audioUrl: row.audioUrl,
     }));
 }
 

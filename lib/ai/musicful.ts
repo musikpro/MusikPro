@@ -4,6 +4,8 @@ import { getServiceDb } from "@/db";
 import { audioProviderConfigs } from "@/db/schema";
 import { decryptSecret } from "./secrets";
 import { MusicfulApiError } from "./errors";
+import { getAudioProviderDefinition } from "./audio-providers/catalog";
+import { getActiveAudioProviderId } from "./audio-providers/active";
 
 export { MusicfulApiError };
 
@@ -182,22 +184,31 @@ function extractConversionUrl(response: unknown): string | null {
   return null;
 }
 
-export async function getMusicfulProvider() {
+/**
+ * Resolved settings (with the decrypted API key) of one audio provider row. Every provider shares
+ * the same `audio_provider_configs` shape; only the defaults (URL, model, env key) differ — see
+ * lib/ai/audio-providers/catalog.ts. `getMusicfulProvider()` below keeps the historical name.
+ */
+export async function getAudioProviderConfig(providerId: string) {
+  const definition = getAudioProviderDefinition(providerId);
   const [stored] = await getServiceDb()
     .select()
     .from(audioProviderConfigs)
-    .where(eq(audioProviderConfigs.provider, "musicful"))
+    .where(eq(audioProviderConfigs.provider, definition.id))
     .limit(1);
   const apiKey =
     stored?.apiKeyCiphertext && stored.apiKeyIv && stored.apiKeyAuthTag
       ? decryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
-      : process.env.MUSICFUL_API_KEY;
+      : definition.defaults.envKey
+        ? process.env[definition.defaults.envKey]
+        : undefined;
   return {
+    providerId: definition.id,
     config: stored,
     apiKey,
     enabled: stored ? stored.enabled : Boolean(apiKey),
-    baseUrl: stored?.apiBaseUrl || "https://api.musicful.ai",
-    model: stored?.defaultModel || "MFV3.0",
+    baseUrl: stored?.apiBaseUrl || definition.defaults.apiBaseUrl,
+    model: stored?.defaultModel || definition.defaults.model,
     defaultInstrumental: stored?.defaultInstrumental ?? false,
     defaultGender: (stored?.defaultGender as "male" | "female" | "" | null) ?? "",
     timeoutMs: stored?.requestTimeoutMs ?? 60_000,
@@ -213,8 +224,18 @@ export async function getMusicfulProvider() {
     preferredAudioFormat: (stored?.preferredAudioFormat as "native" | "wav" | null) ?? "native",
     strictStyleAdherence: stored?.strictStyleAdherence ?? true,
     versionsPerGeneration: stored?.versionsPerGeneration ?? 1,
+    redirectDelaySeconds: stored?.redirectDelaySeconds ?? 180,
     keepExtraGeneratedVariant: stored?.keepExtraGeneratedVariant ?? true,
   };
+}
+
+export async function getMusicfulProvider() {
+  return getAudioProviderConfig("musicful");
+}
+
+/** Settings of the provider that currently receives new generations. */
+export async function getActiveAudioProvider() {
+  return getAudioProviderConfig(await getActiveAudioProviderId());
 }
 
 /**
@@ -226,11 +247,40 @@ export async function getMusicfulVersionsPerGeneration(): Promise<number> {
     const [stored] = await getServiceDb()
       .select({ versionsPerGeneration: audioProviderConfigs.versionsPerGeneration })
       .from(audioProviderConfigs)
-      .where(eq(audioProviderConfigs.provider, "musicful"))
+      .where(eq(audioProviderConfigs.provider, await getActiveAudioProviderId()))
       .limit(1);
     return stored?.versionsPerGeneration ?? 1;
   } catch {
     return 1;
+  }
+}
+
+/**
+ * Secret-free settings the customer-facing "generation in progress" screen needs: how long to wait
+ * for the MP3 before redirecting to "Mes chansons", and how often to ask for its status. Bounds
+ * mirror the admin validation so a hand-edited row can never produce a 0s (instant) or endless wait.
+ */
+export async function getMusicfulGenerationScreenSettings(): Promise<{
+  redirectDelaySeconds: number;
+  pollingIntervalMs: number;
+}> {
+  const fallback = { redirectDelaySeconds: 180, pollingIntervalMs: 5_000 };
+  try {
+    const [stored] = await getServiceDb()
+      .select({
+        redirectDelaySeconds: audioProviderConfigs.redirectDelaySeconds,
+        pollingIntervalMs: audioProviderConfigs.pollingIntervalMs,
+      })
+      .from(audioProviderConfigs)
+      .where(eq(audioProviderConfigs.provider, await getActiveAudioProviderId()))
+      .limit(1);
+    if (!stored) return fallback;
+    return {
+      redirectDelaySeconds: Math.min(1_800, Math.max(10, stored.redirectDelaySeconds)),
+      pollingIntervalMs: Math.min(15_000, Math.max(2_000, stored.pollingIntervalMs)),
+    };
+  } catch {
+    return fallback;
   }
 }
 

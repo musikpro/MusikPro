@@ -293,6 +293,7 @@ export async function saveMusicfulSettings(
       maxGenerationsPerUserPerHour: parsed.maxGenerationsPerUserPerHour,
       maxConcurrentJobs: parsed.maxConcurrentJobs,
       versionsPerGeneration: parsed.versionsPerGeneration,
+      redirectDelaySeconds: parsed.redirectDelaySeconds,
       keepExtraGeneratedVariant: parsed.keepExtraGeneratedVariant === "true",
       ...(encrypted
         ? {
@@ -316,6 +317,7 @@ export async function saveMusicfulSettings(
         model: values.defaultModel,
         keyReplaced: Boolean(encrypted),
         versionsPerGeneration: values.versionsPerGeneration,
+        redirectDelaySeconds: values.redirectDelaySeconds,
         keepExtraGeneratedVariant: values.keepExtraGeneratedVariant,
       },
     });

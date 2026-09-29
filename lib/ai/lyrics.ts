@@ -2,7 +2,12 @@ import "server-only";
 import type { AiLyricsTask } from "@/lib/validation/ai";
 import { getLyricsProvider } from "./provider";
 import { runProviderTextTask } from "./text-generation";
-import { enforceLyricsWordLimit, LYRICS_MAX_WORDS } from "./lyrics-policy";
+import {
+  enforceLyricsWordLimit,
+  LYRICS_MAX_WORDS,
+  stripLyricsMarkdown,
+  UNKNOWN_WORDS_PRONUNCIATION_RULE,
+} from "./lyrics-policy";
 import { moderateText } from "./moderation";
 import { writeAuditLog } from "@/lib/security/audit";
 
@@ -23,12 +28,12 @@ export function promptFor(task: AiLyricsTask) {
     `Détails supplémentaires: ${input.additionalDetails || "aucun"}`,
   ].join("\n");
   if (task.task === "lyrics.extend") {
-    return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nRallonge ces paroles avec des sections cohérentes, sans répéter inutilement le texte existant, et termine par un court outro qui referme la chanson en douceur (par exemple une reprise atténuée du refrain ou une dernière phrase conclusive) plutôt qu'une fin abrupte. Retourne la chanson complète et reste sous ${LYRICS_MAX_WORDS} mots au total.`;
+    return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nRallonge ces paroles avec des sections cohérentes, sans répéter inutilement le texte existant, et termine par un court outro qui referme la chanson en douceur (par exemple une reprise atténuée du refrain ou une dernière phrase conclusive) plutôt qu'une fin abrupte. Retourne la chanson complète et reste sous ${LYRICS_MAX_WORDS} mots au total.\n\n${UNKNOWN_WORDS_PRONUNCIATION_RULE}`;
   }
   if (task.task === "lyrics.rewrite") {
-    return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nConsigne de révision: ${task.input.instruction}`;
+    return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nConsigne de révision: ${task.input.instruction}\n\n${UNKNOWN_WORDS_PRONUNCIATION_RULE}`;
   }
-  return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain, pont si pertinent, et un court outro final qui referme la chanson en douceur — par exemple une reprise atténuée du refrain ou une dernière phrase conclusive — plutôt qu'une fin abrupte), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, à l'expéditeur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire ou celui de l'expéditeur est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.`;
+  return `${context}\n\nÉcris des paroles originales, chantables et structurées (couplets, refrain, pont si pertinent, et un court outro final qui referme la chanson en douceur — par exemple une reprise atténuée du refrain ou une dernière phrase conclusive — plutôt qu'une fin abrupte), sous ${LYRICS_MAX_WORDS} mots. Toutes les informations ci-dessus sont obligatoires: adapte clairement le texte à l'occasion, à l'histoire, au destinataire et à sa relation avec l'utilisateur, à l'expéditeur, au style, à l'ambiance, à la langue, à la voix et au souvenir. Chaque fois que le nom du destinataire ou celui de l'expéditeur est chanté, écris sa prononciation exacte fournie ci-dessus afin que le moteur audio la respecte.\n\n${UNKNOWN_WORDS_PRONUNCIATION_RULE}`;
 }
 
 export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
@@ -58,9 +63,9 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string) {
     throw new Error("CONTENT_BLOCKED_REQUEST");
   }
 
-  const instructions = `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
+  const instructions = `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. ${UNKNOWN_WORDS_PRONUNCIATION_RULE} N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
   const raw = await runProviderTextTask(provider, instructions, promptFor(task));
-  const result = { ...raw, text: enforceLyricsWordLimit(raw.text) };
+  const result = { ...raw, text: enforceLyricsWordLimit(stripLyricsMarkdown(raw.text)) };
 
   const resultVerdict = await moderateText(result.text, "Paroles de chanson générées");
   if (resultVerdict.flagged) {

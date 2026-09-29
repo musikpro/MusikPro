@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { parsePhoneNumberFromString, type CountryCode } from "libphonenumber-js";
 import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
@@ -11,10 +11,16 @@ export const screenSize = "mobile";
 
 import Icon from "./Icon";
 
+// Set when a Chariow checkout was opened from this screen: coming back with the browser's Back button must not
+// bounce the customer straight to Chariow again (and must not create a second order).
+const CHECKOUT_STARTED_KEY = "musikpro:chariow-checkout-started";
+
 export default function PaymentRedirectScreen() {
   const demo = useDemo();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
+  const [resumable, setResumable] = useState(false);
+  const autoStarted = useRef(false);
   const startCheckout = async () => {
     if (!demo.pack || pending) return;
     if (demo.isDemo) {
@@ -45,12 +51,31 @@ export default function PaymentRedirectScreen() {
         }),
       });
       if (!result.checkoutUrl) throw new Error("Chariow n’a pas retourné de page de paiement.");
+      try {
+        window.sessionStorage.setItem(CHECKOUT_STARTED_KEY, String(Date.now()));
+      } catch {}
       window.location.assign(result.checkoutUrl);
     } catch (cause) {
+      setResumable(true);
       setError(cause instanceof Error ? cause.message : "Le paiement Chariow n’a pas pu démarrer.");
       setPending(false);
     }
   };
+  // One click on "Aller au paiement" is enough: the Chariow checkout opens by itself (real mode only).
+  useEffect(() => {
+    if (autoStarted.current || demo.isDemo || !demo.pack) return;
+    autoStarted.current = true;
+    let alreadyStarted = false;
+    try {
+      alreadyStarted = Boolean(window.sessionStorage.getItem(CHECKOUT_STARTED_KEY));
+    } catch {}
+    if (alreadyStarted) {
+      setResumable(true);
+      return;
+    }
+    void startCheckout();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [demo.isDemo, demo.pack]);
   if (!demo.pack) {
     return (
       <div className="bg-surface flex min-h-full items-center justify-center px-4 py-12">
@@ -86,7 +111,9 @@ export default function PaymentRedirectScreen() {
 
         {/* Title */}
         <div>
-          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Redirection en cours…")}</h1>
+          <h1 className="font-headings font-bold text-2xl text-foreground mb-2">
+            {resumable && !pending ? t("Paiement en attente") : t("Redirection en cours…")}
+          </h1>
           <p className="text-sm text-muted-foreground">
             {t("Vous serez redirigé vers Chariow pour finaliser votre paiement")}
           </p>
@@ -115,7 +142,11 @@ export default function PaymentRedirectScreen() {
               <p className="text-sm font-semibold text-foreground">{t("Effectuez votre paiement")}</p>
               <p className="text-xs text-muted-foreground">
                 {translateTemplate("Montant : ≈ {amount}", {
-                  amount: formatDemoPackPrice(demo.coupon?.finalAmount ?? demo.pack.priceValue, demo.choices.currency),
+                  amount: formatDemoPackPrice(
+                    demo.coupon?.finalAmount ?? demo.pack.priceValue,
+                    demo.choices.currency,
+                    demo.currencies,
+                  ),
                 })}
                 {demo.coupon ? ` (code ${demo.coupon.code} appliqué)` : ""}
               </p>
@@ -146,19 +177,33 @@ export default function PaymentRedirectScreen() {
 
       {/* Footer */}
       <div className="px-4 pb-6 space-y-3 border-t border-border">
-        <p className="text-xs text-center text-muted-foreground">
-          {t("Si vous n'êtes pas redirigé automatiquement, cliquez sur le bouton ci-dessous")}
-        </p>
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={startCheckout}
-          disabled={pending}
-          className="w-full py-3 bg-primary text-primary-foreground font-semibold text-sm rounded-lg flex items-center justify-center gap-2"
-        >
-          <Icon i="external-link" size={16} />{" "}
-          {pending ? t("Connexion à Chariow…") : demo.isDemo ? t("Simuler la confirmation") : t("Payer avec Chariow")}
-        </button>
+        {demo.isDemo || resumable || error ? (
+          <>
+            {!demo.isDemo && (
+              <p className="text-xs text-center text-muted-foreground">
+                {t("Si vous n'êtes pas redirigé automatiquement, cliquez sur le bouton ci-dessous")}
+              </p>
+            )}
+            <button
+              type="button"
+              data-demo-ready="true"
+              onClick={startCheckout}
+              disabled={pending}
+              className="w-full py-3 bg-primary text-primary-foreground font-semibold text-sm rounded-lg flex items-center justify-center gap-2"
+            >
+              <Icon i="external-link" size={16} />{" "}
+              {pending
+                ? t("Connexion à Chariow…")
+                : demo.isDemo
+                  ? t("Simuler la confirmation")
+                  : t("Reprendre le paiement")}
+            </button>
+          </>
+        ) : (
+          <p className="pt-3 text-xs text-center text-muted-foreground" role="status">
+            {t("Connexion à Chariow…")}
+          </p>
+        )}
         {error && (
           <p role="alert" className="text-sm text-red-700">
             {error}
@@ -167,7 +212,12 @@ export default function PaymentRedirectScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.go("/dashboard")}
+          onClick={() => {
+            try {
+              window.sessionStorage.removeItem(CHECKOUT_STARTED_KEY);
+            } catch {}
+            demo.go("/dashboard");
+          }}
           className="w-full py-3 bg-secondary text-primary font-semibold text-sm rounded-lg"
         >
           {t("Annuler")}

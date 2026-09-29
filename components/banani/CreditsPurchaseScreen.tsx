@@ -1,8 +1,9 @@
 "use client";
 import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
 import Image from "next/image";
-import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
+import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
+import type { CreditHistoryEntry } from "@/lib/credits/history";
 
 export const displayName = "Crédits & tarifs";
 export const screenSize = "mobile";
@@ -34,10 +35,21 @@ const transactionHistory = [
   },
 ];
 
-export default function CreditsMobile() {
+export default function CreditsMobile({ history = [] }: { history?: CreditHistoryEntry[] }) {
   const demo = useDemo();
   const availableGenerations = getGenerationCount(demo.balance);
-  const visibleHistory = demo.isDemo ? transactionHistory : [];
+  const visibleHistory = demo.isDemo
+    ? transactionHistory
+    : history.map((entry) => ({
+        date: new Date(entry.date).toLocaleDateString(typeof document === "undefined" ? "fr" : document.documentElement.lang || "fr", {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
+        action: translateTemplate("Achat de crédits {plan}", { plan: entry.planName }),
+        credits: entry.credits,
+        type: entry.type,
+      }));
   return (
     <div className="bg-background flex flex-col">
       <MobileTopBar credits={demo.balance} />
@@ -110,7 +122,7 @@ export default function CreditsMobile() {
             showSelectionMark={false}
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
-            options={demoCurrencies.map((currency) => ({
+            options={demo.currencies.map((currency) => ({
               value: currency.code,
               label: currency.label,
               display: currency.symbol,
@@ -171,7 +183,7 @@ export default function CreditsMobile() {
 
                 <div className="pack-grid-card-footer">
                   <span className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}>
-                    {formatDemoPackPrice(pack.priceValue, demo.choices.currency)}
+                    {formatDemoPackPrice(pack.priceValue, demo.choices.currency, demo.currencies)}
                   </span>
                   <span className="pack-grid-card-status">
                     {demo.pack?.id === pack.id ? <span>{t("Sélectionné")}</span> : <Icon i="arrow-right" size={14} />}

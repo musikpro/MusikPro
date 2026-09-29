@@ -1,12 +1,30 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Icon from "@/components/banani/Icon";
-import { isOccasionEmoji, OCCASION_EMOJI_OPTIONS, type OccasionEmoji } from "@/lib/occasions/catalog";
+import { OCCASION_EMOJI_OPTIONS as CATALOG_EMOJI_OPTIONS } from "@/lib/occasions/catalog";
 
-export default function AdminOccasionEmojiPicker({ defaultEmoji = "🎉" }: { defaultEmoji?: string }) {
-  const [emoji, setEmoji] = useState<OccasionEmoji>(isOccasionEmoji(defaultEmoji) ? defaultEmoji : "🎉");
+/**
+ * Emoji dropdown shared by the occasion form and the hero animated-text form. `subject` only
+ * changes the accessible wording ("de l'occasion" / "du texte animé"). An existing emoji that
+ * isn't in the catalog list is kept as an extra "Emoji actuel" option, so saving never swaps it.
+ */
+export default function AdminOccasionEmojiPicker({
+  defaultEmoji = "🎉",
+  subject = "de l’occasion",
+}: {
+  defaultEmoji?: string;
+  subject?: string;
+}) {
+  const OCCASION_EMOJI_OPTIONS = useMemo(
+    () =>
+      CATALOG_EMOJI_OPTIONS.some((option) => option.value === defaultEmoji)
+        ? CATALOG_EMOJI_OPTIONS
+        : [{ value: defaultEmoji, label: "Emoji actuel" }, ...CATALOG_EMOJI_OPTIONS],
+    [defaultEmoji],
+  );
+  const [emoji, setEmoji] = useState<string>(defaultEmoji);
   const [open, setOpen] = useState(false);
   const [highlighted, setHighlighted] = useState(() =>
     Math.max(
@@ -19,7 +37,7 @@ export default function AdminOccasionEmojiPicker({ defaultEmoji = "🎉" }: { de
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
-  const selected = OCCASION_EMOJI_OPTIONS.find((option) => option.value === emoji) ?? OCCASION_EMOJI_OPTIONS[3];
+  const selected = OCCASION_EMOJI_OPTIONS.find((option) => option.value === emoji) ?? OCCASION_EMOJI_OPTIONS[0];
 
   const placeMenu = () => {
     const rect = triggerRef.current?.getBoundingClientRect();
@@ -81,7 +99,7 @@ export default function AdminOccasionEmojiPicker({ defaultEmoji = "🎉" }: { de
       className="admin-visual-select-menu is-emoji"
       style={position}
       role="listbox"
-      aria-label="Emoji de l’occasion"
+      aria-label={`Emoji ${subject}`}
       aria-activedescendant={`${menuId}-option-${highlighted}`}
       tabIndex={-1}
       onKeyDown={(event) => {
@@ -135,7 +153,7 @@ export default function AdminOccasionEmojiPicker({ defaultEmoji = "🎉" }: { de
       <input type="hidden" name="emoji" value={emoji} />
       <div className="admin-style-dropdown-field">
         <span>Emoji</span>
-        <p>Déroule la liste pour choisir parmi {OCCASION_EMOJI_OPTIONS.length} emojis adaptés aux occasions.</p>
+        <p>Déroule la liste pour choisir parmi {OCCASION_EMOJI_OPTIONS.length} emojis.</p>
         <div ref={rootRef} className={`admin-visual-select ${open ? "is-open" : ""}`}>
           <button
             ref={triggerRef}
@@ -145,7 +163,7 @@ export default function AdminOccasionEmojiPicker({ defaultEmoji = "🎉" }: { de
             aria-haspopup="listbox"
             aria-expanded={open}
             aria-controls={menuId}
-            aria-label="Choisir l’emoji de l’occasion"
+            aria-label={`Choisir l’emoji ${subject}`}
             onClick={() => (open ? setOpen(false) : openMenu())}
             onKeyDown={(event) => {
               if (["ArrowDown", "ArrowUp", "Enter", " "].includes(event.key)) {

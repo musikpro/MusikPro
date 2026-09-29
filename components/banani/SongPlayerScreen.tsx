@@ -28,16 +28,12 @@ export default function SongPlayerScreen() {
   const isReal = !demo.isDemo;
   const isPending = isReal && currentSong?.status && currentSong.status !== "completed";
   const audioUrl = isReal ? currentSong?.audioUrl : null;
+  // Partage et téléchargement sont réservés au compte propriétaire : une chanson de la communauté
+  // (Découvrir, Tendances…) reste écoutable mais n'est ni téléchargeable ni partageable par les autres.
+  const canExport = !isReal || demo.songs.some((song) => song.id === currentSong?.id);
 
-  // A visitor can land here (e.g. redirected straight from the generating screen) while the
-  // song is still "processing" — without this, the screen would freeze on "Génération en
-  // cours…" forever, since nothing else polls while this screen is mounted. Mirrors the same
-  // pattern already used on the songs list (MySongsGeneratedScreen).
-  useEffect(() => {
-    if (demo.isDemo || currentSong?.status !== "processing") return;
-    const timer = window.setInterval(() => void demo.refreshSongs(), 4000);
-    return () => window.clearInterval(timer);
-  }, [demo, currentSong?.status]);
+  // A visitor can land here while the song is still "processing": DemoProvider polls the library until
+  // every version is done, so this screen switches to the player by itself, without a reload.
 
   useEffect(() => {
     const audio = audioRef.current;
@@ -94,7 +90,10 @@ export default function SongPlayerScreen() {
         {/* Album Art */}
         <div className="workspace-album-art px-4 pb-8 flex-1 flex items-center justify-center">
           <div className="w-56 h-56 rounded-3xl overflow-hidden shadow-2xl">
-            {currentSong.img ? (
+            {currentSong.cover ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={currentSong.cover} alt="" className="w-full h-full object-cover" />
+            ) : currentSong.img ? (
               <Image ar="1:1" prompt={currentSong.img} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-secondary flex items-center justify-center">
@@ -235,43 +234,45 @@ export default function SongPlayerScreen() {
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 pb-6 flex items-center justify-center gap-3">
-          <button
-            type="button"
-            data-demo-ready="true"
-            disabled={Boolean(isPending)}
-            onClick={async () => {
-              if (!audioUrl) {
-                demo.notify("Action de démonstration : aucune opération réelle effectuée.");
-                return;
-              }
-              const result = await shareAudioFile(audioUrl, currentSong.title);
-              if (result === "copied") demo.notify("Lien de la chanson copié dans le presse-papiers.");
-              if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
-            }}
-            className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            <Icon i="share-2" size={16} />
-            {t("Partager")}
-          </button>
-          <button
-            type="button"
-            data-demo-ready="true"
-            disabled={Boolean(isPending)}
-            onClick={async () => {
-              if (!audioUrl) {
-                demo.notify("Action de démonstration : aucune opération réelle effectuée.");
-                return;
-              }
-              const ok = await downloadAudioFile(audioUrl, currentSong.title);
-              if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
-            }}
-            className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            <Icon i="download" size={16} />
-            {t("Télécharger")}
-          </button>
-        </div>
+        {canExport ? (
+          <div className="px-4 pb-6 flex items-center justify-center gap-3">
+            <button
+              type="button"
+              data-demo-ready="true"
+              disabled={Boolean(isPending)}
+              onClick={async () => {
+                if (!audioUrl) {
+                  demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                  return;
+                }
+                const result = await shareAudioFile(audioUrl, currentSong.title);
+                if (result === "copied") demo.notify("Lien de la chanson copié dans le presse-papiers.");
+                if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
+              }}
+              className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Icon i="share-2" size={16} />
+              {t("Partager")}
+            </button>
+            <button
+              type="button"
+              data-demo-ready="true"
+              disabled={Boolean(isPending)}
+              onClick={async () => {
+                if (!audioUrl) {
+                  demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                  return;
+                }
+                const ok = await downloadAudioFile(audioUrl, currentSong.title);
+                if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
+              }}
+              className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Icon i="download" size={16} />
+              {t("Télécharger")}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {/* Queue/Up Next */}

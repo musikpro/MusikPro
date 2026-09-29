@@ -10,16 +10,26 @@ import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 
+/** Emoji of each mood, keyed by its canonical French label — shared with the "Paramètres" step header. */
+export const MOOD_EMOJIS: Record<string, string> = {
+  Énergique: "🚀",
+  Romantique: "💕",
+  Épique: "👑",
+  Joyeuse: "😂",
+  Dramatique: "🎭",
+  Mystique: "🌙",
+};
+
 export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[] }) {
   const demo = useDemo();
   const hasSelectedGenre = genres.some((genre) => genre.name === demo.choices.genre);
   const moods = [
-    { emoji: "🚀", label: "Énergique", desc: t("Upbeat") },
-    { emoji: "💕", label: "Romantique", desc: t("Tender") },
-    { emoji: "👑", label: "Épique", desc: t("Majestic") },
-    { emoji: "😂", label: "Joyeuse", desc: t("Fun") },
-    { emoji: "🎭", label: "Dramatique", desc: t("Epic") },
-    { emoji: "🌙", label: "Mystique", desc: t("Magical") },
+    { emoji: MOOD_EMOJIS["Énergique"], label: "Énergique", desc: t("Upbeat") },
+    { emoji: MOOD_EMOJIS["Romantique"], label: "Romantique", desc: t("Tender") },
+    { emoji: MOOD_EMOJIS["Épique"], label: "Épique", desc: t("Majestic") },
+    { emoji: MOOD_EMOJIS["Joyeuse"], label: "Joyeuse", desc: t("Fun") },
+    { emoji: MOOD_EMOJIS["Dramatique"], label: "Dramatique", desc: t("Epic") },
+    { emoji: MOOD_EMOJIS["Mystique"], label: "Mystique", desc: t("Magical") },
   ];
   const hasSelectedMood = moods.some((mood) => mood.label === demo.choices.mood);
   return (

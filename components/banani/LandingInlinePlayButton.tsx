@@ -16,14 +16,21 @@ export default function LandingInlinePlayButton({
   title,
   compact = false,
   className = "",
+  onPlayingChange,
 }: {
   audioUrl: string;
   title: string;
   compact?: boolean;
   className?: string;
+  /** Lets the card around the button react (e.g. show a mini visualizer) while the song plays. */
+  onPlayingChange?: (playing: boolean) => void;
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [playing, setPlaying] = useState(false);
+  const [playing, setPlayingState] = useState(false);
+  const setPlaying = (value: boolean) => {
+    setPlayingState(value);
+    onPlayingChange?.(value);
+  };
 
   const stop = () => {
     audioRef.current?.pause();

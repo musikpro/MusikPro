@@ -1,10 +1,11 @@
 "use client";
+import { MOOD_EMOJIS } from "./StepStyleAndMood";
 import { useEffect, useState } from "react";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 import DemoField from "./DemoField";
-import { demoDetailSchema } from "@/lib/validation/musikpro-demo";
+import { DEMO_DETAIL_MAX_CHARACTERS, demoDetailSchema } from "@/lib/validation/musikpro-demo";
 
 export const displayName = "Étape 5 — Paramètres additionnels";
 export const screenSize = "mobile";
@@ -38,7 +39,7 @@ export default function StepAdditionalParams() {
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
           {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)}
-          {demo.choices.mood ? ` • 🚀 ${t(demo.choices.mood)}` : ""}
+          {demo.choices.mood ? ` • ${MOOD_EMOJIS[demo.choices.mood] ?? "🎶"} ${t(demo.choices.mood)}` : ""}
         </span>
       </div>
 
@@ -105,7 +106,7 @@ export default function StepAdditionalParams() {
               label={t("Souvenir spécial avec cette personne")}
               multiline
               rows={2}
-              maxLength={3000}
+              maxLength={DEMO_DETAIL_MAX_CHARACTERS}
               ariaInvalid={Boolean(detailError)}
               describedBy={detailError ? "detail-special-error" : undefined}
               onValueChange={() => setDetailError("")}
@@ -116,7 +117,7 @@ export default function StepAdditionalParams() {
             <VoiceMicrophoneButton
               value={demo.fields.detail}
               onTranscript={(value) => {
-                demo.field("detail", value.slice(0, 3000));
+                demo.field("detail", value.slice(0, DEMO_DETAIL_MAX_CHARACTERS));
                 setDetailError("");
               }}
               onMessage={demo.notify}
@@ -130,9 +131,15 @@ export default function StepAdditionalParams() {
               {detailError}
             </InlineNotice>
           )}
-          <p className="text-xs text-muted-foreground mt-2">
-            {t("Quelques mots suffisent. Tu peux aussi laisser ce champ vide · Maximum 50 mots")}
-          </p>
+          <div className="story-field-meta">
+            <span>{t("Quelques mots suffisent. Tu peux aussi laisser ce champ vide")}</span>
+            <span className="flex-shrink-0">
+              {translateTemplate("{count} / {max} caractères", {
+                count: demo.fields.detail.length,
+                max: DEMO_DETAIL_MAX_CHARACTERS,
+              })}
+            </span>
+          </div>
         </div>
 
         {/* Tip */}

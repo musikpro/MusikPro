@@ -77,15 +77,17 @@ const chariowData = z.looseObject({
       amount: z.looseObject({ value: scalar, currency: text }).optional(),
       status: chariowStatus,
     })
-    .optional(),
-  payment: z.looseObject({ transaction_id: scalar, checkout_url: text }).optional(),
+    .nullish(),
+  payment: z.looseObject({ transaction_id: scalar, checkout_url: text }).nullish(),
 });
+// Chariow Pulse sends explicit `null` for blocks that do not apply (e.g. `"affiliate": null` on a sale
+// without affiliate): they must be accepted, otherwise the webhook fails and credits are never granted.
 export const chariowPayloadSchema = chariowData.extend({
-  data: chariowData.optional(),
+  data: chariowData.nullish(),
   event: text,
-  sale: entity.optional(),
-  license: entity.optional(),
-  affiliate: entity.optional(),
+  sale: entity.nullish(),
+  license: entity.nullish(),
+  affiliate: entity.nullish(),
 });
 const chariowProductPrice = z
   .union([z.number(), z.string().max(1000), z.looseObject({ value: scalar, currency: text })])

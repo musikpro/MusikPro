@@ -21,9 +21,10 @@ const testPhoneRules = [
 describe("frontières des saisies de démonstration MusikPro", () => {
   it("refuse une histoire vide ou trop longue et normalise les espaces", () => {
     expect(demoStorySchema.safeParse("   ").success).toBe(false);
-    expect(demoStorySchema.safeParse(Array(120).fill("mot").join(" ")).success).toBe(true);
-    expect(demoStorySchema.safeParse(Array(121).fill("mot").join(" ")).success).toBe(false);
-    expect(demoStorySchema.safeParse("a".repeat(1201)).success).toBe(false);
+    expect(demoStorySchema.safeParse("a".repeat(600)).success).toBe(true);
+    expect(demoStorySchema.safeParse("a".repeat(601)).success).toBe(false);
+    // Limit is in characters, not words: many short words under 600 characters still pass.
+    expect(demoStorySchema.safeParse(Array(150).fill("mot").join(" ")).success).toBe(true);
     expect(demoStorySchema.parse("  Une chanson pour ma famille  ")).toBe("Une chanson pour ma famille");
   });
   it("valide le destinataire et sa relation", () => {
@@ -54,7 +55,8 @@ describe("frontières des saisies de démonstration MusikPro", () => {
   it("borne les paroles et les détails en mots, y compris les sauts de ligne", () => {
     expect(demoLyricsSchema.safeParse(Array(DEMO_LYRICS_MAX_WORDS).fill("mot").join("\n")).success).toBe(true);
     expect(demoLyricsSchema.safeParse(Array(DEMO_LYRICS_MAX_WORDS + 1).fill("mot").join(" ")).success).toBe(false);
-    expect(demoDetailSchema.safeParse(Array(51).fill("mot").join("\n")).success).toBe(false);
+    expect(demoDetailSchema.safeParse("a".repeat(250)).success).toBe(true);
+    expect(demoDetailSchema.safeParse("a".repeat(251)).success).toBe(false);
     expect(demoDetailSchema.safeParse("").success).toBe(true);
   });
   it("refuse une catégorie inconnue et des coordonnées incorrectes", () => {

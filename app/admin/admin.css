@@ -1426,6 +1426,153 @@
   gap: 7px;
 }
 
+/* Shared modal shell + media picker (components/admin/AdminMediaPickerModal.tsx). */
+.admin-modal-backdrop {
+  position: fixed;
+  z-index: 2500;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(30 20 12 / 48%);
+}
+
+.admin-modal {
+  display: flex;
+  width: min(760px, 100%);
+  max-height: min(680px, calc(100dvh - 32px));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--admin-border);
+  border-radius: 18px;
+  background: var(--admin-card);
+  box-shadow: 0 24px 64px rgb(30 20 12 / 28%);
+}
+
+.admin-modal-head,
+.admin-modal-foot {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+}
+
+.admin-modal-head {
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.admin-modal-head strong {
+  display: block;
+  color: var(--admin-foreground);
+  font-size: 15px;
+}
+
+.admin-modal-head small {
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.admin-modal-close {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  color: var(--admin-foreground);
+  background: var(--admin-card);
+  cursor: pointer;
+}
+
+.admin-modal-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 16px 18px;
+}
+
+.admin-modal-foot {
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-modal-foot .admin-secondary-action {
+  width: auto;
+  padding: 0 18px;
+}
+
+.admin-modal-link {
+  color: var(--admin-primary);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.admin-modal-hint {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 28px 12px;
+  color: var(--admin-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.admin-modal-hint .admin-secondary-action {
+  width: auto;
+  padding: 0 16px;
+  text-decoration: none;
+}
+
+.admin-media-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+  gap: 10px;
+}
+
+.admin-media-picker-item {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: var(--admin-input);
+  aspect-ratio: 1;
+  cursor: pointer;
+}
+
+.admin-media-picker-item img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-media-picker-item:hover,
+.admin-media-picker-item:focus-visible {
+  border-color: var(--admin-primary);
+  outline: 0;
+}
+
+.admin-media-picker-item.is-selected {
+  border-color: var(--admin-primary);
+}
+
+.admin-media-picker-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 999px;
+  color: white;
+  background: var(--admin-primary);
+}
+
 .admin-landing-feature-cover-preview {
   width: 100%;
   max-width: 240px;
@@ -1539,6 +1686,10 @@
 .admin-tabs {
   display: grid;
   gap: 14px;
+  /* Inside a multi-column grid (e.g. a form using .admin-editor-grid) the tabs must span the whole
+     row; otherwise the tab bar is squeezed into a single column and its labels get clipped. */
+  grid-column: 1 / -1;
+  min-width: 0;
 }
 
 .admin-tabs-list {
@@ -1816,6 +1967,9 @@
 
 @media (max-width: 640px) {
   .admin-toast {
+    /* Above the sticky mobile header (z-index 200) and every other admin layer (highest: 2000) —
+       at the top of the screen the toast otherwise slid underneath the logo bar. */
+    z-index: 3000;
     top: max(12px, env(safe-area-inset-top));
     right: 12px;
     width: calc(100vw - 24px);
@@ -1823,6 +1977,7 @@
 }
 
 .admin-editor-field > span,
+.admin-combobox > label > span,
 .admin-field-label-row > span,
 .admin-choice-fieldset legend,
 .admin-trending-label {
@@ -2822,6 +2977,54 @@
 .admin-ambient-field {
   display: grid;
   gap: 6px;
+}
+
+/* "Chanson" select and its "Lecture" button: same width, same height, stacked. */
+.admin-ambient-song-row {
+  display: grid;
+  gap: 9px;
+}
+
+.admin-ambient-song-row .admin-select-trigger,
+.admin-ambient-song-row .admin-secondary-action {
+  width: 100%;
+  min-height: 46px;
+  height: 46px;
+  border-radius: 14px;
+}
+
+.admin-ambient-song-row .admin-secondary-action {
+  padding: 0 16px;
+  font-size: 12px;
+}
+
+/* Volume slider with a live percentage bubble that follows the thumb (16px native thumb). */
+.admin-ambient-volume {
+  position: relative;
+  padding-top: 30px;
+}
+
+.admin-ambient-volume input[type="range"] {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--admin-primary);
+}
+
+.admin-ambient-volume-bubble {
+  position: absolute;
+  top: 0;
+  left: calc(8px + (100% - 16px) * var(--volume-ratio, 0));
+  transform: translateX(-50%);
+  min-width: 46px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: white;
+  background: var(--admin-primary);
+  font-size: 11px;
+  font-weight: 850;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
 }
 
 .admin-ambient-actions {
@@ -5080,7 +5283,13 @@ body:has(.admin-app),
 @media (min-width: 1024px) {
   .admin-sidebar {
     width: 240px;
-    min-height: 100dvh;
+    min-height: 0;
+    /* Sidebar scrolls with the page (no pinning, no inner scroll area): the whole dashboard page can be
+       scrolled to the end and every menu stays reachable. */
+    position: static;
+    height: auto;
+    align-self: stretch;
+    overflow: visible;
     flex: 0 0 240px;
     padding: 20px 14px 18px;
     border-right-color: #ebe6df;
@@ -6040,4 +6249,352 @@ body:has(.admin-app),
 .admin-trending-actions {
   display: flex;
   justify-content: flex-end;
+}
+
+/* /admin/library — moderation list of the client "Découvrir" page */
+.admin-discover-song-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-discover-song {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 280px) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--admin-border, var(--color-border));
+  border-radius: 14px;
+  background: var(--admin-card, var(--color-card));
+}
+
+.admin-discover-song.is-hidden {
+  opacity: 0.7;
+}
+
+.admin-discover-song > div {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.admin-discover-song strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-discover-song audio {
+  width: 100%;
+  height: 36px;
+}
+
+@media (max-width: 720px) {
+  .admin-discover-song {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Langues et Monnaies > Monnaies (app/admin/languages/CurrencySection.tsx) */
+.admin-fx-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-fx-toolbar .admin-editor-field {
+  flex: 1 1 320px;
+}
+
+.admin-fx-providers {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-fx-providers li {
+  display: grid;
+  gap: 2px;
+  padding: 10px 14px;
+  border: 1px solid rgb(120 90 60 / 16%);
+  border-radius: 14px;
+  font-size: 0.85rem;
+}
+
+.admin-fx-providers li span,
+.admin-fx-last-sync,
+.admin-currency-id small,
+.admin-currency-field small {
+  color: #7a6f66;
+  font-size: 0.78rem;
+}
+
+.admin-fx-sync {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-fx-last-sync {
+  margin: 0;
+}
+
+.admin-currency-list {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-currency-row {
+  display: grid;
+  grid-template-columns: 170px minmax(150px, 1.6fr) 90px minmax(150px, 1fr) 80px 56px auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgb(120 90 60 / 16%);
+  border-radius: 16px;
+  background: rgb(255 255 255 / 60%);
+}
+
+.admin-currency-row.is-head {
+  padding-block: 4px;
+  border: 0;
+  background: none;
+  color: #7a6f66;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-currency-row.is-hidden {
+  opacity: 0.6;
+}
+
+.admin-currency-id {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-currency-id > div {
+  display: grid;
+}
+
+.admin-currency-field {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.admin-currency-field input:not([type="checkbox"]) {
+  width: 100%;
+  min-width: 0;
+  padding: 8px 10px;
+  border: 1px solid rgb(120 90 60 / 22%);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+}
+
+.admin-currency-auto {
+  justify-items: center;
+}
+
+.admin-currency-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.admin-currency-add {
+  display: grid;
+  grid-template-columns: 100px minmax(160px, 1.5fr) 100px minmax(140px, 1fr) 90px auto auto;
+  align-items: end;
+  gap: 12px;
+}
+
+.admin-currency-add .admin-editor-field input {
+  min-width: 0;
+}
+
+@media (max-width: 1100px) {
+  .admin-currency-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .admin-currency-row.is-head {
+    display: none;
+  }
+
+  .admin-currency-id,
+  .admin-currency-actions {
+    grid-column: 1 / -1;
+  }
+
+  .admin-currency-field::before {
+    content: attr(data-label);
+    color: #7a6f66;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .admin-currency-add {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Credit balance adjuster (components/admin/AdminCreditAdjustForm.tsx): add/remove switch + user combobox. */
+.admin-segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--admin-border);
+  border-radius: 15px;
+  background: var(--admin-surface);
+}
+
+.admin-segmented > label {
+  position: relative;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 11px;
+  color: var(--admin-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-segmented > label > input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-segmented > label.is-active {
+  color: white;
+  background: var(--admin-success);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-segmented > label.is-active.is-remove {
+  background: var(--admin-danger);
+}
+
+.admin-segmented > label:has(input:focus-visible) {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+}
+
+.admin-editor-actions > button.is-danger {
+  background: var(--admin-danger);
+}
+
+.admin-combobox {
+  position: relative;
+}
+
+.admin-combobox-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% - 2px);
+  right: 0;
+  left: 0;
+  display: grid;
+  max-height: 340px;
+  gap: 2px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid var(--admin-border);
+  border-radius: 15px;
+  background: var(--admin-card);
+  box-shadow: var(--admin-shadow-raised);
+  list-style: none;
+}
+
+.admin-combobox-heading {
+  padding: 6px 10px 4px;
+  color: var(--admin-muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-combobox-menu > li[role="option"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  cursor: pointer;
+}
+
+.admin-combobox-menu > li[role="option"].is-active {
+  background: var(--admin-secondary);
+}
+
+.admin-combobox-avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--admin-primary);
+  background: var(--admin-secondary);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-combobox-menu > li.is-active .admin-combobox-avatar {
+  color: white;
+  background: var(--admin-primary);
+}
+
+.admin-combobox-identity {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-combobox-identity > strong,
+.admin-combobox-identity > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-combobox-identity > strong {
+  color: var(--admin-foreground);
+  font-size: 12px;
+}
+
+.admin-combobox-identity > small,
+.admin-combobox-hint {
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.admin-combobox-balance {
+  flex: none;
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.admin-editor-grid:has(.admin-combobox) {
+  align-items: start;
 }

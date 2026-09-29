@@ -36,6 +36,7 @@ type MusicfulSettings = {
   maxGenerationsPerUserPerHour: number;
   maxConcurrentJobs: number;
   versionsPerGeneration: number;
+  redirectDelaySeconds: number;
   keepExtraGeneratedVariant: boolean;
 };
 
@@ -197,6 +198,7 @@ export default function AdminMusicfulProviderForm({
           tabs={[
             { id: "musicful", label: "Musicful" },
             { id: "versions", label: "Nombre de versions" },
+            { id: "redirect", label: "Délai de redirection" },
           ]}
         >
           <AdminTabPanel id="musicful">
@@ -449,6 +451,28 @@ export default function AdminMusicfulProviderForm({
                   Coût Musicful réel par génération : environ 6 crédits avec MFV3.0 (2 variantes × 3 crédits),
                   débités dès l’appel — que MusikPro garde 1 ou 2 chansons. « La garder » livre donc 2 chansons
                   pour ce prix ; « La jeter » livre 1 seule chanson pour le même prix.
+                </small>
+              </label>
+            </div>
+          </AdminTabPanel>
+          <AdminTabPanel id="redirect">
+            <div className="admin-editor-grid">
+              <label className="admin-editor-field is-wide">
+                <FieldLabel help="Temps maximal pendant lequel l’écran « Ta chanson est en création… » attend la livraison du MP3. Une fois ce délai atteint, l’utilisateur est redirigé automatiquement vers « Mes chansons », où la chanson continue de se mettre à jour toute seule dès qu’elle est prête. Si le MP3 arrive avant, la redirection est immédiate.">
+                  Délai avant redirection automatique (secondes)
+                </FieldLabel>
+                <input
+                  name="redirectDelaySeconds"
+                  type="number"
+                  min="10"
+                  max="1800"
+                  defaultValue={settings.redirectDelaySeconds}
+                  required
+                />
+                <small>
+                  Entre 10 et 1 800 secondes (30 min). Ce réglage n’interrompt jamais la génération chez Musicful : il
+                  ne change que le moment où l’écran d’attente laisse la main à « Mes chansons ». L’attente maximale
+                  d’une génération reste réglée dans l’onglet Musicful.
                 </small>
               </label>
             </div>

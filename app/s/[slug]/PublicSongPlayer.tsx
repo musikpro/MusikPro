@@ -40,13 +40,39 @@ export default function PublicSongPlayer({ audioUrl, title, playLabel, pauseLabe
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [useCssFallback, setUseCssFallback] = useState(true);
+  // Vrai tant que l'utilisateur fait glisser la barre : on n'écrase alors pas sa position avec
+  // les mises à jour de lecture (sinon le curseur "saute" en arrière pendant le glissement).
+  const scrubbingRef = useRef(false);
+
+  // La durée est lue directement sur l'élément <audio> (et pas seulement via `onLoadedMetadata`) :
+  // sur mobile, les métadonnées peuvent arriver AVANT que React ait attaché ses écouteurs à la
+  // page rendue côté serveur — l'événement est alors perdu, la durée reste à 0, et la barre (dont
+  // le maximum vaut la durée) ne peut ni avancer ni être déplacée.
+  function syncDuration() {
+    const value = audioRef.current?.duration;
+    if (value && Number.isFinite(value) && value > 0) setDuration((prev) => (prev === value ? prev : value));
+  }
 
   useEffect(() => {
+    syncDuration();
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
       audioCtxRef.current?.close().catch(() => {});
     };
   }, []);
+
+  // `timeupdate` n'arrive que ~4 fois par seconde et peut être ralenti/absent dans certains
+  // navigateurs mobiles ou WebViews : pendant la lecture, on relit aussi l'heure à intervalle fixe.
+  useEffect(() => {
+    if (!isPlaying) return;
+    const id = window.setInterval(() => {
+      const audio = audioRef.current;
+      if (!audio) return;
+      syncDuration();
+      if (!scrubbingRef.current) setCurrentTime(audio.currentTime);
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [isPlaying]);
 
   function ensureAudioGraph() {
     if (graphAttemptedRef.current || !audioRef.current) return;
@@ -140,6 +166,11 @@ export default function PublicSongPlayer({ audioUrl, title, playLabel, pauseLabe
     if (audioRef.current) audioRef.current.currentTime = value;
   }
 
+  function endScrub() {
+    scrubbingRef.current = false;
+    if (audioRef.current) setCurrentTime(audioRef.current.currentTime);
+  }
+
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;
 
   return (
@@ -153,8 +184,14 @@ export default function PublicSongPlayer({ audioUrl, title, playLabel, pauseLabe
         onPlay={handlePlay}
         onPause={handlePause}
         onEnded={handlePause}
-        onTimeUpdate={(event) => setCurrentTime(event.currentTarget.currentTime)}
-        onLoadedMetadata={(event) => setDuration(event.currentTarget.duration || 0)}
+        onTimeUpdate={(event) => {
+          if (!scrubbingRef.current) setCurrentTime(event.currentTarget.currentTime);
+          syncDuration();
+        }}
+        onLoadedMetadata={syncDuration}
+        onDurationChange={syncDuration}
+        onLoadedData={syncDuration}
+        onCanPlay={syncDuration}
         aria-label={title}
         style={{ display: "none" }}
       />
@@ -186,6 +223,12 @@ export default function PublicSongPlayer({ audioUrl, title, playLabel, pauseLabe
           step={0.1}
           value={currentTime}
           onChange={handleSeek}
+          onPointerDown={() => {
+            scrubbingRef.current = true;
+          }}
+          onPointerUp={endScrub}
+          onPointerCancel={endScrub}
+          onBlur={endScrub}
           aria-label={seekLabel}
           style={{ "--psp-progress": `${progressPercent}%` } as CSSProperties}
         />

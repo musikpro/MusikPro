@@ -4,8 +4,10 @@ import { LYRICS_MAX_WORDS } from "@/lib/ai/lyrics-policy";
 const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
 export const DEMO_LYRICS_MAX_WORDS = LYRICS_MAX_WORDS;
 export const DEMO_LYRICS_MAX_CHARACTERS = 18000;
-export const DEMO_STORY_MAX_WORDS = 120;
-export const DEMO_STORY_MAX_CHARACTERS = 1200;
+/** Character (not word) limits for the two free-text creation fields — one source of truth shared by
+ * the inputs, their counters, the client schemas below and the server-side lyrics schema. */
+export const DEMO_STORY_MAX_CHARACTERS = 600;
+export const DEMO_DETAIL_MAX_CHARACTERS = 250;
 export const demoCreationChoicesSchema = z.object({
   occasion: z.string().max(80),
   genre: z.string().max(80),
@@ -65,8 +67,7 @@ export const demoStorySchema = z
   .string()
   .trim()
   .min(10, "Raconte ton histoire en au moins 10 caractères.")
-  .max(DEMO_STORY_MAX_CHARACTERS)
-  .refine(words(DEMO_STORY_MAX_WORDS), `Maximum ${DEMO_STORY_MAX_WORDS} mots.`);
+  .max(DEMO_STORY_MAX_CHARACTERS, `Maximum ${DEMO_STORY_MAX_CHARACTERS} caractères.`);
 export const demoRecipientSchema = z.object({
   name: z.string().trim().min(2, "Indique le nom de la personne concernée.").max(100),
   pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
@@ -84,7 +85,9 @@ export const demoLyricsSchema = z
   .min(1, "Ajoute des paroles.")
   .max(DEMO_LYRICS_MAX_CHARACTERS)
   .refine(words(DEMO_LYRICS_MAX_WORDS), `Maximum ${DEMO_LYRICS_MAX_WORDS} mots.`);
-export const demoDetailSchema = z.string().max(3000).refine(words(50), "Maximum 50 mots.");
+export const demoDetailSchema = z
+  .string()
+  .max(DEMO_DETAIL_MAX_CHARACTERS, `Maximum ${DEMO_DETAIL_MAX_CHARACTERS} caractères.`);
 export const demoProfileSchema = z.object({
   name: z.string().trim().min(2).max(100),
   email: z.email().max(254),

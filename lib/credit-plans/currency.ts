@@ -1,80 +1,104 @@
-export const creditCurrencies = [
-  { code: "XOF", label: "Franc CFA (XOF)", symbol: "FCFA" },
-  { code: "XAF", label: "Franc CFA (XAF)", symbol: "FCFA" },
-  { code: "EUR", label: "Euro (€)", symbol: "€" },
-  { code: "USD", label: "Dollar ($)", symbol: "$" },
-  { code: "NGN", label: "Naira (₦)", symbol: "₦" },
-  { code: "GHS", label: "Cedi (GH₵)", symbol: "GH₵" },
-  { code: "KES", label: "Shilling kényan (KES)", symbol: "KSh" },
-  { code: "CDF", label: "Franc congolais (CDF)", symbol: "FC" },
-  { code: "RWF", label: "Franc rwandais (RWF)", symbol: "FRw" },
-  { code: "TZS", label: "Shilling tanzanien (TZS)", symbol: "TSh" },
-  { code: "UGX", label: "Shilling ougandais (UGX)", symbol: "USh" },
-  { code: "ZMW", label: "Kwacha zambien (ZMW)", symbol: "ZK" },
-  { code: "MZN", label: "Metical mozambicain (MZN)", symbol: "MT" },
-  { code: "GNF", label: "Franc guinéen (GNF)", symbol: "FG" },
-] as const;
-
-export type CreditCurrencyCode = (typeof creditCurrencies)[number]["code"];
-
-// XOF is the source of truth. These display rates can later be refreshed by a server-side FX provider.
-const unitsPerXof: Record<CreditCurrencyCode, number> = {
-  XOF: 1,
-  XAF: 1,
-  EUR: 1 / 655.957,
-  USD: 1 / 600,
-  NGN: 2.7,
-  GHS: 1 / 40,
-  KES: 129 / 600,
-  CDF: 4.5,
-  RWF: 1300 / 600,
-  TZS: 2600 / 600,
-  UGX: 3700 / 600,
-  ZMW: 27 / 600,
-  MZN: 64 / 600,
-  GNF: 14.5,
+/**
+ * Display currencies. XOF (franc CFA) is the source of truth of every price in the app; a price is
+ * converted XOF -> USD first, then USD -> the currency shown. `unitsPerUsd` is "how many units of
+ * this currency equal 1 USD" (USD itself is always 1, XOF's value is the CFA/dollar rate).
+ * The admin manages the list in Langues et Monnaies > Monnaies (table `currencies`); the constant
+ * below is only the built-in fallback used when that table is empty or not migrated yet.
+ */
+export type CreditCurrency = {
+  code: string;
+  label: string;
+  symbol: string;
+  unitsPerUsd: number;
+  decimals: number;
+  enabled: boolean;
+  /** Admin catalog only: whether the exchange-rate refresh may overwrite `unitsPerUsd`. */
+  autoUpdate?: boolean;
+  sortOrder: number;
 };
 
-// Zero-decimal currencies: large nominal values where sub-units aren't used in practice.
-const ZERO_DECIMAL_CURRENCIES = new Set<CreditCurrencyCode>([
-  "XOF",
-  "XAF",
-  "NGN",
-  "CDF",
-  "RWF",
-  "TZS",
-  "UGX",
-  "GNF",
-  "KES",
-]);
+export type CreditCurrencyCode = string;
 
-export function convertFromXof(valueInXof: number, currency: string) {
-  const code = creditCurrencies.some((item) => item.code === currency) ? (currency as CreditCurrencyCode) : "XOF";
-  return valueInXof * unitsPerXof[code];
+/** Price currency of the whole catalog (default display currency). */
+export const BASE_CURRENCY_CODE = "XOF";
+/** Pivot currency: XOF converts to USD, every other currency is derived from USD. */
+export const PIVOT_CURRENCY_CODE = "USD";
+
+const defaultCurrency = (
+  code: string,
+  label: string,
+  symbol: string,
+  unitsPerUsd: number,
+  decimals: number,
+  sortOrder: number,
+): CreditCurrency => ({ code, label, symbol, unitsPerUsd, decimals, enabled: true, sortOrder });
+
+export const DEFAULT_CURRENCIES: CreditCurrency[] = [
+  defaultCurrency("XOF", "Franc CFA (XOF)", "FCFA", 600, 0, 10),
+  defaultCurrency("XAF", "Franc CFA (XAF)", "FCFA", 600, 0, 20),
+  defaultCurrency("EUR", "Euro (€)", "€", 600 / 655.957, 2, 30),
+  defaultCurrency("USD", "Dollar ($)", "$", 1, 2, 40),
+  defaultCurrency("NGN", "Naira (₦)", "₦", 1620, 0, 50),
+  defaultCurrency("GHS", "Cedi (GH₵)", "GH₵", 15, 2, 60),
+  defaultCurrency("KES", "Shilling kényan (KES)", "KSh", 129, 0, 70),
+  defaultCurrency("CDF", "Franc congolais (CDF)", "FC", 2700, 0, 80),
+  defaultCurrency("RWF", "Franc rwandais (RWF)", "FRw", 1300, 0, 90),
+  defaultCurrency("TZS", "Shilling tanzanien (TZS)", "TSh", 2600, 0, 100),
+  defaultCurrency("UGX", "Shilling ougandais (UGX)", "USh", 3700, 0, 110),
+  defaultCurrency("ZMW", "Kwacha zambien (ZMW)", "ZK", 27, 2, 120),
+  defaultCurrency("MZN", "Metical mozambicain (MZN)", "MT", 64, 2, 130),
+  defaultCurrency("GNF", "Franc guinéen (GNF)", "FG", 8700, 0, 140),
+];
+
+/** @deprecated Built-in list; prefer the catalog loaded from the database (getCurrencyCatalog). */
+export const creditCurrencies = DEFAULT_CURRENCIES;
+
+function findCurrency(catalog: CreditCurrency[], code: string) {
+  return catalog.find((item) => item.code === code);
 }
 
-export function formatCreditPrice(valueInXof: number, currency: string) {
-  const code = creditCurrencies.some((item) => item.code === currency) ? (currency as CreditCurrencyCode) : "XOF";
-  const value = convertFromXof(valueInXof, code);
-  const zeroDecimals = ZERO_DECIMAL_CURRENCIES.has(code);
-  return new Intl.NumberFormat(code === "XOF" || code === "XAF" ? "fr-FR" : "en", {
-    style: "currency",
-    currency: code,
-    minimumFractionDigits: zeroDecimals ? 0 : 2,
-    maximumFractionDigits: zeroDecimals ? 0 : 2,
-  }).format(value);
+/** Returns `currency` when the catalog knows it, else the base currency (XOF). */
+export function resolveCurrencyCode(currency: string, catalog: CreditCurrency[] = DEFAULT_CURRENCIES) {
+  return findCurrency(catalog, currency) ? currency : BASE_CURRENCY_CODE;
+}
+
+export function convertFromXof(valueInXof: number, currency: string, catalog: CreditCurrency[] = DEFAULT_CURRENCIES) {
+  const target = findCurrency(catalog, currency);
+  const base = findCurrency(catalog, BASE_CURRENCY_CODE) ?? findCurrency(DEFAULT_CURRENCIES, BASE_CURRENCY_CODE)!;
+  if (!target || target.code === BASE_CURRENCY_CODE) return valueInXof;
+  const valueInUsd = valueInXof / base.unitsPerUsd;
+  return valueInUsd * target.unitsPerUsd;
+}
+
+export function formatCreditPrice(valueInXof: number, currency: string, catalog: CreditCurrency[] = DEFAULT_CURRENCIES) {
+  const code = resolveCurrencyCode(currency, catalog);
+  const entry = findCurrency(catalog, code) ?? findCurrency(DEFAULT_CURRENCIES, BASE_CURRENCY_CODE)!;
+  const value = convertFromXof(valueInXof, code, catalog);
+  const digits = Math.max(0, Math.min(entry.decimals, 6));
+  try {
+    return new Intl.NumberFormat(code === "XOF" || code === "XAF" ? "fr-FR" : "en", {
+      style: "currency",
+      currency: code,
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    }).format(value);
+  } catch {
+    // Admin-added code the runtime's Intl does not know: fall back to "amount symbol".
+    return `${new Intl.NumberFormat("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits }).format(value)} ${entry.symbol}`;
+  }
 }
 
 /**
  * Resolves the display currency for a country, from an admin-configured override
  * (the `country_languages.currencyCode` column) only — there is no static heuristic
- * fallback for currency, unlike language.
+ * fallback for currency, unlike language. A currency the admin has hidden is ignored.
  */
 export function resolveCurrencyForCountry(
   country: string | null,
   overrides: Record<string, string>,
+  catalog: CreditCurrency[] = DEFAULT_CURRENCIES,
 ): CreditCurrencyCode | null {
   if (!country) return null;
   const code = overrides[country.trim().toUpperCase()];
-  return creditCurrencies.some((item) => item.code === code) ? (code as CreditCurrencyCode) : null;
+  return catalog.some((item) => item.code === code && item.enabled) ? code : null;
 }

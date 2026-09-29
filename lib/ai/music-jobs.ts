@@ -66,6 +66,8 @@ function extractGenerateErrorMessage(response: unknown): string | null {
 }
 
 export type MusicJobGroupContext = {
+  /** Audio provider the job is created for (defaults to Musicful). See lib/ai/audio-providers/catalog.ts. */
+  provider?: string;
   songGroupId?: string;
   versionLabel?: string;
   occasion?: string;
@@ -84,7 +86,7 @@ export async function createMusicJob(
     .values({
       id,
       userId,
-      provider: "musicful",
+      provider: context.provider ?? "musicful",
       action: "auto",
       model,
       prompt: input.prompt || null,

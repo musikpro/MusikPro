@@ -1,5 +1,7 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
+import { buildDemoPaymentSchema, resolvePhoneCountry } from "@/lib/validation/musikpro-demo";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 8 — Générer ma chanson";
@@ -11,6 +13,24 @@ import CreationTopNav from "./CreationTopNav";
 
 export default function FinalConfirmationScreen() {
   const demo = useDemo();
+  const canGenerate = demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION;
+  // Enough credits and contact details already saved and valid: nothing left to ask, go straight to the
+  // generation. Otherwise keep the "Vos informations" step (missing details, or credits to buy first).
+  const continueFromSummary = () => {
+    if (canGenerate && !demo.isDemo) {
+      const contact = buildDemoPaymentSchema(demo.phonePrefixes).safeParse({
+        name: demo.fields["payment.name"],
+        email: demo.fields["payment.email"],
+        phone: demo.fields["payment.phone"],
+        phoneCountry: resolvePhoneCountry(demo.choices.phoneCountry, demo.phonePrefixes),
+      });
+      if (contact.success) {
+        demo.go("/dashboard/payment-preview/generating");
+        return;
+      }
+    }
+    demo.go("/dashboard/payment-preview");
+  };
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create/lyrics" current={8} total={8} />
@@ -83,7 +103,11 @@ export default function FinalConfirmationScreen() {
             <div className="text-xs space-y-1">
               <p className="font-semibold text-foreground">{t("Tu es sur le point de générer ta chanson")}</p>
               <p className="text-muted-foreground">
-                {t("Si tu n'as pas encore payé, tu seras redirigé vers la page de paiement.")}
+                {canGenerate
+                  ? translateTemplate("Cette génération utilisera {credits} crédits.", {
+                      credits: CREDITS_PER_GENERATION,
+                    })
+                  : t("Si tu n'as pas encore payé, tu seras redirigé vers la page de paiement.")}
               </p>
             </div>
           </div>
@@ -95,11 +119,11 @@ export default function FinalConfirmationScreen() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.go("/dashboard/payment-preview")}
+          onClick={continueFromSummary}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
           style={{ boxShadow: "0 4px 16px rgba(242,101,34,0.35)" }}
         >
-          {t("Continuer")} <Icon i="arrow-right" size={18} />
+          {canGenerate ? t("Générer ma chanson") : t("Continuer vers le paiement")} <Icon i="arrow-right" size={18} />
         </button>
       </div>
     </div>

@@ -8,15 +8,13 @@ import { requireAdmin } from "@/lib/auth/session";
 import { getGeneratedSongOptionById, listRecentGeneratedSongsForAdmin } from "@/lib/trending/admin";
 import {
   listLandingSongFeatures,
+  LANDING_SONG_FEATURE_SECTION_LABELS,
   LANDING_SONG_POOL_SIZE,
   type LandingSongFeatureSection,
 } from "@/lib/landing-features/admin";
 import { updateLandingSongFeature } from "../actions";
 
-const SECTION_LABELS: Record<LandingSongFeatureSection, string> = {
-  showcase: "Ils ont créé avec MusikPro",
-  library: "Bibliothèque populaire",
-};
+const SECTION_LABELS = LANDING_SONG_FEATURE_SECTION_LABELS;
 
 export default async function AdminEditLandingSongFeaturePage({ params }: { params: Promise<{ id: string }> }) {
   await requireAdmin();
@@ -24,9 +22,10 @@ export default async function AdminEditLandingSongFeaturePage({ params }: { para
   const [row] = await getServiceDb().select().from(landingSongFeatures).where(eq(landingSongFeatures.id, id)).limit(1);
   if (!row) notFound();
   const section = row.section as LandingSongFeatureSection;
-  const [recentSongs, sectionRows] = await Promise.all([
+  const [recentSongs, showcaseRows, libraryRows] = await Promise.all([
     listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
-    listLandingSongFeatures(section),
+    listLandingSongFeatures("showcase"),
+    listLandingSongFeatures("library"),
   ]);
   // The card's current song can have aged out of the "most recent" window above — resolve it
   // directly so the picker still shows its real title instead of a blank "Sélectionner".
@@ -38,7 +37,7 @@ export default async function AdminEditLandingSongFeaturePage({ params }: { para
 
   return (
     <AdminPage>
-      <AdminBackLink href="/admin/landing-features" />
+      <AdminBackLink href={`/admin/landing-features?tab=${section}`} />
       <AdminPageHeader
         eyebrow={SECTION_LABELS[section]}
         title="Modifier cette carte"
@@ -47,9 +46,10 @@ export default async function AdminEditLandingSongFeaturePage({ params }: { para
       <section className="admin-panel">
         <AdminLandingSongFeatureForm
           section={section}
+          sectionLabel={SECTION_LABELS[section]}
           action={updateLandingSongFeature}
           songs={songs}
-          usedSongGroupIds={sectionRows.map((r) => r.songGroupId)}
+          usedSongGroupIds={[...showcaseRows, ...libraryRows].map((r) => r.songGroupId)}
           values={{ id: row.id, songGroupId: row.songGroupId, coverUrlOverride: row.coverUrlOverride }}
         />
       </section>

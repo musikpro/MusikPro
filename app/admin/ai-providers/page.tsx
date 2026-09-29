@@ -3,6 +3,8 @@ import AdminCatalogPage from "@/components/admin/AdminCatalogPage";
 import { getServiceDb } from "@/db";
 import { aiProviderConfigs, audioProviderConfigs } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { getAudioProviderDefinition } from "@/lib/ai/audio-providers/catalog";
+import { getActiveAudioProviderId } from "@/lib/ai/audio-providers/active";
 
 export default async function AdminAIProvidersPage() {
   await requireAdmin();
@@ -16,6 +18,8 @@ export default async function AdminAIProvidersPage() {
     .from(aiProviderConfigs)
     .where(eq(aiProviderConfigs.isDefaultForLyrics, true))
     .limit(1);
+  const activeAudioId = await getActiveAudioProviderId();
+  const activeAudio = getAudioProviderDefinition(activeAudioId);
   const [audioProvider] = await database
     .select({
       enabled: audioProviderConfigs.enabled,
@@ -23,7 +27,7 @@ export default async function AdminAIProvidersPage() {
       apiKeyLast4: audioProviderConfigs.apiKeyLast4,
     })
     .from(audioProviderConfigs)
-    .where(eq(audioProviderConfigs.provider, "musicful"))
+    .where(eq(audioProviderConfigs.provider, activeAudioId))
     .limit(1);
 
   return (
@@ -49,7 +53,7 @@ export default async function AdminAIProvidersPage() {
           id: "audio",
           title: "Génération audio",
           subtitle: "Transformation des paroles en chansons et versions audio",
-          meta: audioProvider?.apiKeyLast4 ? `Musicful · ${audioProvider.model}` : "Musicful à configurer",
+          meta: audioProvider?.apiKeyLast4 ? `${activeAudio.label} · ${audioProvider.model}` : `${activeAudio.label} à configurer`,
           status: audioProvider?.enabled && audioProvider.apiKeyLast4 ? "active" : "inactive",
           icon: "audio-waveform",
           href: "/admin/ai-providers/audio",

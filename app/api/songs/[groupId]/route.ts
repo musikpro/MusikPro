@@ -4,6 +4,7 @@ import { auth } from "@/lib/auth";
 import {
   getSongGroupForUser,
   removeSongGroupForUser,
+  SongInUseError,
   setSongVersionLiked,
   incrementSongVersionPlays,
 } from "@/lib/ai/songs";
@@ -83,7 +84,20 @@ export async function DELETE(request: Request, ctx: Ctx) {
   const parsedId = groupIdSchema.safeParse((await ctx.params).groupId);
   if (!parsedId.success) return NextResponse.json({ error: "Identifiant invalide." }, { status: 400 });
 
-  await removeSongGroupForUser(session.user.id, parsedId.data);
+  try {
+    await removeSongGroupForUser(session.user.id, parsedId.data);
+  } catch (error) {
+    if (error instanceof SongInUseError)
+      return NextResponse.json(
+        {
+          error: `Cette chanson est déjà utilisée et ne peut pas être supprimée : ${error.usages.join(", ")}.`,
+          code: "SONG_IN_USE",
+          usages: error.usages,
+        },
+        { status: 409 },
+      );
+    throw error;
+  }
   await writeAuditLog({
     action: "musicful.song.removed",
     actorId: session.user.id,

@@ -8,15 +8,16 @@ import { eq } from "drizzle-orm";
 import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
 import { getActiveCreditPlans } from "@/lib/credit-plans/server";
+import { getEnabledCurrencies } from "@/lib/credit-plans/currencies-server";
 import { getActiveOccasions } from "@/lib/occasions/server";
 import { getActiveMusicStyles } from "@/lib/music-styles/server";
 import { getActiveRecipientRelations } from "@/lib/recipient-relations/server";
-import { getPublishedLibraryCollections } from "@/lib/library-collections/server";
+import { listDiscoverSongs } from "@/lib/discover/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { getActivePhonePrefixes } from "@/lib/phone-prefixes/server";
 import { detectCurrency, detectInterfaceLanguage } from "@/lib/languages/detection";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
-import { getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
+import { getMusicfulGenerationScreenSettings, getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
 import { getStoreLinks } from "@/lib/settings/store-links";
 import { headers } from "next/headers";
 import "@fontsource/dm-sans/400.css";
@@ -35,16 +36,19 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const occasionOptions = await getActiveOccasions({ demo });
   const musicStyleOptions = await getActiveMusicStyles({ demo });
   const recipientRelationOptions = await getActiveRecipientRelations({ demo });
-  const libraryCollectionOptions = await getPublishedLibraryCollections();
+  // Real accounts only: the demo library is the static showcase data of DemoProvider.
+  const discoverSongs = demo ? [] : await listDiscoverSongs(session.user.id);
   const languageCatalog = await getActiveLanguageCatalog({ demo });
   const phonePrefixOptions = await getActivePhonePrefixes({ demo });
   const requestHeaders = await headers();
   const detectedInterfaceLanguage = await detectInterfaceLanguage(requestHeaders, languageCatalog.interfaceLanguages);
   const detectedCurrency = await detectCurrency(requestHeaders);
+  const currencyOptions = await getEnabledCurrencies();
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
   const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
   const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
   const versionsPerGeneration = await getMusicfulVersionsPerGeneration();
+  const generationScreen = await getMusicfulGenerationScreenSettings();
   const storeLinks = await getStoreLinks();
   const balance = demo
     ? 0
@@ -62,17 +66,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialBalance={balance}
       paymentBypassEnabled={paymentBypassEnabled}
       versionsPerGeneration={versionsPerGeneration}
+      generationRedirectDelaySeconds={generationScreen.redirectDelaySeconds}
+      generationPollIntervalMs={generationScreen.pollingIntervalMs}
       storeLinks={storeLinks}
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
       initialMusicStyles={musicStyleOptions}
       initialRecipientRelations={recipientRelationOptions}
-      initialLibraryCollections={libraryCollectionOptions}
+      initialDiscoverSongs={discoverSongs}
       initialInterfaceLanguages={languageCatalog.interfaceLanguages}
       initialLyricsLanguages={languageCatalog.lyricsLanguages}
       initialDetectedInterfaceLanguage={detectedInterfaceLanguage}
       initialPhonePrefixes={phonePrefixOptions}
       initialDetectedCurrency={detectedCurrency}
+      initialCurrencies={currencyOptions}
       persistenceId={demo ? "demo" : session.user.id}
       initialProfile={{
         name: session.user.name,
