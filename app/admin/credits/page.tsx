@@ -1,16 +1,16 @@
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { credits, user } from "@/db/schema";
-import AdminActionForm from "@/components/admin/AdminActionForm";
+import { credits, payments, user } from "@/db/schema";
+import AdminCreditAdjustForm from "@/components/admin/AdminCreditAdjustForm";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
-import { setCredits } from "./actions";
+import { adjustCredits } from "./actions";
 
 export default async function AdminCreditsPage() {
   await requireAdmin();
   const db = getServiceDb();
-  const [rows, [total], userOptions] = await Promise.all([
+  const [rows, [total], userOptions, recentBuyerRows] = await Promise.all([
     db
       .select({ credit: credits, email: user.email, name: user.name })
       .from(credits)
@@ -18,8 +18,32 @@ export default async function AdminCreditsPage() {
       .orderBy(desc(credits.updatedAt))
       .limit(100),
     db.select({ value: sql<number>`coalesce(sum(${credits.balance}), 0)::int` }).from(credits),
-    db.select({ email: user.email, name: user.name }).from(user).orderBy(asc(user.email)).limit(500),
+    db
+      .select({ email: user.email, name: user.name, balance: sql<number>`coalesce(${credits.balance}, 0)::int` })
+      .from(user)
+      .leftJoin(credits, eq(credits.userId, user.id))
+      .orderBy(asc(user.email))
+      .limit(500),
+    // The 10 customers whose last paid purchase is the most recent.
+    db
+      .select({
+        email: user.email,
+        name: user.name,
+        balance: sql<number>`coalesce(${credits.balance}, 0)::int`,
+        lastPaid: sql<Date>`max(coalesce(${payments.paidAt}, ${payments.createdAt}))`,
+      })
+      .from(payments)
+      .innerJoin(user, eq(user.id, payments.userId))
+      .leftJoin(credits, eq(credits.userId, user.id))
+      .where(eq(payments.status, "paid"))
+      .groupBy(user.id, user.email, user.name, credits.balance)
+      .orderBy(desc(sql`max(coalesce(${payments.paidAt}, ${payments.createdAt}))`))
+      .limit(10),
   ]);
+  const toOption = (row: { email: string | null; name: string | null; balance: number }) =>
+    row.email ? [{ email: row.email, name: row.name, balance: Number(row.balance) }] : [];
+  const users = userOptions.flatMap(toOption);
+  const recentBuyers = recentBuyerRows.flatMap(toOption);
   return (
     <AdminPage>
       <AdminPageHeader
@@ -49,42 +73,11 @@ export default async function AdminCreditsPage() {
             </span>
             <div>
               <h2>Ajuster un solde</h2>
-              <p>Modification sécurisée et journalisée</p>
+              <p>Ajoutez ou retirez des crédits. Chaque opération est journalisée.</p>
             </div>
           </div>
         </div>
-        <AdminActionForm className="admin-editor-grid" action={setCredits}>
-          <label className="admin-editor-field">
-            <span>E-mail utilisateur</span>
-            <input
-              type="email"
-              name="email"
-              required
-              placeholder="utilisateur@exemple.com"
-              list="admin-user-emails"
-              autoComplete="off"
-            />
-            <datalist id="admin-user-emails">
-              {userOptions.map((option) =>
-                option.email ? (
-                  <option key={option.email} value={option.email}>
-                    {option.name ?? option.email}
-                  </option>
-                ) : null,
-              )}
-            </datalist>
-          </label>
-          <label className="admin-editor-field">
-            <span>Nouveau solde</span>
-            <input type="number" name="balance" min="0" step="1" required placeholder="0" />
-          </label>
-          <div className="admin-editor-actions is-wide">
-            <button type="submit">
-              <Icon i="save" size={17} />
-              Mettre à jour le solde
-            </button>
-          </div>
-        </AdminActionForm>
+        <AdminCreditAdjustForm action={adjustCredits} recentBuyers={recentBuyers} users={users} />
       </section>
       <section className="admin-panel admin-table-panel">
         <div className="admin-panel-heading">

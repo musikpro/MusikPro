@@ -1977,6 +1977,7 @@
 }
 
 .admin-editor-field > span,
+.admin-combobox > label > span,
 .admin-field-label-row > span,
 .admin-choice-fieldset legend,
 .admin-trending-label {
@@ -6447,4 +6448,153 @@ body:has(.admin-app),
   .admin-currency-add {
     grid-template-columns: 1fr 1fr;
   }
+}
+
+/* Credit balance adjuster (components/admin/AdminCreditAdjustForm.tsx): add/remove switch + user combobox. */
+.admin-segmented {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  padding: 5px;
+  border: 1px solid var(--admin-border);
+  border-radius: 15px;
+  background: var(--admin-surface);
+}
+
+.admin-segmented > label {
+  position: relative;
+  display: inline-flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 11px;
+  color: var(--admin-muted);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-segmented > label > input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-segmented > label.is-active {
+  color: white;
+  background: var(--admin-success);
+  box-shadow: var(--admin-shadow);
+}
+
+.admin-segmented > label.is-active.is-remove {
+  background: var(--admin-danger);
+}
+
+.admin-segmented > label:has(input:focus-visible) {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+}
+
+.admin-editor-actions > button.is-danger {
+  background: var(--admin-danger);
+}
+
+.admin-combobox {
+  position: relative;
+}
+
+.admin-combobox-menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% - 2px);
+  right: 0;
+  left: 0;
+  display: grid;
+  max-height: 340px;
+  gap: 2px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  border: 1px solid var(--admin-border);
+  border-radius: 15px;
+  background: var(--admin-card);
+  box-shadow: var(--admin-shadow-raised);
+  list-style: none;
+}
+
+.admin-combobox-heading {
+  padding: 6px 10px 4px;
+  color: var(--admin-muted);
+  font-size: 10px;
+  font-weight: 850;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-combobox-menu > li[role="option"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 11px;
+  cursor: pointer;
+}
+
+.admin-combobox-menu > li[role="option"].is-active {
+  background: var(--admin-secondary);
+}
+
+.admin-combobox-avatar {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--admin-primary);
+  background: var(--admin-secondary);
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-combobox-menu > li.is-active .admin-combobox-avatar {
+  color: white;
+  background: var(--admin-primary);
+}
+
+.admin-combobox-identity {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-combobox-identity > strong,
+.admin-combobox-identity > small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-combobox-identity > strong {
+  color: var(--admin-foreground);
+  font-size: 12px;
+}
+
+.admin-combobox-identity > small,
+.admin-combobox-hint {
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.admin-combobox-balance {
+  flex: none;
+  color: var(--admin-muted);
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.admin-editor-grid:has(.admin-combobox) {
+  align-items: start;
 }
