@@ -57,6 +57,27 @@ function hasEnv(name: string) {
   return Boolean(process.env[name]?.trim());
 }
 
+/**
+ * Chariow credentials are normally saved (encrypted) from the owner dashboard, not as environment variables.
+ * Only reports whether they exist — never reads or returns the secret values.
+ */
+async function storedChariowSecrets(): Promise<{ CHARIOW_API_KEY: boolean; CHARIOW_WEBHOOK_SECRET: boolean }> {
+  const none = { CHARIOW_API_KEY: false, CHARIOW_WEBHOOK_SECRET: false };
+  const url = process.env.DATABASE_SERVICE_URL?.trim() || process.env.DATABASE_URL?.trim();
+  if (!url) return none;
+  try {
+    const sql = neon(url);
+    const rows = (await Promise.race([
+      sql`select (config->'apiKey' is not null) as api_key, (config->'webhookSecret' is not null) as webhook_secret
+          from payment_provider_configs where provider = 'chariow' limit 1`,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 4000)),
+    ])) as Array<{ api_key: boolean; webhook_secret: boolean }>;
+    return { CHARIOW_API_KEY: Boolean(rows[0]?.api_key), CHARIOW_WEBHOOK_SECRET: Boolean(rows[0]?.webhook_secret) };
+  } catch {
+    return none;
+  }
+}
+
 function readText(rel: string) {
   try {
     return fs.readFileSync(path.join(process.cwd(), rel), "utf8");
@@ -458,14 +479,22 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   for (const id of enabledProviders) {
     const provider = providersCatalog[id as keyof typeof providersCatalog];
     if (!provider) continue;
-    const present = provider.env.filter((name) => hasEnv(name));
+    const stored = id === "chariow" ? await storedChariowSecrets() : null;
+    const present = provider.env.filter(
+      (name) => hasEnv(name) || Boolean(stored?.[name as keyof NonNullable<typeof stored>]),
+    );
+    const fromDashboard = provider.env.some(
+      (name) => !hasEnv(name) && Boolean(stored?.[name as keyof NonNullable<typeof stored>]),
+    );
     checks.push({
       id: `provider:${id}`,
       label: provider.label,
       status: present.length === provider.env.length ? "ok" : "missing",
       detail:
         present.length === provider.env.length
-          ? `Variables requises présentes (${provider.readiness}).`
+          ? fromDashboard
+            ? `Clés requises présentes (${provider.readiness}), enregistrées chiffrées depuis le tableau de bord propriétaire.`
+            : `Variables requises présentes (${provider.readiness}).`
           : `${present.length}/${provider.env.length} variable(s) requise(s) configurée(s).`,
       group: "Paiements",
     });
