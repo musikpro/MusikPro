@@ -5,6 +5,23 @@ function resendClient() {
   return key ? new Resend(key) : null;
 }
 
+const DEFAULT_BRAND = "MusikPro";
+
+export function brandName() {
+  return process.env.APP_NAME?.trim() || DEFAULT_BRAND;
+}
+
+/**
+ * Sender header with the brand as display name ("MusikPro <noreply@musikpro.net>"), so inboxes show
+ * the site name instead of the bare address. An EMAIL_FROM that already carries a name is kept as is.
+ */
+export function formatSender(from: string, brand = brandName()) {
+  const value = from.trim();
+  if (value.includes("<")) return value;
+  const safeBrand = brand.replace(/["<>\\\r\n]/g, "").trim() || DEFAULT_BRAND;
+  return `${safeBrand} <${value}>`;
+}
+
 export async function sendAuthEmail(input: {
   to: string;
   subject: string;
@@ -28,10 +45,10 @@ export async function sendAuthEmail(input: {
     if (process.env.NODE_ENV === "production") throw new Error("EMAIL_FROM is not configured with a verified sender");
   }
   const result = await resend.emails.send({
-    from: from ?? "noreply@example.com",
+    from: formatSender(from ?? "noreply@example.com"),
     to: input.to,
     subject: input.subject,
-    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h1>${escapeHtml(input.title)}</h1><p>Cette demande concerne votre compte ${escapeHtml(process.env.APP_NAME ?? "Africa SaaS Kit")}.</p><p><a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px">${escapeHtml(input.actionLabel)}</a></p><p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p></div>`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h1>${escapeHtml(input.title)}</h1><p>Cette demande concerne votre compte ${escapeHtml(brandName())}.</p><p><a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px">${escapeHtml(input.actionLabel)}</a></p><p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p></div>`,
   });
   if (result.error || !result.data?.id) {
     // Do not disclose provider payloads, recipients, or authentication links.
@@ -54,9 +71,9 @@ export async function sendTwoFactorEmail(input: { to: string; code: string }) {
   if (!from || /@example\.(com|org|net)$/i.test(from)) {
     if (process.env.NODE_ENV === "production") throw new Error("EMAIL_FROM is not configured with a verified sender");
   }
-  const appName = process.env.APP_NAME ?? "MusikPro";
+  const appName = brandName();
   const result = await resend.emails.send({
-    from: from ?? "noreply@example.com",
+    from: formatSender(from ?? "noreply@example.com"),
     to: input.to,
     subject: `Votre code de vérification ${appName}`,
     html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#181716"><h1>Vérification en deux étapes</h1><p>Utilisez ce code pour accéder au tableau de bord propriétaire ${escapeHtml(appName)}.</p><p style="font-size:32px;font-weight:800;letter-spacing:8px;color:#f26522">${escapeHtml(input.code)}</p><p>Ce code expire dans 5 minutes. Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p></div>`,
@@ -80,10 +97,10 @@ export async function sendSupportEmail(input: {
   }
   const supportEmail = process.env.SUPPORT_EMAIL?.trim() || "musikpro2026@gmail.com";
   const result = await resend.emails.send({
-    from,
+    from: formatSender(from),
     to: supportEmail,
     replyTo: input.requesterEmail,
-    subject: `[MusikPro Support] ${input.subject}`,
+    subject: `[${brandName()} Support] ${input.subject}`,
     html: `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#181716"><h1>Nouvelle demande de support</h1><p><strong>Catégorie :</strong> ${escapeHtml(input.category)}</p><p><strong>Client :</strong> ${escapeHtml(input.requesterName)}</p><p><strong>Email :</strong> ${escapeHtml(input.requesterEmail)}</p><p><strong>Téléphone :</strong> ${escapeHtml(input.phone || "Non renseigné")}</p><hr><p style="white-space:pre-wrap">${escapeHtml(input.message)}</p></div>`,
   });
   if (result.error || !result.data?.id) throw new Error("Support email delivery failed");
