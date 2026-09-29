@@ -22,7 +22,8 @@ export default function RefreshCatalogTranslationsButton() {
     startTransition(async () => {
       try {
         const result = await refreshCatalogTranslations();
-        setCounts(result.counts);
+        if (result.ok) setCounts(result.counts);
+        else setError(result.message);
       } catch (err) {
         setError(err instanceof Error ? err.message : "La mise à jour des traductions a échoué.");
       }
