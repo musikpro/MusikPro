@@ -1,183 +1,85 @@
 "use server";
-import { randomUUID } from "node:crypto";
-import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { libraryCollections } from "@/db/schema";
+import { discoverSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
+import { hideDiscoverSong, restoreDiscoverSong } from "@/lib/discover/server";
+import { DISCOVER_MAX_ITEMS_MAX, DISCOVER_MAX_ITEMS_MIN, DISCOVER_SORT_OPTIONS } from "@/lib/discover/types";
+import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
-export type LibraryCollectionActionState = { ok: boolean; message: string } | null;
-
-const baseSchema = z.object({
-  name: z.string().trim().min(2).max(80),
-  description: z.string().trim().min(5).max(280),
-  access: z.enum(["public", "private"]),
-  active: z.enum(["true", "false"]),
-  sortOrder: z.coerce.number().int().min(0).max(999),
-  styles: z.array(z.string().trim().min(1).max(60)).max(30),
+const settingsSchema = z.object({
+  enabled: z.enum(["true", "false"]),
+  sortBy: z.enum(DISCOVER_SORT_OPTIONS),
+  maxItems: z.coerce.number().int().min(DISCOVER_MAX_ITEMS_MIN).max(DISCOVER_MAX_ITEMS_MAX),
 });
-const idSchema = z.object({ id: z.string().trim().min(1).max(120) });
-const toggleSchema = idSchema.extend({ active: z.enum(["true", "false"]) });
-const reorderSchema = z.object({
-  order: z
-    .string()
-    .max(30000)
-    .transform((value, context) => {
-      try {
-        return JSON.parse(value) as unknown;
-      } catch {
-        context.addIssue({ code: "custom", message: "Ordre invalide." });
-        return z.NEVER;
-      }
-    })
-    .pipe(z.array(z.string().trim().min(1).max(120)).min(1).max(200))
-    .refine((ids) => new Set(ids).size === ids.length, "Chaque collection doit apparaître une seule fois."),
-});
+const songSchema = z.object({ songGroupId: z.string().trim().min(1).max(120) });
 
-function payload(formData: FormData) {
-  return baseSchema.parse({ ...Object.fromEntries(formData), styles: formData.getAll("styles") });
-}
-function slugify(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/&/g, " et ")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "")
-    .slice(0, 72);
-}
 function refresh() {
   revalidatePath("/admin/library");
   revalidatePath("/dashboard/discover");
   revalidatePath("/demo/discover");
 }
 
-export async function createLibraryCollection(
-  _previous: LibraryCollectionActionState,
-  formData: FormData,
-): Promise<LibraryCollectionActionState> {
-  const session = await requireAdmin();
-  const parsed = payload(formData);
-  const id = randomUUID();
-  const slug = slugify(parsed.name);
-  if (!slug) throw new Error("Le nom de la collection est invalide.");
-  await getServiceDb()
-    .insert(libraryCollections)
-    .values({ ...parsed, id, slug, active: parsed.active === "true" });
-  await writeAuditLog({
-    action: "library_collection.created",
-    actorId: session.user.id,
-    targetType: "library_collection",
-    targetId: id,
-    metadata: { name: parsed.name, access: parsed.access },
-  });
-  refresh();
-  redirect("/admin/library");
-}
-export async function updateLibraryCollection(
-  _previous: LibraryCollectionActionState,
-  formData: FormData,
-): Promise<LibraryCollectionActionState> {
-  const session = await requireAdmin();
+export async function saveDiscoverSettings(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
-    const id = idSchema.parse(Object.fromEntries(formData)).id;
-    const parsed = payload(formData);
-    const slug = slugify(parsed.name);
-    if (!slug) throw new Error("Le nom de la collection est invalide.");
+    const session = await requireAdmin();
+    const parsed = settingsSchema.parse(Object.fromEntries(formData));
+    const values = { enabled: parsed.enabled === "true", sortBy: parsed.sortBy, maxItems: parsed.maxItems };
     await getServiceDb()
-      .update(libraryCollections)
-      .set({
-        name: parsed.name,
-        slug,
-        description: parsed.description,
-        access: parsed.access,
-        active: parsed.active === "true",
-        styles: parsed.styles,
-        sortOrder: parsed.sortOrder,
-        updatedAt: new Date(),
-      })
-      .where(eq(libraryCollections.id, id));
+      .insert(discoverSettings)
+      .values({ id: "global", ...values, updatedBy: session.user.id })
+      .onConflictDoUpdate({ target: discoverSettings.id, set: { ...values, updatedBy: session.user.id, updatedAt: new Date() } });
     await writeAuditLog({
-      action: "library_collection.updated",
+      action: "discover.settings.updated",
       actorId: session.user.id,
-      targetType: "library_collection",
-      targetId: id,
-      metadata: { name: parsed.name, access: parsed.access },
+      targetType: "discover_settings",
+      targetId: "global",
+      metadata: values,
     });
     refresh();
-    return { ok: true, message: "Collection enregistrée." };
+    return { ok: true, message: "Réglages de la page Découvrir enregistrés." };
   } catch (error) {
-    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette collection.") };
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer les réglages.") };
   }
 }
-export async function toggleLibraryCollection(
-  _previous: LibraryCollectionActionState,
-  formData: FormData,
-): Promise<LibraryCollectionActionState> {
-  const session = await requireAdmin();
+
+export async function hideSongFromDiscover(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
-    const parsed = toggleSchema.parse(Object.fromEntries(formData));
-    const active = parsed.active !== "true";
-    await getServiceDb()
-      .update(libraryCollections)
-      .set({ active, updatedAt: new Date() })
-      .where(eq(libraryCollections.id, parsed.id));
+    const session = await requireAdmin();
+    const { songGroupId } = songSchema.parse(Object.fromEntries(formData));
+    await hideDiscoverSong(songGroupId, "admin");
     await writeAuditLog({
-      action: "library_collection.active.changed",
+      action: "discover.song.removed",
       actorId: session.user.id,
-      targetType: "library_collection",
-      targetId: parsed.id,
-      metadata: { active },
+      targetType: "song_group",
+      targetId: songGroupId,
+      metadata: { by: "admin" },
     });
     refresh();
-    return { ok: true, message: active ? "Collection publiée." : "Collection dépubliée." };
+    return { ok: true, message: "Chanson retirée de Découvrir." };
   } catch (error) {
-    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette collection.") };
+    return { ok: false, message: actionErrorMessage(error, "Impossible de retirer cette chanson.") };
   }
 }
-export async function deleteLibraryCollection(
-  _previous: LibraryCollectionActionState,
-  formData: FormData,
-): Promise<LibraryCollectionActionState> {
-  const session = await requireAdmin();
+
+export async function restoreSongToDiscover(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
-    const { id } = idSchema.parse(Object.fromEntries(formData));
-    await getServiceDb().delete(libraryCollections).where(eq(libraryCollections.id, id));
+    const session = await requireAdmin();
+    const { songGroupId } = songSchema.parse(Object.fromEntries(formData));
+    await restoreDiscoverSong(songGroupId, true);
     await writeAuditLog({
-      action: "library_collection.deleted",
+      action: "discover.song.restored",
       actorId: session.user.id,
-      targetType: "library_collection",
-      targetId: id,
+      targetType: "song_group",
+      targetId: songGroupId,
+      metadata: { by: "admin" },
     });
     refresh();
-    return { ok: true, message: "Collection supprimée." };
+    return { ok: true, message: "Chanson remise dans Découvrir." };
   } catch (error) {
-    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette collection.") };
+    return { ok: false, message: actionErrorMessage(error, "Impossible de remettre cette chanson.") };
   }
-}
-export async function reorderLibraryCollections(formData: FormData) {
-  const session = await requireAdmin();
-  const { order } = reorderSchema.parse(Object.fromEntries(formData));
-  const database = getServiceDb();
-  const existing = await database.select({ id: libraryCollections.id }).from(libraryCollections);
-  const ids = new Set(existing.map((row) => row.id));
-  if (order.length !== ids.size || order.some((id) => !ids.has(id)))
-    throw new Error("La liste des collections a changé. Recharge la page.");
-  const rows = JSON.stringify(order.map((id, index) => ({ id, sort_order: (index + 1) * 10 })));
-  await database.execute(
-    sql`update ${libraryCollections} set sort_order = ordered.sort_order, updated_at = now() from jsonb_to_recordset(${rows}::jsonb) as ordered(id text, sort_order integer) where ${libraryCollections.id} = ordered.id`,
-  );
-  await writeAuditLog({
-    action: "library_collection.reordered",
-    actorId: session.user.id,
-    targetType: "library_collection_catalog",
-    targetId: "global",
-    metadata: { order },
-  });
-  refresh();
 }

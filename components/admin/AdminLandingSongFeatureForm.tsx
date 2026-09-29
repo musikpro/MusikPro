@@ -1,14 +1,15 @@
 "use client";
-import { useActionState, useMemo, useRef, useState, type ChangeEvent } from "react";
+import Link from "next/link";
+import { useActionState, useMemo, useRef, useState } from "react";
+import AdminMediaPickerModal from "@/components/admin/AdminMediaPickerModal";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import { useAdminActionToast, type AdminActionState } from "@/components/admin/useAdminActionToast";
-import { uploadCoverImage } from "@/lib/demo/cover-actions";
 import { apiFetch } from "@/lib/api/client";
 import type { GeneratedSongOption } from "@/lib/trending/admin";
 import type { LandingSongFeatureSection } from "@/lib/landing-features/admin";
 
-type SongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number };
+type SongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number; audioUrl: string | null };
 type Values = { id?: string; songGroupId?: string; coverUrlOverride?: string | null };
 
 /**
@@ -17,32 +18,45 @@ type Values = { id?: string; songGroupId?: string; coverUrlOverride?: string | n
  * A song outside that recent window can still be reached by pasting its "Identifiant" from
  * /admin/generations — same lookup endpoint and pattern as TrendingPanel's "Ajouter par
  * identifiant". Picking an unpublished song auto-publishes it on save (see actions.ts), so the
- * pool isn't limited to already-published songs the way it used to be. Also supports an optional
- * cover image override uploaded via the existing authenticated /api/uploads/images route (lib/
- * demo/cover-actions.ts's uploadCoverImage, reused as-is rather than a second upload path). Used
+ * pool isn't limited to already-published songs the way it used to be. The picked song can be
+ * previewed before saving, and the optional cover image override is chosen from the shared media
+ * library (the Médias menu) in a modal — AdminMediaPickerModal — instead of a fresh upload. Used
  * both for adding a new slot inline and for editing an existing one at
  * /admin/landing-features/[id].
  */
 export default function AdminLandingSongFeatureForm({
   section,
+  sectionLabel,
   action,
   songs,
   usedSongGroupIds,
   values = {},
 }: {
   section: LandingSongFeatureSection;
+  sectionLabel: string;
   action: (previous: AdminActionState, formData: FormData) => Promise<AdminActionState>;
   songs: GeneratedSongOption[];
   usedSongGroupIds: string[];
   values?: Values;
 }) {
   const editing = Boolean(values.id);
-  const [state, formAction, pending] = useActionState<AdminActionState, FormData>(action, null);
-  useAdminActionToast(state);
   const [coverUrl, setCoverUrl] = useState(values.coverUrlOverride ?? "");
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [songGroupId, setSongGroupId] = useState(values.songGroupId ?? "");
+  const [playing, setPlaying] = useState(false);
+  // After a successful "add", the form goes back to its empty state (no song, no cover) so the
+  // next card is chosen from scratch; when editing, the saved values stay in place.
+  const [state, formAction, pending] = useActionState<AdminActionState, FormData>(async (previous, formData) => {
+    const result = await action(previous, formData);
+    if (result?.ok && !editing) {
+      setSongGroupId("");
+      setCoverUrl("");
+      setPlaying(false);
+    }
+    return result;
+  }, null);
+  useAdminActionToast(state);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
 
   // A song added via "Ajouter par identifiant" that isn't already in `songs` (outside the recent
   // window fetched server-side) — merged into the picker's options below.
@@ -55,23 +69,33 @@ export default function AdminLandingSongFeatureForm({
     () => new Set(usedSongGroupIds.filter((id) => id !== values.songGroupId)),
     [usedSongGroupIds, values.songGroupId],
   );
-  const options = useMemo(() => {
+  const allSongs = useMemo(() => {
     const map = new Map<string, SongDisplay>(songs.map((song) => [song.songGroupId, song]));
     for (const extra of Object.values(extraSongs)) if (!map.has(extra.songGroupId)) map.set(extra.songGroupId, extra);
-    return Array.from(map.values())
+    return Array.from(map.values());
+  }, [songs, extraSongs]);
+  const options = useMemo(() => {
+    return allSongs
       .filter((song) => !usedElsewhere.has(song.songGroupId))
       .map((song) => ({
         value: song.songGroupId,
         label: `${song.title}${song.styleLabel ? ` — ${song.styleLabel}` : ""} · ${song.plays} écoute${song.plays > 1 ? "s" : ""}`,
       }));
-  }, [songs, extraSongs, usedElsewhere]);
-  const [songGroupId, setSongGroupId] = useState(() => values.songGroupId ?? options[0]?.value ?? "");
+  }, [allSongs, usedElsewhere]);
+  const selectedSong = allSongs.find((song) => song.songGroupId === songGroupId) ?? null;
+
+  const togglePlay = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (playing) audio.pause();
+    else void audio.play().catch(() => setPlaying(false));
+  };
 
   const addSongById = async () => {
     const trimmed = idInput.trim();
     if (!trimmed) return;
     if (usedElsewhere.has(trimmed)) {
-      setIdLookupError("Cette chanson est déjà assignée à cette section.");
+      setIdLookupError("Cette chanson est déjà ajoutée dans une section de la landing page (une chanson n’est utilisable qu’une fois, avec sa version 1 et sa version 2).");
       return;
     }
     setIdLookupPending(true);
@@ -85,6 +109,7 @@ export default function AdminLandingSongFeatureForm({
       });
       setExtraSongs((prev) => ({ ...prev, [option.songGroupId]: option }));
       setSongGroupId(option.songGroupId);
+      setPlaying(false);
       setIdInput("");
     } catch (error) {
       setIdLookupError(error instanceof Error ? error.message : "Identifiant introuvable.");
@@ -93,43 +118,50 @@ export default function AdminLandingSongFeatureForm({
     }
   };
 
-  const handleFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    event.target.value = "";
-    if (!file) return;
-    setUploading(true);
-    setUploadError(false);
-    try {
-      setCoverUrl(await uploadCoverImage(file));
-    } catch {
-      setUploadError(true);
-    } finally {
-      setUploading(false);
-    }
-  };
-
   return (
     <form action={formAction} className="admin-editor-grid admin-landing-feature-form">
       <input type="hidden" name="section" value={section} />
       {values.id ? <input type="hidden" name="id" value={values.id} /> : null}
       <input type="hidden" name="coverUrlOverride" value={coverUrl} />
-      <label className="admin-editor-field">
+      <div className="admin-editor-field">
         <span>Chanson</span>
-        <AdminSelect
-          name="songGroupId"
-          ariaLabel="Chanson à assigner à cette carte"
-          options={options}
-          value={songGroupId}
-          onValueChange={setSongGroupId}
-        />
+        <div className="admin-ambient-song-row">
+          <AdminSelect
+            name="songGroupId"
+            ariaLabel="Chanson à assigner à cette carte"
+            options={options}
+            value={songGroupId}
+            placeholder="Choisir une chanson"
+            onValueChange={(next) => {
+              setSongGroupId(next);
+              setPlaying(false);
+            }}
+          />
+          <button type="button" className="admin-secondary-action" disabled={!selectedSong?.audioUrl} onClick={togglePlay}>
+            <Icon i={playing ? "pause" : "play"} size={15} />
+            {playing ? "Pause" : "Écouter la chanson"}
+          </button>
+        </div>
+        {selectedSong?.audioUrl ? (
+          <audio
+            key={selectedSong.audioUrl}
+            ref={audioRef}
+            src={selectedSong.audioUrl}
+            preload="none"
+            onPlay={() => setPlaying(true)}
+            onPause={() => setPlaying(false)}
+            onEnded={() => setPlaying(false)}
+            className="sr-only"
+          />
+        ) : null}
         {options.length === 0 ? (
           <small className="admin-field-error">
             {songs.length === 0
               ? "Aucune chanson générée pour l’instant — crée une chanson depuis le tableau de bord client pour pouvoir l’assigner ici."
-              : "Toutes les chansons récentes sont déjà assignées à cette section — ajoute-en une par identifiant ci-dessous."}
+              : "Toutes les chansons récentes sont déjà utilisées dans les sections de la landing page — ajoute-en une par identifiant ci-dessous."}
           </small>
         ) : null}
-      </label>
+      </div>
       <div className="admin-trending-add-by-id">
         <label htmlFor={`${section}-add-by-id`}>Ajouter par identifiant</label>
         <div className="admin-trending-add-by-id-row">
@@ -169,37 +201,46 @@ export default function AdminLandingSongFeatureForm({
         </small>
         {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
       </div>
-      <div className="admin-editor-field">
-        <span>Image de la carte (optionnel)</span>
-        {coverUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={coverUrl} alt="" className="admin-landing-feature-cover-preview" />
-        ) : null}
-        <div className="admin-btn-row">
-          <button type="button" className="admin-secondary-action" disabled={uploading} onClick={() => fileInputRef.current?.click()}>
-            <Icon i="upload" size={15} />
-            {uploading ? "Envoi…" : coverUrl ? "Changer l’image" : "Choisir une image"}
-          </button>
+      {/* « Bibliothèque populaire » has no card image: the hidden coverUrlOverride input above keeps any existing value untouched. */}
+      {section !== "library" ? (
+        <div className="admin-editor-field">
+          <span>Image de la carte (optionnel)</span>
           {coverUrl ? (
-            <button type="button" className="admin-secondary-action" onClick={() => setCoverUrl("")}>
-              <Icon i="x" size={15} /> Retirer
-            </button>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={coverUrl} alt="" className="admin-landing-feature-cover-preview" />
           ) : null}
+          <div className="admin-btn-row">
+            <button type="button" className="admin-secondary-action" onClick={() => setPickerOpen(true)}>
+              <Icon i="image" size={15} />
+              {coverUrl ? "Changer l’image" : "Choisir une image"}
+            </button>
+            {coverUrl ? (
+              <button type="button" className="admin-secondary-action" onClick={() => setCoverUrl("")}>
+                <Icon i="x" size={15} /> Retirer
+              </button>
+            ) : null}
+          </div>
+          <AdminMediaPickerModal
+            open={pickerOpen}
+            selectedUrl={coverUrl}
+            onSelect={(url) => {
+              setCoverUrl(url);
+              setPickerOpen(false);
+            }}
+            onClose={() => setPickerOpen(false)}
+          />
+          <small>Sans image, la pochette générée automatiquement pour cette chanson reste utilisée. Choisis une image liée à la musique, cohérente avec l’identité visuelle du site.</small>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/png,image/jpeg,image/webp,image/avif,image/gif"
-          className="sr-only"
-          onChange={handleFile}
-        />
-        {uploadError ? <small className="admin-field-error">Impossible d’envoyer cette image pour le moment.</small> : null}
-        <small>Sans image, la pochette générée automatiquement pour cette chanson reste utilisée. Choisis une image liée à la musique, cohérente avec l’identité visuelle du site.</small>
-      </div>
+      ) : null}
       <div className="admin-editor-actions is-wide">
-        <button type="submit" disabled={pending || uploading || !songGroupId}>
+        {editing ? (
+          <Link className="admin-secondary-action" href={`/admin/landing-features?tab=${section}`}>
+            Annuler
+          </Link>
+        ) : null}
+        <button type="submit" disabled={pending || !songGroupId}>
           <Icon i={editing ? "save" : "plus"} size={17} />
-          {editing ? "Enregistrer" : "Ajouter cette carte"}
+          {editing ? "Enregistrer" : `Ajouter à « ${sectionLabel} »`}
         </button>
       </div>
     </form>

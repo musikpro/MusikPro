@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import AdminOccasionEmojiPicker from "@/components/admin/AdminOccasionEmojiPicker";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
@@ -40,10 +41,7 @@ export default function AdminHeroAnimatedTextForm({
             placeholder="Ex. Anniversaire"
           />
         </label>
-        <label className="admin-editor-field">
-          <span>Emoji</span>
-          <input name="emoji" required minLength={1} maxLength={8} defaultValue={values.emoji ?? "🎵"} placeholder="🎵" />
-        </label>
+        <AdminOccasionEmojiPicker defaultEmoji={values.emoji ?? "🎵"} subject="du texte animé" />
         <label className="admin-editor-field">
           <span>Position d’affichage</span>
           <input name="sortOrder" required type="number" min="0" max="999" defaultValue={values.sortOrder ?? 100} />

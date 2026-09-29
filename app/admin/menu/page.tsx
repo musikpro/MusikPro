@@ -7,7 +7,7 @@ const links = [
   ["/admin", "Vue d’ensemble", "layout-dashboard"],
   ["/admin/users", "Utilisateurs", "users"],
   ["/admin/generations", "Générations", "music-2"],
-  ["/admin/library", "Bibliothèque", "library"],
+  ["/admin/library", "Découvrir", "library"],
   ["/admin/plans", "Crédits & tarifs", "coins"],
   ["/admin/music-styles", "Styles musicaux", "sliders-horizontal"],
   ["/admin/occasions", "Occasions", "calendar-heart"],

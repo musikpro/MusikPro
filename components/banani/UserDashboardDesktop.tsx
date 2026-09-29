@@ -13,6 +13,7 @@ import Icon from "./Icon";
 import Image from "./Image";
 import UserAvatar from "./UserAvatar";
 import StoreDownloadCard from "./StoreDownloadCard";
+import CardAudioPlayer from "./CardAudioPlayer";
 import AmbientPlayerButton from "./AmbientPlayerButton";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import WorkspaceBalanceCard from "./WorkspaceBalanceCard";
@@ -43,7 +44,7 @@ const trendingCards = [
   },
 ];
 
-type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; href: string | null };
+type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; audioUrl: string | null; real: boolean };
 
 export default function UserDashboardDesktop({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
@@ -53,15 +54,26 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
         title: tc.title,
         playsLabel: tc.plays,
         coverPrompt: tc.img,
-        href: null,
+        audioUrl: null,
+        real: false,
       }))
     : trending.map((song) => ({
         key: song.slug,
         title: song.title,
         playsLabel: formatPlays(song.plays),
         coverPrompt: null,
-        href: `/s/${song.slug}`,
+        audioUrl: song.audioUrl,
+        real: true,
       }));
+  // Trending songs play in an internal player right inside the dashboard — never in another tab.
+  const [nowPlayingTrend, setNowPlayingTrend] = useState<TrendCard | null>(null);
+  const playTrend = (trend: TrendCard) => {
+    if (!trend.audioUrl) {
+      demo.notify("Cette chanson n’est pas disponible à l’écoute pour le moment.");
+      return;
+    }
+    setNowPlayingTrend((current) => (current?.key === trend.key ? null : trend));
+  };
   const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const recentSongs = demo.songs.slice(0, 2).map((song) => {
@@ -258,7 +270,27 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                   </div>
                 )}
                 {visibleTrends.map((tc) => (
-                  <div key={tc.key} className="rounded-xl overflow-hidden relative h-28">
+                  <div
+                    key={tc.key}
+                    className={`rounded-xl overflow-hidden relative h-28${tc.real && nowPlayingTrend?.key !== tc.key ? " cursor-pointer" : ""}`}
+                    {...(tc.real && nowPlayingTrend?.key !== tc.key
+                      ? {
+                          role: "button",
+                          tabIndex: 0,
+                          "aria-label": `${t("Écouter la chanson")} — ${tc.title}`,
+                          onClick: () => playTrend(tc),
+                          onKeyDown: (event: React.KeyboardEvent) => {
+                            if (event.key === "Enter" || event.key === " ") {
+                              event.preventDefault();
+                              playTrend(tc);
+                            }
+                          },
+                        }
+                      : {})}
+                  >
+                    {nowPlayingTrend?.key === tc.key && nowPlayingTrend.audioUrl ? (
+                      <CardAudioPlayer title={nowPlayingTrend.title} audioUrl={nowPlayingTrend.audioUrl} onClose={() => setNowPlayingTrend(null)} />
+                    ) : null}
                     {tc.coverPrompt ? (
                       <Image ar="16:9" prompt={tc.coverPrompt} className="w-full h-full object-cover" />
                     ) : (
@@ -273,16 +305,10 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                         <Icon i="headphones" size={10} /> {tc.playsLabel}
                       </p>
                     </div>
-                    {tc.href ? (
-                      <a
-                        href={tc.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Écouter la chanson"
-                        className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
-                      >
-                        <Icon i="play" size={12} className="text-primary-foreground" />
-                      </a>
+                    {tc.real ? (
+                      <span aria-hidden="true" className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                        <Icon i={nowPlayingTrend?.key === tc.key ? "pause" : "play"} size={12} className="text-primary-foreground" />
+                      </span>
                     ) : (
                       <button
                         type="button"

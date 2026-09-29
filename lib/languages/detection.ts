@@ -8,6 +8,7 @@ import { db } from "@/db";
 import { countryLanguages, localizationSettings } from "@/db/schema";
 import { cacheGet, cacheSet } from "@/lib/cache/upstash";
 import { resolveCurrencyForCountry, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
+import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
 import { requireEnv } from "@/lib/security/env";
 import type { LanguageOption } from "./catalog";
 import { extractVercelCountryHeader } from "./country-header";
@@ -149,5 +150,5 @@ export async function detectCurrency(headersList: Headers): Promise<CreditCurren
   if (!country) return null;
 
   const { currencyCode: override } = await resolveCountryLanguageRow(country);
-  return resolveCurrencyForCountry(country, override ? { [country]: override } : {});
+  return resolveCurrencyForCountry(country, override ? { [country]: override } : {}, await getCurrencyCatalog());
 }

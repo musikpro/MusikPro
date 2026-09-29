@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEMO_DETAIL_MAX_CHARACTERS, DEMO_STORY_MAX_CHARACTERS } from "./musikpro-demo";
 
 export const openAiSettingsSchema = z.object({
   apiKey: z.string().trim().min(20).max(500).optional().or(z.literal("")),
@@ -41,7 +42,36 @@ export const musicfulSettingsSchema = z.object({
   maxGenerationsPerUserPerHour: z.coerce.number().int().min(1).max(1_000),
   maxConcurrentJobs: z.coerce.number().int().min(1).max(50),
   versionsPerGeneration: z.coerce.number().int().min(1).max(3),
+  redirectDelaySeconds: z.coerce.number().int().min(10).max(1_800),
   keepExtraGeneratedVariant: z.enum(["true", "false"]),
+});
+
+/** Generic settings of any non-Musicful audio provider (lib/ai/audio-providers/catalog.ts). */
+export const audioProviderSettingsSchema = z.object({
+  provider: z.string().trim().min(2).max(40),
+  apiKey: z.string().trim().min(8).max(1_000).optional().or(z.literal("")),
+  enabled: z.enum(["true", "false"]),
+  apiBaseUrl: z
+    .string()
+    .trim()
+    .url("URL invalide")
+    .max(300)
+    .refine((value) => value.startsWith("https://"), "l’URL doit commencer par https://")
+    .or(z.literal("")),
+  defaultModel: z.string().trim().max(120),
+  defaultInstrumental: z.enum(["true", "false"]),
+  defaultGender: musicfulGenderEnum,
+  requestTimeoutMs: z.coerce.number().int().min(5_000).max(120_000),
+  pollingIntervalMs: z.coerce.number().int().min(2_000).max(30_000),
+  maxPollingMinutes: z.coerce.number().int().min(1).max(60),
+  maxRetries: z.coerce.number().int().min(0).max(5),
+  allowLyricsToMusic: z.boolean(),
+  strictStyleAdherence: z.boolean(),
+  maxGenerationsPerUserPerDay: z.coerce.number().int().min(1).max(1_000),
+  maxGenerationsPerUserPerHour: z.coerce.number().int().min(1).max(1_000),
+  maxConcurrentJobs: z.coerce.number().int().min(1).max(50),
+  versionsPerGeneration: z.coerce.number().int().min(1).max(3),
+  redirectDelaySeconds: z.coerce.number().int().min(10).max(1_800),
 });
 
 export const musicfulGenerateRequestSchema = z.object({
@@ -59,6 +89,7 @@ export type MusicfulGenerateRequest = z.infer<typeof musicfulGenerateRequestSche
 export const songGenerateRequestSchema = z.object({
   occasion: z.string().trim().min(1).max(100),
   genre: z.string().trim().min(1).max(100),
+  recipientName: z.string().trim().max(120).optional().default(""),
   mood: z.string().trim().max(100).optional().default(""),
   voice: z.string().trim().max(80).optional().default(""),
   lyrics: z.string().trim().min(1).max(30_000),
@@ -77,14 +108,26 @@ export const musicfulApiKeyInfoSchema = z.object({
   key_name: z.string().nullable().optional(),
 });
 
+/**
+ * Musicful reports `audio_url` / `cover_url` as an EMPTY STRING while a task is still processing (and
+ * the cover can land well after the audio). A strict `.url()` made the whole task fail to parse in
+ * those states, so the poll threw, the job stayed "processing", and a song whose MP3 was already
+ * ready was only detected once the cover URL also became valid. An empty or malformed value is
+ * treated as "not available yet" instead — each field is judged on its own.
+ */
+const optionalUrl = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() === "" ? null : value),
+  z.string().url().nullable().optional().catch(null),
+);
+
 export const musicfulTaskSchema = z.object({
   id: z.string(),
   duration: z.number(),
   status: z.number(),
   title: z.string().nullable().optional(),
   style: z.string().nullable().optional(),
-  audio_url: z.string().url().nullable().optional(),
-  cover_url: z.string().url().nullable().optional(),
+  audio_url: optionalUrl,
+  cover_url: optionalUrl,
   song_id: z.string().nullable().optional(),
   lyric: z.string().nullable().optional(),
   fail_code: z.number().nullable().optional(),
@@ -116,7 +159,7 @@ export const anthropicCostReportSchema = z.object({
 
 const lyricsContextSchema = z.object({
   occasion: z.string().trim().min(1).max(100),
-  story: z.string().trim().min(2).max(5_000),
+  story: z.string().trim().min(2).max(DEMO_STORY_MAX_CHARACTERS),
   recipientName: z.string().trim().max(120).optional().default(""),
   recipientRelation: z.string().trim().max(120).optional().default(""),
   recipientPronunciation: z.string().trim().max(300).optional().default(""),
@@ -126,7 +169,7 @@ const lyricsContextSchema = z.object({
   mood: z.string().trim().max(100).optional().default(""),
   language: z.string().trim().min(1).max(50),
   voice: z.string().trim().min(1).max(80),
-  additionalDetails: z.string().trim().max(1_000).optional().default(""),
+  additionalDetails: z.string().trim().max(DEMO_DETAIL_MAX_CHARACTERS).optional().default(""),
 });
 
 export const aiLyricsTaskSchema = z.discriminatedUnion("task", [

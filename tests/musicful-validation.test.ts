@@ -29,6 +29,7 @@ describe("Musicful settings validation", () => {
     maxGenerationsPerUserPerHour: "2",
     maxConcurrentJobs: "2",
     versionsPerGeneration: "2",
+    redirectDelaySeconds: "180",
     keepExtraGeneratedVariant: "true",
   };
 
@@ -56,6 +57,13 @@ describe("Musicful settings validation", () => {
   it("rejects a versions-per-generation setting outside 1-3", () => {
     expect(musicfulSettingsSchema.safeParse({ ...validSettings, versionsPerGeneration: "0" }).success).toBe(false);
     expect(musicfulSettingsSchema.safeParse({ ...validSettings, versionsPerGeneration: "4" }).success).toBe(false);
+  });
+
+  it("bounds redirectDelaySeconds between 10 and 1800 seconds", () => {
+    for (const ok of ["10", "180", "1800"])
+      expect(musicfulSettingsSchema.safeParse({ ...validSettings, redirectDelaySeconds: ok }).success).toBe(true);
+    for (const bad of ["0", "9", "1801", "-5", "abc", ""])
+      expect(musicfulSettingsSchema.safeParse({ ...validSettings, redirectDelaySeconds: bad }).success).toBe(false);
   });
 
   it("accepts either choice for keepExtraGeneratedVariant", () => {
@@ -96,6 +104,27 @@ describe("Musicful task response validation", () => {
     };
     expect(musicfulTaskSchema.safeParse(task).success).toBe(true);
     expect(musicfulTasksSchema.safeParse([task]).success).toBe(true);
+  });
+
+  it("treats the empty audio/cover URLs Musicful sends while processing as not available yet", () => {
+    const parsed = musicfulTasksSchema.parse([
+      { id: "1", duration: -1, status: 0, audio_url: "", cover_url: "", song_id: "" },
+    ]);
+    expect(parsed[0].audio_url).toBeNull();
+    expect(parsed[0].cover_url).toBeNull();
+  });
+
+  it("still delivers the audio when the cover URL is not ready yet", () => {
+    const parsed = musicfulTasksSchema.parse([
+      { id: "1", duration: 162000, status: 0, audio_url: "https://files.musicful.ai/a.mp3", cover_url: "" },
+    ]);
+    expect(parsed[0].audio_url).toBe("https://files.musicful.ai/a.mp3");
+    expect(parsed[0].cover_url).toBeNull();
+  });
+
+  it("ignores a malformed URL instead of failing the whole task", () => {
+    const parsed = musicfulTasksSchema.parse([{ id: "1", duration: 1, status: 0, audio_url: "not a url" }]);
+    expect(parsed[0].audio_url).toBeNull();
   });
 
   it("rejects a task payload missing required numeric fields", () => {

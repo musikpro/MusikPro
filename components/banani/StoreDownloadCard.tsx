@@ -25,50 +25,51 @@ export function AppleLogo() {
   );
 }
 
-export default function StoreDownloadCard({ compact = false }: { compact?: boolean }) {
+/**
+ * The Google Play / App Store buttons, shared by the dashboard card and the mobile drawer. With a
+ * store link configured (/admin store links) they open it in a new tab; without one they say the
+ * app is coming soon instead of doing nothing.
+ */
+export function StoreBadges({ className = "musik-store-actions" }: { className?: string }) {
   const demo = useDemo();
   const unavailable = () => demo.notify("L’application MusikPro sera bientôt disponible sur les stores.");
   const { googlePlayUrl, appStoreUrl } = demo.storeLinks;
+  const stores = [
+    { url: googlePlayUrl, logo: <GooglePlayLogo />, label: "Télécharger MusikPro sur Google Play", small: "Disponible sur", name: "Google Play" },
+    { url: appStoreUrl, logo: <AppleLogo />, label: "Télécharger MusikPro sur l’App Store", small: "Télécharger dans", name: "l’App Store" },
+  ];
+  return (
+    <div className={className}>
+      {stores.map((store) => {
+        const content = (
+          <>
+            {store.logo}
+            <span>
+              <small>{store.small}</small>
+              <strong>{store.name}</strong>
+            </span>
+          </>
+        );
+        return store.url ? (
+          <a key={store.name} href={store.url} target="_blank" rel="noopener noreferrer" aria-label={store.label}>
+            {content}
+          </a>
+        ) : (
+          <button key={store.name} type="button" data-demo-ready onClick={unavailable} aria-label={store.label}>
+            {content}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function StoreDownloadCard({ compact = false }: { compact?: boolean }) {
   return (
     <section className={`musik-store-card ${compact ? "musik-store-card-compact" : ""}`}>
       <h2>{t("Télécharger l’application MusikPro")}</h2>
       <p>{t("Créez vos chansons partout, à tout moment.")}</p>
-      <div className="musik-store-actions">
-        {googlePlayUrl ? (
-          <a href={googlePlayUrl} target="_blank" rel="noopener noreferrer" aria-label="Télécharger MusikPro sur Google Play">
-            <GooglePlayLogo />
-            <span>
-              <small>Disponible sur</small>
-              <strong>Google Play</strong>
-            </span>
-          </a>
-        ) : (
-          <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur Google Play">
-            <GooglePlayLogo />
-            <span>
-              <small>Disponible sur</small>
-              <strong>Google Play</strong>
-            </span>
-          </button>
-        )}
-        {appStoreUrl ? (
-          <a href={appStoreUrl} target="_blank" rel="noopener noreferrer" aria-label="Télécharger MusikPro sur l’App Store">
-            <AppleLogo />
-            <span>
-              <small>Télécharger dans</small>
-              <strong>l’App Store</strong>
-            </span>
-          </a>
-        ) : (
-          <button type="button" data-demo-ready onClick={unavailable} aria-label="Télécharger MusikPro sur l’App Store">
-            <AppleLogo />
-            <span>
-              <small>Télécharger dans</small>
-              <strong>l’App Store</strong>
-            </span>
-          </button>
-        )}
-      </div>
+      <StoreBadges />
     </section>
   );
 }

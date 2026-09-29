@@ -17,6 +17,8 @@ type AdminSelectProps = {
   value?: string;
   onValueChange?: (value: string) => void;
   className?: string;
+  /** Shown when no option is selected (value not among the options) instead of falling back to the first one. */
+  placeholder?: string;
 };
 
 export default function AdminSelect({
@@ -27,6 +29,7 @@ export default function AdminSelect({
   value,
   onValueChange,
   className = "",
+  placeholder,
 }: AdminSelectProps) {
   const fallbackValue = defaultValue ?? options[0]?.value ?? "";
   const [internalValue, setInternalValue] = useState(fallbackValue);
@@ -43,7 +46,8 @@ export default function AdminSelect({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuId = useId();
   const currentValue = value ?? internalValue;
-  const selected = options.find((item) => item.value === currentValue) ?? options[0];
+  const selected =
+    options.find((item) => item.value === currentValue) ?? (placeholder === undefined ? options[0] : undefined);
 
   const placeMenu = () => {
     const rect = triggerRef.current?.getBoundingClientRect();
@@ -178,7 +182,7 @@ export default function AdminSelect({
           }
         }}
       >
-        <span>{selected?.label ?? (options.length === 0 ? "Aucune option disponible" : "Sélectionner")}</span>
+        <span>{selected?.label ?? (options.length === 0 ? "Aucune option disponible" : (placeholder ?? "Sélectionner"))}</span>
         <Icon i="chevron-down" size={15} />
       </button>
       {typeof document !== "undefined" ? createPortal(menu, document.body) : null}

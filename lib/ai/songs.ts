@@ -1,9 +1,12 @@
 import "server-only";
+import { stripVersionSuffix, withVersionSuffix } from "@/lib/ai/song-title";
 import { randomBytes, randomUUID } from "node:crypto";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs, songPublications } from "@/db/schema";
-import { createMusicJob, submitSongGroupJobs, pollMusicJob, MusicJobOwnershipError } from "./music-jobs";
+import { createMusicJob, MusicJobOwnershipError } from "./music-jobs";
+import { pollJobForProvider, submitSongGroupJobsForProvider } from "./audio-providers/dispatch";
+import { findSongGroupUsages } from "./song-usage";
 
 type JobRow = typeof musicGenerationJobs.$inferSelect;
 
@@ -78,7 +81,7 @@ function toGroupView(jobs: JobRow[]): SongGroupView {
   const status: SongGroupView["status"] = hasCompleted ? "completed" : hasPending ? "processing" : "failed";
   return {
     songGroupId: first.songGroupId!,
-    title: first.title || "Chanson MusikPro",
+    title: stripVersionSuffix(first.title || "") || "Chanson MusikPro",
     occasion: first.occasion,
     style: extractGenreLabel(first.style),
     lyrics: first.lyrics,
@@ -104,6 +107,7 @@ export async function submitSongGeneration(
   },
   model: string,
   versionsPerGeneration: number,
+  providerId = "musicful",
 ) {
   const songGroupId = randomUUID();
   const jobs = await Promise.all(
@@ -111,18 +115,18 @@ export async function submitSongGeneration(
       createMusicJob(
         userId,
         {
-          title: input.title,
+          title: withVersionSuffix(input.title, index + 1),
           style: input.style,
           lyrics: input.lyrics,
           gender: input.gender,
           instrumental: input.instrumental ?? 0,
         },
         model,
-        { songGroupId, versionLabel: `Version ${index + 1}`, occasion: input.occasion },
+        { songGroupId, versionLabel: `Version ${index + 1}`, occasion: input.occasion, provider: providerId },
       ),
     ),
   );
-  const { succeeded, failed } = await submitSongGroupJobs(jobs.map((job) => job.id));
+  const { succeeded, failed } = await submitSongGroupJobsForProvider(jobs.map((job) => job.id));
   return { songGroupId, succeeded, failed };
 }
 
@@ -132,17 +136,24 @@ export async function submitSongGeneration(
  * "processing" job never advances on its own, so any read path that skips this stays
  * stuck forever even though the underlying Musicful task may already be done.
  */
+/** Max time the library listing waits for pending provider polls before answering with what the database holds. */
+const LIST_POLL_BUDGET_MS = 4_000;
+
 async function refreshPendingRows(rows: JobRow[], userId: string): Promise<JobRow[]> {
   const pending = rows.filter((row) => !TERMINAL_STATUSES.has(row.status));
   if (!pending.length) return rows;
-  await Promise.all(
+  // Bounded wait: a slow audio provider must never make the whole library request hang past the browser's
+  // timeout (the page would then not even learn that a song is generating). Whatever is not finished within
+  // the budget keeps being polled per song by the client (/api/songs/[groupId]).
+  const polls = Promise.all(
     pending.map((row) =>
-      pollMusicJob(row.id, userId).catch((error) => {
+      pollJobForProvider(row.id, userId).catch((error) => {
         if (error instanceof MusicJobOwnershipError) return null;
         return null;
       }),
     ),
   );
+  await Promise.race([polls, new Promise<void>((resolve) => setTimeout(resolve, LIST_POLL_BUDGET_MS))]);
   const database = getServiceDb();
   return database
     .select()
@@ -182,7 +193,7 @@ export async function getSongGroupForUser(userId: string, songGroupId: string): 
   if (pending.length) {
     await Promise.all(
       pending.map((row) =>
-        pollMusicJob(row.id, userId).catch((error) => {
+        pollJobForProvider(row.id, userId).catch((error) => {
           if (error instanceof MusicJobOwnershipError) return null;
           return null;
         }),
@@ -197,7 +208,16 @@ export async function getSongGroupForUser(userId: string, songGroupId: string): 
   return toGroupView(rows);
 }
 
+/** Thrown when a song can't be deleted because the platform currently displays it somewhere. */
+export class SongInUseError extends Error {
+  constructor(public usages: string[]) {
+    super("SONG_IN_USE");
+  }
+}
+
 export async function removeSongGroupForUser(userId: string, songGroupId: string) {
+  const usages = await findSongGroupUsages(songGroupId);
+  if (usages.length) throw new SongInUseError(usages);
   const database = getServiceDb();
   await database
     .delete(musicGenerationJobs)

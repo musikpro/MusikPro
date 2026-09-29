@@ -29,7 +29,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin", icon: "layout-dashboard", label: "Vue d’ensemble" },
       { href: "/admin/users", icon: "users", label: "Utilisateurs" },
       { href: "/admin/generations", icon: "music-2", label: "Générations" },
-      { href: "/admin/library", icon: "library", label: "Bibliothèque" },
+      { href: "/admin/library", icon: "library", label: "Découvrir" },
     ],
   },
   {

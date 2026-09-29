@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { demoCurrencies, formatDemoPackPrice } from "@/lib/demo/musikpro-data";
+import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { apiFetch } from "@/lib/api/client";
 import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
@@ -88,7 +88,7 @@ export default function CreationPackScreen() {
             showSelectionMark={false}
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
-            options={demoCurrencies.map((currency) => ({
+            options={demo.currencies.map((currency) => ({
               value: currency.code,
               label: currency.label,
               display: currency.symbol,
@@ -157,7 +157,7 @@ export default function CreationPackScreen() {
                         credits: getCreditsConsumed(pack.credits, pack.generationCost),
                       })}
                     </small>
-                    <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency)}</b>
+                    <b>{formatDemoPackPrice(pack.priceValue, demo.choices.currency, demo.currencies)}</b>
                   </span>
                 </button>
               );
@@ -230,18 +230,24 @@ export default function CreationPackScreen() {
           </span>
           {demo.pack && demo.coupon ? (
             <span className="creation-pack-total-discounted">
-              <s>{formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency)}</s>
-              <strong>{formatDemoPackPrice(demo.coupon.finalAmount, demo.choices.currency)}</strong>
+              <s>{formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency, demo.currencies)}</s>
+              <strong>{formatDemoPackPrice(demo.coupon.finalAmount, demo.choices.currency, demo.currencies)}</strong>
             </span>
           ) : (
-            <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency) : "—"}</strong>
+            <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency, demo.currencies) : "—"}</strong>
           )}
         </div>
         <button
           type="button"
           data-demo-ready="true"
           disabled={!demo.pack}
-          onClick={() => demo.pack && demo.go("/dashboard/payment-preview/chariow")}
+          onClick={() => {
+            if (!demo.pack) return;
+            try {
+              window.sessionStorage.removeItem("musikpro:chariow-checkout-started");
+            } catch {}
+            demo.go("/dashboard/payment-preview/chariow");
+          }}
         >
           {t("Aller au paiement")}
           <Icon i="arrow-right" size={19} />

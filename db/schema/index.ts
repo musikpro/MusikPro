@@ -322,6 +322,41 @@ export const countryLanguages = pgTable("country_languages", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/**
+ * Admin-managed display currencies (Langues et Monnaies > Monnaies). XOF is the source-of-truth
+ * currency of every price; `unitsPerUsd` is how many units of this currency equal 1 USD, so a XOF
+ * price is converted to USD first and from USD to every other currency (see lib/credit-plans/currency.ts).
+ */
+export const currencies = pgTable("currencies", {
+  code: text("code").primaryKey(),
+  label: text("label").notNull(),
+  symbol: text("symbol").notNull(),
+  unitsPerUsd: numeric("units_per_usd", { precision: 18, scale: 6, mode: "number" }).notNull(),
+  decimals: integer("decimals").notNull().default(2),
+  enabled: boolean("enabled").notNull().default(true),
+  /** When true, "Actualiser les taux" may overwrite `unitsPerUsd` from the exchange-rate services. */
+  autoUpdate: boolean("auto_update").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(100),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/** Single-row settings of the exchange-rate refresh (see lib/credit-plans/fx-rates.ts). */
+export const currencySettings = pgTable("currency_settings", {
+  id: text("id").primaryKey().default("global"),
+  /** "auto" (fallback chain in default order) or the id of the service to try first. */
+  rateProvider: text("rate_provider").notNull().default("auto"),
+  lastSyncedAt: timestamp("last_synced_at"),
+  lastSyncProvider: text("last_sync_provider"),
+  lastSyncMessage: text("last_sync_message"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/**
+ * @deprecated The "Collections" system of the Découvrir page was retired in favour of an automatic
+ * community library (discoverSettings / discoverHiddenSongs below). The table is kept so no
+ * existing data is dropped; nothing reads or writes it anymore.
+ */
 export const libraryCollections = pgTable(
   "library_collections",
   {
@@ -344,6 +379,29 @@ export const libraryCollections = pgTable(
     ),
   }),
 );
+
+/** Global setting (single "global" row) of the client "Découvrir" page, edited from /admin/library. */
+export const discoverSettings = pgTable("discover_settings", {
+  id: text("id").primaryKey().default("global"),
+  /** Master switch: when off the page shows no community songs at all. */
+  enabled: boolean("enabled").notNull().default(true),
+  /** "recent" (newest first) or "popular" (most played first). */
+  sortBy: text("sort_by").notNull().default("recent"),
+  maxItems: integer("max_items").notNull().default(60),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/**
+ * Songs kept out of "Découvrir". Every completed song is listed automatically; its owner (or the
+ * SaaS owner, for moderation) removes it by adding a row here — deleting the row lists it again.
+ */
+export const discoverHiddenSongs = pgTable("discover_hidden_songs", {
+  songGroupId: text("song_group_id").primaryKey(),
+  /** "owner" (removed by the song's creator) or "admin" (moderation) — only an admin can undo "admin". */
+  hiddenBy: text("hidden_by").notNull().default("owner"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
 
 export * from "./auth.generated";
 
@@ -511,12 +569,19 @@ export const aiProviderConfigs = pgTable("ai_provider_configs", {
 
 export const audioProviderConfigs = pgTable("audio_provider_configs", {
   id: text("id").primaryKey(),
+  /** Audio provider id from lib/ai/audio-providers/catalog.ts ("musicful", "secondary", ...). */
   provider: text("provider").notNull().unique().default("musicful"),
+  /** The provider new song generations are sent to. No flagged row = Musicful (historical default). */
+  isDefaultForAudio: boolean("is_default_for_audio").notNull().default(false),
   enabled: boolean("enabled").notNull().default(false),
   apiKeyCiphertext: text("api_key_ciphertext"),
   apiKeyIv: text("api_key_iv"),
   apiKeyAuthTag: text("api_key_auth_tag"),
   apiKeyLast4: text("api_key_last4"),
+  /** Encrypted secret token embedded in the provider webhook URL (providers that call back, e.g. MusicGPT). */
+  webhookTokenCiphertext: text("webhook_token_ciphertext"),
+  webhookTokenIv: text("webhook_token_iv"),
+  webhookTokenAuthTag: text("webhook_token_auth_tag"),
   apiBaseUrl: text("api_base_url").notNull().default("https://api.musicful.ai"),
   defaultModel: text("default_model").notNull().default("MFV3.0"),
   defaultInstrumental: boolean("default_instrumental").notNull().default(false),
@@ -574,6 +639,13 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
    * made; this only changes what MusikPro shows).
    */
   keepExtraGeneratedVariant: boolean("keep_extra_generated_variant").notNull().default(true),
+  /**
+   * How long the customer-facing "Ta chanson est en création…" screen waits for the MP3 before
+   * redirecting automatically to "Mes chansons" (where a still-processing song keeps refreshing
+   * on its own). Purely a UI delay: it never cancels or shortens the Musicful job itself, which
+   * keeps running and is bounded separately by maxPollingMinutes.
+   */
+  redirectDelaySeconds: integer("redirect_delay_seconds").notNull().default(180),
   lastConnectionStatus: text("last_connection_status"),
   lastConnectionError: text("last_connection_error"),
   lastTestedAt: timestamp("last_tested_at"),

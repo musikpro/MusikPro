@@ -9,6 +9,7 @@ import AdminSecretField from "@/components/admin/AdminSecretField";
 import { requireAdmin } from "@/lib/auth/session";
 import { getChariowConfiguration } from "@/lib/payments/chariow-config";
 import { listChariowProducts } from "@/lib/payments/providers/chariow";
+import { paymentWebhookUrl } from "@/lib/payments/webhook-url";
 import { deletePlanMapping, saveChariowProvider, savePlanMapping } from "../actions";
 
 function InfoTip({ text }: { text: string }) {
@@ -33,7 +34,11 @@ export default async function ChariowProviderPage() {
   const planMap = new Map(allPlans.map((plan) => [plan.id, plan]));
   let apiLast4 = "";
   let webhookLast4 = "";
+  // Public HTTPS base (PAYMENT_WEBHOOK_BASE_URL, e.g. an ngrok tunnel in development) — never localhost.
   let webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://votre-domaine.com"}/api/webhooks/chariow`;
+  try {
+    webhookUrl = paymentWebhookUrl("chariow");
+  } catch {}
   try {
     const stored = await getChariowConfiguration();
     apiLast4 = stored.config.apiKey?.last4 || "";

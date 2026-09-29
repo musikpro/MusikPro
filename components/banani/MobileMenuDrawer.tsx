@@ -4,6 +4,7 @@ import { useEffect, useRef, type RefObject } from "react";
 import { demoDestination } from "@/lib/demo/navigation";
 import Icon from "./Icon";
 import QuickLanguageSelect from "./QuickLanguageSelect";
+import { StoreBadges } from "./StoreDownloadCard";
 import UserAvatar from "./UserAvatar";
 import { useDemo } from "./DemoProvider";
 import { translate as t } from "@/lib/i18n/translate";
@@ -88,6 +89,8 @@ export default function MobileMenuDrawer({
           <span>{t("Langue")}</span>
           <QuickLanguageSelect compact />
         </div>
+
+        <StoreBadges className="musik-store-actions mobile-menu-stores" />
 
         <button type="button" className="mobile-menu-profile" onClick={() => navigate("Mon Profil")}>
           <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-12 h-12 rounded-xl" />

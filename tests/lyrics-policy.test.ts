@@ -17,3 +17,18 @@ describe("lyrics policy", () => {
     expect(formatLyricsDuration(estimateLyricsDurationSeconds(900))).toBe("~4:00");
   });
 });
+
+describe("stripLyricsMarkdown", () => {
+  it("removes Markdown title and bold markers but keeps the section tags and sung lines", async () => {
+    const { stripLyricsMarkdown } = await import("../lib/ai/lyrics-policy");
+    const input = "# A-wa, Ma Force\n\n**[Couplet 1]**\nDix ans que tu es là\n**[Refrain]**\nA-wa, A-wa\n\n\n\n**[Pont]**\nMerci";
+    expect(stripLyricsMarkdown(input)).toBe(
+      "A-wa, Ma Force\n\n[Couplet 1]\nDix ans que tu es là\n[Refrain]\nA-wa, A-wa\n\n[Pont]\nMerci",
+    );
+  });
+
+  it("leaves plain lyrics unchanged", async () => {
+    const { stripLyricsMarkdown } = await import("../lib/ai/lyrics-policy");
+    expect(stripLyricsMarkdown("Ligne 1\nLigne 2")).toBe("Ligne 1\nLigne 2");
+  });
+});

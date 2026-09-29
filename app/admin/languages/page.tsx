@@ -7,9 +7,11 @@ import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
 import { getServiceDb } from "@/db";
-import { countryLanguages, languages } from "@/db/schema";
+import { countryLanguages, currencySettings, languages } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { creditCurrencies } from "@/lib/credit-plans/currency";
+import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
+import type { CreditCurrency } from "@/lib/credit-plans/currency";
+import CurrencySection from "./CurrencySection";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { deleteLanguage, removeCountryLanguage, setCountryLanguage, toggleLanguageScope } from "./actions";
 
@@ -96,7 +98,9 @@ function CountryLanguageSection({
   mappedCountries,
   availableCountries,
   interfaceLanguages,
+  currencyOptions,
 }: {
+  currencyOptions: CreditCurrency[];
   mappedCountries: Array<typeof countryLanguages.$inferSelect>;
   availableCountries: Array<{ code: string; name: string; flag: string }>;
   interfaceLanguages: Array<typeof languages.$inferSelect>;
@@ -153,7 +157,7 @@ function CountryLanguageSection({
                         name="currencyCode"
                         ariaLabel={`Monnaie pour ${row.countryName}`}
                         defaultValue={row.currencyCode}
-                        options={creditCurrencies.map((currency) => ({ value: currency.code, label: currency.label }))}
+                        options={currencyOptions.map((currency) => ({ value: currency.code, label: currency.label }))}
                       />
                     </div>
                   </AdminActionForm>
@@ -212,8 +216,8 @@ function CountryLanguageSection({
             <AdminSelect
               name="currencyCode"
               ariaLabel="Monnaie associée"
-              defaultValue={creditCurrencies[0]?.code}
-              options={creditCurrencies.map((currency) => ({ value: currency.code, label: currency.label }))}
+              defaultValue={currencyOptions[0]?.code}
+              options={currencyOptions.map((currency) => ({ value: currency.code, label: currency.label }))}
             />
           </div>
           <div className="admin-editor-actions">
@@ -230,10 +234,20 @@ function CountryLanguageSection({
 export default async function AdminLanguagesPage() {
   await requireAdmin();
   const serviceDb = getServiceDb();
-  const [rows, countryLanguageRows] = await Promise.all([
+  const [rows, countryLanguageRows, currencyCatalog, [rateSettings]] = await Promise.all([
     serviceDb.select().from(languages).orderBy(asc(languages.name)),
     serviceDb.select().from(countryLanguages),
+    getCurrencyCatalog(),
+    serviceDb.select().from(currencySettings).limit(1).catch(() => []),
   ]);
+  const countryCountByCurrency: Record<string, number> = {};
+  for (const row of countryLanguageRows) {
+    countryCountByCurrency[row.currencyCode] = (countryCountByCurrency[row.currencyCode] ?? 0) + 1;
+  }
+  // Countries can only be tied to a currency the owner displays (plus the one already assigned).
+  const countryCurrencyOptions = currencyCatalog.filter(
+    (currency) => currency.enabled || countryCountByCurrency[currency.code],
+  );
   const mappedCodes = new Set(countryLanguageRows.map((row) => row.countryCode));
   const availableCountries = COUNTRIES_REFERENCE.filter((country) => !mappedCodes.has(country.code));
   const interfaceLanguages = rows.filter((language) => language.interfaceEnabled);
@@ -258,6 +272,7 @@ export default async function AdminLanguagesPage() {
           { id: "interface", label: "Langues de l’interface" },
           { id: "lyrics", label: "Langues des paroles" },
           { id: "countries", label: "Association pays, langue et monnaie" },
+          { id: "currencies", label: "Monnaies" },
           { id: "settings", label: "Réglages" },
         ]}
       >
@@ -282,6 +297,14 @@ export default async function AdminLanguagesPage() {
             mappedCountries={countryLanguageRows}
             availableCountries={availableCountries}
             interfaceLanguages={interfaceLanguages}
+            currencyOptions={countryCurrencyOptions}
+          />
+        </AdminTabPanel>
+        <AdminTabPanel id="currencies">
+          <CurrencySection
+            catalog={currencyCatalog}
+            settings={rateSettings ?? null}
+            countryCountByCurrency={countryCountByCurrency}
           />
         </AdminTabPanel>
         <AdminTabPanel id="settings">

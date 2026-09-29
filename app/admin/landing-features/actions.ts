@@ -2,14 +2,21 @@
 import { and, eq, sql } from "drizzle-orm";
 import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { landingSongFeatures } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { actionErrorMessage } from "@/lib/admin/action-state";
+import { withAdminNotice } from "@/lib/admin/notice-redirect";
 import { isTrustedImageUrl } from "@/lib/storage/cloudinary";
 import { writeAuditLog } from "@/lib/security/audit";
-import { LANDING_SONG_FEATURE_SECTIONS, MAX_LANDING_SONG_FEATURES_PER_SECTION } from "@/lib/landing-features/admin";
+import {
+  LANDING_SONG_FEATURE_SECTIONS,
+  LANDING_SONG_FEATURE_SECTION_LABELS,
+  MAX_LANDING_SONG_FEATURES_PER_SECTION,
+  type LandingSongFeatureSection,
+} from "@/lib/landing-features/admin";
 import { getGeneratedSongOptionById } from "@/lib/trending/admin";
 import { publishSongGroup } from "@/lib/ai/songs";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
@@ -63,6 +70,25 @@ async function publishPickedSong(songGroupId: string): Promise<void> {
   await publishSongGroup(option.userId, option.songGroupId, option.jobId);
 }
 
+function songAlreadyUsedMessage(section: string) {
+  const label = LANDING_SONG_FEATURE_SECTION_LABELS[section as LandingSongFeatureSection] ?? section;
+  return `Cette chanson est déjà ajoutée dans « ${label} » (une chanson n’est utilisable qu’une fois, avec sa version 1 et sa version 2).`;
+}
+
+/** A song (both of its versions share one songGroupId) can feature only once: returns the section already using it, if any. */
+async function findSectionUsingSong(songGroupId: string, excludeId?: string): Promise<string | null> {
+  const rows = await getServiceDb()
+    .select({ section: landingSongFeatures.section })
+    .from(landingSongFeatures)
+    .where(
+      excludeId
+        ? and(eq(landingSongFeatures.songGroupId, songGroupId), sql`${landingSongFeatures.id} <> ${excludeId}`)
+        : eq(landingSongFeatures.songGroupId, songGroupId),
+    )
+    .limit(1);
+  return rows[0]?.section ?? null;
+}
+
 export async function createLandingSongFeature(
   _previous: AdminActionState,
   formData: FormData,
@@ -78,8 +104,8 @@ export async function createLandingSongFeature(
       .where(eq(landingSongFeatures.section, parsed.section));
     if (existing.length >= MAX_LANDING_SONG_FEATURES_PER_SECTION)
       return { ok: false, message: `Cette section affiche déjà ${MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes au maximum.` };
-    if (existing.some((row) => row.songGroupId === parsed.songGroupId))
-      return { ok: false, message: "Cette chanson est déjà assignée à cette section." };
+    const usedIn = await findSectionUsingSong(parsed.songGroupId);
+    if (usedIn) return { ok: false, message: songAlreadyUsedMessage(usedIn) };
     await publishPickedSong(parsed.songGroupId);
 
     const nextSortOrder = existing.reduce((max, row) => Math.max(max, row.sortOrder), 0) + 10;
@@ -110,23 +136,22 @@ export async function updateLandingSongFeature(
   _previous: AdminActionState,
   formData: FormData,
 ): Promise<AdminActionState> {
+  let redirectTo: string;
   try {
     const session = await requireAdmin();
     const parsed = updateSchema.parse(Object.fromEntries(formData));
     const database = getServiceDb();
 
-    const duplicate = await database
-      .select({ id: landingSongFeatures.id })
+    const [current] = await database
+      .select({ songGroupId: landingSongFeatures.songGroupId })
       .from(landingSongFeatures)
-      .where(
-        and(
-          eq(landingSongFeatures.section, parsed.section),
-          eq(landingSongFeatures.songGroupId, parsed.songGroupId),
-          sql`${landingSongFeatures.id} <> ${parsed.id}`,
-        ),
-      )
+      .where(eq(landingSongFeatures.id, parsed.id))
       .limit(1);
-    if (duplicate.length) return { ok: false, message: "Cette chanson est déjà assignée à cette section." };
+    // Editing only the cover of a card whose song already overlaps (older data) stays allowed.
+    if (current?.songGroupId !== parsed.songGroupId) {
+      const usedIn = await findSectionUsingSong(parsed.songGroupId, parsed.id);
+      if (usedIn) return { ok: false, message: songAlreadyUsedMessage(usedIn) };
+    }
     await publishPickedSong(parsed.songGroupId);
 
     await database
@@ -146,10 +171,12 @@ export async function updateLandingSongFeature(
       metadata: { section: parsed.section, songGroupId: parsed.songGroupId },
     });
     revalidateLandingFeatures();
-    return { ok: true, message: "Carte mise à jour." };
+    redirectTo = withAdminNotice(`/admin/landing-features?tab=${parsed.section}`, "Carte mise à jour.");
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette carte.") };
   }
+  // Back to the list once saved (redirect() throws, so it stays outside the try/catch).
+  redirect(redirectTo);
 }
 
 export async function deleteLandingSongFeature(

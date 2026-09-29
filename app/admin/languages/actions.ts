@@ -20,7 +20,7 @@ import {
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
-import { creditCurrencies } from "@/lib/credit-plans/currency";
+import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
 import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { actionErrorMessage } from "@/lib/admin/action-state";
@@ -60,7 +60,11 @@ const countryLanguageSchema = z.object({
     .trim()
     .toLowerCase()
     .regex(/^[a-z]{2,3}(?:-[a-z]{2})?$/),
-  currencyCode: z.enum(creditCurrencies.map((currency) => currency.code) as [string, ...string[]]),
+  currencyCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{3}$/),
 });
 const countryCodeSchema = z.object({
   countryCode: z
@@ -201,6 +205,10 @@ export async function setCountryLanguage(_previous: AdminActionState, formData: 
   try {
     const session = await requireAdmin();
     const parsed = countryLanguageSchema.parse(Object.fromEntries(formData));
+    const catalog = await getCurrencyCatalog();
+    if (!catalog.some((currency) => currency.code === parsed.currencyCode)) {
+      return { ok: false, message: `La monnaie ${parsed.currencyCode} n’existe pas dans le catalogue des monnaies.` };
+    }
     const reference = COUNTRIES_REFERENCE.find((country) => country.code === parsed.countryCode);
     const countryName = reference?.name ?? parsed.countryCode;
     const flag = reference?.flag ?? "🌍";

@@ -14,6 +14,7 @@ import SongCard from "./SongCard";
 import Icon from "./Icon";
 import Image from "./Image";
 import StoreDownloadCard from "./StoreDownloadCard";
+import CardAudioPlayer from "./CardAudioPlayer";
 import QuickLanguageSelect from "./QuickLanguageSelect";
 import SocialProofBadge from "./SocialProofBadge";
 import { formatPlays } from "@/lib/trending/format";
@@ -42,7 +43,7 @@ const trendingSongs = [
   },
 ];
 
-type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; href: string | null };
+type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; audioUrl: string | null; real: boolean };
 
 export default function UserDashboardMobile({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
@@ -52,15 +53,26 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
         title: tc.title,
         playsLabel: tc.plays,
         coverPrompt: tc.img,
-        href: null,
+        audioUrl: null,
+        real: false,
       }))
     : trending.map((song) => ({
         key: song.slug,
         title: song.title,
         playsLabel: formatPlays(song.plays),
         coverPrompt: null,
-        href: `/s/${song.slug}`,
+        audioUrl: song.audioUrl,
+        real: true,
       }));
+  // Trending songs play in an internal player right inside the dashboard — never in another tab.
+  const [nowPlayingTrend, setNowPlayingTrend] = useState<TrendCard | null>(null);
+  const playTrend = (trend: TrendCard) => {
+    if (!trend.audioUrl) {
+      demo.notify("Cette chanson n’est pas disponible à l’écoute pour le moment.");
+      return;
+    }
+    setNowPlayingTrend((current) => (current?.key === trend.key ? null : trend));
+  };
   const [launching, setLaunching] = useState(false);
   const [playingSongId, setPlayingSongId] = useState<string | number | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -227,7 +239,27 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
             </div>
           )}
           {visibleTrends.map((t2) => (
-            <div key={t2.key} className="rounded-xl overflow-hidden relative">
+            <div
+              key={t2.key}
+              className={`rounded-xl overflow-hidden relative${t2.real && nowPlayingTrend?.key !== t2.key ? " cursor-pointer" : ""}`}
+              {...(t2.real && nowPlayingTrend?.key !== t2.key
+                ? {
+                    role: "button",
+                    tabIndex: 0,
+                    "aria-label": `${t("Écouter la chanson")} — ${t2.title}`,
+                    onClick: () => playTrend(t2),
+                    onKeyDown: (event: React.KeyboardEvent) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        playTrend(t2);
+                      }
+                    },
+                  }
+                : {})}
+            >
+              {nowPlayingTrend?.key === t2.key && nowPlayingTrend.audioUrl ? (
+                <CardAudioPlayer title={nowPlayingTrend.title} audioUrl={nowPlayingTrend.audioUrl} onClose={() => setNowPlayingTrend(null)} compact />
+              ) : null}
               {t2.coverPrompt ? (
                 <Image ar="1:1" prompt={t2.coverPrompt} className="w-full" />
               ) : (
@@ -242,16 +274,10 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
                   <Icon i="headphones" size={10} /> {t2.playsLabel}
                 </p>
               </div>
-              {t2.href ? (
-                <a
-                  href={t2.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Écouter la chanson"
-                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
-                >
-                  <Icon i="play" size={12} className="text-primary-foreground" />
-                </a>
+              {t2.real ? (
+                <span aria-hidden="true" className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <Icon i={nowPlayingTrend?.key === t2.key ? "pause" : "play"} size={12} className="text-primary-foreground" />
+                </span>
               ) : (
                 <button
                   type="button"

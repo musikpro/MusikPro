@@ -31,8 +31,7 @@ export default function AdminToast({
       </span>
       <div>
         <strong>
-          {title ??
-            (tone === "success" ? "Connexion réussie" : tone === "error" ? "Connexion impossible" : "Information")}
+          {title ?? (tone === "success" ? "Enregistré" : tone === "error" ? "Erreur" : "Information")}
         </strong>
         <p>{message}</p>
       </div>

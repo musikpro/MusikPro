@@ -5,7 +5,8 @@ import Reveal from "./Reveal";
 import { GooglePlayLogo, AppleLogo } from "./StoreDownloadCard";
 import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLanguageSwitcher";
 import HeroRotatingText from "./HeroRotatingText";
-import LandingInlinePlayButton from "./LandingInlinePlayButton";
+import LandingSongCarousel from "./LandingSongCarousel";
+import LandingLibraryCard from "./LandingLibraryCard";
 import { HERO_TEXT_SIZE_CLASSES, type HeroAnimationType, type HeroTextSize } from "@/lib/hero-animation/types";
 import type { LandingHeroText, LandingOccasion, LandingStyle, LandingTrendingSong } from "./LandingPageMobile";
 
@@ -106,7 +107,10 @@ export default function LandingPageDesktop({
             {t("Accueil")}
           </a>
           <a href="#exemples-desktop" className="landing-nav-link text-base text-muted-foreground font-medium">
-            {t("Créations")}
+            {t("Réalisations")}
+          </a>
+          <a href="#bibliotheque-desktop" className="landing-nav-link text-base text-muted-foreground font-medium">
+            {t("Bibliothèque")}
           </a>
           <a href="#faq-desktop" className="landing-nav-link text-base text-muted-foreground font-medium">
             {t("FAQ")}
@@ -225,48 +229,10 @@ export default function LandingPageDesktop({
             <h2 className="font-headings font-bold text-4xl text-foreground mb-3">{t("Ils ont créé avec MusikPro")}</h2>
             <p className="text-lg text-muted-foreground">{t("Écoutez des chansons créées pour des moments uniques")}</p>
           </Reveal>
-          <div className="flex flex-wrap justify-center gap-6">
-            {showcaseSongs.map((s, i) => (
-              <Reveal key={s.slug} delay={i * 100} className="w-80">
-                <Link
-                  href={`/s/${s.slug}`}
-                  className="landing-card-hover rounded-2xl overflow-hidden bg-card border border-border block"
-                  style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.08)" }}
-                >
-                  <div className="relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={s.coverUrl ?? undefined} alt={s.title} className="w-full aspect-video object-cover" />
-                    {s.audioUrl ? (
-                      <LandingInlinePlayButton
-                        audioUrl={s.audioUrl}
-                        title={s.title}
-                        className="is-centered absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                      />
-                    ) : null}
-                  </div>
-                  <div className="p-4 flex items-center justify-between">
-                    <div>
-                      {s.style || s.occasion ? (
-                        <div className="flex gap-2 mb-2">
-                          {s.style ? (
-                            <span className="bg-secondary text-foreground text-xs px-2 py-1 rounded-md font-medium">
-                              {s.style}
-                            </span>
-                          ) : null}
-                          {s.occasion ? (
-                            <span className="bg-secondary text-foreground text-xs px-2 py-1 rounded-md font-medium">
-                              {s.occasion}
-                            </span>
-                          ) : null}
-                        </div>
-                      ) : null}
-                      <p className="font-semibold text-base text-foreground">{s.title}</p>
-                    </div>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
-          </div>
+          <LandingSongCarousel
+            songs={showcaseSongs}
+            labels={{ listen: t("Écouter"), navigation: t("Navigation des chansons") }}
+          />
         </section>
       ) : null}
 
@@ -326,7 +292,7 @@ export default function LandingPageDesktop({
       ) : null}
 
       {librarySongs.length ? (
-        <section className="landing-section-soft px-10 py-20">
+        <section id="bibliotheque-desktop" className="landing-section-soft px-10 py-20">
           <Reveal className="text-center mb-12">
             <h2 className="font-headings font-bold text-4xl text-foreground mb-3">{t("Bibliothèque populaire")}</h2>
             <p className="text-lg text-muted-foreground mb-8">{t("Les chansons les plus écoutées de la communauté")}</p>
@@ -334,23 +300,7 @@ export default function LandingPageDesktop({
           <div className="flex flex-wrap justify-center gap-5">
             {librarySongs.map((s, i) => (
               <Reveal key={s.slug} delay={i * 90} className="w-72">
-                <Link
-                  href={`/s/${s.slug}`}
-                  className="landing-card-hover bg-card border border-border rounded-xl p-4 flex items-center gap-4"
-                >
-                  <div className="landing-icon-gradient w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <Icon i="music-2" size={22} className="text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-base text-foreground truncate">{s.title}</p>
-                    <span className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                      <Icon i="headphones" size={11} /> {s.plays}
-                    </span>
-                  </div>
-                  {s.audioUrl ? (
-                    <LandingInlinePlayButton audioUrl={s.audioUrl} title={s.title} compact className="flex-shrink-0" />
-                  ) : null}
-                </Link>
+                <LandingLibraryCard song={s} size="lg" />
               </Reveal>
             ))}
           </div>

@@ -2,6 +2,7 @@
 import { useMemo, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import AdminActionForm from "@/components/admin/AdminActionForm";
+import AdminSelect from "@/components/admin/AdminSelect";
 import { setAmbientTrack, disableAmbientTrack } from "@/app/admin/ambient-music/actions";
 import { apiFetch } from "@/lib/api/client";
 import type { AmbientTrackStatus } from "@/lib/settings/ambient-track";
@@ -29,6 +30,7 @@ export default function AmbientMusicPanel({
   const [idLookupPending, setIdLookupPending] = useState(false);
   const [idLookupError, setIdLookupError] = useState("");
   const [playing, setPlaying] = useState(false);
+  const [volume, setVolume] = useState(status.volumePercent);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const allSongs = useMemo<SongDisplay[]>(() => {
@@ -102,27 +104,23 @@ export default function AmbientMusicPanel({
       >
         <div className="admin-ambient-field">
           <label htmlFor="ambient-song-select">Chanson</label>
-          <div className="admin-btn-row">
-            <select
-              id="ambient-song-select"
+          <div className="admin-ambient-song-row">
+            <AdminSelect
               name="songGroupId"
+              ariaLabel="Chanson"
               value={songGroupId}
-              onChange={(event) => {
-                setSongGroupId(event.target.value);
+              onValueChange={(next) => {
+                setSongGroupId(next);
                 setPlaying(false);
               }}
-              required
-            >
-              <option value="" disabled>
-                Choisis une chanson
-              </option>
-              {allSongs.map((song) => (
-                <option key={song.songGroupId} value={song.songGroupId}>
-                  {song.title}
-                  {song.styleLabel ? ` — ${song.styleLabel}` : ""}
-                </option>
-              ))}
-            </select>
+              options={[
+                { value: "", label: "Choisis une chanson" },
+                ...allSongs.map((song) => ({
+                  value: song.songGroupId,
+                  label: `${song.title}${song.styleLabel ? ` — ${song.styleLabel}` : ""}`,
+                })),
+              ]}
+            />
             <button type="button" className="admin-secondary-action" disabled={!selectedSong?.audioUrl} onClick={togglePlay}>
               <Icon i={playing ? "pause" : "play"} size={15} />
               {playing ? "Pause" : "Lecture"}
@@ -181,14 +179,25 @@ export default function AmbientMusicPanel({
         </div>
         <div className="admin-ambient-field">
           <label htmlFor="ambient-volume-input">Volume (5 à 50 %)</label>
-          <input
-            id="ambient-volume-input"
-            type="range"
-            name="volumePercent"
-            min={5}
-            max={50}
-            defaultValue={status.volumePercent}
-          />
+          <div className="admin-ambient-volume">
+            {/* Bulle qui suit le curseur : le pourcentage exact reste visible pendant le glissement. */}
+            <output
+              htmlFor="ambient-volume-input"
+              className="admin-ambient-volume-bubble"
+              style={{ "--volume-ratio": (volume - 5) / 45 } as React.CSSProperties}
+            >
+              {volume} %
+            </output>
+            <input
+              id="ambient-volume-input"
+              type="range"
+              name="volumePercent"
+              min={5}
+              max={50}
+              value={volume}
+              onChange={(event) => setVolume(Number(event.target.value))}
+            />
+          </div>
         </div>
       </AdminActionForm>
       <div className="admin-ambient-actions">

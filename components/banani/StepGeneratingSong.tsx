@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { translate as t } from "@/lib/i18n/translate";
 import Icon from "./Icon";
 import AppLogo from "./AppLogo";
-import { useDemo } from "./DemoProvider";
+import { useDemo, type SongGroupResponse } from "./DemoProvider";
 import { apiFetch } from "@/lib/api/client";
 
 export const displayName = "Génération en cours — Attente";
@@ -11,20 +11,39 @@ export const screenSize = "mobile";
 
 /** Demo-only fake animation duration — the real path below waits for genuine Musicful completion instead. */
 const DEMO_DURATION_MS = 4000;
-const POLL_INTERVAL_MS = 5000;
-/** Purely cosmetic pacing for the progress bar/percentage — a real Musicful generation commonly
- * takes close to this long, so the bar reaches its 92% cap around when most songs actually
- * finish. This is NOT the polling deadline (see MAX_REAL_POLL_MS below): capping the wait itself
- * at this same short duration used to cause the screen to give up and redirect before the job
- * was actually done, which looked like "it never finishes automatically" even though the song
- * was ready moments later on the songs list. */
-const PROGRESS_ANIMATION_MS = 5 * 60 * 1000;
-/** How long this screen keeps polling for a terminal (completed/failed) status before giving up
- * and redirecting anyway. Set comfortably above the server's own generation timeout
- * (admin-configurable "maxPollingMinutes", 10 minutes by default) so the server has almost
- * always already resolved the job to completed/failed by the time this gives up — the job keeps
- * processing server-side regardless and stays trackable on the songs page either way. */
-const MAX_REAL_POLL_MS = 12 * 60 * 1000;
+
+/** What the real generation is doing right now, read from the status the server reports for each
+ * version (this screen has no direct line to Musicful — it listens to MusikPro's own status
+ * endpoint, which is what asks Musicful and verifies the delivered MP3). */
+type GenerationPhase = "sending" | "composing" | "delivered" | "failed";
+
+function derivePhase(song: SongGroupResponse): GenerationPhase {
+  if (song.versions.some((version) => version.status === "completed")) return "delivered";
+  if (song.status === "failed") return "failed";
+  if (song.versions.every((version) => version.status === "queued" || version.status === "submitting"))
+    return "sending";
+  return "composing";
+}
+
+const phaseIcons: Record<GenerationPhase, string> = {
+  sending: "send",
+  composing: "audio-lines",
+  delivered: "circle-check-big",
+  failed: "triangle-alert",
+};
+
+function phaseText(phase: GenerationPhase) {
+  switch (phase) {
+    case "sending":
+      return t("Envoi de ta demande à l’IA musicale…");
+    case "composing":
+      return t("L’IA compose ta chanson…");
+    case "delivered":
+      return t("MP3 livré ! Redirection en cours…");
+    case "failed":
+      return t("La génération a rencontré un problème. Redirection en cours…");
+  }
+}
 
 const encouragementMessages = [
   { icon: "music-2", text: "Ta chanson unique est en cours de création…" },
@@ -43,6 +62,7 @@ export default function StepGeneratingSong() {
   const [progress, setProgress] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
+  const [phase, setPhase] = useState<GenerationPhase>("sending");
   const skipRequested = useRef(false);
   const finished = useRef(false);
   /** Guards the real submission call (a real, non-idempotent Musicful request + credit
@@ -59,7 +79,12 @@ export default function StepGeneratingSong() {
   useEffect(() => {
     let active = true;
     const startedAt = Date.now();
-    const durationMs = demo.isDemo ? DEMO_DURATION_MS : PROGRESS_ANIMATION_MS;
+    // Real path: the admin-configured redirect delay (Musicful settings → "Délai de redirection")
+    // is both when this screen gives up waiting and when the cosmetic bar reaches its cap, so the
+    // bar never sits at 92% long after — or hits it long before — the redirect actually happens.
+    const redirectDelayMs = demo.generationRedirectDelaySeconds * 1000;
+    const pollIntervalMs = demo.generationPollIntervalMs;
+    const durationMs = demo.isDemo ? DEMO_DURATION_MS : redirectDelayMs;
     const maxProgress = demo.isDemo ? 100 : 92;
     const messageStepMs = demo.isDemo ? DEMO_DURATION_MS / encouragementMessages.length : 20_000;
 
@@ -100,38 +125,48 @@ export default function StepGeneratingSong() {
       const submission = await submissionPromise.current;
       if (!active || skipRequested.current) return;
       if (!submission) return; // startRealGeneration already redirected on failure/insufficient credits.
-      const deadline = Date.now() + MAX_REAL_POLL_MS;
-      let resolvedStatus: string | null = null;
-      while (active && !skipRequested.current && Date.now() < deadline) {
+      setPhase("composing");
+      const deadline = startedAt + redirectDelayMs;
+      let latest: SongGroupResponse | null = null;
+      let resolved = false;
+      // Ask straight away (no leading wait), then keep listening until the MP3 is delivered / the
+      // job fails, or the admin-configured delay runs out.
+      while (active && !skipRequested.current) {
+        try {
+          const result = await apiFetch<{ song: SongGroupResponse }>(`/api/songs/${submission.songGroupId}`, {
+            timeoutMs: 20_000,
+          });
+          latest = result.song;
+          if (active) setPhase(derivePhase(result.song));
+          if (result.song.status === "completed" || result.song.status === "failed") {
+            resolved = true;
+            break;
+          }
+        } catch {
+          // A transient poll failure just retries on the next tick until the deadline.
+        }
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) break;
         await new Promise<void>((resolve) => {
-          const timer = window.setTimeout(resolve, POLL_INTERVAL_MS);
+          const timer = window.setTimeout(resolve, Math.min(pollIntervalMs, remaining));
           wakeNow = () => {
             window.clearTimeout(timer);
             resolve();
           };
         });
         wakeNow = null;
-        if (!active || skipRequested.current) break;
-        try {
-          const result = await apiFetch<{ song: { status: string } }>(`/api/songs/${submission.songGroupId}`, {
-            timeoutMs: 20_000,
-          });
-          if (result.song.status === "completed" || result.song.status === "failed") {
-            resolvedStatus = result.song.status;
-            break;
-          }
-        } catch {
-          // A transient poll failure just retries on the next tick until the deadline.
-        }
       }
       if (!active) return;
-      await demo.refreshSongs();
-      if (!active) return;
+      // The poll already returned the full song, so hand it to the library right now and leave
+      // immediately — a full-list refresh re-polls Musicful for every pending job and used to add
+      // seconds of dead time between "MP3 delivered" and the redirect. It still runs, in the
+      // background, to bring the rest of the library up to date.
+      if (latest) demo.applySongGroup(latest);
+      void demo.refreshSongs();
       // A resolved outcome (song ready, or a clear failure to explain) goes straight to that
-      // song's player instead of the generic list — that screen keeps polling on its own if the
-      // status somehow still isn't terminal yet. Only an unresolved timeout falls back to the
-      // list, since there's no single song to point to in that case.
-      finish(resolvedStatus ? "/dashboard/songs/player" : "/dashboard/songs");
+      // song's player; on timeout the song is still generating, so the songs list takes over —
+      // it keeps refreshing by itself and shows the song the moment it is ready.
+      finish(resolved ? "/dashboard/songs/player" : "/dashboard/songs");
     }
 
     const demoTimer = demo.isDemo
@@ -213,6 +248,18 @@ export default function StepGeneratingSong() {
           </span>
           <span className="text-xs text-muted-foreground">{t("écoulé")}</span>
         </div>
+
+        {demo.isDemo ? null : (
+          <div
+            className="flex items-center gap-2 mb-6 text-sm font-semibold text-primary"
+            role="status"
+            aria-live="polite"
+            data-generation-phase={phase}
+          >
+            <Icon i={phaseIcons[phase]} size={16} className="text-primary flex-shrink-0" />
+            <span>{phaseText(phase)}</span>
+          </div>
+        )}
 
         <div className="w-full mb-8">
           <div className="flex justify-between text-xs text-muted-foreground mb-2">

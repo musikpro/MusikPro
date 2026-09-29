@@ -29,12 +29,18 @@ export default function MobileTopBar({ credits = 0 }) {
           >
             <Icon i="menu" size={20} className="text-foreground" />
           </button>
-          <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            data-demo-ready
+            onClick={() => demo.go("/dashboard")}
+            aria-label={t("Accueil")}
+            className="flex items-center gap-1.5 cursor-pointer"
+          >
             <div className="w-7 h-7 bg-primary rounded-md flex items-center justify-center">
               <Icon i="music-2" size={14} className="text-primary-foreground" />
             </div>
             <span className="font-headings font-bold text-base text-foreground">{t("MusikPro")}</span>
-          </div>
+          </button>
         </div>
         <div className="flex items-center gap-1.5">
           <button

@@ -60,12 +60,7 @@ export default function MySongsGenerated() {
     };
   }, [versionPickerTarget]);
 
-  const hasPendingSong = demo.songs.some((song) => song.status === "processing");
-  useEffect(() => {
-    if (demo.isDemo || !hasPendingSong) return;
-    const timer = window.setInterval(() => void demo.refreshSongs(), 4000);
-    return () => window.clearInterval(timer);
-  }, [demo, demo.isDemo, hasPendingSong]);
+  // Pending generations are polled by DemoProvider (one poller for every screen).
 
   const playVersion = (
     versionKey: string,
@@ -451,10 +446,10 @@ export default function MySongsGenerated() {
                 data-demo-ready="true"
                 disabled={!demo.isDemo && !primaryVersion?.audioUrl}
                 onClick={() => handlePublishClick(song)}
-                className={`song-whatsapp-button flex-1 flex items-center justify-center gap-1.5 rounded-full px-3 py-2 text-sm font-bold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
+                className={`song-whatsapp-button flex-1 flex items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${!demo.isDemo && !primaryVersion?.audioUrl ? "opacity-50" : ""}`}
               >
-                <WhatsAppLogo size={17} />
-                {t("Partager sur WhatsApp")}
+                <WhatsAppLogo size={16} />
+                {t("WhatsApp")}
               </button>
               <button
                 type="button"

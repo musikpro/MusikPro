@@ -3,9 +3,11 @@ import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
-import { getMusicfulProvider } from "@/lib/ai/musicful";
+import { getActiveAudioProvider } from "@/lib/ai/musicful";
+import { getAudioProviderDefinition } from "@/lib/ai/audio-providers/catalog";
 import { resolveStylePrompt } from "@/lib/ai/style-prompt";
 import { submitSongGeneration } from "@/lib/ai/songs";
+import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
 import { deductCredits, refundCredits } from "@/lib/credits/service";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
@@ -38,7 +40,13 @@ export async function POST(request: Request) {
   const session = await auth.api.getSession({ headers: request.headers });
   if (!session?.user) return NextResponse.json({ error: "Authentification requise." }, { status: 401 });
 
-  const provider = await getMusicfulProvider();
+  const provider = await getActiveAudioProvider();
+  if (!getAudioProviderDefinition(provider.providerId).implemented) {
+    return NextResponse.json(
+      { error: "Le fournisseur audio actif n’est pas encore intégré.", code: "AUDIO_PROVIDER_NOT_IMPLEMENTED" },
+      { status: 503 },
+    );
+  }
   if (!provider.enabled || !provider.apiKey) {
     return NextResponse.json(
       { error: "La génération audio n’est pas encore configurée.", code: "MUSICFUL_NOT_CONFIGURED" },
@@ -97,7 +105,7 @@ export async function POST(request: Request) {
     newBalance = deducted;
   }
 
-  const title = `Ma chanson — ${input.occasion}`;
+  const title = buildSongTitle({ recipientName: input.recipientName, occasion: input.occasion, genre: input.genre });
   const style = await resolveStylePrompt(input.genre, input.mood, provider.strictStyleAdherence);
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 
@@ -114,6 +122,7 @@ export async function POST(request: Request) {
       },
       provider.model,
       provider.versionsPerGeneration,
+      provider.providerId,
     );
     if (succeeded === 0) {
       const refunded = bypassActive ? newBalance : await refundCredits(session.user.id, CREDITS_PER_GENERATION);

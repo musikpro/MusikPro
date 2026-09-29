@@ -7,89 +7,89 @@ import { requireAdmin } from "@/lib/auth/session";
 import { listRecentGeneratedSongsForAdmin } from "@/lib/trending/admin";
 import {
   listLandingSongFeatures,
+  LANDING_SONG_FEATURE_SECTION_LABELS,
+  LANDING_SONG_FEATURE_SECTIONS,
   LANDING_SONG_POOL_SIZE,
   MAX_LANDING_SONG_FEATURES_PER_SECTION,
+  type LandingSongFeatureSection,
 } from "@/lib/landing-features/admin";
 import { createLandingSongFeature } from "./actions";
 
-export default async function AdminLandingFeaturesPage() {
+const SECTION_DESCRIPTIONS: Record<LandingSongFeatureSection, string> = {
+  showcase: "Cartes affichées dans la section « Ils ont créé avec MusikPro » de la page d’accueil publique.",
+  library: "Cartes affichées dans la section « Bibliothèque populaire » de la page d’accueil publique.",
+};
+
+export default async function AdminLandingFeaturesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
   await requireAdmin();
+  const { tab } = await searchParams;
+  // The edit page links back with ?tab=<section>, so the owner returns to the tab they came from
+  // instead of always landing on the first one.
+  const defaultTab = LANDING_SONG_FEATURE_SECTIONS.find((section) => section === tab) ?? LANDING_SONG_FEATURE_SECTIONS[0];
   const [songs, showcaseRows, libraryRows] = await Promise.all([
     listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
     listLandingSongFeatures("showcase"),
     listLandingSongFeatures("library"),
   ]);
+  const rowsBySection = { showcase: showcaseRows, library: libraryRows };
 
   return (
     <AdminPage>
       <AdminPageHeader
         eyebrow="Landing publique"
         title="Chansons mises en avant"
-        description="Choisis quelles chansons apparaissent dans « Ils ont créé avec MusikPro » et « Bibliothèque populaire » sur la page d’accueil, et dans quel ordre. Une chanson non publiée l’est automatiquement dès qu’elle est assignée ici."
+        description="Choisis quelles chansons apparaissent dans « Ils ont créé avec MusikPro » et « Bibliothèque populaire » sur la page d’accueil, et dans quel ordre. Une chanson non publiée l’est automatiquement dès qu’elle est assignée ici. Une chanson mise en avant ne peut plus être supprimée."
       />
       <AdminTabs
         ariaLabel="Sections de la landing page"
-        tabs={[
-          { id: "showcase", label: "Ils ont créé avec MusikPro" },
-          { id: "library", label: "Bibliothèque populaire" },
-        ]}
+        defaultTab={defaultTab}
+        tabs={LANDING_SONG_FEATURE_SECTIONS.map((section) => ({
+          id: section,
+          label: LANDING_SONG_FEATURE_SECTION_LABELS[section],
+        }))}
       >
-        <AdminTabPanel id="showcase">
-          <div className="admin-source-notice is-connected">
-            <Icon i="database-zap" size={18} />
-            <div>
-              <strong>
-                {showcaseRows.length}/{MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes assignées
-              </strong>
-              <p>La chanson, son style/occasion et son nombre d’écoutes viennent des vraies générations du catalogue.</p>
-            </div>
-          </div>
-          <section className="admin-panel">
-            <AdminLandingSongFeatureForm
-              section="showcase"
-              action={createLandingSongFeature}
-              songs={songs}
-              usedSongGroupIds={showcaseRows.map((row) => row.songGroupId)}
-            />
-          </section>
-          {showcaseRows.length ? (
-            <AdminLandingSongFeatureSortableGrid section="showcase" rows={showcaseRows} />
-          ) : (
-            <div className="admin-empty-state admin-catalog-empty">
-              <Icon i="sparkles" size={24} />
-              <strong>Aucune carte assignée</strong>
-              <p>Ajoute une chanson ci-dessus pour qu’elle apparaisse dans cette section.</p>
-            </div>
-          )}
-        </AdminTabPanel>
-        <AdminTabPanel id="library">
-          <div className="admin-source-notice is-connected">
-            <Icon i="database-zap" size={18} />
-            <div>
-              <strong>
-                {libraryRows.length}/{MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes assignées
-              </strong>
-              <p>La chanson, son style/occasion et son nombre d’écoutes viennent des vraies générations du catalogue.</p>
-            </div>
-          </div>
-          <section className="admin-panel">
-            <AdminLandingSongFeatureForm
-              section="library"
-              action={createLandingSongFeature}
-              songs={songs}
-              usedSongGroupIds={libraryRows.map((row) => row.songGroupId)}
-            />
-          </section>
-          {libraryRows.length ? (
-            <AdminLandingSongFeatureSortableGrid section="library" rows={libraryRows} />
-          ) : (
-            <div className="admin-empty-state admin-catalog-empty">
-              <Icon i="sparkles" size={24} />
-              <strong>Aucune carte assignée</strong>
-              <p>Ajoute une chanson ci-dessus pour qu’elle apparaisse dans cette section.</p>
-            </div>
-          )}
-        </AdminTabPanel>
+        {LANDING_SONG_FEATURE_SECTIONS.map((section) => {
+          const rows = rowsBySection[section];
+          const label = LANDING_SONG_FEATURE_SECTION_LABELS[section];
+          return (
+            <AdminTabPanel key={section} id={section}>
+              <div className="admin-source-notice is-connected">
+                <Icon i="database-zap" size={18} />
+                <div>
+                  <strong>
+                    « {label} » — {rows.length}/{MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes assignées
+                  </strong>
+                  <p>
+                    {SECTION_DESCRIPTIONS[section]} La chanson, son style/occasion et son nombre d’écoutes viennent des
+                    vraies générations du catalogue.
+                  </p>
+                </div>
+              </div>
+              <section className="admin-panel">
+                <AdminLandingSongFeatureForm
+                  section={section}
+                  sectionLabel={label}
+                  action={createLandingSongFeature}
+                  songs={songs}
+                  usedSongGroupIds={[...showcaseRows, ...libraryRows].map((row) => row.songGroupId)}
+                />
+              </section>
+              {rows.length ? (
+                <AdminLandingSongFeatureSortableGrid section={section} rows={rows} />
+              ) : (
+                <div className="admin-empty-state admin-catalog-empty">
+                  <Icon i="sparkles" size={24} />
+                  <strong>Aucune carte assignée dans « {label} »</strong>
+                  <p>Ajoute une chanson ci-dessus pour qu’elle apparaisse dans cette section.</p>
+                </div>
+              )}
+            </AdminTabPanel>
+          );
+        })}
       </AdminTabs>
     </AdminPage>
   );
