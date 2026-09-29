@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import OpenAI from "openai";
 import { getServiceDb } from "@/db";
 import { aiProviderConfigs } from "@/db/schema";
-import { decryptSecret } from "./secrets-core";
+import { tryDecryptSecret } from "./secrets-core";
 
 export async function getOpenAiProvider() {
   const [stored] = await getServiceDb()
@@ -12,7 +12,7 @@ export async function getOpenAiProvider() {
     .limit(1);
   const apiKey =
     stored?.apiKeyCiphertext && stored.apiKeyIv && stored.apiKeyAuthTag
-      ? decryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
+      ? tryDecryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
       : process.env.OPENAI_API_KEY;
   return {
     config: stored,
@@ -32,7 +32,7 @@ export async function getAnthropicProvider() {
     .limit(1);
   const apiKey =
     stored?.apiKeyCiphertext && stored.apiKeyIv && stored.apiKeyAuthTag
-      ? decryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
+      ? tryDecryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
       : process.env.ANTHROPIC_API_KEY;
   return {
     provider: "anthropic" as const,

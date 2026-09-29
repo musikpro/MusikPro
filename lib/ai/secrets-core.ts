@@ -24,3 +24,16 @@ export function decryptSecret(secret: { ciphertext: string; iv: string; authTag:
   decipher.setAuthTag(Buffer.from(secret.authTag, "base64"));
   return Buffer.concat([decipher.update(Buffer.from(secret.ciphertext, "base64")), decipher.final()]).toString("utf8");
 }
+
+/**
+ * Like decryptSecret, but returns undefined instead of throwing when the stored secret cannot be
+ * decrypted (typically after APP_SECRETS_ENCRYPTION_KEY was rotated). The secret then reads as
+ * "not configured" and the owner simply enters it again, instead of every page that reads it crashing.
+ */
+export function tryDecryptSecret(secret: { ciphertext: string; iv: string; authTag: string }) {
+  try {
+    return decryptSecret(secret);
+  } catch {
+    return undefined;
+  }
+}

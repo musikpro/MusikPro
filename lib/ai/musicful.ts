@@ -2,7 +2,7 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { audioProviderConfigs } from "@/db/schema";
-import { decryptSecret } from "./secrets";
+import { tryDecryptSecret } from "./secrets";
 import { MusicfulApiError } from "./errors";
 import { getAudioProviderDefinition } from "./audio-providers/catalog";
 import { getActiveAudioProviderId } from "./audio-providers/active";
@@ -198,7 +198,7 @@ export async function getAudioProviderConfig(providerId: string) {
     .limit(1);
   const apiKey =
     stored?.apiKeyCiphertext && stored.apiKeyIv && stored.apiKeyAuthTag
-      ? decryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
+      ? tryDecryptSecret({ ciphertext: stored.apiKeyCiphertext, iv: stored.apiKeyIv, authTag: stored.apiKeyAuthTag })
       : definition.defaults.envKey
         ? process.env[definition.defaults.envKey]
         : undefined;
