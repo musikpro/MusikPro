@@ -6823,3 +6823,16 @@ button.mobile-menu-brand {
     transition: none;
   }
 }
+
+/* Mobile menu drawer: still scrollable, but without any visible scrollbar or arrows. */
+.mobile-menu-drawer {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.mobile-menu-drawer::-webkit-scrollbar,
+.mobile-menu-drawer::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}

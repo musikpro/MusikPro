@@ -1594,45 +1594,186 @@
 }
 
 .admin-media-upload-form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
+  display: grid;
+  gap: 14px;
 }
 
-.admin-media-upload-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.admin-media-dropzone {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  padding: 30px 20px;
+  border: 2px dashed color-mix(in srgb, var(--admin-primary) 35%, var(--admin-border));
+  border-radius: 20px;
   color: var(--admin-muted);
   font-size: 13px;
+  text-align: center;
+  background: color-mix(in srgb, var(--admin-secondary) 35%, white);
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    transform 160ms ease;
 }
 
-.admin-media-upload-form input[type="file"] {
-  min-width: 0;
-  flex: 1 1 260px;
-  font-size: 13px;
+.admin-media-dropzone:hover,
+.admin-media-dropzone:focus-within {
+  border-color: var(--admin-primary);
+  background: color-mix(in srgb, var(--admin-secondary) 55%, white);
+}
+
+.admin-media-dropzone:focus-within {
+  box-shadow: 0 0 0 4px rgb(242 101 34 / 16%);
+}
+
+.admin-media-dropzone.is-dragging {
+  border-style: solid;
+  border-color: var(--admin-primary);
+  background: color-mix(in srgb, var(--admin-secondary) 80%, white);
+  box-shadow: 0 14px 34px rgb(242 101 34 / 18%);
+  transform: scale(1.01);
+}
+
+.admin-media-dropzone.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.admin-media-dropzone strong {
   color: var(--admin-foreground);
+  font-size: 16px;
 }
 
-.admin-media-upload-progress {
-  flex: 1 1 100%;
+.admin-media-dropzone u {
+  color: var(--admin-primary);
+  font-weight: 700;
+}
+
+.admin-media-dropzone small {
+  font-size: 12px;
+}
+
+.admin-media-dropzone-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 16px;
+  color: var(--admin-primary);
+  background: white;
+  box-shadow: var(--admin-shadow);
+}
+
+/* Native input kept in the DOM (keyboard + screen readers) but visually hidden. */
+.admin-media-dropzone-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.admin-media-queue {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-media-queue-item {
   display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  background: var(--admin-card);
+}
+
+.admin-media-queue-item.is-error {
+  border-color: color-mix(in srgb, var(--admin-danger) 40%, var(--admin-border));
+  background: color-mix(in srgb, var(--admin-danger) 5%, white);
+}
+
+.admin-media-queue-item.is-done {
+  border-color: color-mix(in srgb, var(--admin-success) 40%, var(--admin-border));
+}
+
+.admin-media-queue-thumb {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 auto;
+  object-fit: cover;
+  border-radius: 10px;
+  background: var(--admin-surface);
+}
+
+.admin-media-queue-meta {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+  gap: 3px;
+}
+
+.admin-media-queue-meta strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-media-queue-meta small {
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.admin-media-queue-item.is-error .admin-media-queue-meta small {
+  color: var(--admin-danger);
+}
+
+.admin-media-queue-remove {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 10px;
+  color: var(--admin-muted);
+  background: transparent;
+  cursor: pointer;
+}
+
+.admin-media-queue-remove:hover:not(:disabled) {
+  color: var(--admin-danger);
+  background: var(--admin-surface);
+}
+
+.admin-media-queue-remove:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-media-upload-actions {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
 
-.admin-media-upload-progress .admin-progress-track {
-  flex: 1;
-}
+@media (prefers-reduced-motion: reduce) {
+  .admin-media-dropzone {
+    transition: none;
+  }
 
-.admin-media-upload-progress small {
-  flex-shrink: 0;
-  min-width: 74px;
-  text-align: right;
-  color: var(--admin-muted);
-  font-size: 12px;
-  font-weight: 700;
+  .admin-media-dropzone.is-dragging {
+    transform: none;
+  }
 }
 
 .admin-media-grid {
@@ -3517,7 +3658,9 @@
   }
 
   .admin-sidebar .admin-navigation {
-    flex: 1;
+    /* Natural height: the profile box follows the last menu directly. With flex: 1 the nav took all the
+       height the sidebar gets from a long page (tabs), leaving a big empty gap above the profile box. */
+    flex: 0 0 auto;
     margin-top: 0;
   }
 
@@ -5285,20 +5428,33 @@ body:has(.admin-app),
 }
 
 @media (min-width: 1024px) {
+  .admin-app {
+    /* Continuous sidebar rail (panel colour + right border) over the full page height: the sidebar itself
+       only travels with the viewport (sticky below), so the page background must not show through under it. */
+    background:
+      linear-gradient(to right, rgb(255 255 255 / 88%) 0 239px, #ebe6df 239px 240px, transparent 240px),
+      radial-gradient(ellipse at 8% 0%, rgb(242 101 34 / 8%), transparent 40%), var(--admin-background);
+  }
+
   .admin-sidebar {
     width: 240px;
-    min-height: 0;
-    /* Sidebar scrolls with the page (no pinning, no inner scroll area): the whole dashboard page can be
-       scrolled to the end and every menu stays reachable. */
-    position: static;
+    /* Synced with the page scroll, then fixed once its last item is reached: --admin-sidebar-top is
+       (viewport height − menu height) when the menu is taller than the screen (set in AdminShell), so the
+       menu scrolls with the page until its bottom meets the viewport bottom, then stays put while the
+       content keeps scrolling. A short menu simply stays at the top. */
+    position: sticky;
+    top: var(--admin-sidebar-top, 0px);
     height: auto;
-    align-self: stretch;
+    min-height: 100dvh;
+    align-self: flex-start;
+    /* No inner scroll area, scrollbar or arrows: the menu is never scrolled by itself. */
     overflow: visible;
+    scrollbar-width: none;
     flex: 0 0 240px;
     padding: 20px 14px 18px;
-    border-right-color: #ebe6df;
-    background: rgb(255 255 255 / 88%);
-    backdrop-filter: blur(24px);
+    border-right: 0;
+    background: transparent;
+    backdrop-filter: none;
   }
 
   .admin-sidebar .admin-brand {
@@ -6635,4 +6791,17 @@ body:has(.admin-app),
 
 .admin-editor-grid:has(.admin-combobox) {
   align-items: start;
+}
+
+/* Mobile menu drawer: still scrollable, but without any visible scrollbar or arrows. */
+.admin-drawer {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.admin-drawer::-webkit-scrollbar,
+.admin-drawer::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }

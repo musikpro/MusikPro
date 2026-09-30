@@ -5,7 +5,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isAdminRole } from "@/lib/auth/permissions";
 import { resolveExtraAdminSlugs } from "@/lib/auth/custom-roles";
-import { isCloudinaryConfigured, uploadImageToCloudinary } from "@/lib/storage/cloudinary";
+import { deleteCloudinaryImage, isCloudinaryConfigured, uploadImageToCloudinary } from "@/lib/storage/cloudinary";
 import { MEDIA_LIBRARY_FOLDER } from "@/lib/media/admin";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { getSecurityLevel, securityPolicy } from "@/lib/security/config";
@@ -62,6 +62,12 @@ export async function POST(request: Request) {
 
   try {
     const uploaded = await uploadImageToCloudinary(parsed.data.file, { folder: MEDIA_LIBRARY_FOLDER });
+    // The médiathèque only ever holds AVIF: the upload is converted on Cloudinary's side (f_avif), and
+    // anything that did not come out as AVIF is removed rather than kept in another format.
+    if (uploaded.format !== "avif") {
+      await deleteCloudinaryImage(uploaded.publicId).catch(() => undefined);
+      return NextResponse.json({ error: "La conversion en AVIF a échoué pour cette image." }, { status: 422 });
+    }
     await writeAuditLog({
       action: "media_asset.uploaded",
       actorId: session.user.id,
