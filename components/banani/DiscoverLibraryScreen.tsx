@@ -51,7 +51,7 @@ export default function DiscoverLibraryScreen() {
               </p>
             </div>
           )}
-          {results.map((song) => {
+          {results.map((song, index) => {
             const { cover } = song as { cover?: string | null };
             return (
               <div key={song.id} className="rounded-xl overflow-hidden relative group">
@@ -66,26 +66,15 @@ export default function DiscoverLibraryScreen() {
                     <img src="/icon.svg" alt="" />
                   </div>
                 )}
-                <div className="discover-card-overlay absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-between p-3">
-                  <div className="min-w-0 text-left">
-                    <span className="discover-card-genre inline-block max-w-full truncate whitespace-nowrap bg-primary/90 text-primary-foreground text-xs font-bold px-2 py-1 rounded-lg">
-                      {song.style}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="discover-card-title text-white font-bold text-sm mb-1 truncate" title={song.title}>
-                      {song.title}
-                    </p>
-                    <p className="text-white/70 text-xs flex items-center gap-1">
-                      <Icon i="headphones" size={10} /> {song.plays}
-                    </p>
-                  </div>
-                </div>
+                <div className="discover-card-overlay absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+                <span className="discover-card-number absolute left-2 top-2 flex h-7 min-w-7 items-center justify-center rounded-full bg-black/55 px-2 text-xs font-bold text-white">
+                  {index + 1}
+                </span>
                 <button
                   type="button"
                   data-demo-ready="true"
                   onClick={() => demo.openSong(song.id)}
-                  aria-label="Écouter la chanson"
+                  aria-label={`${t("Écouter la chanson")} ${index + 1}`}
                   className="discover-card-play absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary shadow-lg hover:bg-primary/90"
                 >
                   <Icon i="play" size={16} className="text-primary-foreground" />
