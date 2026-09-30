@@ -178,6 +178,9 @@
       "files": [
         "lib/credit-plans/catalog.ts",
         "lib/credit-plans/currency.ts",
+        "lib/credit-plans/fx-rates.ts",
+        "lib/credit-plans/fx-sync.ts",
+        "app/api/cron/refresh-currency-rates/route.ts",
         "lib/credit-plans/server.ts",
         "app/admin/plans/page.tsx",
         "app/admin/plans/new/page.tsx",
@@ -188,13 +191,16 @@
         "components/admin/AdminSortableGrid.tsx",
         "db/migrations/0005_credit_catalog.sql"
       ],
-      "routes": [],
+      "routes": [
+        "/api/cron/refresh-currency-rates"
+      ],
       "removalComplexity": "with-care",
       "dependsOn": [
         "database",
         "auth"
       ],
       "notes": [
+        "Les taux de change des monnaies en mise à jour automatique sont actualisés chaque jour par app/api/cron/refresh-currency-rates/route.ts (vercel.json, CRON_SECRET requis), avec la même logique que le bouton « Actualiser les taux maintenant » (lib/credit-plans/fx-sync.ts).",
         "Chaque génération consomme 2 crédits et produit deux versions musicales.",
         "Les comptes réels lisent uniquement les offres actives de Neon; la démo utilise le même catalogue avec un secours local identique si Neon est vide ou indisponible."
       ]
