@@ -40,6 +40,15 @@ export default function SongPlayerScreen() {
     if (audio) audio.muted = muted;
   }, [muted, audioUrl]);
 
+  // Each track starts from zero: without this the previous song's duration/position stayed on screen (and
+  // the bar sat at a stale value) until the new file's metadata arrived — or forever when the browser's
+  // "loadedmetadata" fired before React attached its handler.
+  useEffect(() => {
+    const audio = audioRef.current;
+    const duration = audio && Number.isFinite(audio.duration) ? audio.duration : 0;
+    setProgress({ current: audio && duration ? audio.currentTime : 0, duration });
+  }, [audioUrl]);
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio || !audioUrl) return;
@@ -139,7 +148,12 @@ export default function SongPlayerScreen() {
             }}
             onLoadedMetadata={(e) => {
               const duration = e.currentTarget.duration;
-              setProgress((p) => ({ ...p, duration }));
+              if (Number.isFinite(duration)) setProgress((p) => ({ ...p, duration }));
+            }}
+            onDurationChange={(e) => {
+              // Some MP3 streams only report their real length after a few seconds (Infinity/NaN at first).
+              const duration = e.currentTarget.duration;
+              if (Number.isFinite(duration)) setProgress((p) => ({ ...p, duration }));
             }}
             onEnded={() => demo.setPlaying(false)}
             onError={() => {
@@ -168,13 +182,15 @@ export default function SongPlayerScreen() {
                   width:
                     audioUrl && progress.duration
                       ? `${Math.min(100, (progress.current / progress.duration) * 100)}%`
-                      : "45%",
+                      : audioUrl
+                        ? "0%"
+                        : "45%",
                 }}
               />
             </div>
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{audioUrl ? formatTime(progress.current) : "1:41"}</span>
-              <span>{currentSong.duration}</span>
+              <span>{audioUrl && progress.duration ? formatTime(progress.duration) : currentSong.duration}</span>
             </div>
           </div>
         )}
