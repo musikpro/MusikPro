@@ -285,6 +285,27 @@ const providerVars = {
   bictorys: ["BICTORYS_API_KEY", "BICTORYS_WEBHOOK_SECRET"],
 };
 const betaProviders = new Set(["flutterwave", "paytech", "bictorys"]);
+// Chariow : les clés sont normalement enregistrées chiffrées depuis le dashboard propriétaire (table
+// payment_provider_configs), pas en variables d'environnement. On ne lit que leur présence, jamais leur valeur.
+async function storedChariowSecrets() {
+  const none = { CHARIOW_API_KEY: false, CHARIOW_WEBHOOK_SECRET: false };
+  const url =
+    env.DATABASE_SERVICE_URL || process.env.DATABASE_SERVICE_URL || env.DATABASE_URL || process.env.DATABASE_URL;
+  if (!url) return none;
+  try {
+    const { neon } = await import("@neondatabase/serverless");
+    const sql = neon(url);
+    const rows = await Promise.race([
+      sql`select (config->'apiKey' is not null) as api_key, (config->'webhookSecret' is not null) as webhook_secret
+          from payment_provider_configs where provider = 'chariow' limit 1`,
+      new Promise((_, reject) => setTimeout(() => reject(new Error("timeout")), 4000)),
+    ]);
+    return { CHARIOW_API_KEY: Boolean(rows[0]?.api_key), CHARIOW_WEBHOOK_SECRET: Boolean(rows[0]?.webhook_secret) };
+  } catch {
+    return none;
+  }
+}
+const chariowStored = enabledProviders.includes("chariow") ? await storedChariowSecrets() : null;
 if (!paymentsEnabled)
   add(
     "payments-mode",
@@ -295,7 +316,9 @@ if (!paymentsEnabled)
   );
 for (const p of enabledProviders) {
   const req = providerVars[p] || [];
-  const missing = req.filter((k) => !(env[k] || process.env[k]));
+  const stored = p === "chariow" ? chariowStored : null;
+  const missing = req.filter((k) => !(env[k] || process.env[k] || stored?.[k]));
+  const fromDashboard = req.some((k) => !(env[k] || process.env[k]) && stored?.[k]);
   const status = missing.length ? "FAIL" : betaProviders.has(p) ? "WARN" : "PASS";
   add(
     `provider-${p}`,
@@ -305,7 +328,9 @@ for (const p of enabledProviders) {
       ? `Variables manquantes: ${missing.join(", ")}`
       : betaProviders.has(p)
         ? "Adaptateur bêta: sandbox/validation marchand requis avant live"
-        : "Configuration de base présente",
+        : fromDashboard
+          ? "Clés présentes, enregistrées chiffrées depuis le tableau de bord propriétaire"
+          : "Configuration de base présente",
     "payments",
   );
 }
