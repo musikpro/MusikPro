@@ -203,7 +203,15 @@ export default function StepGeneratingSong() {
         className="w-full px-4 pb-4 flex items-center justify-between"
         style={{ paddingTop: "max(28px, calc(env(safe-area-inset-top, 0px) + 16px))" }}
       >
-        <AppLogo size="sm" />
+        <button
+          type="button"
+          data-demo-ready
+          onClick={() => demo.go("/dashboard")}
+          aria-label={t("Accueil")}
+          className="cursor-pointer"
+        >
+          <AppLogo size="sm" />
+        </button>
         <div className="flex items-center gap-1.5 bg-secondary border border-primary/20 px-3 py-1.5 rounded-xl">
           <Icon i="zap" size={13} className="text-primary" />
           <span className="text-xs font-bold text-primary">{t("Génération IA")}</span>

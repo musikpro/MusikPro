@@ -41,11 +41,14 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
   const visibleHistory = demo.isDemo
     ? transactionHistory
     : history.map((entry) => ({
-        date: new Date(entry.date).toLocaleDateString(typeof document === "undefined" ? "fr" : document.documentElement.lang || "fr", {
-          day: "numeric",
-          month: "long",
-          year: "numeric",
-        }),
+        date: new Date(entry.date).toLocaleDateString(
+          typeof document === "undefined" ? "fr" : document.documentElement.lang || "fr",
+          {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          },
+        ),
         action: translateTemplate("Achat de crédits {plan}", { plan: entry.planName }),
         credits: entry.credits,
         type: entry.type,
@@ -120,6 +123,9 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
             ariaLabel="Devise"
             showOptionDisplays={false}
             showSelectionMark={false}
+            portal
+            portalWidth={178}
+            menuClassName="pack-currency-menu"
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
             options={demo.currencies.map((currency) => ({

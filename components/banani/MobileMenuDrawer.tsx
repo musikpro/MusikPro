@@ -62,12 +62,17 @@ export default function MobileMenuDrawer({
       <button type="button" className="mobile-menu-backdrop" aria-label="Fermer le menu" onClick={onClose} />
       <aside className="mobile-menu-drawer" role="dialog" aria-modal="true" aria-labelledby="mobile-menu-title">
         <div className="mobile-menu-drawer-head">
-          <div className="mobile-menu-brand">
+          <button
+            type="button"
+            className="mobile-menu-brand"
+            aria-label={t("Accueil")}
+            onClick={() => navigate("Accueil")}
+          >
             <span>
               <Icon i="music-2" size={16} />
             </span>
             <strong id="mobile-menu-title">MusikPro</strong>
-          </div>
+          </button>
           <button ref={closeRef} type="button" onClick={onClose} aria-label="Fermer le menu">
             <Icon i="x" size={20} />
           </button>

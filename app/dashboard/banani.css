@@ -6655,3 +6655,49 @@ span.musik-user-avatar {
     transform: scaleY(0.6);
   }
 }
+
+/* Currency list is portaled to <body> (MusikSelect `portal`) so no dashboard card can paint over it. */
+.musik-select-menu.pack-currency-menu {
+  max-height: 264px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 5px;
+}
+
+.pack-currency-menu .musik-select-option {
+  min-height: 38px;
+  gap: 5px;
+  justify-content: flex-end;
+  box-sizing: border-box;
+  padding: 7px 8px;
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.pack-currency-menu .musik-select-option > span {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+/* The drawer logo is now a button (home link): keep its previous look. */
+button.mobile-menu-brand {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pack-currency-menu .musik-select-option {
+  border: 0;
+}
+
+.pack-currency-menu .musik-select-option:not(.is-highlighted):not([aria-selected="true"]):not(:hover) {
+  background: transparent;
+}
