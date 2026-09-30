@@ -712,6 +712,10 @@
   display: grid;
   gap: 6px;
   margin-top: 14px;
+  /* The sidebar stretches to the page height and the nav grows with it (flex: 1): without this the
+     extra height was spread between the menu groups, opening gaps that changed with every tab. */
+  align-content: start;
+  grid-auto-rows: max-content;
 }
 
 .admin-nav-section {
