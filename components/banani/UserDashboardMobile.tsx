@@ -43,7 +43,15 @@ const trendingSongs = [
   },
 ];
 
-type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; audioUrl: string | null; real: boolean };
+type TrendCard = {
+  key: string;
+  title: string;
+  playsLabel: string;
+  coverPrompt: string | null;
+  coverUrl?: string | null;
+  audioUrl: string | null;
+  real: boolean;
+};
 
 export default function UserDashboardMobile({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
@@ -61,6 +69,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
         title: song.title,
         playsLabel: formatPlays(song.plays),
         coverPrompt: null,
+        coverUrl: song.coverUrl,
         audioUrl: song.audioUrl,
         real: true,
       }));
@@ -258,9 +267,17 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
                 : {})}
             >
               {nowPlayingTrend?.key === t2.key && nowPlayingTrend.audioUrl ? (
-                <CardAudioPlayer title={nowPlayingTrend.title} audioUrl={nowPlayingTrend.audioUrl} onClose={() => setNowPlayingTrend(null)} compact />
+                <CardAudioPlayer
+                  title={nowPlayingTrend.title}
+                  audioUrl={nowPlayingTrend.audioUrl}
+                  onClose={() => setNowPlayingTrend(null)}
+                  compact
+                />
               ) : null}
-              {t2.coverPrompt ? (
+              {t2.coverUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={t2.coverUrl} alt="" className="w-full aspect-square object-cover" />
+              ) : t2.coverPrompt ? (
                 <Image ar="1:1" prompt={t2.coverPrompt} className="w-full" />
               ) : (
                 <div className="musik-trend-brand-cover w-full aspect-square">
@@ -275,8 +292,15 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
                 </p>
               </div>
               {t2.real ? (
-                <span aria-hidden="true" className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <Icon i={nowPlayingTrend?.key === t2.key ? "pause" : "play"} size={12} className="text-primary-foreground" />
+                <span
+                  aria-hidden="true"
+                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                >
+                  <Icon
+                    i={nowPlayingTrend?.key === t2.key ? "pause" : "play"}
+                    size={12}
+                    className="text-primary-foreground"
+                  />
                 </span>
               ) : (
                 <button

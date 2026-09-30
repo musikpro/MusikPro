@@ -386,6 +386,13 @@
       "when": 1790720000000,
       "tag": "0054_audio_provider_webhook_token",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1790731901768,
+      "tag": "0055_trending_cover_overrides",
+      "breakpoints": true
     }
   ]
 }

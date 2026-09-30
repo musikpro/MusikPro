@@ -3,36 +3,39 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { trendingSettings } from "@/db/schema";
-import { TRENDING_COUNT_OPTIONS, type TrendingCount, type TrendingSettingsValue } from "./types";
+import { TRENDING_POOL_SIZE, type TrendingSettingsValue } from "./types";
 
-export { TRENDING_COUNT_OPTIONS, TRENDING_POOL_SIZE } from "./types";
-export type { TrendingCount, TrendingMode, TrendingSettingsValue } from "./types";
+export { TRENDING_COUNT, TRENDING_POOL_SIZE } from "./types";
+export type { TrendingSettingsValue } from "./types";
 
-const DEFAULT_SETTINGS: TrendingSettingsValue = { mode: "auto", count: 3, randomize: false, manualSelection: [] };
+const DEFAULT_SETTINGS: TrendingSettingsValue = { manualSelection: [], coverOverrides: {} };
 
-function normalizeCount(value: number): TrendingCount {
-  return (TRENDING_COUNT_OPTIONS as readonly number[]).includes(value) ? (value as TrendingCount) : 3;
+function normalizeCovers(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return Object.fromEntries(
+    Object.entries(value as Record<string, unknown>).filter(
+      (entry): entry is [string, string] => typeof entry[1] === "string" && entry[1].length > 0,
+    ),
+  );
 }
 
-/** Réglage global : mode (auto/manuel), nombre affiché, tirage aléatoire ou non, vivier manuel ordonné. */
+/** Réglage global : chansons choisies à la main (2 au maximum) et pochette attribuée à chacune. */
 export async function getTrendingSettings(): Promise<TrendingSettingsValue> {
   try {
     const [row] = await getServiceDb()
       .select({
-        mode: trendingSettings.mode,
-        count: trendingSettings.count,
-        randomize: trendingSettings.randomize,
         manualSelection: trendingSettings.manualSelection,
+        coverOverrides: trendingSettings.coverOverrides,
       })
       .from(trendingSettings)
       .where(eq(trendingSettings.id, "global"))
       .limit(1);
     if (!row) return DEFAULT_SETTINGS;
     return {
-      mode: row.mode === "manual" ? "manual" : "auto",
-      count: normalizeCount(row.count),
-      randomize: Boolean(row.randomize),
-      manualSelection: Array.isArray(row.manualSelection) ? (row.manualSelection as string[]) : [],
+      manualSelection: Array.isArray(row.manualSelection)
+        ? (row.manualSelection as string[]).slice(0, TRENDING_POOL_SIZE)
+        : [],
+      coverOverrides: normalizeCovers(row.coverOverrides),
     };
   } catch {
     return DEFAULT_SETTINGS;

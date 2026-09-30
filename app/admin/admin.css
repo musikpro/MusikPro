@@ -6187,12 +6187,6 @@ body:has(.admin-app),
   gap: 12px;
 }
 
-@media (min-width: 640px) {
-  .admin-trending-preview {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
 .admin-trending-preview-card {
   display: grid;
   gap: 8px;
@@ -6204,6 +6198,27 @@ body:has(.admin-app),
   border-radius: 14px;
   overflow: hidden;
   background: #efece7;
+}
+
+.admin-trending-preview-cover {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.admin-trending-slot {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--admin-border, #e7e2da);
+  border-radius: 14px;
+}
+
+.admin-trending-slot-cover {
+  display: grid;
+  gap: 8px;
 }
 
 .admin-trending-preview-brand {
