@@ -18,14 +18,14 @@ const apps = [
     id: "pwa",
     title: "PWA",
     subtitle: "Installation depuis le navigateur",
-    meta: "Configuration à confirmer",
-    status: "coming" as const,
+    meta: "Manifest + service worker",
+    status: "active" as const,
     icon: "app-window",
   },
   {
     id: "android",
     title: "Android",
-    subtitle: "Conteneur Capacitor WebView",
+    subtitle: "Conteneur Capacitor (PWA + Capacitor)",
     meta: "Phase 21 optionnelle",
     status: "coming" as const,
     icon: "smartphone",
@@ -33,7 +33,7 @@ const apps = [
   {
     id: "ios",
     title: "iOS",
-    subtitle: "Conteneur Capacitor WebView",
+    subtitle: "Conteneur Capacitor (PWA + Capacitor)",
     meta: "Phase 21 optionnelle",
     status: "coming" as const,
     icon: "smartphone",
@@ -61,7 +61,7 @@ export default async function AdminMobileAppsPage() {
           <AdminCatalogBody
             items={apps}
             searchLabel="Rechercher une plateforme"
-            sourceNote="Le Web responsive reste le produit actif. Android et iOS sont optionnels et utiliseront l’URL HTTPS du SaaS via Capacitor WebView lorsque la Phase 21 sera activée."
+            sourceNote="Le Web responsive reste le produit actif. Android et iOS sont optionnels et utiliseront la couche PWA + Capacitor autour du SaaS HTTPS lorsque la Phase 21 sera activée."
           />
         </AdminTabPanel>
         <AdminTabPanel id="store-links">

@@ -15,11 +15,20 @@ import { getActiveRecipientRelations } from "@/lib/recipient-relations/server";
 import { listDiscoverSongs } from "@/lib/discover/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { getActivePhonePrefixes } from "@/lib/phone-prefixes/server";
-import { detectCurrency, detectInterfaceLanguage } from "@/lib/languages/detection";
+import { detectCurrency } from "@/lib/languages/detection";
+import {
+  readLanguagePreference,
+  readRequestLocale,
+  readRequestPath,
+  resolveInterfaceLanguage,
+  resolveUrlLanguage,
+} from "@/lib/languages/preference";
+import { withLocalePrefix } from "@/lib/languages/locale-path";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
 import { getMusicfulGenerationScreenSettings, getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
 import { getStoreLinks } from "@/lib/settings/store-links";
 import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
 import "@fontsource/dm-sans/600.css";
@@ -32,34 +41,62 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Authoritative server-side guard for every current and future /dashboard page.
   const session = await requireUser();
   const demo = await isDemoRequest();
-  const creditPlans = await getActiveCreditPlans({ demo });
-  const occasionOptions = await getActiveOccasions({ demo });
-  const musicStyleOptions = await getActiveMusicStyles({ demo });
-  const recipientRelationOptions = await getActiveRecipientRelations({ demo });
-  // Real accounts only: the demo library is the static showcase data of DemoProvider.
-  const discoverSongs = demo ? [] : await listDiscoverSongs(session.user.id);
-  const languageCatalog = await getActiveLanguageCatalog({ demo });
-  const phonePrefixOptions = await getActivePhonePrefixes({ demo });
   const requestHeaders = await headers();
-  const detectedInterfaceLanguage = await detectInterfaceLanguage(requestHeaders, languageCatalog.interfaceLanguages);
-  const detectedCurrency = await detectCurrency(requestHeaders);
-  const currencyOptions = await getEnabledCurrencies();
+  const preferredLanguageCode = await readLanguagePreference();
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
   const isOwnerAccount = hasAppRole((session.user as { role?: string }).role, "admin");
-  const paymentBypassEnabled = !demo && isOwnerAccount ? await isPaymentBypassEnabled() : false;
-  const versionsPerGeneration = await getMusicfulVersionsPerGeneration();
-  const generationScreen = await getMusicfulGenerationScreenSettings();
-  const storeLinks = await getStoreLinks();
-  const balance = demo
-    ? 0
-    : Number(
-        (
-          await userQuery(
-            session.user.id,
-            db.select({ balance: credits.balance }).from(credits).where(eq(credits.userId, session.user.id)).limit(1),
-          )
-        )[0]?.balance ?? 0,
-      );
+  const languageCatalogPromise = getActiveLanguageCatalog({ demo });
+  const urlLocaleCode = await readRequestLocale();
+  if (!urlLocaleCode) {
+    // Un-prefixed dashboard URL (old bookmark, redirect after login…): send the user to the same
+    // page under their language's prefix — saved choice, else geo-IP, else default.
+    const catalog = await languageCatalogPromise;
+    const language = await resolveInterfaceLanguage(requestHeaders, catalog.interfaceLanguages, preferredLanguageCode);
+    redirect(withLocalePrefix(await readRequestPath(), language?.code ?? "fr"));
+  }
+  // Independent lookups run concurrently (they used to be awaited one after the other on every
+  // dashboard navigation). The interface language waits only for the catalog it depends on.
+  const [
+    creditPlans,
+    occasionOptions,
+    musicStyleOptions,
+    recipientRelationOptions,
+    discoverSongs,
+    languageCatalog,
+    detectedInterfaceLanguage,
+    phonePrefixOptions,
+    detectedCurrency,
+    currencyOptions,
+    paymentBypassEnabled,
+    versionsPerGeneration,
+    generationScreen,
+    storeLinks,
+    balance,
+  ] = await Promise.all([
+    getActiveCreditPlans({ demo }),
+    getActiveOccasions({ demo }),
+    getActiveMusicStyles({ demo }),
+    getActiveRecipientRelations({ demo }),
+    // Real accounts only: the demo library is the static showcase data of DemoProvider.
+    demo ? Promise.resolve([]) : listDiscoverSongs(session.user.id),
+    languageCatalogPromise,
+    languageCatalogPromise.then((catalog) => resolveUrlLanguage(urlLocaleCode, catalog.interfaceLanguages) ?? null),
+    getActivePhonePrefixes({ demo }),
+    detectCurrency(requestHeaders),
+    getEnabledCurrencies(),
+    !demo && isOwnerAccount ? isPaymentBypassEnabled() : Promise.resolve(false),
+    getMusicfulVersionsPerGeneration(),
+    getMusicfulGenerationScreenSettings(),
+    getStoreLinks(),
+    demo
+      ? Promise.resolve(0)
+      : userQuery(
+          session.user.id,
+          db.select({ balance: credits.balance }).from(credits).where(eq(credits.userId, session.user.id)).limit(1),
+        ).then((rows) => Number(rows[0]?.balance ?? 0)),
+  ]);
+  // The language comes from the URL prefix; one that is not an active catalog language is a 404.
+  if (!detectedInterfaceLanguage) notFound();
   return (
     <DemoProvider
       mode={demo ? "demo" : "real"}

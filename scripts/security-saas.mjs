@@ -141,6 +141,15 @@ add(
   security.text ? [security.text.slice(0, 1600)] : [],
 );
 
+const csp = runNode("scripts/csp-check.mjs");
+add(
+  "strict-csp",
+  "CSP stricte sur les scripts (nonce)",
+  csp.ok ? "pass" : "fail",
+  csp.ok ? "Nonce par requête, scripts sans unsafe-inline et scripts tiers contrôlés." : "Le gate CSP stricte échoue.",
+  csp.text ? [csp.text.slice(0, 1400)] : [],
+);
+
 const floors = runNode("scripts/dependency-security-floor.mjs");
 add(
   "dependency-floors",

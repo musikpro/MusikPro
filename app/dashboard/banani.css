@@ -6705,3 +6705,121 @@ button.mobile-menu-brand {
 .landing-page .landing-carousel-link[role="button"] {
   cursor: pointer;
 }
+
+/* FAQ — cartes pliables (<details> natif), repliées par défaut */
+.landing-page .landing-faq-item {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  box-shadow:
+    0 1px 2px rgba(26, 26, 26, 0.04),
+    0 2px 8px rgba(26, 26, 26, 0.05);
+  overflow: hidden;
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease,
+    background-color 0.3s ease;
+}
+.landing-page .landing-faq-item:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  box-shadow: 0 10px 24px rgba(26, 26, 26, 0.08);
+}
+.landing-page .landing-faq-item[open] {
+  border-color: color-mix(in srgb, var(--color-primary) 55%, var(--color-border));
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+.landing-page .landing-faq-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 5.5rem;
+  padding: 1.25rem 1.5rem;
+  cursor: pointer;
+  list-style: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.landing-page .landing-faq-summary::-webkit-details-marker {
+  display: none;
+}
+.landing-page .landing-faq-summary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  border-radius: 1.25rem;
+}
+.landing-page .landing-faq-question {
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1.4;
+  color: var(--color-foreground);
+}
+.landing-page .landing-faq-chevron {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    background-color 0.3s ease,
+    color 0.3s ease;
+}
+.landing-page .landing-faq-item[open] .landing-faq-chevron {
+  transform: rotate(180deg);
+  background: var(--color-primary);
+  color: #fff;
+}
+.landing-page .landing-faq-answer {
+  margin: 0 1.5rem;
+  padding: 1rem 0 1.4rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--color-border));
+  font-size: 0.875rem;
+  line-height: 1.65;
+  color: var(--color-muted-foreground);
+}
+.landing-page .landing-faq-item[open] .landing-faq-answer {
+  animation: landing-faq-reveal 0.3s ease both;
+}
+@keyframes landing-faq-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.landing-page .landing-faq-item--compact {
+  border-radius: 1rem;
+}
+.landing-page .landing-faq-item--compact .landing-faq-summary {
+  min-height: 4rem;
+  padding: 1rem 1.1rem;
+}
+.landing-page .landing-faq-item--compact .landing-faq-question {
+  font-size: 0.875rem;
+}
+.landing-page .landing-faq-item--compact .landing-faq-chevron {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+.landing-page .landing-faq-item--compact .landing-faq-answer {
+  margin: 0 1.1rem;
+  padding: 0.85rem 0 1.1rem;
+  font-size: 0.8125rem;
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-page .landing-faq-item[open] .landing-faq-answer {
+    animation: none;
+  }
+  .landing-page .landing-faq-chevron {
+    transition: none;
+  }
+}

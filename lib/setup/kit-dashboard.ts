@@ -8,7 +8,7 @@ export type KitStatus = "ok" | "missing" | "warning";
 
 export type MobileAppReadiness = {
   enabled: boolean;
-  strategy: "webview-hosted";
+  strategy: "pwa-capacitor";
   progress: number;
   productionUrl: string | null;
   platforms: string[];
@@ -194,34 +194,60 @@ export function getMobileAppReadiness(): MobileAppReadiness {
   const androidPkg = Boolean(deps["@capacitor/android"]);
   const iosPkg = Boolean(deps["@capacitor/ios"]);
   const hasCapConfig = exists("capacitor.config.ts");
+  const pwaManifest = exists("app/manifest.ts");
+  const serviceWorker = exists("public/sw.js");
+  const pwaRegistrar = exists("components/pwa/service-worker-register.tsx");
+  const pwaIcons =
+    exists("public/icon-192.png") && exists("public/icon-512.png") && exists("public/icon-512-maskable.png");
+  const cacheControlled =
+    /request\.method !== ["']GET["']/.test(readText("public/sw.js")) && /\/api\//.test(readText("public/sw.js"));
+  const nativeNav =
+    exists("components/mobile/native-bottom-nav.tsx") &&
+    readText("app/dashboard/layout.tsx").includes("NativeBottomNav");
+  const safeAreas = readText("app/globals.css").includes("safe-area-inset-bottom");
   const androidProject = exists("android");
   const iosProject = exists("ios");
   const androidStudio = process.platform === "darwin" ? fs.existsSync("/Applications/Android Studio.app") : false;
   const xcode = process.platform === "darwin" ? fs.existsSync("/Applications/Xcode.app") : false;
 
   const steps = [
-    { label: "SaaS Web terminé et validé", done: false },
+    { label: "PWA configurée", done: pwaManifest && pwaRegistrar },
+    { label: "Manifest valide / icônes PWA", done: pwaManifest && pwaIcons },
+    { label: "Service worker actif dans le code", done: serviceWorker && pwaRegistrar },
+    { label: "Cache contrôlé (pas d’API privée)", done: cacheControlled },
     { label: "Domaine de production HTTPS renseigné", done: Boolean(productionUrl?.startsWith("https://")) },
     { label: "Mobile App Pipeline activé", done: enabled },
     { label: "App ID / Bundle ID configuré", done: /^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z][a-zA-Z0-9_-]*){1,}$/.test(appId) },
     { label: "Capacitor installé", done: hasCore },
+    { label: "Configuration Capacitor générée", done: hasCapConfig },
     { label: "Projet Android généré", done: !platforms.includes("android") || androidProject },
     { label: "Projet iOS généré", done: !platforms.includes("ios") || iosProject },
-    { label: "Configuration WebView générée", done: hasCapConfig },
-    { label: "Tests sur appareils réels", done: false },
-    { label: "Assets et captures stores prêts", done: false },
-    { label: "Builds de publication validés", done: false },
+    { label: "Navigation mobile isolée", done: nativeNav },
+    { label: "Safe areas validées dans le code", done: safeAreas },
+    { label: "Auth mobile testée sur appareil", done: false },
+    { label: "Build Android validé", done: false },
+    { label: "Build iOS validé", done: false },
+    { label: "Prêt Play Store", done: false },
+    { label: "Prêt App Store", done: false },
   ];
-  const measurable = steps.slice(1, 8);
+  const measurable = steps.slice(0, 13);
   const progress = enabled ? Math.round((measurable.filter((x) => x.done).length / measurable.length) * 100) : 0;
 
   return {
     enabled,
-    strategy: "webview-hosted",
+    strategy: "pwa-capacitor",
     progress,
     productionUrl,
     platforms,
     services: [
+      {
+        label: "PWA (manifest + service worker)",
+        status: pwaManifest && serviceWorker && pwaRegistrar ? "ok" : "missing",
+        detail:
+          pwaManifest && serviceWorker && pwaRegistrar
+            ? "Couche PWA installable préparée avec cache contrôlé."
+            : "Manifest/service worker/registrar incomplet.",
+      },
       {
         label: "Capacitor Core + CLI",
         status: hasCore ? "ok" : "warning",

@@ -1,5 +1,5 @@
 {
-  "version": "0.10.9",
+  "version": "0.11.1",
   "features": {
     "database": {
       "description": "Neon PostgreSQL + Drizzle",
@@ -1070,7 +1070,10 @@
         "components/banani/Reveal.tsx",
         "components/banani/LandingLanguageSwitcher.tsx",
         "components/banani/MobileLandingMenu.tsx",
-        "lib/languages/landing-language-action.ts",
+        "lib/languages/preference.ts",
+        "lib/languages/preference-client.ts",
+        "lib/languages/locale-path.ts",
+        "components/banani/LanguageCookieSync.tsx",
         "lib/languages/landing-language-cookie.ts"
       ],
       "routes": [],

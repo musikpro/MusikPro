@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
+import { splitLocalePrefix } from "@/lib/languages/locale-path";
 import { WebOnly } from "@/components/mobile/web-only";
 import { PremiumIcon, type PremiumIconName } from "@/components/ui/premium-icon";
 
@@ -14,7 +16,8 @@ const items: Array<{ href: string; label: string; icon: PremiumIconName }> = [
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const musikPath = pathname.startsWith("/demo") ? pathname.replace(/^\/demo/, "/dashboard") || "/dashboard" : pathname;
+  const locale = splitLocalePrefix(pathname).locale;
+  const musikPath = normalizeDashboardPath(pathname);
   const musik =
     musikPath === "/dashboard" ||
     (musikPath.startsWith("/dashboard/") &&
@@ -46,9 +49,9 @@ export function MobileBottomNav() {
         {destinations.map((item) => (
           <Link
             key={item.href}
-            href={item.href}
+            href={dashboardHref(item.href, false, locale)}
             className="mobile-bottom-link"
-            aria-current={pathname === item.href ? "page" : undefined}
+            aria-current={musikPath === item.href ? "page" : undefined}
           >
             <span aria-hidden="true" className="mobile-bottom-icon">
               <PremiumIcon name={item.icon} size={20} />

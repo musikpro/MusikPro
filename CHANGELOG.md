@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.1 — Mise à jour du kit (0.11.0 + 0.11.1), refactorisation non régressive
+
+- Next.js et `eslint-config-next` alignés sur 16.3.7 (correctifs de sécurité).
+- Pipeline mobile officiel **PWA + Capacitor** : manifest enrichi (`id`, `scope`, icônes 192/512/maskable MusikPro), service worker `public/sw.js` (jamais de cache pour `/api`, `/admin`, `/dashboard`, `/demo`, authentification, `/setup`), page `offline.html`, `ServiceWorkerRegister`, scripts `mobile:pwa:check`, `mobile:app:migrate`, `mobile:sync`, `mobile:android`, `mobile:ios`, skill `mobile-app-pwa-capacitor`, `mobileRuntimeContext()`.
+- Nouveau gate `security:csp-check` (intégré à `verify:code`, `verify:production`, `ci:check`, `security:release`, `kit:audit`, `kit:full-test` et `/security-saas`) adapté à la CSP de MusikPro : script-src à nonce sans `unsafe-inline` ; `style-src` conserve `unsafe-inline` (attributs `style={{}}` React).
+- Nonce CSP propagé au layout racine (`NonceProvider`) et au widget Turnstile ; en-têtes dédiés pour `/sw.js` ; `proxy.ts` n'intercepte plus les fichiers statiques PWA.
+- Préflight du registre npm (`dependencies:network-check`) avant `first-run:install`.
+- `kit:audit` : 29 contrôles ; stratégie mobile par défaut `pwa-capacitor`.
+- Conservés : i18n, admin, `/demo`, Neon, Playwright, paiements, toutes les règles du CLAUDE.md. TypeScript reste en 5.9.3 (le kit utilise 7.0.2, migration non retenue).
+
 ## 0.10.7 — Refactorisation générale et test d'intégrité complet
 
 - Ajout de `npm run kit:full-test` et des rapports `generated/full-integrity-report.{md,json}`.

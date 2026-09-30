@@ -18,6 +18,8 @@ import { formatPlays } from "@/lib/trending/format";
 import type { LanguageOption } from "@/lib/languages/catalog";
 import type { PhonePrefixOption } from "@/lib/phone-prefixes/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
+import { persistLanguageCookie } from "@/lib/languages/preference-client";
+import { withLocalePrefix } from "@/lib/languages/locale-path";
 import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 
@@ -100,7 +102,9 @@ function useDemoState(
   const isDemo = mode === "demo";
   const defaults = getWorkspaceDefaults(isDemo, initialBalance);
   const pathname = normalizeDashboardPath(browserPathname);
-  const href = (route: string) => dashboardHref(route, isDemo);
+  // Language of the URL (`/en/dashboard/…`): every internal link keeps that prefix.
+  const [localeCode, setLocaleCode] = useState<string | null>(initialDetectedInterfaceLanguage?.code ?? null);
+  const href = (route: string) => dashboardHref(route, isDemo, localeCode);
   const [message, setMessage] = useState("");
   const notify = (nextMessage: string) =>
     setMessage(
@@ -217,10 +221,12 @@ function useDemoState(
     const detectedAvailable = initialDetectedInterfaceLanguage
       ? initialInterfaceLanguages.some((language) => language.code === initialDetectedInterfaceLanguage.code)
       : false;
-    const selected = available
-      ? savedLanguage!
-      : detectedAvailable
-        ? initialDetectedInterfaceLanguage!.nativeName
+    // The URL prefix (`/en/dashboard`) is authoritative and is what the server passes as the detected
+    // language; the saved choice only applies when the URL gives none.
+    const selected = detectedAvailable
+      ? initialDetectedInterfaceLanguage!.nativeName
+      : available
+        ? savedLanguage!
         : (initialInterfaceLanguages[0]?.nativeName ?? "Français");
     // translate()/localizeField() (lib/i18n/translate.ts) read document.documentElement.lang live
     // during render. Mutating it right away in this effect can outrace App Router's streamed
@@ -230,9 +236,12 @@ function useDemoState(
     let raf2: number | null = null;
     const raf1 = window.requestAnimationFrame(() => {
       raf2 = window.requestAnimationFrame(() => {
-        setChoices((current) => ({ ...current, appLanguage: selected }));
-        document.documentElement.lang =
+        const selectedCode =
           initialInterfaceLanguages.find((language) => language.nativeName === selected)?.code ?? "fr";
+        setChoices((current) => ({ ...current, appLanguage: selected }));
+        document.documentElement.lang = selectedCode;
+        // Same cookie as the public landing page: the server renders this language directly next time.
+        persistLanguageCookie(selectedCode);
       });
     });
     return () => {
@@ -479,8 +488,17 @@ function useDemoState(
     setChoices(nextChoices);
     if (key === "appLanguage") {
       window.localStorage.setItem(`musikpro:interface-language:${persistenceId}`, value);
-      document.documentElement.lang =
-        initialInterfaceLanguages.find((language) => language.nativeName === value)?.code ?? "fr";
+      const code = initialInterfaceLanguages.find((language) => language.nativeName === value)?.code ?? "fr";
+      document.documentElement.lang = code;
+      persistLanguageCookie(code);
+      // Keep the URL in step with the language (/fr/dashboard → /en/dashboard) without reloading:
+      // same page, same client state, instant switch. Links built by href() follow via localeCode.
+      setLocaleCode(code);
+      window.history.replaceState(
+        window.history.state,
+        "",
+        withLocalePrefix(window.location.pathname, code) + window.location.search + window.location.hash,
+      );
     }
     if (key === "currency") window.localStorage.setItem(`musikpro:currency:${persistenceId}`, value);
     if (key === "phoneCountry") persistPaymentInfo(fields, value);
@@ -597,7 +615,9 @@ function useDemoState(
   const applySongGroup = (group: SongGroupResponse) => {
     if (isDemo) return;
     const mapped = mapSongGroup(group);
-    setSongs((prev) => (prev.some((s) => s.id === mapped.id) ? prev.map((s) => (s.id === mapped.id ? mapped : s)) : [mapped, ...prev]));
+    setSongs((prev) =>
+      prev.some((s) => s.id === mapped.id) ? prev.map((s) => (s.id === mapped.id ? mapped : s)) : [mapped, ...prev],
+    );
   };
   // A generation takes a few minutes: while any song still has a version "processing", keep it fresh from
   // here (one poller for every screen: player, "Mes chansons", home...) so a finished song shows up by
@@ -659,7 +679,11 @@ function useDemoState(
   }, [isDemo]);
   /** Demo-only instant fake generation, unchanged from the original scaffold. */
   const generateSong = async () => {
-    const title = buildSongTitle({ recipientName: fields.recipientName, occasion: choices.occasion, genre: choices.genre });
+    const title = buildSongTitle({
+      recipientName: fields.recipientName,
+      occasion: choices.occasion,
+      genre: choices.genre,
+    });
     const existingId = songs.find((s) => s.title === title)?.id;
     const newId = existingId ?? songs.length + 1000;
     setSongs((prev) =>
@@ -868,13 +892,13 @@ function useDemoState(
       try {
         const result = await apiFetch<{ url: string }>(`/api/songs/${id}/publish`, {
           method: "POST",
-          ...(jobId
-            ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId }) }
-            : {}),
+          ...(jobId ? { headers: { "Content-Type": "application/json" }, body: JSON.stringify({ jobId }) } : {}),
         });
         return result.url;
       } catch (error) {
-        notify(error instanceof ApiClientError ? error.message : t("Impossible de publier cette chanson pour le moment."));
+        notify(
+          error instanceof ApiClientError ? error.message : t("Impossible de publier cette chanson pour le moment."),
+        );
         return null;
       }
     },

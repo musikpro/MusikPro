@@ -77,8 +77,8 @@ export function SetupSaasDashboard({
         <h2>Premier démarrage — installation guidée</h2>
         <p className="muted">
           Une commande simple vérifie Node/npm, l’intégrité du starter et l’état des dépendances sans écraser votre
-          configuration. Le mode <code>first-run:install</code> lance aussi <code>npm install</code>, puis vous indique
-          la prochaine étape.
+          configuration. Le mode <code>first-run:install</code> vérifie d’abord l’accès au registre npm, lance ensuite{" "}
+          <code>npm install</code>, puis vous indique la prochaine étape.
         </p>
         <div className="kit-actions">
           <code>npm run first-run</code>
@@ -90,8 +90,8 @@ export function SetupSaasDashboard({
         <h2>Audit intégrité du kit</h2>
         <p className="muted">
           Contrôle transversal sans installation préalable : fichiers critiques, sécurité, Zod, fonctionnalités, routes,
-          runtime, UI, SEO, Mobile WebView, scripts et JSON. <code>kit:full-test</code> produit en plus un rapport
-          consolidé et ajoute automatiquement lint, typecheck et tests dès que les dépendances sont installées.
+          runtime, UI, SEO, Mobile PWA + Capacitor, scripts et JSON. <code>kit:full-test</code> produit en plus un
+          rapport consolidé et ajoute automatiquement lint, typecheck et tests dès que les dépendances sont installées.
         </p>
         <div className="kit-actions">
           <code>npm run kit:audit</code>
@@ -227,12 +227,12 @@ export function SetupSaasDashboard({
         <div className="kit-mobile-header">
           <div>
             <div className="kit-mobile-title-row">
-              <h2 id="mobile-app-title">Application Android & iPhone — WebView connectée au SaaS</h2>
+              <h2 id="mobile-app-title">Application Android & iPhone — PWA + Capacitor</h2>
               <span className="badge">Optionnel</span>
             </div>
             <p className="muted">
-              L’application Capacitor ouvre directement le SaaS Next.js déjà déployé en HTTPS. Le backend, Neon, Resend,
-              l’auth et les paiements restent en ligne côté serveur.
+              La PWA prépare l’expérience mobile installable et Capacitor ajoute la couche Android/iOS autour du SaaS
+              Next.js serveur. Neon, Resend, l’auth, les paiements et les secrets restent côté serveur.
             </p>
           </div>
           <div className="kit-mobile-score">
@@ -243,8 +243,8 @@ export function SetupSaasDashboard({
 
         <div className="kit-mobile-architecture" role="note">
           <code>
-            Android / iPhone → Capacitor WebView → {mobile.productionUrl || "https://monsaas.com"} → Next.js / API /
-            Neon
+            Web mobile → PWA · Android/iPhone → Capacitor → {mobile.productionUrl || "https://monsaas.com"} → Next.js
+            serveur / API / Neon
           </code>
         </div>
 
@@ -307,7 +307,7 @@ export function SetupSaasDashboard({
           <li>Admin, paiements optionnels, webhooks, cron et uploads Cloudinary optionnels</li>
           <li>Health/readiness, tests Vitest, ESLint, Prettier, typecheck, build et audit npm</li>
           <li>
-            Computer Use OpenAI + Claude Code, compatibilité Claude Code, responsive Web, Mobile App WebView
+            Computer Use OpenAI + Claude Code, compatibilité Claude Code, responsive Web, Mobile App PWA + Capacitor
             optionnelle, skeleton loaders, SEO, Banani planner et handoff GitHub/Vercel
           </li>
         </ul>
@@ -319,8 +319,8 @@ export function SetupSaasDashboard({
           1. Lance <code>/setup-saas</code> → 2. vérifie les voyants Computer Use OpenAI et Claude Code → 3. configure
           Neon et les services de base → 4. importe Banani → attache le CRUD Clients si nécessaire → construis le SaaS →
           5. teste/build → 6. prépare GitHub/Vercel → 7. valide obligatoirement le staging Vercel → 8. configure les
-          services optionnels utiles → 9. finalise la production Web → 10. seulement ensuite, décide si la Phase 21
-          WebView Android/iPhone doit être activée.
+          services optionnels utiles → 9. finalise la production Web → 10. seulement ensuite, décide si la Phase 21 PWA
+          + Capacitor Android/iPhone doit être activée.
         </p>
       </section>
     </main>

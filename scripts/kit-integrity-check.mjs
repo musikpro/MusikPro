@@ -113,8 +113,8 @@ if (fs.existsSync(skillPath)) {
   if (!/^name:\s*setup-saas\s*$/m.test(text))
     failures.push(".agents/skills/setup-saas/SKILL.md — invalid skill metadata");
   if (!/\/setup-saas/.test(text)) failures.push(".agents/skills/setup-saas/SKILL.md — setup-saas instructions missing");
-  if (!/WebView/i.test(text) || !/Phase 21/.test(text))
-    failures.push(".agents/skills/setup-saas/SKILL.md — Phase 21 WebView guidance missing");
+  if (!/PWA \+ Capacitor/i.test(text) || !/Phase 21/.test(text))
+    failures.push(".agents/skills/setup-saas/SKILL.md — Phase 21 PWA + Capacitor guidance missing");
   if (!/CRUD Clients/i.test(text) || !/post-Banani/i.test(text))
     failures.push(".agents/skills/setup-saas/SKILL.md — post-Banani CRUD Clients guidance missing");
   if (!/Staging Gate obligatoire/i.test(text) || !/staging:approve/.test(text))
@@ -157,8 +157,8 @@ if (fs.existsSync(productionStatePagePath)) {
 const dashboardPath = path.join(root, "components/setup-saas-dashboard.tsx");
 if (fs.existsSync(dashboardPath)) {
   const dashboard = fs.readFileSync(dashboardPath, "utf8");
-  if (!/Application Android & iPhone/.test(dashboard) || !/WebView connectée au SaaS/.test(dashboard))
-    failures.push("components/setup-saas-dashboard.tsx — mobile WebView readiness section missing");
+  if (!/Application Android & iPhone/.test(dashboard) || !/PWA \+ Capacitor/.test(dashboard))
+    failures.push("components/setup-saas-dashboard.tsx — mobile PWA + Capacitor readiness section missing");
   if (!/\/security-saas/.test(dashboard) || !/Audit sécurité du SaaS/.test(dashboard))
     failures.push("components/setup-saas-dashboard.tsx — /security-saas dashboard section missing");
   if (!/npm run kit:verify/.test(dashboard))

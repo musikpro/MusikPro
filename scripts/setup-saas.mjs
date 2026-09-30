@@ -795,11 +795,11 @@ const phases = [
   },
   {
     n: 21,
-    title: "Préparer Android / iPhone — WebView connectée au SaaS (OPTIONNEL)",
-    goal: "Après la mise en production du SaaS Web, décider si une app Android/iPhone WebView connectée au SaaS en ligne est nécessaire, puis préparer les projets natifs sans casser le Web.",
-    role: "Cette phase crée un conteneur Capacitor WebView qui ouvre le SaaS Next.js déjà déployé en HTTPS. Le backend reste hébergé et conserve les secrets, la base, les emails et les paiements.",
+    title: "Préparer Android / iPhone — PWA + Capacitor (OPTIONNEL)",
+    goal: "Après la mise en production du SaaS Web/PWA, décider si une app Android/iPhone Capacitor est nécessaire, puis préparer les projets natifs sans casser le Web ni convertir Next.js en export statique.",
+    role: "Cette phase applique l’architecture officielle Next.js serveur + PWA + Capacitor. La PWA améliore l’expérience mobile Web et Capacitor ajoute la couche native Android/iOS; le backend reste hébergé et conserve secrets, base, auth, emails et paiements.",
     benefit:
-      "Elle permet de publier rapidement le SaaS en Android/iPhone en réutilisant le site en ligne, tout en gardant la partie mobile complètement optionnelle et réversible.",
+      "Elle permet une expérience mobile installable et une couche native Android/iOS, tout en gardant la partie native optionnelle, isolée et réversible.",
     checks: config?.mobileAppEnabled
       ? [
           {
@@ -821,7 +821,7 @@ const phases = [
       : [{ label: "Mobile App optionnelle", ok: true, detail: "Désactivée — le SaaS reste Web-only et conforme" }],
     actions: config?.mobileAppEnabled
       ? [
-          "Exécuter `npm run mobile:check`, `npm run validation:zod-check` et `npm run security:release` avant la génération native.",
+          "Exécuter `npm run mobile:check`, `npm run mobile:pwa:check`, `npm run validation:zod-check` et `npm run security:release` avant la génération native.",
           "Exécuter `npm run mobile:app:install` pour installer Capacitor uniquement dans ce projet activé.",
           "Exécuter `npm run mobile:app:prepare`, puis `npm run mobile:app:check`.",
           "Tester Android avec Android Studio et un appareil réel; tester iOS avec Xcode sur macOS et un iPhone réel.",
@@ -832,7 +832,7 @@ const phases = [
       : [
           "Si aucune application mobile n’est nécessaire, ne rien installer : `mobileAppEnabled=false` est un état valide.",
           "Pour confirmer explicitement le mode Web-only : `npm run mobile:app:configure -- --none`.",
-          "Pour activer plus tard : `npm run mobile:app:configure -- --app-id=com.entreprise.app --app-name=Mon-SaaS --url=https://app.exemple.com --platforms=android,ios`.",
+          "Pour activer plus tard : `npm run mobile:app:configure -- --app-id=com.entreprise.app --app-name=Mon-SaaS --url=https://app.exemple.com --platforms=android,ios` (stratégie `pwa-capacitor`).",
           "Lire `docs/mobile/mobile-app-pipeline.md` avant activation.",
         ],
     validate: config?.mobileAppEnabled

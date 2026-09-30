@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { securityHeaders } from "./lib/security/headers";
+import { securityHeaders, serviceWorkerSecurityHeaders } from "./lib/security/headers";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
@@ -22,7 +22,10 @@ const nextConfig: NextConfig = {
     "/*": [".codex/**", ".codex/**/*", ".agents/**", ".agents/**/*", ".git/**", ".git/**/*", ".env*", ".mcp.json"],
   },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/sw.js", headers: serviceWorkerSecurityHeaders },
+    ];
   },
 };
 

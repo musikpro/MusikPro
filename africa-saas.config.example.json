@@ -1,5 +1,5 @@
 {
-  "version": "0.10.9",
+  "version": "0.11.1",
   "appName": "My Africa SaaS",
   "appUrl": "http://localhost:3000",
   "country": "CI",
@@ -26,7 +26,7 @@
     "appName": null,
     "productionUrl": null,
     "platforms": ["android", "ios"],
-    "strategy": "webview-hosted",
+    "strategy": "pwa-capacitor",
     "bottomNavigation": true,
     "prepared": false
   },

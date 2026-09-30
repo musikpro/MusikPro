@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { setLandingLanguage } from "@/lib/languages/landing-language-action";
+import { persistLanguageCookie } from "@/lib/languages/preference-client";
+import { withLocalePrefix } from "@/lib/languages/locale-path";
 import Icon from "./Icon";
 
 export type LandingLanguageOption = { code: string; flag: string; nativeName: string };
@@ -51,15 +52,21 @@ export default function LandingLanguageSwitcher({ languages, currentFlag, curren
   const selectLanguage = (language: LandingLanguageOption) => {
     if (detailsRef.current) detailsRef.current.open = false;
     setOptimistic(language);
-    startTransition(async () => {
-      await setLandingLanguage(language.code);
+    persistLanguageCookie(language.code);
+    // Each language has its own URL (/fr, /en…). Both URLs are the same route for the App Router
+    // (rewritten to "/"), so after navigating it must refetch, otherwise the previous language's
+    // content stays on screen under the new URL.
+    startTransition(() => {
+      router.push(withLocalePrefix("/", language.code));
       router.refresh();
     });
   };
 
   if (languages.length <= 1) {
     return (
-      <span className={`flex items-center gap-1.5 border border-border rounded-md text-foreground bg-background ${compact ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm font-semibold"}`}>
+      <span
+        className={`flex items-center gap-1.5 border border-border rounded-md text-foreground bg-background ${compact ? "px-3 py-2 text-xs" : "px-3 py-2 text-sm font-semibold"}`}
+      >
         <span>{currentFlag}</span>
         <span>{currentLabel}</span>
       </span>

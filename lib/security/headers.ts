@@ -45,3 +45,16 @@ export const securityHeaders = [
   { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
   ...(production ? [{ key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains; preload" }] : []),
 ];
+
+/**
+ * The service worker script is served with its own strict policy and is never cached by the
+ * browser/CDN, so a new release of /sw.js is picked up immediately.
+ */
+export const serviceWorkerSecurityHeaders = [
+  { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+  { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+  {
+    key: "Content-Security-Policy",
+    value: "default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'",
+  },
+];
