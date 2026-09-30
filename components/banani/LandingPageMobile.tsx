@@ -8,6 +8,7 @@ import MobileLandingMenu from "./MobileLandingMenu";
 import HeroRotatingText, { type HeroRotatingTextItem } from "./HeroRotatingText";
 import LandingSongCarousel from "./LandingSongCarousel";
 import LandingLibraryCard from "./LandingLibraryCard";
+import ExclusiveAudioPlayback from "./ExclusiveAudioPlayback";
 import { HERO_TEXT_SIZE_CLASSES, type HeroAnimationType, type HeroTextSize } from "@/lib/hero-animation/types";
 import type { LandingFeaturedSong } from "@/lib/landing-features/server";
 
@@ -111,6 +112,7 @@ export default function LandingPageMobile({
 
   return (
     <div className="landing-page bg-background font-body text-foreground">
+      <ExclusiveAudioPlayback />
       <nav className="landing-nav relative border-b border-border px-4 py-3 flex items-center justify-between gap-3">
         <a href="#accueil" aria-label={t("Accueil")}>
           <AppLogo size="sm" />

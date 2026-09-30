@@ -6701,3 +6701,7 @@ button.mobile-menu-brand {
 .pack-currency-menu .musik-select-option:not(.is-highlighted):not([aria-selected="true"]):not(:hover) {
   background: transparent;
 }
+
+.landing-page .landing-carousel-link[role="button"] {
+  cursor: pointer;
+}

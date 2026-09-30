@@ -36,7 +36,9 @@ export default function LandingSongCarousel({
     const atEnd = max > 4 && track.scrollLeft >= max - 4;
     const first = atEnd ? total - count : Math.min(total - count, Math.round(track.scrollLeft / step));
     setView((prev) =>
-      prev.first === first && prev.count === count && prev.scrollable === max > 4 ? prev : { first, count, scrollable: max > 4 },
+      prev.first === first && prev.count === count && prev.scrollable === max > 4
+        ? prev
+        : { first, count, scrollable: max > 4 },
     );
   }, []);
 
@@ -64,16 +66,46 @@ export default function LandingSongCarousel({
       <div ref={trackRef} className="landing-carousel-track" onScroll={measure} role="list">
         {songs.map((song) => (
           <div key={song.slug} role="listitem" className="landing-carousel-card">
-            <Link href={`/s/${song.slug}`} className="landing-card-hover landing-carousel-link" aria-label={song.title}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={song.coverUrl ?? undefined} alt="" className="landing-carousel-cover" draggable={false} />
-              <div className="landing-carousel-shade">
-                <p className="landing-carousel-title">{song.title}</p>
-                {song.style || song.occasion ? (
-                  <p className="landing-carousel-meta">{[song.style, song.occasion].filter(Boolean).join(" · ")}</p>
-                ) : null}
+            {song.audioUrl ? (
+              // The card itself starts the in-card player: no navigation to the public /s/[slug] page.
+              <div
+                role="button"
+                tabIndex={0}
+                className="landing-card-hover landing-carousel-link"
+                aria-label={`${labels.listen} — ${song.title}`}
+                onClick={() => setActiveSlug(song.slug)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setActiveSlug(song.slug);
+                  }
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={song.coverUrl ?? undefined} alt="" className="landing-carousel-cover" draggable={false} />
+                <div className="landing-carousel-shade">
+                  <p className="landing-carousel-title">{song.title}</p>
+                  {song.style || song.occasion ? (
+                    <p className="landing-carousel-meta">{[song.style, song.occasion].filter(Boolean).join(" · ")}</p>
+                  ) : null}
+                </div>
               </div>
-            </Link>
+            ) : (
+              <Link
+                href={`/s/${song.slug}`}
+                className="landing-card-hover landing-carousel-link"
+                aria-label={song.title}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={song.coverUrl ?? undefined} alt="" className="landing-carousel-cover" draggable={false} />
+                <div className="landing-carousel-shade">
+                  <p className="landing-carousel-title">{song.title}</p>
+                  {song.style || song.occasion ? (
+                    <p className="landing-carousel-meta">{[song.style, song.occasion].filter(Boolean).join(" · ")}</p>
+                  ) : null}
+                </div>
+              </Link>
+            )}
             {song.audioUrl && activeSlug !== song.slug ? (
               <button
                 type="button"
@@ -86,7 +118,12 @@ export default function LandingSongCarousel({
               </button>
             ) : null}
             {song.audioUrl && activeSlug === song.slug ? (
-              <CardAudioPlayer title={song.title} audioUrl={song.audioUrl} onClose={() => setActiveSlug(null)} compact />
+              <CardAudioPlayer
+                title={song.title}
+                audioUrl={song.audioUrl}
+                onClose={() => setActiveSlug(null)}
+                compact
+              />
             ) : null}
           </div>
         ))}
