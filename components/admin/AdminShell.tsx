@@ -65,6 +65,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/mobile-apps", icon: "smartphone", label: "Applications mobiles" },
       { href: "/admin/branding", icon: "palette", label: "Branding" },
       { href: "/admin/roles", icon: "shield-check", label: "Rôles & accès" },
+      { href: "/admin/security", icon: "lock-keyhole", label: "Sécurité" },
       { href: "/admin/phone-prefixes", icon: "phone", label: "Préfixes téléphoniques" },
       { href: "/admin/payment-providers", icon: "route", label: "Passerelles" },
       { href: "/admin/integrations/google", icon: "search", label: "Google" },

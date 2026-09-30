@@ -10,6 +10,8 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           "/admin/",
           "/dashboard/",
+          "/*/dashboard",
+          "/*/demo",
           "/setup",
           "/api/",
           "/login",

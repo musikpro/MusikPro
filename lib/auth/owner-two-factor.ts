@@ -1,6 +1,6 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
-import { hasAppRole } from "@/lib/auth/permissions";
+import { isAdminRole } from "@/lib/auth/permissions";
 
 const TWO_FACTOR_COOKIE_NAME = "two_factor";
 
@@ -15,11 +15,26 @@ export function ownerTwoFactorEnabled(value = process.env.OWNER_2FA_ENABLED) {
   return value === "true";
 }
 
+/**
+ * "Propriétaire" = tout compte d'administration : Super Admin, Admin Contenu/Paiements (financier),
+ * Support, Modérateur et rôles personnalisés. Les clients (rôle "user") ne sont jamais concernés.
+ */
+export async function resolveOwnerSlugs(role: string | null | undefined) {
+  // Loaded lazily: custom-roles opens the database, which pure helpers/tests here must not require.
+  const { resolveExtraAdminSlugs } = await import("@/lib/auth/custom-roles");
+  return resolveExtraAdminSlugs(role);
+}
+
+export async function isOwnerAccount(role: string | null | undefined) {
+  return isAdminRole(role, await resolveOwnerSlugs(role));
+}
+
 export function shouldBootstrapOwnerTwoFactor(
   user: { role?: string | null; twoFactorEnabled?: boolean | null },
   enabled = ownerTwoFactorEnabled(),
+  extraAdminSlugs: string[] = [],
 ) {
-  return enabled && hasAppRole(user.role, "admin") && user.twoFactorEnabled !== true;
+  return enabled && isAdminRole(user.role, extraAdminSlugs) && user.twoFactorEnabled !== true;
 }
 
 export function ownerTwoFactor(): BetterAuthPlugin {
@@ -48,7 +63,7 @@ export function ownerTwoFactor(): BetterAuthPlugin {
           }
           const user = await ctx.context.internalAdapter.findUserById(verification.value);
           const ownerRole = user ? (user as typeof user & { role?: string }).role : undefined;
-          if (!user || !hasAppRole(ownerRole, "admin")) {
+          if (!user || !(await isOwnerAccount(ownerRole))) {
             throw APIError.from("FORBIDDEN", {
               code: "OWNER_TWO_FACTOR_ONLY",
               message: "Cette vérification est réservée aux propriétaires.",
@@ -74,7 +89,7 @@ export function ownerTwoFactor(): BetterAuthPlugin {
           matcher: (ctx) => ctx.path === "/two-factor/enable" || ctx.path === "/two-factor/disable",
           handler: createAuthMiddleware(async (ctx) => {
             const session = await getSessionFromCtx(ctx);
-            if (!session || !hasAppRole(session.user.role as string | undefined, "admin")) {
+            if (!session || !(await isOwnerAccount(session.user.role as string | undefined))) {
               throw APIError.from("FORBIDDEN", {
                 code: "OWNER_TWO_FACTOR_ONLY",
                 message: "Le double facteur est réservé aux propriétaires.",
@@ -93,7 +108,8 @@ export function ownerTwoFactor(): BetterAuthPlugin {
               role?: string | null;
               twoFactorEnabled?: boolean | null;
             };
-            if (!shouldBootstrapOwnerTwoFactor(owner)) return;
+            if (!shouldBootstrapOwnerTwoFactor(owner, ownerTwoFactorEnabled(), await resolveOwnerSlugs(owner.role)))
+              return;
 
             const updated = await ctx.context.internalAdapter.updateUser(owner.id, {
               twoFactorEnabled: true,

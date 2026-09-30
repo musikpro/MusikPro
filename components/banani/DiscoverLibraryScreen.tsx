@@ -43,9 +43,7 @@ export default function DiscoverLibraryScreen() {
           {results.length === 0 && (
             <div role="status" className="col-span-3 rounded-xl border border-border bg-card px-5 py-8 text-center">
               <Icon i="library" size={26} className="mx-auto mb-2 text-primary" />
-              <p className="font-semibold text-foreground">
-                {search ? "Aucune chanson trouvée" : "Bibliothèque vide"}
-              </p>
+              <p className="font-semibold text-foreground">{search ? "Aucune chanson trouvée" : "Bibliothèque vide"}</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 {search
                   ? "Essaie une autre recherche."
@@ -53,44 +51,35 @@ export default function DiscoverLibraryScreen() {
               </p>
             </div>
           )}
-          {results.map((song) => {
+          {results.map((song, index) => {
             const { cover } = song as { cover?: string | null };
             return (
-            <div key={song.id} className="rounded-xl overflow-hidden relative group">
-              {cover ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={cover} alt="" className="w-full aspect-square object-cover" />
-              ) : song.img ? (
-                <Image ar="1:1" prompt={song.img} className="w-full" />
-              ) : (
-                <div className="musik-trend-brand-cover w-full aspect-square">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/icon.svg" alt="" />
-                </div>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-between p-3">
-                <div className="text-left">
-                  <span className="inline-block bg-primary/90 text-primary-foreground text-xs font-bold px-2 py-1 rounded-lg">
-                    {song.style}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-white font-bold text-sm mb-1">{song.title}</p>
-                  <p className="text-white/70 text-xs flex items-center gap-1">
-                    <Icon i="headphones" size={10} /> {song.plays}
-                  </p>
-                </div>
+              <div key={song.id} className="rounded-xl overflow-hidden relative group">
+                {cover ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={cover} alt="" className="w-full aspect-square object-cover" />
+                ) : song.img ? (
+                  <Image ar="1:1" prompt={song.img} className="w-full" />
+                ) : (
+                  <div className="musik-trend-brand-cover w-full aspect-square">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/icon.svg" alt="" />
+                  </div>
+                )}
+                <div className="discover-card-overlay absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
+                <span className="discover-card-number absolute left-2 top-2 flex h-7 min-w-7 items-center justify-center rounded-full bg-black/55 px-2 text-xs font-bold text-white">
+                  {index + 1}
+                </span>
+                <button
+                  type="button"
+                  data-demo-ready="true"
+                  onClick={() => demo.openSong(song.id)}
+                  aria-label={`${t("Écouter la chanson")} ${index + 1}`}
+                  className="discover-card-play absolute left-1/2 top-1/2 flex h-11 w-11 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-primary shadow-lg hover:bg-primary/90"
+                >
+                  <Icon i="play" size={16} className="text-primary-foreground" />
+                </button>
               </div>
-              <button
-                type="button"
-                data-demo-ready="true"
-                onClick={() => demo.openSong(song.id)}
-                aria-label="Écouter la chanson"
-                className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center hover:bg-primary/90"
-              >
-                <Icon i="play" size={12} className="text-primary-foreground" />
-              </button>
-            </div>
             );
           })}
         </div>

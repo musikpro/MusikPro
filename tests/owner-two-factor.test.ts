@@ -18,6 +18,16 @@ describe("owner two-factor challenge", () => {
     expect(shouldBootstrapOwnerTwoFactor({ role: "user", twoFactorEnabled: false }, true)).toBe(false);
   });
 
+  it("covers every admin-type account (financier, support, custom roles) but never clients", () => {
+    expect(shouldBootstrapOwnerTwoFactor({ role: "admin_payments", twoFactorEnabled: false }, true)).toBe(true);
+    expect(shouldBootstrapOwnerTwoFactor({ role: "support", twoFactorEnabled: false }, true)).toBe(true);
+    expect(shouldBootstrapOwnerTwoFactor({ role: "custom:abc", twoFactorEnabled: false }, true, ["custom:abc"])).toBe(
+      true,
+    );
+    expect(shouldBootstrapOwnerTwoFactor({ role: "custom:abc", twoFactorEnabled: false }, true)).toBe(false);
+    expect(shouldBootstrapOwnerTwoFactor({ role: null, twoFactorEnabled: false }, true, ["custom:abc"])).toBe(false);
+  });
+
   it("keeps owner 2FA disabled unless explicitly enabled", () => {
     expect(ownerTwoFactorEnabled(undefined)).toBe(false);
     expect(ownerTwoFactorEnabled("false")).toBe(false);

@@ -455,6 +455,8 @@ export const trendingSettings = pgTable("trending_settings", {
   randomize: boolean("randomize").notNull().default(false),
   /** Vivier manuel ordonné (jusqu'à 10 songGroupId) — voir lib/trending/server.ts. */
   manualSelection: jsonb("manual_selection").notNull().default([]),
+  /** Pochette choisie par l'admin (média) pour chaque carte : { [songGroupId]: url } — voir lib/trending/server.ts. */
+  coverOverrides: jsonb("cover_overrides").notNull().default({}),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

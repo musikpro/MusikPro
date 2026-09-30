@@ -9,7 +9,8 @@ import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { BASE_CURRENCY_CODE, PIVOT_CURRENCY_CODE } from "@/lib/credit-plans/currency";
-import { fetchUsdRates, fxProviderIdSchema } from "@/lib/credit-plans/fx-rates";
+import { fxProviderIdSchema } from "@/lib/credit-plans/fx-rates";
+import { syncAutoCurrencyRates } from "@/lib/credit-plans/fx-sync";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 const codeSchema = z
@@ -49,7 +50,10 @@ export async function createCurrency(_previous: AdminActionState, formData: Form
     // Rejects codes the runtime cannot format only at display time (a fallback covers that), but a
     // currency code has to be a real ISO code to be useful with payment providers.
     const db = getServiceDb();
-    const [existing] = await db.select({ code: currencies.code }).from(currencies).where(eq(currencies.code, parsed.code));
+    const [existing] = await db
+      .select({ code: currencies.code })
+      .from(currencies)
+      .where(eq(currencies.code, parsed.code));
     if (existing) return { ok: false, message: `La monnaie ${parsed.code} existe déjà.` };
     const [{ total }] = await db.select({ total: count() }).from(currencies);
     await db.insert(currencies).values({
@@ -110,7 +114,8 @@ export async function toggleCurrency(_previous: AdminActionState, formData: Form
   try {
     const session = await requireAdmin();
     const { code } = codeOnlySchema.parse(Object.fromEntries(formData));
-    if (isLocked(code)) return { ok: false, message: "Le franc CFA (XOF) est la monnaie par défaut : il reste toujours affiché." };
+    if (isLocked(code))
+      return { ok: false, message: "Le franc CFA (XOF) est la monnaie par défaut : il reste toujours affiché." };
     const db = getServiceDb();
     const [row] = await db.select({ enabled: currencies.enabled }).from(currencies).where(eq(currencies.code, code));
     if (!row) return { ok: false, message: "Monnaie introuvable." };
@@ -122,7 +127,10 @@ export async function toggleCurrency(_previous: AdminActionState, formData: Form
       targetId: code,
     });
     refresh();
-    return { ok: true, message: row.enabled ? `${code} masquée pour les clients.` : `${code} affichée pour les clients.` };
+    return {
+      ok: true,
+      message: row.enabled ? `${code} masquée pour les clients.` : `${code} affichée pour les clients.`,
+    };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de modifier l’affichage de cette monnaie.") };
   }
@@ -186,45 +194,17 @@ export async function saveRateProvider(_previous: AdminActionState, formData: Fo
 export async function syncCurrencyRates(_previous: AdminActionState, _formData: FormData): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
-    const db = getServiceDb();
-    const [settings] = await db.select().from(currencySettings).where(eq(currencySettings.id, "global"));
-    const rows = await db.select().from(currencies);
-    const targets = rows.filter((row) => row.autoUpdate && row.code !== PIVOT_CURRENCY_CODE);
-    if (!targets.length) return { ok: false, message: "Aucune monnaie n’est en mise à jour automatique." };
-
-    const { rates, errors } = await fetchUsdRates(
-      targets.map((row) => row.code),
-      fxProviderIdSchema.catch("auto").parse(settings?.rateProvider),
-    );
-    const updated = targets.filter((row) => rates[row.code]);
-    if (!updated.length) {
-      return { ok: false, message: `Aucun taux récupéré. ${errors.join(" · ")}`.trim() };
-    }
-    const providersUsed = [...new Set(updated.map((row) => rates[row.code].provider))].join(", ");
-    const missing = targets.filter((row) => !rates[row.code]).map((row) => row.code);
-    const message = `${updated.length} taux mis à jour via ${providersUsed}${missing.length ? ` · non fournis : ${missing.join(", ")}` : ""}`;
-    for (const row of updated) {
-      await db
-        .update(currencies)
-        .set({ unitsPerUsd: rates[row.code].unitsPerUsd, updatedAt: new Date() })
-        .where(eq(currencies.code, row.code));
-    }
-    await db
-      .insert(currencySettings)
-      .values({ id: "global", lastSyncedAt: new Date(), lastSyncProvider: providersUsed, lastSyncMessage: message })
-      .onConflictDoUpdate({
-        target: currencySettings.id,
-        set: { lastSyncedAt: new Date(), lastSyncProvider: providersUsed, lastSyncMessage: message, updatedAt: new Date() },
-      });
+    const outcome = await syncAutoCurrencyRates();
+    if (!outcome.ok) return { ok: false, message: outcome.message };
     await writeAuditLog({
       action: "currency.rates.synced",
       actorId: session.user.id,
       targetType: "currency_settings",
       targetId: "global",
-      metadata: { updated: updated.length, missing },
+      metadata: { updated: outcome.updated, missing: outcome.missing },
     });
     refresh();
-    return { ok: true, message };
+    return { ok: true, message: outcome.message };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’actualiser les taux de change.") };
   }

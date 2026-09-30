@@ -1,50 +1,68 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import AdminActionForm from "@/components/admin/AdminActionForm";
+import AdminMediaPickerModal from "@/components/admin/AdminMediaPickerModal";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { setTrendingSettings } from "@/app/admin/trending/actions";
-import { TRENDING_COUNT_OPTIONS, TRENDING_POOL_SIZE, type TrendingSettingsValue, type TrendingCount } from "@/lib/trending/types";
-import type { GeneratedSongOption, PublishedSongOption } from "@/lib/trending/admin";
+import { TRENDING_POOL_SIZE, type TrendingSettingsValue } from "@/lib/trending/types";
+import type { GeneratedSongOption } from "@/lib/trending/admin";
 import { apiFetch } from "@/lib/api/client";
 
-type TrendingSongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number };
+type TrendingSongDisplay = {
+  songGroupId: string;
+  title: string;
+  styleLabel: string | null;
+  plays: number;
+  audioUrl?: string | null;
+};
+type Slot = { songGroupId: string; cover: string };
 
-function toDisplay(song: { songGroupId: string; title: string; styleLabel: string | null; plays: number }): TrendingSongDisplay {
-  return { songGroupId: song.songGroupId, title: song.title, styleLabel: song.styleLabel, plays: song.plays };
+function toDisplay(song: TrendingSongDisplay): TrendingSongDisplay {
+  return {
+    songGroupId: song.songGroupId,
+    title: song.title,
+    styleLabel: song.styleLabel,
+    plays: song.plays,
+    audioUrl: song.audioUrl ?? null,
+  };
 }
 
+/**
+ * Widget « Tendances » du tableau de bord client : deux cartes au maximum, toujours choisies à la
+ * main (plus de mode automatique). Chaque carte = une chanson + une pochette prise dans la page
+ * Médias (AdminMediaPickerModal, comme pour /admin/landing-features).
+ */
 export default function TrendingPanel({
   settings,
   songs,
-  publishedSongs,
 }: {
   settings: TrendingSettingsValue;
-  /** Every completed generation platform-wide (published or not) — feeds the manual picker. */
+  /** Every completed generation platform-wide (published or not) — feeds the picker. */
   songs: GeneratedSongOption[];
-  /** Published songs only — feeds the automatic-mode preview, matching lib/trending/server.ts's real ranking. */
-  publishedSongs: PublishedSongOption[];
 }) {
-  const [mode, setMode] = useState(settings.mode);
-  const [count, setCount] = useState<TrendingCount>(settings.count);
-  const [randomize, setRandomize] = useState(settings.randomize);
-  const [manualPicks, setManualPicks] = useState<string[]>(() => settings.manualSelection.slice(0, TRENDING_POOL_SIZE));
+  const [slots, setSlots] = useState<Slot[]>(() =>
+    settings.manualSelection
+      .slice(0, TRENDING_POOL_SIZE)
+      .map((songGroupId) => ({ songGroupId, cover: settings.coverOverrides[songGroupId] ?? "" })),
+  );
+  const [pickerIndex, setPickerIndex] = useState<number | null>(null);
   const [extraSongs, setExtraSongs] = useState<Record<string, TrendingSongDisplay>>({});
   const [idInput, setIdInput] = useState("");
   const [idLookupPending, setIdLookupPending] = useState(false);
   const [idLookupError, setIdLookupError] = useState("");
+  // One shared audio element: the play button in front of each card previews that card's song.
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
-  // `songs` only lists the most recent generations (see listRecentGeneratedSongsForAdmin) — a
-  // song added by pasting its "Identifiant" from /admin/generations lands here instead, so its
-  // label still resolves even though it's outside that recent window.
+  // `songs` only lists the most recent generations — a song added by pasting its "Identifiant"
+  // from /admin/generations lands in `extraSongs` so its label still resolves.
   const allSongs = useMemo<TrendingSongDisplay[]>(() => {
     const map = new Map<string, TrendingSongDisplay>(songs.map((song) => [song.songGroupId, toDisplay(song)]));
     for (const extra of Object.values(extraSongs)) if (!map.has(extra.songGroupId)) map.set(extra.songGroupId, extra);
     return Array.from(map.values());
   }, [songs, extraSongs]);
-
   const bySongGroupId = useMemo(() => new Map(allSongs.map((song) => [song.songGroupId, song])), [allSongs]);
-
   const songOptions = useMemo(
     () =>
       allSongs.map((song) => ({
@@ -54,27 +72,36 @@ export default function TrendingPanel({
     [allSongs],
   );
 
-  const publishedDisplay = useMemo(() => publishedSongs.map(toDisplay), [publishedSongs]);
-  const autoPool = useMemo(
-    () => publishedDisplay.filter((song) => song.plays > 0).slice(0, randomize ? TRENDING_POOL_SIZE : count),
-    [publishedDisplay, count, randomize],
-  );
-  const manualPool = useMemo(
-    () => manualPicks.map((id) => bySongGroupId.get(id)).filter((song): song is TrendingSongDisplay => Boolean(song)),
-    [manualPicks, bySongGroupId],
-  );
-  const pool = mode === "manual" ? manualPool : autoPool;
-  const preview = randomize ? pool : pool.slice(0, count);
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => audio?.pause();
+  }, []);
+
+  const togglePreview = (songGroupId: string) => {
+    const audio = audioRef.current;
+    const url = bySongGroupId.get(songGroupId)?.audioUrl;
+    if (!audio || !url) return;
+    if (playingId === songGroupId) {
+      audio.pause();
+      setPlayingId(null);
+      return;
+    }
+    audio.src = url;
+    setPlayingId(songGroupId);
+    void audio.play().catch(() => setPlayingId(null));
+  };
+
+  const addSlot = (songGroupId: string) => setSlots((prev) => [...prev, { songGroupId, cover: "" }]);
 
   const addSongById = async () => {
     const trimmed = idInput.trim();
     if (!trimmed) return;
-    if (manualPicks.includes(trimmed)) {
+    if (slots.some((slot) => slot.songGroupId === trimmed)) {
       setIdLookupError("Cette chanson est déjà dans ta sélection.");
       return;
     }
-    if (manualPicks.length >= TRENDING_POOL_SIZE) {
-      setIdLookupError(`Tu as déjà atteint la limite de ${TRENDING_POOL_SIZE} chansons.`);
+    if (slots.length >= TRENDING_POOL_SIZE) {
+      setIdLookupError(`Les tendances sont limitées à ${TRENDING_POOL_SIZE} chansons.`);
       return;
     }
     setIdLookupPending(true);
@@ -87,7 +114,7 @@ export default function TrendingPanel({
         timeoutMs: 15_000,
       });
       setExtraSongs((prev) => ({ ...prev, [option.songGroupId]: option }));
-      setManualPicks((prev) => [...prev, option.songGroupId]);
+      addSlot(option.songGroupId);
       setIdInput("");
     } catch (error) {
       setIdLookupError(error instanceof Error ? error.message : "Identifiant introuvable.");
@@ -95,6 +122,9 @@ export default function TrendingPanel({
       setIdLookupPending(false);
     }
   };
+
+  const nextFreeSong = songOptions.find((option) => !slots.some((slot) => slot.songGroupId === option.value));
+  const savedKey = `${settings.manualSelection.join(",")}|${JSON.stringify(settings.coverOverrides)}`;
 
   return (
     <section className="admin-panel">
@@ -104,206 +134,182 @@ export default function TrendingPanel({
         </span>
         <div>
           <h2>Tendances du tableau de bord</h2>
-          <p>Choisis comment le widget « Tendances » affiché aux clients est alimenté.</p>
+          <p>Le widget affiche {TRENDING_POOL_SIZE} cartes : choisis la chanson et la pochette de chacune.</p>
         </div>
-        <span className={`admin-status ${mode === "auto" ? "is-success" : "is-pending"}`}>
-          {mode === "auto" ? "Automatique" : "Manuel"}
-        </span>
+        <span className="admin-status is-pending">Manuel</span>
       </div>
 
-      <AdminActionForm
-        key={`${settings.mode}-${settings.count}-${settings.randomize}-${settings.manualSelection.join(",")}`}
-        action={setTrendingSettings}
-        className="admin-trending-form"
-      >
-        <input type="hidden" name="mode" value={mode} />
-        <input type="hidden" name="count" value={count} />
-        <input type="hidden" name="randomize" value={randomize ? "true" : "false"} />
+      <audio ref={audioRef} className="sr-only" onEnded={() => setPlayingId(null)} onPause={() => setPlayingId(null)} />
 
-        <div className="admin-trending-section">
-          <span className="admin-trending-label">Mode</span>
-          <div className="admin-trending-modes">
-            <button
-              type="button"
-              className={`admin-trending-mode-card ${mode === "auto" ? "is-selected" : ""}`}
-              onClick={() => setMode("auto")}
-            >
-              <Icon i="flame" size={18} />
-              <strong>Automatique</strong>
-              <span>Les chansons publiées les plus écoutées, mises à jour en continu.</span>
-            </button>
-            <button
-              type="button"
-              className={`admin-trending-mode-card ${mode === "manual" ? "is-selected" : ""}`}
-              onClick={() => setMode("manual")}
-            >
-              <Icon i="hand" size={18} />
-              <strong>Manuel</strong>
-              <span>Tu choisis toi-même jusqu&rsquo;à {TRENDING_POOL_SIZE} chansons.</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="admin-trending-section">
-          <span className="admin-trending-label">Nombre affiché à la fois</span>
-          <div className="admin-trending-count">
-            {TRENDING_COUNT_OPTIONS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                className={`admin-trending-count-option ${count === value ? "is-selected" : ""}`}
-                onClick={() => setCount(value)}
-              >
-                {value}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <label className="admin-check-control admin-trending-random-toggle">
-          <input type="checkbox" checked={randomize} onChange={(event) => setRandomize(event.target.checked)} />
-          <span>
-            Affichage aléatoire
-            <small>
-              {mode === "manual"
-                ? `Tire au hasard ${count} chanson${count > 1 ? "s" : ""} parmi ta sélection (jusqu'à ${TRENDING_POOL_SIZE}) à chaque visite, plutôt que toujours les mêmes.`
-                : `Tire au hasard ${count} chanson${count > 1 ? "s" : ""} parmi les ${TRENDING_POOL_SIZE} plus écoutées à chaque visite, plutôt que toujours les mêmes.`}
-            </small>
-          </span>
-        </label>
-
-        {mode === "manual" ? (
-          <div className="admin-trending-section">
-            <span className="admin-trending-label">
-              Chansons éligibles ({manualPicks.length}/{TRENDING_POOL_SIZE})
-            </span>
-            {songOptions.length === 0 && manualPicks.length === 0 ? (
-              <p className="admin-trending-empty-hint">
-                Aucune chanson générée pour l’instant — crée une chanson depuis le tableau de bord client pour
-                pouvoir la choisir ici.
-              </p>
-            ) : (
-              <div className="admin-trending-picker">
-                {manualPicks.map((pick, index) => {
-                  const usedElsewhere = new Set(manualPicks.filter((_, i) => i !== index));
-                  const options = songOptions.filter((option) => !usedElsewhere.has(option.value) || option.value === pick);
-                  return (
-                    <div key={index} className="admin-trending-picker-row">
-                      <AdminSelect
-                        ariaLabel={`Chanson tendance ${index + 1}`}
-                        options={options}
-                        value={pick}
-                        onValueChange={(value) =>
-                          setManualPicks((prev) => prev.map((entry, i) => (i === index ? value : entry)))
-                        }
-                        name="manualSelection"
-                      />
-                      <button
-                        type="button"
-                        className="admin-trending-picker-remove"
-                        aria-label="Retirer cette chanson"
-                        onClick={() => setManualPicks((prev) => prev.filter((_, i) => i !== index))}
-                      >
-                        <Icon i="x" size={15} />
-                      </button>
-                    </div>
-                  );
-                })}
-                {manualPicks.length < TRENDING_POOL_SIZE && manualPicks.length < songOptions.length ? (
-                  <button
-                    type="button"
-                    className="admin-trending-add"
-                    onClick={() => {
-                      const next = songOptions.find((option) => !manualPicks.includes(option.value));
-                      if (!next) return;
-                      setManualPicks((prev) => [...prev, next.value]);
-                    }}
-                  >
-                    <Icon i="plus" size={14} />
-                    Ajouter une chanson
-                  </button>
-                ) : null}
-                {songOptions.length > 0 && manualPicks.length >= songOptions.length && manualPicks.length < TRENDING_POOL_SIZE ? (
-                  <p className="admin-trending-empty-hint">
-                    Les {songOptions.length} chansons récentes affichées ici sont déjà assignées — ajoute-en une par
-                    identifiant ci-dessous, ou génères-en d’autres depuis le tableau de bord client.
-                  </p>
-                ) : null}
-              </div>
-            )}
-            {manualPicks.length < TRENDING_POOL_SIZE ? (
-              <div className="admin-trending-add-by-id">
-                <label htmlFor="trending-add-by-id">Ajouter par identifiant</label>
-                <div className="admin-trending-add-by-id-row">
-                  <input
-                    id="trending-add-by-id"
-                    type="text"
-                    value={idInput}
-                    onChange={(event) => {
-                      setIdInput(event.target.value);
-                      setIdLookupError("");
-                    }}
-                    placeholder="Colle l’identifiant depuis la page « Générations »"
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter") {
-                        event.preventDefault();
-                        void addSongById();
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="admin-trending-add"
-                    disabled={idLookupPending || !idInput.trim()}
-                    onClick={() => void addSongById()}
-                  >
-                    <Icon i={idLookupPending ? "loader-circle" : "plus"} size={14} className={idLookupPending ? "animate-spin" : undefined} />
-                    Ajouter
-                  </button>
-                </div>
-                <small>
-                  Seules les {TRENDING_POOL_SIZE} générations les plus récentes apparaissent ci-dessus — pour une
-                  chanson plus ancienne, copie son identifiant depuis « Générations » et colle-le ici.
-                </small>
-                {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
-              </div>
-            ) : null}
-          </div>
-        ) : null}
-
+      <AdminActionForm key={savedKey} action={setTrendingSettings} className="admin-trending-form">
         <div className="admin-trending-section">
           <span className="admin-trending-label">
-            {randomize ? `Vivier — ${count} seront tirées au hasard à chaque visite` : "Aperçu — ce que voient les clients"}
+            Cartes ({slots.length}/{TRENDING_POOL_SIZE})
           </span>
-          {preview.length > 0 && pool.length < count ? (
+          {songOptions.length === 0 && slots.length === 0 ? (
             <p className="admin-trending-empty-hint">
-              {mode === "manual"
-                ? `Seulement ${pool.length} chanson${pool.length > 1 ? "s" : ""} choisie${pool.length > 1 ? "s" : ""} sur ${count} — ajoute-en pour compléter.`
-                : `Seulement ${pool.length} chanson${pool.length > 1 ? "s" : ""} publiée${pool.length > 1 ? "s" : ""} avec au moins une écoute sur ${count} demandées — publie-en d’autres depuis « Mes chansons » côté client pour compléter.`}
+              Aucune chanson générée pour l’instant — crée une chanson depuis le tableau de bord client pour pouvoir la
+              choisir ici.
             </p>
           ) : null}
-          {preview.length === 0 ? (
-            <p className="admin-trending-empty-hint">
-              {mode === "manual" ? "Choisis au moins une chanson ci-dessus." : "Aucune chanson publiée n’a encore d’écoute."}
-            </p>
-          ) : (
-            <div className="admin-trending-preview">
-              {preview.map((song) => (
-                <div key={song.songGroupId} className="admin-trending-preview-card">
-                  <div className="admin-trending-preview-media">
-                    <div className="admin-trending-preview-brand">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src="/icon.svg" alt="" />
-                    </div>
-                    <div className="admin-trending-preview-overlay">
-                      <strong>{song.title}</strong>
-                      <span>
-                        <Icon i="headphones" size={11} /> {song.plays}
-                      </span>
+          <div className="admin-trending-picker">
+            {slots.map((slot, index) => {
+              const usedElsewhere = new Set(slots.filter((_, i) => i !== index).map((entry) => entry.songGroupId));
+              const options = songOptions.filter((option) => !usedElsewhere.has(option.value));
+              return (
+                <div key={index} className="admin-trending-slot">
+                  <div className="admin-trending-picker-row">
+                    <button
+                      type="button"
+                      className="admin-trending-play"
+                      disabled={!bySongGroupId.get(slot.songGroupId)?.audioUrl}
+                      aria-label={playingId === slot.songGroupId ? "Mettre en pause" : "Écouter la chanson"}
+                      onClick={() => togglePreview(slot.songGroupId)}
+                    >
+                      <Icon i={playingId === slot.songGroupId ? "pause" : "play"} size={15} />
+                    </button>
+                    <AdminSelect
+                      ariaLabel={`Chanson de la carte ${index + 1}`}
+                      options={options}
+                      value={slot.songGroupId}
+                      onValueChange={(value) =>
+                        setSlots((prev) =>
+                          prev.map((entry, i) => (i === index ? { ...entry, songGroupId: value } : entry)),
+                        )
+                      }
+                      name="manualSelection"
+                    />
+                    <button
+                      type="button"
+                      className="admin-trending-picker-remove"
+                      aria-label="Retirer cette carte"
+                      onClick={() => setSlots((prev) => prev.filter((_, i) => i !== index))}
+                    >
+                      <Icon i="x" size={15} />
+                    </button>
+                  </div>
+                  <input type="hidden" name="cover" value={slot.cover} />
+                  <div className="admin-trending-slot-cover">
+                    {slot.cover ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={slot.cover} alt="" className="admin-landing-feature-cover-preview" />
+                    ) : (
+                      <p className="admin-trending-empty-hint">
+                        Aucune pochette : la carte affichera le logo MusikPro. Choisis une image pour la remplacer.
+                      </p>
+                    )}
+                    <div className="admin-btn-row">
+                      <button type="button" className="admin-secondary-action" onClick={() => setPickerIndex(index)}>
+                        <Icon i="image" size={15} />
+                        {slot.cover ? "Changer la pochette" : "Choisir la pochette"}
+                      </button>
+                      {slot.cover ? (
+                        <button
+                          type="button"
+                          className="admin-secondary-action"
+                          onClick={() =>
+                            setSlots((prev) => prev.map((entry, i) => (i === index ? { ...entry, cover: "" } : entry)))
+                          }
+                        >
+                          <Icon i="x" size={15} /> Retirer
+                        </button>
+                      ) : null}
                     </div>
                   </div>
                 </div>
-              ))}
+              );
+            })}
+            {slots.length < TRENDING_POOL_SIZE && nextFreeSong ? (
+              <button type="button" className="admin-trending-add" onClick={() => addSlot(nextFreeSong.value)}>
+                <Icon i="plus" size={14} />
+                Ajouter une chanson
+              </button>
+            ) : null}
+          </div>
+          <AdminMediaPickerModal
+            open={pickerIndex !== null}
+            selectedUrl={pickerIndex !== null ? (slots[pickerIndex]?.cover ?? "") : ""}
+            onSelect={(url) => {
+              setSlots((prev) => prev.map((entry, i) => (i === pickerIndex ? { ...entry, cover: url } : entry)));
+              setPickerIndex(null);
+            }}
+            onClose={() => setPickerIndex(null)}
+          />
+          {slots.length < TRENDING_POOL_SIZE ? (
+            <div className="admin-trending-add-by-id">
+              <label htmlFor="trending-add-by-id">Ajouter par identifiant</label>
+              <div className="admin-trending-add-by-id-row">
+                <input
+                  id="trending-add-by-id"
+                  type="text"
+                  value={idInput}
+                  onChange={(event) => {
+                    setIdInput(event.target.value);
+                    setIdLookupError("");
+                  }}
+                  placeholder="Colle l’identifiant depuis la page « Générations »"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void addSongById();
+                    }
+                  }}
+                />
+                <button
+                  type="button"
+                  className="admin-trending-add"
+                  disabled={idLookupPending || !idInput.trim()}
+                  onClick={() => void addSongById()}
+                >
+                  <Icon
+                    i={idLookupPending ? "loader-circle" : "plus"}
+                    size={14}
+                    className={idLookupPending ? "animate-spin" : undefined}
+                  />
+                  Ajouter
+                </button>
+              </div>
+              <small>
+                Seules les générations les plus récentes apparaissent dans la liste — pour une chanson plus ancienne,
+                copie son identifiant depuis « Générations » et colle-le ici.
+              </small>
+              {idLookupError ? (
+                <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="admin-trending-section">
+          <span className="admin-trending-label">Aperçu — ce que voient les clients</span>
+          {slots.length === 0 ? (
+            <p className="admin-trending-empty-hint">Choisis au moins une chanson ci-dessus.</p>
+          ) : (
+            <div className="admin-trending-preview">
+              {slots.map((slot, index) => {
+                const song = bySongGroupId.get(slot.songGroupId);
+                return (
+                  <div key={index} className="admin-trending-preview-card">
+                    <div className="admin-trending-preview-media">
+                      {slot.cover ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={slot.cover} alt="" className="admin-trending-preview-cover" />
+                      ) : (
+                        <div className="admin-trending-preview-brand">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src="/icon.svg" alt="" />
+                        </div>
+                      )}
+                      <div className="admin-trending-preview-overlay">
+                        <strong>{song?.title ?? "Chanson"}</strong>
+                        <span>
+                          <Icon i="headphones" size={11} /> {song?.plays ?? 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

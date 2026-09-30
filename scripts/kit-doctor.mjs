@@ -11,7 +11,10 @@ const exists = (rel) => fs.existsSync(path.join(root, rel));
 add("Skill officiel /setup-saas", exists(".agents/skills/setup-saas/SKILL.md"), ".agents/skills/setup-saas/SKILL.md");
 add("Configuration exemple", exists("africa-saas.config.example.json"));
 add("Variables d’environnement exemple", exists(".env.example"));
-add("Pipeline mobile WebView", exists("docs/mobile/mobile-app-pipeline.md") && exists("scripts/mobile-app-check.mjs"));
+add(
+  "Pipeline mobile PWA + Capacitor",
+  exists("docs/mobile/mobile-app-pipeline.md") && exists("scripts/mobile-app-check.mjs"),
+);
 add("Contrôles Zod", exists("scripts/zod-validation-check.mjs") && exists("config/zod-validation.json"));
 add("Baseline sécurité", exists("scripts/security-baseline-check.mjs") && exists("config/security-routes.json"));
 add("Tests Vitest", exists("vitest.config.ts") && exists("tests"));
@@ -30,7 +33,7 @@ if (mobileEnabled) {
   add(
     "Mobile: URL de production",
     /^https:\/\//i.test(config?.mobileApp?.productionUrl || config?.mobile?.productionUrl || ""),
-    "HTTPS requis pour le mode WebView",
+    "HTTPS requis pour le wrapper PWA + Capacitor",
   );
   if (process.platform === "darwin") {
     try {

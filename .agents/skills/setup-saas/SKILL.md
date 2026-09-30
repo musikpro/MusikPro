@@ -23,7 +23,7 @@ Quand cette skill est invoquée, lire `AGENTS.md`, `README.md`, `SECURITY.md`, `
 10. En Phase 9 Banani, exécuter d'abord `npm run banani:prepare`, demander à l'utilisateur de compléter lui-même `.codex/config.toml`, puis `npm run banani:check`. Ne jamais demander ni afficher le bearer token.
 
 11. Workflow post-Banani : juste après l’import Banani (Phase 9), la Phase 10 doit vérifier/attacher le CRUD Clients si le SaaS en a besoin : modèle Prisma `Client`, routes `/api/clients/*`, validation Zod serveur, Better Auth, rate limiting et RLS. Ne jamais brancher ce CRUD avant que les écrans Banani aient été réellement importés. Drizzle reste l’ORM principal du starter; Prisma est une brique ciblée pour Clients.
-12. Les Paiements, Cloudflare domaine/DNS, Cloudinary et le Mobile App Pipeline sont optionnels et restent en fin de parcours. La Phase 21 Android/iOS intervient seulement après le SaaS Web de production. Son architecture officielle est **Capacitor WebView connectée à l’URL HTTPS du SaaS en ligne**; ne jamais déplacer le backend ou ses secrets dans l’app.
+12. Les Paiements, Cloudflare domaine/DNS, Cloudinary et le Mobile App Pipeline sont optionnels et restent en fin de parcours. La Phase 21 Android/iOS intervient seulement après le SaaS Web de production. Son architecture officielle est **Next.js serveur + PWA + Capacitor**; le mode WebView simple est déprécié. Lire `.agents/skills/mobile-app-pwa-capacitor/SKILL.md` avant toute intervention mobile et ne jamais déplacer le backend ou ses secrets dans l’app.
 13. En Phase 13, valider `/api/health`, `/api/readyz`, `runtime:check`, `features:check`, lint, tests, typecheck, build, audit et `smoke:system`.
 14. Avant la validation finale de sécurité, exécuter `npm run security-saas` et traiter tous les FAIL; si Neon est accessible, compléter avec `npm run security-saas:online`.
 15. En phase finale, exécuter `npm run conformity:check` et ne pas déclarer le projet conforme s’il reste un FAIL.
@@ -32,7 +32,7 @@ La définition détaillée des phases et les règles de progression sont dans `A
 
 - Phase 16 : Upstash Redis optionnel (cache/rate limiting); si ignoré, continuer avec Neon directement.
 
-- Phase 21 : Mobile App Pipeline Android/iOS WebView optionnel; ne jamais installer Capacitor si le projet reste Web-only. Si activé, guider aussi la préparation Android Studio/Xcode, les tests WebView, les assets (logo, icône, splash, captures Android/iPhone) et la publication stores.
+- Phase 21 : Mobile App Pipeline Android/iOS **PWA + Capacitor** optionnel; ne jamais installer Capacitor si le projet reste Web/PWA uniquement. Si activé, appliquer la skill `mobile-app-pwa-capacitor`, guider Android Studio/Xcode, les tests PWA/native, les assets et la publication stores.
 
 ## Staging Gate obligatoire
 

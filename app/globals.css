@@ -852,7 +852,7 @@ button {
   }
 }
 
-/* Optional hosted-WebView mobile readiness panel. Separate from Web score. */
+/* Optional PWA + Capacitor mobile readiness panel. Separate from Web score. */
 .kit-mobile-app {
   margin-top: 30px;
 }

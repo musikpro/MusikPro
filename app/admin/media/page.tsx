@@ -16,14 +16,17 @@ export default async function AdminMediaPage() {
       <AdminPageHeader
         eyebrow="Contenu"
         title="Médias"
-        description={`Importe les images (pochettes de chansons et autres visuels) réutilisées ailleurs dans l'administration, jusqu'à ${MAX_MEDIA_UPLOAD_FILES} à la fois. Chaque image est automatiquement compressée sous 2 Mo.`}
+        description={`Importe les images (pochettes de chansons et autres visuels) réutilisées ailleurs dans l'administration, jusqu'à ${MAX_MEDIA_UPLOAD_FILES} à la fois. Chaque image est automatiquement convertie en AVIF et compressée sous 2 Mo. Glisse-dépose tes fichiers ou clique pour les choisir.`}
       />
       {!configured ? (
         <div className="admin-source-notice">
           <Icon i="alert-triangle" size={18} />
           <div>
             <strong>Cloudinary n’est pas configuré</strong>
-            <p>Renseigne CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY et CLOUDINARY_API_SECRET pour activer l’envoi d’images.</p>
+            <p>
+              Renseigne CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY et CLOUDINARY_API_SECRET pour activer l’envoi
+              d’images.
+            </p>
           </div>
         </div>
       ) : null}

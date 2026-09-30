@@ -1,6 +1,10 @@
-# Africa SaaS Kit V0.10.9
+# Africa SaaS Kit V0.11.1
 
-> **Version : V0.10.9 — Refactorisation générale, certification d’intégrité et installation guidée**
+> **Version : V0.11.1 — Refactorisation d’intégrité générale, PWA + Capacitor et CSP à nonce**
+
+## V0.11.1 — Mise à jour PWA + Capacitor, CSP à nonce, registre npm
+
+Voir `CHANGELOG.md` et `docs/audit/full-integrity-refactor-v0.11.1.md`.
 
 ## V0.10.9 — Certification d’intégrité et installation guidée
 

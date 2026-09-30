@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 import Icon from "./Icon";
-import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 
 // Module-scope (not React state) on purpose: only one inline preview should ever play at a time
 // across the whole landing page, and cards are plain, independent instances of this component —
@@ -11,13 +10,23 @@ import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 // is actually visible).
 let stopActive: (() => void) | null = null;
 
+export type LandingPlayLabels = {
+  listen: string;
+  /** Contient le marqueur {title}, remplacé par le titre de la chanson (jamais traduit). */
+  listenTitle: string;
+  playing: string;
+  pause: string;
+};
+
 export default function LandingInlinePlayButton({
+  labels,
   audioUrl,
   title,
   compact = false,
   className = "",
   onPlayingChange,
 }: {
+  labels: LandingPlayLabels;
   audioUrl: string;
   title: string;
   compact?: boolean;
@@ -66,11 +75,11 @@ export default function LandingInlinePlayButton({
       <button
         type="button"
         onClick={toggle}
-        aria-label={playing ? t("Mettre en pause") : translateTemplate("Écouter {title}", { title })}
+        aria-label={playing ? labels.pause : labels.listenTitle.replace("{title}", title)}
         className={`cta-glow landing-inline-play ${compact ? "is-compact" : ""} ${playing ? "is-playing" : ""} ${className}`}
       >
         <Icon i={playing ? "pause" : "play"} size={compact ? 14 : 18} />
-        <span className="landing-inline-play-label">{playing ? t("En lecture") : t("Écouter")}</span>
+        <span className="landing-inline-play-label">{playing ? labels.playing : labels.listen}</span>
       </button>
     </>
   );

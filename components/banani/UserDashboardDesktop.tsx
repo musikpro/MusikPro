@@ -44,7 +44,15 @@ const trendingCards = [
   },
 ];
 
-type TrendCard = { key: string; title: string; playsLabel: string; coverPrompt: string | null; audioUrl: string | null; real: boolean };
+type TrendCard = {
+  key: string;
+  title: string;
+  playsLabel: string;
+  coverPrompt: string | null;
+  coverUrl?: string | null;
+  audioUrl: string | null;
+  real: boolean;
+};
 
 export default function UserDashboardDesktop({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
@@ -62,6 +70,7 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
         title: song.title,
         playsLabel: formatPlays(song.plays),
         coverPrompt: null,
+        coverUrl: song.coverUrl,
         audioUrl: song.audioUrl,
         real: true,
       }));
@@ -289,9 +298,16 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                       : {})}
                   >
                     {nowPlayingTrend?.key === tc.key && nowPlayingTrend.audioUrl ? (
-                      <CardAudioPlayer title={nowPlayingTrend.title} audioUrl={nowPlayingTrend.audioUrl} onClose={() => setNowPlayingTrend(null)} />
+                      <CardAudioPlayer
+                        title={nowPlayingTrend.title}
+                        audioUrl={nowPlayingTrend.audioUrl}
+                        onClose={() => setNowPlayingTrend(null)}
+                      />
                     ) : null}
-                    {tc.coverPrompt ? (
+                    {tc.coverUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={tc.coverUrl} alt="" className="w-full h-full object-cover" />
+                    ) : tc.coverPrompt ? (
                       <Image ar="16:9" prompt={tc.coverPrompt} className="w-full h-full object-cover" />
                     ) : (
                       <div className="musik-trend-brand-cover">
@@ -306,8 +322,15 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                       </p>
                     </div>
                     {tc.real ? (
-                      <span aria-hidden="true" className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                        <Icon i={nowPlayingTrend?.key === tc.key ? "pause" : "play"} size={12} className="text-primary-foreground" />
+                      <span
+                        aria-hidden="true"
+                        className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                      >
+                        <Icon
+                          i={nowPlayingTrend?.key === tc.key ? "pause" : "play"}
+                          size={12}
+                          className="text-primary-foreground"
+                        />
                       </span>
                     ) : (
                       <button

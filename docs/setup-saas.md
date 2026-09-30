@@ -97,11 +97,12 @@ npm run cron:generate
 
 Cette commande ne fait rien si aucun provider n'est activé.
 
-## Mobile App WebView optionnelle en Phase 21
+## Mobile App PWA + Capacitor optionnelle en Phase 21
 
-Après déploiement et conformité du Web, le projet peut rester Web-only ou activer `mobileAppEnabled`. Le mode officiel est une app Capacitor WebView qui ouvre le SaaS HTTPS déjà en ligne. Aucune dépendance Capacitor n’est installée par défaut. Voir `docs/mobile/mobile-app-pipeline.md`.
+Après déploiement et conformité du Web, le projet peut rester Web/PWA uniquement ou activer `mobileAppEnabled`. Le mode officiel est **Next.js serveur + PWA + Capacitor**. Le mode WebView simple est déprécié. Aucune dépendance Capacitor n’est installée tant que le wrapper natif n’est pas activé. Voir `docs/mobile/mobile-app-pipeline.md` et `.agents/skills/mobile-app-pwa-capacitor/SKILL.md`.
 
 ```bash
+npm run mobile:pwa:check
 npm run mobile:app:configure -- --none
 # ou
 npm run mobile:app:configure -- --app-id=com.entreprise.app --url=https://app.exemple.com

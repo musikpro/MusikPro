@@ -1,7 +1,12 @@
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
-import { BASE_CURRENCY_CODE, formatCreditPrice, PIVOT_CURRENCY_CODE, type CreditCurrency } from "@/lib/credit-plans/currency";
+import {
+  BASE_CURRENCY_CODE,
+  formatCreditPrice,
+  PIVOT_CURRENCY_CODE,
+  type CreditCurrency,
+} from "@/lib/credit-plans/currency";
 import { FX_PROVIDER_OPTIONS } from "@/lib/credit-plans/fx-rates";
 import {
   createCurrency,
@@ -42,9 +47,7 @@ export default function CurrencySection({ catalog, settings, countryCountByCurre
               × taux de la monnaie (taux = unités pour 1 $).
             </p>
           </div>
-          <span className="admin-status is-success">
-            1 $ = {base ? formatRate(base.unitsPerUsd) : "—"} FCFA
-          </span>
+          <span className="admin-status is-success">1 $ = {base ? formatRate(base.unitsPerUsd) : "—"} FCFA</span>
         </div>
         <AdminActionForm action={saveRateProvider} className="admin-fx-toolbar">
           <div className="admin-editor-field">
@@ -80,6 +83,9 @@ export default function CurrencySection({ catalog, settings, countryCountByCurre
               ? `Dernière actualisation : ${lastSync} — ${settings?.lastSyncMessage ?? ""}`
               : "Aucune actualisation effectuée : les taux ci-dessous sont ceux du catalogue."}
           </p>
+          <p className="admin-fx-last-sync">
+            Actualisation automatique chaque jour vers 02 h (UTC) pour les monnaies en mise à jour automatique.
+          </p>
         </AdminActionForm>
       </section>
 
@@ -88,9 +94,9 @@ export default function CurrencySection({ catalog, settings, countryCountByCurre
           <div>
             <h2>Monnaies proposées aux clients</h2>
             <p>
-              Seules les monnaies affichées apparaissent dans le sélecteur de la page crédits du tableau de bord
-              client. Le franc CFA (XOF) reste toujours disponible. Une monnaie « auto » suit les taux du service
-              choisi ; désactive « auto » pour fixer le taux à la main.
+              Seules les monnaies affichées apparaissent dans le sélecteur de la page crédits du tableau de bord client.
+              Le franc CFA (XOF) reste toujours disponible. Une monnaie « auto » suit les taux du service choisi ;
+              désactive « auto » pour fixer le taux à la main.
             </p>
           </div>
           <span className="admin-status is-success">
@@ -125,10 +131,24 @@ export default function CurrencySection({ catalog, settings, countryCountByCurre
                   </div>
                 </div>
                 <label className="admin-currency-field" data-label="Nom">
-                  <input form={formId} name="label" defaultValue={currency.label} required maxLength={80} aria-label={`Nom ${currency.code}`} />
+                  <input
+                    form={formId}
+                    name="label"
+                    defaultValue={currency.label}
+                    required
+                    maxLength={80}
+                    aria-label={`Nom ${currency.code}`}
+                  />
                 </label>
                 <label className="admin-currency-field" data-label="Symbole">
-                  <input form={formId} name="symbol" defaultValue={currency.symbol} required maxLength={8} aria-label={`Symbole ${currency.code}`} />
+                  <input
+                    form={formId}
+                    name="symbol"
+                    defaultValue={currency.symbol}
+                    required
+                    maxLength={8}
+                    aria-label={`Symbole ${currency.code}`}
+                  />
                 </label>
                 <label className="admin-currency-field" data-label="Unités pour 1 $">
                   <input
@@ -147,13 +167,28 @@ export default function CurrencySection({ catalog, settings, countryCountByCurre
                   </small>
                 </label>
                 <label className="admin-currency-field" data-label="Décimales">
-                  <input form={formId} name="decimals" type="number" min="0" max="4" defaultValue={currency.decimals} required aria-label={`Décimales ${currency.code}`} />
+                  <input
+                    form={formId}
+                    name="decimals"
+                    type="number"
+                    min="0"
+                    max="4"
+                    defaultValue={currency.decimals}
+                    required
+                    aria-label={`Décimales ${currency.code}`}
+                  />
                 </label>
                 <label className="admin-currency-field admin-currency-auto" data-label="Auto">
                   {pivot ? (
                     <span>—</span>
                   ) : (
-                    <input form={formId} name="autoUpdate" type="checkbox" defaultChecked={currency.autoUpdate ?? true} aria-label={`Taux automatique ${currency.code}`} />
+                    <input
+                      form={formId}
+                      name="autoUpdate"
+                      type="checkbox"
+                      defaultChecked={currency.autoUpdate ?? true}
+                      aria-label={`Taux automatique ${currency.code}`}
+                    />
                   )}
                 </label>
                 <div className="admin-currency-actions">
@@ -200,7 +235,14 @@ export default function CurrencySection({ catalog, settings, countryCountByCurre
         <AdminActionForm action={createCurrency} className="admin-currency-add">
           <div className="admin-editor-field">
             <span>Code ISO</span>
-            <input name="code" placeholder="MAD" required minLength={3} maxLength={3} style={{ textTransform: "uppercase" }} />
+            <input
+              name="code"
+              placeholder="MAD"
+              required
+              minLength={3}
+              maxLength={3}
+              style={{ textTransform: "uppercase" }}
+            />
           </div>
           <div className="admin-editor-field">
             <span>Nom</span>

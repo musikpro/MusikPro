@@ -14,15 +14,16 @@
 - Ne jamais supprimer ou casser une fonctionnalité existante pour en ajouter une nouvelle ; si une évolution incompatible est réellement nécessaire, prévoir une migration claire et documentée.
 - Après chaque refactorisation, exécuter les contrôles pertinents du kit (`npm run kit:integrity`, `npm run kit:audit`, `/security-saas`, gates Zod et tests de la fonctionnalité concernée) et corriger toute régression avant de considérer le travail terminé.
 
-# Règle prioritaire — Mobile App Pipeline WebView optionnel
+# Règle prioritaire — Mobile App Pipeline PWA + Capacitor
 
-- Le SaaS Web Next.js est construit, testé et déployé avant toute préparation Android/iOS.
-- L’architecture mobile officielle est **Capacitor WebView → URL HTTPS du SaaS en ligne** (`webview-hosted`), pas une copie du backend Next.js dans l’app.
-- La **Phase 21** est optionnelle. `mobileAppEnabled=false` est un état valide et ne doit déclencher aucune installation Capacitor.
-- `mobile:check` reste le gate responsive du Web; les commandes `mobile:app:*` sont réservées au conteneur Android/iOS.
-- Ne jamais déplacer les secrets, la connexion Neon, les clés Resend ou les secrets de paiement vers le bundle mobile.
-- Toute entrée non fiable continue d’être validée côté serveur avec Zod; une validation mobile n’est qu’une couche UX supplémentaire.
-- Une adaptation native doit être additive, isolée et réversible; elle ne doit jamais devenir nécessaire au rendu Web.
+- `.agents/skills/mobile-app-pwa-capacitor/SKILL.md` est la source de vérité permanente pour toute création, migration, mise à jour ou réparation mobile.
+- L’architecture officielle est **Next.js serveur + PWA + Capacitor → Android + iOS**. Le mode WebView simple est déprécié.
+- Ne jamais ajouter `output: 'export'` ni déplacer le backend, Neon/Prisma/Drizzle, auth, paiements, webhooks, IA ou secrets dans l’app.
+- La Phase 21 native est optionnelle. `mobileAppEnabled=false` reste valide; la PWA Web peut rester disponible sans projets Android/iOS.
+- `mobile:check` valide le responsive Web, `mobile:pwa:check` valide la couche PWA et `mobile:app:*` gère le wrapper natif.
+- Isoler `web-desktop`, `web-mobile/PWA`, `android` et `ios`; ne jamais afficher les composants natifs sur desktop.
+- Les anciennes stratégies `webview-hosted`/`hosted-nextjs` doivent être migrées avec `npm run mobile:app:migrate`, pas réintroduites comme défaut.
+- Aucun build Android/iOS ni voyant store ne peut être déclaré PASS sans exécution réelle dans l’environnement correspondant.
 
 ## Upstash optionnel
 

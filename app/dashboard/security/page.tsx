@@ -1,13 +1,13 @@
 import { requireUser } from "@/lib/auth/session";
 import Preview from "@/components/banani/Preview";
 import SecurityAccountScreen from "@/components/banani/SecurityAccountScreen";
-import { hasAppRole } from "@/lib/auth/permissions";
-import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
+import { isOwnerAccount, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const s = await requireUser();
   const q = await searchParams;
   const enabled = Boolean((s.user as { twoFactorEnabled?: boolean }).twoFactorEnabled);
   const twoFactorAvailable = ownerTwoFactorEnabled();
+  const isOwner = await isOwnerAccount(s.user.role as string | undefined);
   return (
     <Preview>
       <div className="banani-screen">
@@ -15,8 +15,8 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
           emailVerified={Boolean(s.user.emailVerified)}
           twoFactorEnabled={enabled}
           twoFactorAvailable={twoFactorAvailable}
-          required={twoFactorAvailable && Boolean(q.required) && hasAppRole(s.user.role as string | undefined, "admin")}
-          isOwner={hasAppRole(s.user.role as string | undefined, "admin")}
+          required={twoFactorAvailable && Boolean(q.required) && isOwner}
+          isOwner={isOwner}
         />
       </div>
     </Preview>

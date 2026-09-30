@@ -14,6 +14,7 @@ const staticChecks = [
   ["Conformité structurelle", process.execPath, ["scripts/conformity-check.mjs"]],
   ["Security Baseline", process.execPath, ["scripts/security-baseline-check.mjs"]],
   ["Validation Zod", process.execPath, ["scripts/zod-validation-check.mjs"]],
+  ["CSP stricte", process.execPath, ["scripts/csp-check.mjs"]],
   ["Refactor Gate", process.execPath, ["scripts/general-refactor-check.mjs"]],
   ["Inventaire fonctionnalités", process.execPath, ["scripts/feature-inventory.mjs"]],
   ["CRUD Clients", process.execPath, ["scripts/clients-crud-check.mjs"]],

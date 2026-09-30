@@ -16,12 +16,21 @@ try {
   vercel = JSON.parse(fs.readFileSync(vercelPath, "utf8"));
 } catch {}
 let crons = Array.isArray(vercel.crons)
-  ? vercel.crons.filter((c) => c?.path !== "/api/cron/reconcile-payments" && c?.path !== "/api/cron/funnel-retention")
+  ? vercel.crons.filter(
+      (c) =>
+        c?.path !== "/api/cron/reconcile-payments" &&
+        c?.path !== "/api/cron/funnel-retention" &&
+        c?.path !== "/api/cron/refresh-currency-rates",
+    )
   : [];
 
 // Always registered — independent of any payment provider, it just purges old funnel_events rows.
 crons.push({ path: "/api/cron/funnel-retention", schedule: process.env.FUNNEL_RETENTION_CRON || "0 3 * * *" });
 console.log("Cron config: purge des événements d’entonnoir (180 jours) programmée.");
+
+// Always registered — refreshes the exchange rates of the currencies flagged "auto" once a day.
+crons.push({ path: "/api/cron/refresh-currency-rates", schedule: process.env.CURRENCY_RATES_CRON || "0 2 * * *" });
+console.log("Cron config: actualisation quotidienne des taux de change programmée.");
 
 if (providers.length) {
   crons.push({ path: "/api/cron/reconcile-payments", schedule: process.env.PAYMENT_RECONCILE_CRON || "0 4 * * *" });

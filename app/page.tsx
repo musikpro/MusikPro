@@ -1,12 +1,17 @@
 import type { Metadata } from "next";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-import { LANDING_LANGUAGE_COOKIE } from "@/lib/languages/landing-language-cookie";
+import { headers } from "next/headers";
+import { notFound, redirect } from "next/navigation";
+import { after } from "next/server";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 import { FUNNEL_EVENT, writeFunnelEvent } from "@/lib/analytics/funnel";
 import { getSession } from "@/lib/auth/session";
-import { localizeFieldForLocale, translateForLocale, translateTemplateForLocale, type Locale } from "@/lib/i18n/translate";
+import {
+  localizeFieldForLocale,
+  translateForLocale,
+  translateTemplateForLocale,
+  type Locale,
+} from "@/lib/i18n/translate";
 import { getActiveOccasions } from "@/lib/occasions/server";
 import { getActiveMusicStyles } from "@/lib/music-styles/server";
 import { CREDITS_PER_GENERATION, VERSIONS_PER_GENERATION } from "@/lib/credit-plans/catalog";
@@ -15,7 +20,15 @@ import { getActiveHeroAnimatedTexts } from "@/lib/hero-animated-texts/server";
 import { getHeroSettings } from "@/lib/hero-animation/settings";
 import { getStoreLinks } from "@/lib/settings/store-links";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
-import { detectCurrency, detectInterfaceLanguage } from "@/lib/languages/detection";
+import { detectCurrency } from "@/lib/languages/detection";
+import {
+  readLanguagePreference,
+  readRequestLocale,
+  resolveInterfaceLanguage,
+  resolveUrlLanguage,
+} from "@/lib/languages/preference";
+import { splitLocalePrefix, withLocalePrefix } from "@/lib/languages/locale-path";
+import LanguageCookieSync from "@/components/banani/LanguageCookieSync";
 import LandingPageMobile from "@/components/banani/LandingPageMobile";
 import LandingPageDesktop from "@/components/banani/LandingPageDesktop";
 import SmoothScroll from "@/components/banani/SmoothScroll";
@@ -25,6 +38,15 @@ import "./dashboard/banani.css";
 const SUPPORTED_LOCALES = ["fr", "en", "es", "pt"] as const;
 function toSupportedLocale(code: string | undefined): Locale {
   return (SUPPORTED_LOCALES as readonly string[]).includes(code ?? "") ? (code as Locale) : "fr";
+}
+
+function isLandingReferer(referer: string | null): boolean {
+  if (!referer) return false;
+  try {
+    return splitLocalePrefix(new URL(referer).pathname).path === "/";
+  } catch {
+    return false;
+  }
 }
 
 export const dynamic = "force-dynamic";
@@ -43,9 +65,9 @@ export default async function Home() {
   const session = await getSession();
   if (session?.user) redirect("/dashboard");
 
-  await writeFunnelEvent({ event: FUNNEL_EVENT.SITE_VISIT });
-
   const requestHeaders = await headers();
+
+  const urlLocaleCode = await readRequestLocale();
 
   // Reuses the SaaS's existing geo-IP language/currency detection (country.is behind the
   // Vercel country header fast-path + Upstash cache — see lib/languages/detection.ts), the
@@ -56,34 +78,52 @@ export default async function Home() {
   // resolveVisitorCountryCode are memoized via React's cache() from the detectCurrency call in the
   // same batch, so it only adds the cost of one indexed country_languages lookup, not a repeat of
   // any geo-IP/network work.
+  // An explicit choice (cookie) makes the geo-IP guess useless: read it first to skip that work.
+  const cookieLanguageCode = await readLanguagePreference();
   const languageCatalogPromise = getActiveLanguageCatalog();
   // detectCurrency's return value isn't needed here anymore (it only ever fed the removed
   // pricing section), but the call itself stays in this batch: it's what warms the request-scoped
   // geo-IP memoization (see comment above) that detectInterfaceLanguage below reuses.
-  const [occasions, musicStyles, showcaseSongs, librarySongs, heroAnimatedTexts, heroSettings, storeLinks, languageCatalog] =
-    await Promise.all([
-      getActiveOccasions(),
-      getActiveMusicStyles(),
-      getLandingShowcaseSongs(),
-      getLandingLibrarySongs(),
-      getActiveHeroAnimatedTexts(),
-      getHeroSettings(),
-      getStoreLinks(),
-      languageCatalogPromise,
-      detectCurrency(requestHeaders),
-    ]);
-  const detectedLanguage = await detectInterfaceLanguage(requestHeaders, languageCatalog.interfaceLanguages);
+  const [
+    occasions,
+    musicStyles,
+    showcaseSongs,
+    librarySongs,
+    heroAnimatedTexts,
+    heroSettings,
+    storeLinks,
+    languageCatalog,
+  ] = await Promise.all([
+    getActiveOccasions(),
+    getActiveMusicStyles(),
+    getLandingShowcaseSongs(),
+    getLandingLibrarySongs(),
+    getActiveHeroAnimatedTexts(),
+    getHeroSettings(),
+    getStoreLinks(),
+    languageCatalogPromise,
+    cookieLanguageCode || urlLocaleCode ? Promise.resolve(null) : detectCurrency(requestHeaders),
+  ]);
 
-  // A visitor who explicitly switched language via LandingLanguageSwitcher takes priority over
-  // the geo-IP guess (cookie set by setLandingLanguage in lib/languages/landing-language-action.ts).
-  const cookieStore = await cookies();
-  const cookieLanguageCode = cookieStore.get(LANDING_LANGUAGE_COOKIE)?.value;
-  const cookieLanguage = languageCatalog.interfaceLanguages.find((language) => language.code === cookieLanguageCode);
-  const activeLanguage = cookieLanguage ?? detectedLanguage;
+  // Language comes from the URL prefix (`/en`, `/pt`…). An unknown/disabled code is a 404; an
+  // un-prefixed `/` redirects to the visitor's language (saved choice, else geo-IP, else default),
+  // so every language has its own canonical URL.
+  const urlLanguage = resolveUrlLanguage(urlLocaleCode, languageCatalog.interfaceLanguages);
+  if (urlLanguage === null) notFound();
+  const activeLanguage =
+    urlLanguage ??
+    (await resolveInterfaceLanguage(requestHeaders, languageCatalog.interfaceLanguages, cookieLanguageCode));
+  if (!urlLanguage) redirect(withLocalePrefix("/", activeLanguage?.code ?? "fr"));
+
+  // The visit is recorded after the response is sent (never blocks rendering), once per real page
+  // view. Switching language navigates in place (RSC request whose referer is the landing itself):
+  // that is not a new visit, so it is not counted.
+  const isLanguageSwitch = requestHeaders.get("rsc") === "1" && isLandingReferer(requestHeaders.get("referer"));
+  if (!isLanguageSwitch) after(() => writeFunnelEvent({ event: FUNNEL_EVENT.SITE_VISIT }));
 
   const locale = toSupportedLocale(activeLanguage?.code);
   const t = (text: string) => translateForLocale(text, locale);
-  const tt = (text: string, params: Record<string, string | number>) =>
+  const translateTemplate = (text: string, params: Record<string, string | number>) =>
     translateTemplateForLocale(text, params, locale);
   const languageFlag = activeLanguage?.flag ?? "🇫🇷";
   const languageLabel = (activeLanguage?.code ?? "fr").toUpperCase();
@@ -109,11 +149,14 @@ export default async function Home() {
   }));
   const heroHeadline = localizeFieldForLocale(heroSettings.headline, heroSettings.translations, "headline", locale);
 
-  const versionsLabel = tt("1 génération = {versions} versions", { versions: VERSIONS_PER_GENERATION });
-  const creditsExplainerLabel = tt("Chaque chanson complète ({versions} versions) coûte {cost} crédits.", {
-    versions: VERSIONS_PER_GENERATION,
-    cost: CREDITS_PER_GENERATION,
-  });
+  const versionsLabel = translateTemplate("1 génération = {versions} versions", { versions: VERSIONS_PER_GENERATION });
+  const creditsExplainerLabel = translateTemplate(
+    "Chaque chanson complète ({versions} versions) coûte {cost} crédits.",
+    {
+      versions: VERSIONS_PER_GENERATION,
+      cost: CREDITS_PER_GENERATION,
+    },
+  );
 
   const landingProps = {
     t,
@@ -135,6 +178,7 @@ export default async function Home() {
 
   return (
     <>
+      <LanguageCookieSync code={activeLanguage?.code ?? "fr"} />
       <SmoothScroll />
       <LandingNavScrollEffect />
       <div className="banani-mobile">

@@ -69,7 +69,7 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Toute entrée non fiable doit être validée côté serveur avec Zod.
 - Avant production: `npm run kit:verify`, `npm run security-saas`, staging Vercel approuvé, puis `npm run deploy:production:check`.
 - Pour le CRUD Clients, respecter l’ordre Banani → plan → Prisma Client → `/api/clients/*`.
-- La partie Android/iOS reste optionnelle et utilise Capacitor WebView vers le SaaS HTTPS en ligne.
+- La partie Android/iOS reste optionnelle et suit `.agents/skills/mobile-app-pwa-capacitor/SKILL.md` : **Next.js serveur + PWA + Capacitor**. Le mode WebView simple est déprécié et `output: export` est interdit.
 
 ## Computer Use / Browser
 

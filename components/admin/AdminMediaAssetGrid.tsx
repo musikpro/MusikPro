@@ -53,6 +53,7 @@ export default function AdminMediaAssetGrid({ assets }: { assets: MediaAsset[] }
           <small>
             {formatBytes(asset.bytes)}
             {asset.width && asset.height ? ` · ${asset.width}×${asset.height}` : ""}
+            {asset.format ? ` · ${asset.format.toUpperCase()}` : ""}
           </small>
           <footer className="admin-style-actions">
             <CopyUrlButton url={asset.url} />

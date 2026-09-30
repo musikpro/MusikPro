@@ -2,12 +2,14 @@ import Link from "next/link";
 import AppLogo from "./AppLogo";
 import Icon from "./Icon";
 import Reveal from "./Reveal";
+import LandingFaqItem from "./LandingFaqItem";
 import { GooglePlayLogo, AppleLogo } from "./StoreDownloadCard";
 import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLanguageSwitcher";
 import MobileLandingMenu from "./MobileLandingMenu";
 import HeroRotatingText, { type HeroRotatingTextItem } from "./HeroRotatingText";
 import LandingSongCarousel from "./LandingSongCarousel";
 import LandingLibraryCard from "./LandingLibraryCard";
+import ExclusiveAudioPlayback from "./ExclusiveAudioPlayback";
 import { HERO_TEXT_SIZE_CLASSES, type HeroAnimationType, type HeroTextSize } from "@/lib/hero-animation/types";
 import type { LandingFeaturedSong } from "@/lib/landing-features/server";
 
@@ -80,14 +82,13 @@ export default function LandingPageMobile({
   const faqs = [
     {
       q: t("Comment fonctionne la génération ?"),
-      a: t(
+      a: `${t(
         "Tu décris ton histoire, choisis un style et une ambiance, et notre IA compose une chanson unique avec des paroles personnalisées.",
-      ),
+      )} ${t("Tu choisis la langue des paroles et la voix avant la génération, parmi plusieurs langues disponibles.")}`,
     },
-    { q: t("Combien de versions vais-je recevoir ?"), a: `${versionsLabel}. ${t("Tu gardes les deux !")}` },
     {
-      q: t("Puis-je modifier les paroles ?"),
-      a: t("Oui ! Avant la génération musicale, tu peux lire et modifier les paroles générées par l'IA."),
+      q: t("Combien de versions vais-je recevoir et puis-je modifier les paroles ?"),
+      a: `${versionsLabel}. ${t("Tu gardes les deux !")} ${t("Avant la génération musicale, tu peux lire et modifier les paroles générées par l'IA.")}`,
     },
     {
       q: t("Comment fonctionnent les crédits ?"),
@@ -96,10 +97,6 @@ export default function LandingPageMobile({
     {
       q: t("Puis-je publier ma chanson ?"),
       a: t("Oui, tu peux publier une version dans notre bibliothèque publique."),
-    },
-    {
-      q: t("Dans quelle langue puis-je créer ma chanson ?"),
-      a: t("Tu choisis la langue des paroles et la voix avant la génération, parmi plusieurs langues disponibles."),
     },
   ];
   const navLinks = [
@@ -111,6 +108,7 @@ export default function LandingPageMobile({
 
   return (
     <div className="landing-page bg-background font-body text-foreground">
+      <ExclusiveAudioPlayback />
       <nav className="landing-nav relative border-b border-border px-4 py-3 flex items-center justify-between gap-3">
         <a href="#accueil" aria-label={t("Accueil")}>
           <AppLogo size="sm" />
@@ -273,7 +271,16 @@ export default function LandingPageMobile({
           <div className="flex flex-col gap-3">
             {librarySongs.map((s, i) => (
               <Reveal key={s.slug} delay={i * 80}>
-                <LandingLibraryCard song={s} size="sm" />
+                <LandingLibraryCard
+                  song={s}
+                  size="sm"
+                  labels={{
+                    listen: t("Écouter"),
+                    listenTitle: t("Écouter {title}"),
+                    playing: t("En lecture"),
+                    pause: t("Mettre en pause"),
+                  }}
+                />
               </Reveal>
             ))}
           </div>
@@ -302,13 +309,10 @@ export default function LandingPageMobile({
         <Reveal className="text-center mb-6">
           <h2 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Questions fréquentes")}</h2>
         </Reveal>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {faqs.map((f, i) => (
             <Reveal key={f.q} delay={i * 60}>
-              <div className="landing-card-hover bg-card border border-border rounded-xl p-4">
-                <p className="font-bold text-sm text-foreground mb-2">{f.q}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{f.a}</p>
-              </div>
+              <LandingFaqItem question={f.q} answer={f.a} compact />
             </Reveal>
           ))}
         </div>

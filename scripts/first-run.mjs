@@ -57,6 +57,7 @@ if (!lock || !modules) {
     console.log("→ Lancez `npm run first-run:install` pour exécuter npm install, ou `npm install` manuellement.");
   } else {
     console.log("\n2/3 — Installation des dépendances");
+    if (!run(process.execPath, ["scripts/npm-registry-check.mjs"], "vérification du registre npm")) process.exit(1);
     if (!run("npm", ["install"], "npm install")) process.exit(1);
   }
 } else {

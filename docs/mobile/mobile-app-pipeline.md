@@ -1,119 +1,95 @@
-# Mobile App Pipeline — WebView connectée au SaaS en ligne (optionnel)
+# Mobile App Pipeline — PWA + Capacitor (Android/iOS)
 
-Le **SaaS Web Next.js déployé est la source principale et obligatoire**. La partie Android/iPhone est un conteneur Capacitor WebView **opt-in** qui ouvre l'URL HTTPS du SaaS déjà en production. Elle ne duplique pas le backend et ne déplace jamais Neon, Resend, les secrets d'authentification ou de paiement dans l'application native.
+La source de vérité de cette couche est `.agents/skills/mobile-app-pwa-capacitor/SKILL.md`. L’architecture officielle est **Next.js serveur + PWA + Capacitor → Android + iOS**. Le mode WebView simple est déprécié et ne doit plus être proposé comme pipeline principal.
 
 ## Architecture cible
 
 ```text
-Android / iPhone
-      ↓
-Capacitor WebView
-      ↓
-https://monsaas.com
-      ↓
-Next.js en production
-      ↓
-API / Auth / Neon / paiements / Resend / services serveur
+                    Africa SaaS Kit
+                    Next.js serveur
+                         │
+          ┌──────────────┼──────────────┐
+          │              │              │
+     Web desktop    Web mobile/PWA   App mobile
+                                        │
+                                    Capacitor
+                                   ┌────┴────┐
+                                Android    iOS
+
+          même backend / même base / mêmes règles serveur
 ```
 
-Le mode officiel du kit est `webview-hosted`. Les anciennes configurations `hosted-nextjs` restent acceptées pour compatibilité.
+Le navigateur mobile bénéficie du manifest, du service worker et du fallback hors connexion contrôlé. Capacitor ajoute la couche native sans convertir le projet Next.js en export statique.
 
-## Ordre obligatoire
+## Règles non négociables
 
-1. Terminer le SaaS Web.
-2. Valider responsive, Zod, sécurité, auth, API et paiements éventuels.
-3. Déployer le SaaS sur son domaine HTTPS final.
-4. Vérifier réellement le domaine de production.
-5. Décider si Android/iPhone sont nécessaires.
-6. Si non, laisser `mobileAppEnabled=false` : le Web reste complet et conforme.
-7. Si oui, activer le pipeline WebView puis préparer Android/iOS.
+- ne jamais ajouter `output: 'export'` ;
+- le backend Next.js reste la source de vérité pour auth, DB, paiements, webhooks, IA, uploads et logique métier ;
+- les secrets restent côté serveur ;
+- le service worker ne met jamais en cache aveuglément les réponses privées, admin, paiement, API ou mutations ;
+- le desktop conserve son comportement ;
+- les adaptations natives sont conditionnelles et isolées ;
+- aucun voyant natif n’est vert sans vérification fiable ou test réel.
+
+## Ordre recommandé
+
+1. Terminer et valider le SaaS Web Next.js.
+2. Exécuter `npm run mobile:check` et `npm run mobile:pwa:check`.
+3. Déployer le SaaS/PWA sur son domaine HTTPS final.
+4. Laisser `mobileAppEnabled=false` si aucune app native n’est nécessaire.
+5. Pour une ancienne installation `webview-hosted`/`hosted-nextjs`, exécuter `npm run mobile:app:migrate`.
+6. Activer `pwa-capacitor`, installer Capacitor puis générer/synchroniser Android/iOS.
+7. Tester auth, routes critiques, safe areas, navigation, offline/network et permissions.
+8. Construire réellement Android dans Android Studio et iOS dans Xcode avant publication.
 
 ## Commandes
 
 ```bash
-# Responsive Web — toujours applicable
 npm run mobile:check
+npm run mobile:pwa:check
 
-# Conserver un projet Web-only
+# Conserver le natif désactivé (PWA Web conservée)
 npm run mobile:app:configure -- --none
 
-# Activer la WebView connectée au SaaS hébergé
+# Migrer une ancienne configuration WebView simple
+npm run mobile:app:migrate
+
+# Activer PWA + Capacitor
 npm run mobile:app:configure -- --app-id=com.entreprise.app --app-name="Mon SaaS" --url=https://monsaas.com --platforms=android,ios
-
-# Installer Capacitor uniquement après opt-in
 npm run mobile:app:install
-
-# Générer/synchroniser Android + iOS
 npm run mobile:app:prepare
-
-# Audit mobile applicatif
 npm run mobile:app:check
 
-# Ouvrir les projets natifs
-npx cap open android
-npx cap open ios
+# Après installation Capacitor
+npm run mobile:sync
+npm run mobile:android
+npm run mobile:ios
 ```
 
-## Outils à prévoir
+## PWA et cache
 
-### Commun
+Le kit fournit `app/manifest.ts`, `public/sw.js`, `public/offline.html` et `components/pwa/service-worker-register.tsx`. Le cache est limité aux assets statiques sûrs. Les navigations restent network-first et utilisent seulement la page hors connexion comme fallback. Les routes `/api`, `/admin`, `/dashboard` et les flux d’authentification ne sont pas mis en cache par le service worker.
 
-- Node.js/npm déjà utilisés par le SaaS.
-- `@capacitor/core` et `@capacitor/cli`.
-- `@capacitor/android` et/ou `@capacitor/ios` selon les plateformes choisies.
-- Domaine SaaS public en HTTPS.
+## Séparation des plateformes
 
-### Android
+`lib/mobile/native-runtime.ts` centralise les contextes : `web-desktop`, `web-mobile`, `native-android`, `native-ios`. `WebOnly` et `NativeOnly` évitent les doublons d’interface. La navigation du bas Web/PWA est masquée dans Capacitor; la navigation native correspondante est montée séparément.
 
-- Android Studio.
-- Android SDK.
-- JDK compatible avec la version Android/Gradle du projet.
-- Un émulateur et idéalement un téléphone Android réel.
+## Checklist sécurité/auth
 
-### iPhone
+Tester signup, login, logout, refresh/session, cookies, CSRF, OAuth, redirections, deep links, vérification email, reset password, admin, paiements, uploads et webhooks serveur. Ne jamais embarquer `DATABASE_URL`, `JWT_SECRET`, `ENCRYPTION_KEY`, `CRON_SECRET` ou des clés provider serveur.
 
-- macOS.
-- Xcode et les composants iOS correspondants.
-- Compte/signing Apple au moment des builds et de la distribution.
-- Simulateur et idéalement un iPhone réel.
+## Android
 
-Les exigences exactes des stores et toolchains changent dans le temps : les revalider au moment de la publication.
+Préparer package id stable, icônes/splash, permissions minimales, HTTPS, bouton Retour, tests émulateur + appareil réel, APK debug et AAB release signé. Ne jamais committer le keystore ou ses mots de passe.
 
-## Checklist WebView
+## iOS
 
-Avant publication, tester au minimum :
+Préparer Bundle Identifier, icônes, launch screen, safe areas, permissions `Info.plist` strictement nécessaires, deep/universal links si utilisés, tests simulateur + iPhone réel, signature Apple et TestFlight. Ne jamais committer les certificats privés.
 
-- HTTPS et disponibilité de `productionUrl`;
-- login/logout, sessions et cookies dans la WebView;
-- OAuth/deep links si utilisés;
-- navigation interne et liens externes;
-- paiements et redirections de retour si le SaaS en utilise;
-- bouton Retour Android;
-- Safe Area iPhone;
-- clavier et champs de formulaire;
-- uploads/caméra/fichiers si utilisés;
-- état hors connexion et serveur indisponible;
-- aucune clé secrète dans le bundle mobile;
-- validation Zod côté serveur pour toute entrée non fiable.
+## Compatibilité legacy
 
-## Images et assets à préparer
+`webview-hosted` et `hosted-nextjs` sont reconnus uniquement comme valeurs historiques à migrer. La migration modifie la stratégie vers `pwa-capacitor`, préserve les dossiers `android/` et `ios/`, puis exige une nouvelle synchronisation et de nouveaux tests.
 
-Garder au minimum les sources haute définition suivantes :
+## Validation
 
-1. logo principal de l'application;
-2. icône carrée de l'application;
-3. splash / écran de lancement;
-4. captures Android pour la fiche store;
-5. captures iPhone pour la fiche store;
-6. visuel promotionnel/feature graphic lorsque demandé par le store;
-7. éventuels visuels/tablettes si la distribution les cible.
-
-Ne figer aucune dimension de store dans le kit : les dimensions et exigences doivent être vérifiées au moment de la soumission.
-
-## Séparation Web / Mobile
-
-Le code métier serveur reste dans Next.js. `NativeOnly`, `WebOnly`, `NativeBottomNav` et `lib/mobile/native-runtime.ts` isolent les adaptations natives. La navigation native est optionnelle et ne doit jamais se superposer à la navigation Web.
-
-## Règle de non-régression
-
-Si `mobileAppEnabled=false`, aucune dépendance Capacitor n'est requise, aucun projet natif n'est généré et les tests/builds Web restent inchangés. Toute évolution mobile doit être additive et réversible.
+Avant de conclure : install, typecheck, lint, tests, build Next.js, absence d’`output: export`, démarrage serveur, desktop, web mobile/PWA, Android, iOS si environnement disponible, auth/routes critiques, secrets, permissions, safe areas et comportement offline. Les builds natifs non exécutés restent `WARN/NON VÉRIFIÉ`.

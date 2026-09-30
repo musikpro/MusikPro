@@ -86,7 +86,7 @@ try {
       appName: null,
       productionUrl: null,
       platforms: ["android", "ios"],
-      strategy: "webview-hosted",
+      strategy: "pwa-capacitor",
       bottomNavigation: true,
       prepared: false,
     },

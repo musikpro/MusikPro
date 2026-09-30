@@ -25,12 +25,18 @@ export default function GeneratingScreen() {
       {/* Top */}
       <div className="px-4 py-4 flex items-center justify-between">
         <div className="w-8" />
-        <div className="flex items-center gap-2">
+        <button
+          type="button"
+          data-demo-ready="true"
+          onClick={() => demo.go("/dashboard")}
+          aria-label={t("Accueil")}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <div className="w-6 h-6 bg-primary rounded-md flex items-center justify-center">
             <Icon i="music-2" size={12} className="text-primary-foreground" />
           </div>
           <span className="font-headings font-bold text-base text-foreground">{t("MusikPro")}</span>
-        </div>
+        </button>
         <button
           type="button"
           data-demo-ready="true"
