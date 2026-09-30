@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminMediaPickerModal from "@/components/admin/AdminMediaPickerModal";
@@ -9,11 +9,23 @@ import { TRENDING_POOL_SIZE, type TrendingSettingsValue } from "@/lib/trending/t
 import type { GeneratedSongOption } from "@/lib/trending/admin";
 import { apiFetch } from "@/lib/api/client";
 
-type TrendingSongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number };
+type TrendingSongDisplay = {
+  songGroupId: string;
+  title: string;
+  styleLabel: string | null;
+  plays: number;
+  audioUrl?: string | null;
+};
 type Slot = { songGroupId: string; cover: string };
 
 function toDisplay(song: TrendingSongDisplay): TrendingSongDisplay {
-  return { songGroupId: song.songGroupId, title: song.title, styleLabel: song.styleLabel, plays: song.plays };
+  return {
+    songGroupId: song.songGroupId,
+    title: song.title,
+    styleLabel: song.styleLabel,
+    plays: song.plays,
+    audioUrl: song.audioUrl ?? null,
+  };
 }
 
 /**
@@ -39,6 +51,9 @@ export default function TrendingPanel({
   const [idInput, setIdInput] = useState("");
   const [idLookupPending, setIdLookupPending] = useState(false);
   const [idLookupError, setIdLookupError] = useState("");
+  // One shared audio element: the play button in front of each card previews that card's song.
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playingId, setPlayingId] = useState<string | null>(null);
 
   // `songs` only lists the most recent generations — a song added by pasting its "Identifiant"
   // from /admin/generations lands in `extraSongs` so its label still resolves.
@@ -56,6 +71,25 @@ export default function TrendingPanel({
       })),
     [allSongs],
   );
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    return () => audio?.pause();
+  }, []);
+
+  const togglePreview = (songGroupId: string) => {
+    const audio = audioRef.current;
+    const url = bySongGroupId.get(songGroupId)?.audioUrl;
+    if (!audio || !url) return;
+    if (playingId === songGroupId) {
+      audio.pause();
+      setPlayingId(null);
+      return;
+    }
+    audio.src = url;
+    setPlayingId(songGroupId);
+    void audio.play().catch(() => setPlayingId(null));
+  };
 
   const addSlot = (songGroupId: string) => setSlots((prev) => [...prev, { songGroupId, cover: "" }]);
 
@@ -105,6 +139,8 @@ export default function TrendingPanel({
         <span className="admin-status is-pending">Manuel</span>
       </div>
 
+      <audio ref={audioRef} className="sr-only" onEnded={() => setPlayingId(null)} onPause={() => setPlayingId(null)} />
+
       <AdminActionForm key={savedKey} action={setTrendingSettings} className="admin-trending-form">
         <div className="admin-trending-section">
           <span className="admin-trending-label">
@@ -123,6 +159,15 @@ export default function TrendingPanel({
               return (
                 <div key={index} className="admin-trending-slot">
                   <div className="admin-trending-picker-row">
+                    <button
+                      type="button"
+                      className="admin-trending-play"
+                      disabled={!bySongGroupId.get(slot.songGroupId)?.audioUrl}
+                      aria-label={playingId === slot.songGroupId ? "Mettre en pause" : "Écouter la chanson"}
+                      onClick={() => togglePreview(slot.songGroupId)}
+                    >
+                      <Icon i={playingId === slot.songGroupId ? "pause" : "play"} size={15} />
+                    </button>
                     <AdminSelect
                       ariaLabel={`Chanson de la carte ${index + 1}`}
                       options={options}

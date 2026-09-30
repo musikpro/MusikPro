@@ -6216,6 +6216,25 @@ body:has(.admin-app),
   border-radius: 14px;
 }
 
+.admin-trending-play {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--admin-accent, #f26522);
+  color: #fff;
+  cursor: pointer;
+}
+
+.admin-trending-play:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .admin-trending-slot-cover {
   display: grid;
   gap: 8px;
