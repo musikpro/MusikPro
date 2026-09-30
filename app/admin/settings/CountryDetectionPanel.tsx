@@ -48,7 +48,12 @@ export default function CountryDetectionPanel({
         style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: 8 }}
       >
         <label className="admin-check-control">
-          <input type="checkbox" name="automaticDetectionEnabled" value="true" defaultChecked={automaticDetectionEnabled} />
+          <input
+            type="checkbox"
+            name="automaticDetectionEnabled"
+            value="true"
+            defaultChecked={automaticDetectionEnabled}
+          />
           <span>Activer la détection automatique</span>
         </label>
         <label className="admin-editor-field">
