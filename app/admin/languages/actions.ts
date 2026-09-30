@@ -143,7 +143,9 @@ export async function toggleLanguageScope(_previous: AdminActionState, formData:
     const [row] = await getServiceDb().select().from(languages).where(eq(languages.id, parsed.id)).limit(1);
     if (!row) return { ok: false, message: "Langue introuvable." };
     const patch =
-      parsed.scope === "interface" ? { interfaceEnabled: !row.interfaceEnabled } : { lyricsEnabled: !row.lyricsEnabled };
+      parsed.scope === "interface"
+        ? { interfaceEnabled: !row.interfaceEnabled }
+        : { lyricsEnabled: !row.lyricsEnabled };
     await getServiceDb()
       .update(languages)
       .set({ ...patch, updatedAt: new Date() })
@@ -273,7 +275,7 @@ export async function removeCountryLanguage(
  * "Actualiser les traductions" button so the admin can refresh translations whenever catalog
  * content changes, without a redeploy.
  */
-export async function refreshCatalogTranslations() {
+async function runCatalogTranslationsRefresh() {
   const session = await requireAdmin();
   const serviceDb = getServiceDb();
 
@@ -386,4 +388,23 @@ export async function refreshCatalogTranslations() {
 
   refresh();
   return { counts };
+}
+
+export async function refreshCatalogTranslations(): Promise<
+  | { ok: true; counts: Awaited<ReturnType<typeof runCatalogTranslationsRefresh>>["counts"] }
+  | { ok: false; message: string }
+> {
+  try {
+    const { counts } = await runCatalogTranslationsRefresh();
+    return { ok: true, counts };
+  } catch (error) {
+    // Production masks thrown Server Action messages ("Minified React error #441"): report a readable one.
+    if (error instanceof Error && error.message === "AI_PROVIDER_NOT_CONFIGURED") {
+      return {
+        ok: false,
+        message: "Aucun fournisseur IA n’est configuré. Enregistrez sa clé dans Fournisseurs IA, puis réessayez.",
+      };
+    }
+    return { ok: false, message: actionErrorMessage(error, "La mise à jour des traductions a échoué.") };
+  }
 }

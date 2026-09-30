@@ -3,7 +3,7 @@ import { randomBytes, timingSafeEqual } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { audioProviderConfigs } from "@/db/schema";
-import { decryptSecret, encryptSecret } from "../secrets";
+import { encryptSecret, tryDecryptSecret } from "../secrets";
 import { getAudioProviderDefinition } from "./catalog";
 
 /** Public origin used to build callback URLs (must be HTTPS: providers refuse plain HTTP). */
@@ -29,7 +29,7 @@ async function readToken(providerId: string): Promise<string | null> {
     .where(eq(audioProviderConfigs.provider, getAudioProviderDefinition(providerId).id))
     .limit(1);
   if (!row?.ciphertext || !row.iv || !row.authTag) return null;
-  return decryptSecret({ ciphertext: row.ciphertext, iv: row.iv, authTag: row.authTag });
+  return tryDecryptSecret({ ciphertext: row.ciphertext, iv: row.iv, authTag: row.authTag }) ?? null;
 }
 
 /** Full callback URL of a provider, or null when no token/HTTPS origin is available (polling then applies). */

@@ -279,7 +279,10 @@ export async function publishSongGroup(userId: string, songGroupId: string, jobI
   if (!chosen?.audioUrl || chosen.status !== "completed") throw new SongNotReadyError();
 
   if (existing) {
-    await database.update(songPublications).set({ jobId: chosen.jobId }).where(eq(songPublications.songGroupId, songGroupId));
+    await database
+      .update(songPublications)
+      .set({ jobId: chosen.jobId })
+      .where(eq(songPublications.songGroupId, songGroupId));
     return { slug: existing.slug };
   }
 

@@ -15,7 +15,9 @@ const logger = createLogger("audio-provider-dispatch");
 
 type JobRow = typeof musicGenerationJobs.$inferSelect;
 
-async function loadRuntimeConfig(providerId: string): Promise<AudioProviderRuntimeConfig & { maxPollingMinutes: number }> {
+async function loadRuntimeConfig(
+  providerId: string,
+): Promise<AudioProviderRuntimeConfig & { maxPollingMinutes: number }> {
   const provider = await getAudioProviderConfig(providerId);
   if (!provider.enabled || !provider.apiKey) throw new Error("AUDIO_PROVIDER_NOT_CONFIGURED");
   return {
@@ -50,7 +52,13 @@ export async function submitSongGroupJobsForProvider(jobIds: string[]): Promise<
       ordered.map((job) =>
         database
           .update(musicGenerationJobs)
-          .set({ status: "failed", failureReason, responsePayload: responsePayload ?? null, failedAt: new Date(), updatedAt: new Date() })
+          .set({
+            status: "failed",
+            failureReason,
+            responsePayload: responsePayload ?? null,
+            failedAt: new Date(),
+            updatedAt: new Date(),
+          })
           .where(eq(musicGenerationJobs.id, job.id)),
       ),
     );
@@ -82,7 +90,9 @@ export async function submitSongGroupJobsForProvider(jobIds: string[]): Promise<
       provider: primary.provider,
       error: error instanceof Error ? error.message : "unknown",
     });
-    return failAll(`submission_failed${error instanceof Error && error.message ? `: ${error.message.slice(0, 200)}` : ""}`);
+    return failAll(
+      `submission_failed${error instanceof Error && error.message ? `: ${error.message.slice(0, 200)}` : ""}`,
+    );
   }
   let succeeded = 0;
   await Promise.all(
@@ -114,7 +124,8 @@ export async function submitSongGroupJobsForProvider(jobIds: string[]): Promise<
 export async function pollJobForProvider(jobId: string, userId: string) {
   const job = await getJobForUser(jobId, userId);
   if (getAudioProviderDefinition(job.provider).id === "musicful") return pollMusicJob(jobId, userId);
-  if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId) return job;
+  if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId)
+    return job;
 
   const adapter = getAudioAdapter(job.provider);
   if (!adapter) return job;
@@ -141,7 +152,11 @@ export async function pollJobForProvider(jobId: string, userId: string) {
       audioNormalized: isCompleted ? mp3.normalized : job.audioNormalized,
       coverUrl: job.coverUrl || task.coverUrl || null,
       responsePayload: task.raw ?? job.responsePayload,
-      status: isCompleted ? ("completed" as const) : isFailed || isTimedOut ? ("failed" as const) : ("processing" as const),
+      status: isCompleted
+        ? ("completed" as const)
+        : isFailed || isTimedOut
+          ? ("failed" as const)
+          : ("processing" as const),
       failureCode: isFailed ? (task.failureCode ?? null) : job.failureCode,
       failureReason: isFailed
         ? task.failureReason || "provider_task_failed"

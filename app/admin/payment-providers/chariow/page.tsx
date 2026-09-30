@@ -9,6 +9,7 @@ import AdminSecretField from "@/components/admin/AdminSecretField";
 import { requireAdmin } from "@/lib/auth/session";
 import { getChariowConfiguration } from "@/lib/payments/chariow-config";
 import { listChariowProducts } from "@/lib/payments/providers/chariow";
+import { PaymentProviderHttpError } from "@/lib/payments/provider-base";
 import { paymentWebhookUrl } from "@/lib/payments/webhook-url";
 import { deletePlanMapping, saveChariowProvider, savePlanMapping } from "../actions";
 
@@ -47,10 +48,16 @@ export default async function ChariowProviderPage() {
   } catch {}
   let chariowProducts: Awaited<ReturnType<typeof listChariowProducts>> = [];
   let chariowProductsError = false;
+  // Readable cause shown in the field tooltip (HTTP status from Chariow, or the error kind) — never the key itself.
+  let chariowProductsReason = "";
   try {
     chariowProducts = await listChariowProducts();
-  } catch {
+  } catch (error) {
     chariowProductsError = true;
+    chariowProductsReason =
+      error instanceof PaymentProviderHttpError
+        ? `Chariow a répondu HTTP ${error.status}${error.status === 401 || error.status === 403 ? " : clé API refusée" : ""}.`
+        : `Réponse inattendue de Chariow (${error instanceof Error ? error.name : "erreur"}).`;
   }
   const chariowProductOptions = chariowProducts.map((product) => ({
     value: product.id,
@@ -203,7 +210,7 @@ export default async function ChariowProviderPage() {
                   <InfoTip
                     text={
                       chariowProductsError
-                        ? "La détection automatique a échoué (clé API invalide ou Chariow indisponible). Saisis l’identifiant exact copié depuis ton espace Chariow."
+                        ? `La détection automatique a échoué (${chariowProductsReason}). Saisis l’identifiant exact copié depuis ton espace Chariow.`
                         : "Identifiant exact du produit copié depuis ton espace Chariow. La détection automatique nécessite d’enregistrer d’abord la clé API ci-dessus."
                     }
                   />
