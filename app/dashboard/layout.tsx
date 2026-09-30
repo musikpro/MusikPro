@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { privatePageMetadata } from "@/lib/seo/metadata";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
+import { NativeBottomNav } from "@/components/mobile/native-bottom-nav";
 import { isDemoRequest, requireUser } from "@/lib/auth/session";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { DemoProvider } from "@/components/banani/DemoProvider";
@@ -126,6 +127,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     >
       {children}
       <MobileBottomNav />
+      <NativeBottomNav />
     </DemoProvider>
   );
 }

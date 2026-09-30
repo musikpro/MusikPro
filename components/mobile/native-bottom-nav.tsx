@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { dashboardHref } from "@/lib/demo/routing";
+import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { splitLocalePrefix } from "@/lib/languages/locale-path";
 import { NativeOnly } from "@/components/mobile/native-only";
 import { PremiumIcon, type PremiumIconName } from "@/components/ui/premium-icon";
@@ -20,6 +20,13 @@ function isActive(pathname: string, href: string) {
 
 export function NativeBottomNav({ items = defaultItems }: { items?: typeof defaultItems }) {
   const { locale, path: pathname } = splitLocalePrefix(usePathname());
+  // Même règle que la navigation web : les pages MusikPro portent leur propre navigation.
+  const musikPath = normalizeDashboardPath(pathname);
+  const musik =
+    musikPath === "/dashboard" ||
+    (musikPath.startsWith("/dashboard/") &&
+      !["/dashboard/billing", "/dashboard/security"].some((route) => musikPath.startsWith(route)));
+  if (musik) return null;
   return (
     <NativeOnly>
       <nav className="native-bottom-nav" aria-label="Navigation de l’application mobile">
