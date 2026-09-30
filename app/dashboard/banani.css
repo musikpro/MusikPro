@@ -6705,3 +6705,10 @@ button.mobile-menu-brand {
 .landing-page .landing-carousel-link[role="button"] {
   cursor: pointer;
 }
+
+/* Discover cards: genre on top, play button centred, one-line title underneath. */
+.discover-card-title {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
