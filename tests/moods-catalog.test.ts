@@ -66,7 +66,7 @@ describe("catalogue par défaut", () => {
     ]);
     for (const mood of DEFAULT_MOODS) {
       expect(isMoodEmoji(mood.emoji)).toBe(true);
-      expect(mood.aiHint.length).toBeLessThanOrEqual(MOOD_AI_HINT_MAX_LENGTH);
+      expect((mood.aiHint ?? "").length).toBeLessThanOrEqual(MOOD_AI_HINT_MAX_LENGTH);
     }
   });
 
@@ -81,8 +81,8 @@ describe("catalogue par défaut", () => {
 });
 
 describe("prompt Musicful avec ambiance", () => {
-  it("buildMoodText : « Nom (consigne) » ou le nom seul", () => {
-    expect(buildMoodText("Nostalgique", "nostalgic, warm")).toBe("Nostalgique (nostalgic, warm)");
+  it("buildMoodText : la consigne anglaise remplace le nom ; sans consigne, repli sur le nom", () => {
+    expect(buildMoodText("Nostalgique", "nostalgic, warm")).toBe("nostalgic, warm");
     expect(buildMoodText("Nostalgique", "  ")).toBe("Nostalgique");
     expect(buildMoodText("Nostalgique")).toBe("Nostalgique");
   });
@@ -96,7 +96,45 @@ describe("prompt Musicful avec ambiance", () => {
   it("conserve l'ambiance et les directives quand la description du genre est tronquée", () => {
     const mood = buildMoodText("Nostalgique", "nostalgic, warm, bittersweet");
     const prompt = buildStylePrompt("Amapiano", "d ".repeat(900), mood, true);
-    expect(prompt).toContain("Ambiance : Nostalgique (nostalgic, warm, bittersweet)");
+    expect(prompt).toContain("Ambiance : nostalgic, warm, bittersweet");
+    expect(prompt).not.toContain("Nostalgique");
     expect(prompt).toContain("Termine la chanson par un outro naturel");
+  });
+});
+
+describe("prompt Musicful avec consigne d'occasion", () => {
+  it("n'ajoute rien pour l'occasion sans consigne (le nom français n'est jamais envoyé)", () => {
+    const prompt = buildStylePrompt("Zouglou", null, "romantic", true, "");
+    expect(prompt).not.toContain("Occasion");
+  });
+
+  it("n'envoie que la consigne anglaise de l'occasion", () => {
+    const prompt = buildStylePrompt("Zouglou", null, "romantic", true, "birthday celebration, joyful");
+    expect(prompt).toContain("Occasion : birthday celebration, joyful");
+    expect(prompt).not.toContain("Anniversaire");
+  });
+
+  it("ne dépasse jamais la limite de Musicful avec ambiance, occasion et très longue description de genre", () => {
+    const prompt = buildStylePrompt("Amapiano", "d ".repeat(900), "m".repeat(150), true, "o".repeat(150));
+    expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
+    expect(prompt).toContain("Occasion : " + "o".repeat(150));
+    expect(prompt).toContain("Termine la chanson par un outro naturel");
+  });
+});
+
+describe("migration 0058 (consignes d'occasion)", () => {
+  const sql = readFileSync(path.resolve(__dirname, "../db/migrations/0058_occasions_ai_hint.sql"), "utf8");
+
+  it("est idempotente et ne remplace jamais une consigne déjà saisie", () => {
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS "ai_hint"');
+    const updates = sql.split("\n").filter((line) => line.startsWith("UPDATE"));
+    expect(updates.length).toBe(10);
+    for (const line of updates) expect(line).toContain(`AND "ai_hint" = ''`);
+  });
+
+  it("garde chaque consigne de départ dans la limite", () => {
+    for (const match of sql.matchAll(/SET "ai_hint" = '([^']*)'/g)) {
+      expect(match[1].length).toBeLessThanOrEqual(150);
+    }
   });
 });

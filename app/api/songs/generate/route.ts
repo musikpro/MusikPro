@@ -106,7 +106,7 @@ export async function POST(request: Request) {
   }
 
   const title = buildSongTitle({ recipientName: input.recipientName, occasion: input.occasion, genre: input.genre });
-  const style = await resolveStylePrompt(input.genre, input.mood, provider.strictStyleAdherence);
+  const style = await resolveStylePrompt(input.genre, input.mood, provider.strictStyleAdherence, input.occasion);
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 
   try {

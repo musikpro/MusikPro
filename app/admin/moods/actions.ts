@@ -10,7 +10,7 @@ import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { withAdminNotice } from "@/lib/admin/notice-redirect";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
-import { generateMoodAiHint } from "@/lib/ai/mood-ai-hint";
+import { generateMoodAiHint } from "@/lib/ai/catalog-ai-hint";
 import {
   moodAiHintRequestSchema,
   moodFormSchema,

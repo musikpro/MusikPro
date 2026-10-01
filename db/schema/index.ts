@@ -211,6 +211,8 @@ export const occasions = pgTable(
     slug: text("slug").notNull().unique(),
     description: text("description").notNull().default(""),
     emoji: text("emoji").notNull().default("🎉"),
+    /** Consigne anglaise envoyée à Musicful pour cette occasion (jamais montrée au client). Vide : rien n'est envoyé. */
+    aiHint: text("ai_hint").notNull().default(""),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
     /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */

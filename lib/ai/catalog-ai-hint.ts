@@ -44,3 +44,28 @@ export async function generateMoodAiHint(input: { name: string; description?: st
   }
   return text;
 }
+
+/** Même principe que pour les ambiances, appliqué à une occasion (nom + description saisis par le propriétaire). */
+export async function generateOccasionAiHint(input: { name: string; description?: string }, actorId?: string) {
+  const provider = await getLyricsProvider();
+  if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");
+  const context = input.description ? ` Description : « ${input.description} ».` : "";
+  const raw = await runProviderTextTask(
+    provider,
+    SYSTEM_INSTRUCTIONS,
+    `Occasion d'une chanson personnalisée : « ${input.name} ».${context}\n` +
+      "Rédige EN ANGLAIS une consigne très courte destinée à une IA de génération musicale (Musicful) pour qu'elle compose une chanson adaptée à cette occasion, sous forme de 4 à 6 mots-clés séparés par des virgules : la nature de l'occasion, puis l'émotion et le ton recherchés. " +
+      `${MOOD_AI_HINT_MAX_LENGTH} caractères maximum. Exemple pour « Anniversaire » : birthday celebration, joyful, warm, heartfelt tribute. Réponds uniquement avec les mots-clés.`,
+  );
+  const text = clamp(raw.text, MOOD_AI_HINT_MAX_LENGTH);
+  const verdict = await moderateText(text, `Consigne IA d'occasion musicale pour "${input.name}"`);
+  if (verdict.flagged) {
+    await writeAuditLog({
+      action: "ai.occasion_hint.blocked",
+      actorId,
+      metadata: { name: input.name, categories: verdict.categories },
+    });
+    throw new Error("CONTENT_BLOCKED_RESULT");
+  }
+  return text;
+}

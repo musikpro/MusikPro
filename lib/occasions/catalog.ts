@@ -6,6 +6,8 @@ export type OccasionOption = {
   slug: string;
   description: string;
   emoji: string;
+  /** Consigne anglaise envoyée à Musicful (jamais montrée au client). */
+  aiHint?: string;
   translations?: CatalogTranslations | null;
 };
 
@@ -59,6 +61,9 @@ export const OCCASION_EMOJI_OPTIONS = [
   { value: "🌻", label: "Épanouissement" },
   { value: "🏅", label: "Accomplissement" },
 ] as const;
+
+/** Longueur maximale de la consigne IA : elle fait partie du champ `style` de Musicful (1 000 caractères au total). */
+export const OCCASION_AI_HINT_MAX_LENGTH = 150;
 
 export type OccasionEmoji = (typeof OCCASION_EMOJI_OPTIONS)[number]["value"];
 
