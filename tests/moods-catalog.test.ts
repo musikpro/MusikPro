@@ -1,7 +1,12 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { buildMoodText, buildStylePrompt, MUSICFUL_STYLE_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
+import {
+  buildMoodText,
+  buildStylePrompt,
+  buildVocalHint,
+  MUSICFUL_STYLE_MAX_LENGTH,
+} from "@/lib/ai/style-prompt-builder";
 import { DEFAULT_MOODS, MOOD_AI_HINT_MAX_LENGTH, isMoodEmoji } from "@/lib/moods/catalog";
 import { moodFormSchema, reorderMoodsSchema, slugifyMood, toggleMoodSchema } from "@/lib/validation/moods";
 
@@ -172,5 +177,30 @@ describe("consigne de style préfixée par le nom", () => {
       "utf8",
     );
     expect(sql).toContain(`<> lower("name") || ':'`);
+  });
+});
+
+describe("consigne vocale (voix + langue) en anglais", () => {
+  it("convertit les choix français en anglais", () => {
+    expect(buildVocalHint("Français", "Femme")).toBe("female lead vocals, sung in French");
+    expect(buildVocalHint("Anglais", "Homme")).toBe("male lead vocals, sung in English");
+    expect(buildVocalHint("Français", "Duo")).toBe("male and female duet vocals, sung in French");
+  });
+
+  it("n'ajoute rien pour une valeur inconnue", () => {
+    expect(buildVocalHint("Wolof", "")).toBe("");
+  });
+
+  it("l'ajoute au prompt sans dépasser la limite de Musicful", () => {
+    const prompt = buildStylePrompt(
+      "Amapiano",
+      "d ".repeat(900),
+      "m".repeat(150),
+      true,
+      "o".repeat(150),
+      "male and female duet vocals, sung in French",
+    );
+    expect(prompt).toContain("Vocals: male and female duet vocals, sung in French");
+    expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
   });
 });

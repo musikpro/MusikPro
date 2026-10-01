@@ -92,6 +92,7 @@ export const songGenerateRequestSchema = z.object({
   recipientName: z.string().trim().max(120).optional().default(""),
   mood: z.string().trim().max(100).optional().default(""),
   voice: z.string().trim().max(80).optional().default(""),
+  language: z.string().trim().max(80).optional().default(""),
   lyrics: z.string().trim().min(1).max(30_000),
 });
 

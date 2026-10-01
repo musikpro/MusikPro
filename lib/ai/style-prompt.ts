@@ -4,7 +4,7 @@ import { getServiceDb } from "@/db";
 import { moods, musicStyles, occasions } from "@/db/schema";
 import { buildMoodText, buildStylePrompt } from "./style-prompt-builder";
 
-export { buildMoodText, buildStylePrompt, MUSICFUL_STYLE_MAX_LENGTH } from "./style-prompt-builder";
+export { buildMoodText, buildStylePrompt, buildVocalHint, MUSICFUL_STYLE_MAX_LENGTH } from "./style-prompt-builder";
 
 /**
  * Musicful's `style` field is free text with no controlled vocabulary — a bare genre name
@@ -23,6 +23,7 @@ export async function resolveStylePrompt(
   mood: string,
   strictStyleAdherence: boolean,
   occasion = "",
+  vocalHint = "",
 ): Promise<string> {
   const database = getServiceDb();
   const [exact] = await database
@@ -44,6 +45,7 @@ export async function resolveStylePrompt(
     await resolveMoodText(mood),
     strictStyleAdherence,
     await resolveOccasionHint(occasion),
+    vocalHint,
   );
 }
 
