@@ -41,6 +41,12 @@ export function buildMoodText(name: string, aiHint?: string | null): string {
   return aiHint?.trim() || name;
 }
 
+function stripStyleNamePrefix(description: string, genreName: string): string {
+  const head = `${genreName.trim().toLowerCase()}:`;
+  const text = description.trim();
+  return text.toLowerCase().startsWith(head) ? text.slice(head.length).trim() : text;
+}
+
 export function buildStylePrompt(
   genreName: string,
   description: string | null | undefined,
@@ -50,6 +56,9 @@ export function buildStylePrompt(
   occasionHint = "",
 ): string {
   let base = genreName;
+  // Le champ « Consigne IA » commence par « Nom du style : » + retour à la ligne : le nom est déjà envoyé en tête,
+  // on retire donc ce préfixe pour ne pas le répéter.
+  if (description) description = stripStyleNamePrefix(description, genreName);
   if (description) {
     base = strictStyleAdherence
       ? `${genreName} (${description}). Faithfully respect the authentic rhythmic, instrumental and vocal codes of this specific musical style, without drifting toward a more generic genre.`
