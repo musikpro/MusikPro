@@ -78,7 +78,7 @@ export default function AdminMusicStyleDescriptionFields({
       </div>
       <div className="admin-editor-field">
         <div className="admin-field-label-row">
-          <span>Description pour l’IA génératrice de musique</span>
+          <span>Consigne pour l’IA musicale (anglais)</span>
           <button
             type="button"
             className="admin-btn admin-btn-secondary admin-btn-sm"
@@ -86,7 +86,7 @@ export default function AdminMusicStyleDescriptionFields({
             disabled={pending !== null}
           >
             <Icon i="sparkles" size={13} />
-            {pending === "ai" ? "Génération…" : aiDescription.trim() ? "Régénérer" : "Générer avec l’IA"}
+            {pending === "ai" ? "Génération…" : aiDescription.trim() ? "Régénérer" : "Suggérer la consigne"}
           </button>
         </div>
         <textarea
@@ -95,9 +95,14 @@ export default function AdminMusicStyleDescriptionFields({
           rows={4}
           value={aiDescription}
           onChange={(event) => setAiDescription(event.target.value)}
-          placeholder="Détails techniques pour guider fidèlement l’IA : rythme, instruments, structure, tempo, voix"
+          aria-describedby="music-style-ai-hint"
+          placeholder="BPM 90-110, swing groove, Rhodes keys, warm vocals… (en anglais)"
         />
       </div>
+      <small id="music-style-ai-hint" className="admin-editor-field is-wide">
+        Seule cette consigne en anglais est envoyée à Musicful avec le nom du style ; la description client n’est jamais
+        transmise. {aiDescription.length}/600
+      </small>
       {error ? <p className="admin-field-error admin-editor-field is-wide">{error}</p> : null}
     </>
   );

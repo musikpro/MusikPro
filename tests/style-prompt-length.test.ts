@@ -19,8 +19,8 @@ describe("buildStylePrompt — Musicful 1,000-character style limit", () => {
   it("keeps the production directives (fade-out + variant diversity) intact even when the description is truncated", () => {
     const longDescription = "x".repeat(900);
     const prompt = buildStylePrompt("Amapiano", longDescription, "Romantique", true);
-    expect(prompt).toContain("Termine la chanson par un outro naturel");
-    expect(prompt).toContain("nettement distincts");
+    expect(prompt).toContain("End the song with a natural outro");
+    expect(prompt).toContain("clearly distinct");
   });
 
   it("leaves short, real-world prompts untouched", () => {
@@ -33,6 +33,6 @@ describe("buildStylePrompt — Musicful 1,000-character style limit", () => {
 
   it("falls back to the bare genre name when no catalog description exists", () => {
     const prompt = buildStylePrompt("Zouglou", null, "Romantique", true);
-    expect(prompt.startsWith("Zouglou — Ambiance : Romantique")).toBe(true);
+    expect(prompt.startsWith("Zouglou — Mood: Romantique")).toBe(true);
   });
 });
