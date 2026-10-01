@@ -741,6 +741,7 @@ function useDemoState(
           recipientName: fields.recipientName,
           mood: choices.mood,
           voice: choices.voice,
+          language: choices.language,
           lyrics: fields.lyrics,
         }),
         timeoutMs: 30_000,

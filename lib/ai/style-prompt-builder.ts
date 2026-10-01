@@ -47,6 +47,31 @@ function stripStyleNamePrefix(description: string, genreName: string): string {
   return text.toLowerCase().startsWith(head) ? text.slice(head.length).trim() : text;
 }
 
+/**
+ * Consigne vocale en anglais (« Vocals: ») déduite des choix « Langue des paroles » et « Voix du chanteur » :
+ * les valeurs françaises du client (Femme/Homme/Duo, Français/Anglais) sont converties en anglais pour
+ * Musicful. Valeur inconnue : rien n'est ajouté pour elle.
+ */
+export function buildVocalHint(language: string, voice: string): string {
+  const voices: Record<string, string> = {
+    femme: "female lead vocals",
+    female: "female lead vocals",
+    homme: "male lead vocals",
+    male: "male lead vocals",
+    duo: "male and female duet vocals",
+  };
+  const languages: Record<string, string> = {
+    français: "French",
+    francais: "French",
+    french: "French",
+    anglais: "English",
+    english: "English",
+  };
+  const voicePart = voices[voice.trim().toLowerCase()];
+  const languagePart = languages[language.trim().toLowerCase()];
+  return [voicePart, languagePart ? `sung in ${languagePart}` : ""].filter(Boolean).join(", ");
+}
+
 export function buildStylePrompt(
   genreName: string,
   description: string | null | undefined,
@@ -54,6 +79,8 @@ export function buildStylePrompt(
   strictStyleAdherence: boolean,
   /** Consigne IA (anglais) de l'occasion ; vide : rien n'est envoyé pour l'occasion. */
   occasionHint = "",
+  /** Consigne vocale en anglais (voix + langue chantée) ; vide : rien n'est ajouté. */
+  vocalHint = "",
 ): string {
   let base = genreName;
   // Le champ « Consigne IA » commence par « Nom du style : » : le nom est déjà envoyé en tête,
@@ -67,7 +94,8 @@ export function buildStylePrompt(
   // L'ambiance (nom + consigne IA éventuelle) et les directives sont toujours conservées : seule la
   // description du genre est tronquée pour rester sous la limite de Musicful.
   const occasionPart = occasionHint.trim() ? ` — Occasion: ${occasionHint.trim()}` : "";
-  const moodPart = (mood ? ` — Mood: ${mood}` : "") + occasionPart;
+  const vocalPart = vocalHint.trim() ? ` — Vocals: ${vocalHint.trim()}` : "";
+  const moodPart = (mood ? ` — Mood: ${mood}` : "") + occasionPart + vocalPart;
   const suffix = ` — ${PRODUCTION_DIRECTIVES}`;
   const budget = Math.max(0, MUSICFUL_STYLE_MAX_LENGTH - suffix.length - moodPart.length);
   return `${truncateAtWord(base, budget)}${moodPart}${suffix}`;

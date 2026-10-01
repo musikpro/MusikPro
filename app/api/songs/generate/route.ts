@@ -5,7 +5,7 @@ import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
 import { getActiveAudioProvider } from "@/lib/ai/musicful";
 import { getAudioProviderDefinition } from "@/lib/ai/audio-providers/catalog";
-import { resolveStylePrompt } from "@/lib/ai/style-prompt";
+import { buildVocalHint, resolveStylePrompt } from "@/lib/ai/style-prompt";
 import { submitSongGeneration } from "@/lib/ai/songs";
 import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
@@ -106,7 +106,13 @@ export async function POST(request: Request) {
   }
 
   const title = buildSongTitle({ recipientName: input.recipientName, occasion: input.occasion, genre: input.genre });
-  const style = await resolveStylePrompt(input.genre, input.mood, provider.strictStyleAdherence, input.occasion);
+  const style = await resolveStylePrompt(
+    input.genre,
+    input.mood,
+    provider.strictStyleAdherence,
+    input.occasion,
+    buildVocalHint(input.language, input.voice),
+  );
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 
   try {
