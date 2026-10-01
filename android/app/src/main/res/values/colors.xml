@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Orange de la marque (centre du dégradé de l'icône) : fond de l'écran de démarrage système. -->
+    <color name="splash_background">#FB5104</color>
+</resources>
