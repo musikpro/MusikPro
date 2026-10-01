@@ -442,6 +442,8 @@ export const mobileStoreLinks = pgTable("mobile_store_links", {
   id: text("id").primaryKey().default("global"),
   googlePlayUrl: text("google_play_url"),
   appStoreUrl: text("app_store_url"),
+  /** Si vrai (défaut), les boutons Google Play / App Store sont masqués dans l'application native (Capacitor) ; toujours visibles sur le web. */
+  hideInApp: boolean("hide_in_app").notNull().default(true),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
