@@ -9,6 +9,12 @@ const config: CapacitorConfig = {
     cleartext: false,
     allowNavigation: ["musikpro.net"],
   },
+  plugins: {
+    // Connexion Google native (sans Chrome) : seul Google est embarqué.
+    SocialLogin: {
+      providers: { google: true, facebook: false, apple: false, twitter: false },
+    },
+  },
 };
 
 export default config;

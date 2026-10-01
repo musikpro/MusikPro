@@ -5,5 +5,12 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
   const { error } = await searchParams;
   const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
 
-  return <AuthForm mode="login" googleEnabled={googleEnabled} initialError={getOAuthErrorMessage(error)} />;
+  return (
+    <AuthForm
+      mode="login"
+      googleEnabled={googleEnabled}
+      googleWebClientId={process.env.GOOGLE_CLIENT_ID}
+      initialError={getOAuthErrorMessage(error)}
+    />
+  );
 }
