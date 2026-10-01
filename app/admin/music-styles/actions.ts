@@ -13,7 +13,7 @@ import { writeAuditLog } from "@/lib/security/audit";
 const musicStyleFormSchema = z.object({
   name: z.string().trim().min(2).max(60),
   description: z.string().trim().min(5).max(240),
-  // 600 caractères de consigne + « Nom du style :\n » (nom ≤ 60)
+  // 600 caractères de consigne + « Nom du style : » (nom ≤ 60)
   aiDescription: z.string().trim().max(680).optional().default(""),
   icon: z.enum(MUSIC_STYLE_ICONS),
   tone: z.enum(MUSIC_STYLE_TONES),

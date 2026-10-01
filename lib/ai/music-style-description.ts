@@ -65,11 +65,11 @@ export async function generateMusicStyleDescription(input: MusicStyleDescription
 
   const raw = await runProviderTextTask(provider, SYSTEM_INSTRUCTIONS, promptFor(input));
   const lengthClamped = clampToLength(raw.text, MAX_LENGTH[input.kind]);
-  // Consigne IA : « Nom du style : » + retour à la ligne, puis la description (même champ).
+  // Consigne IA : « Nom du style : » suivi directement de la description, sur une seule ligne (même champ).
   const text =
     input.kind === "client"
       ? clampToWordCount(lengthClamped, CLIENT_MAX_WORDS)
-      : `${input.styleName.trim()}:\n${stripLeadingStyleName(lengthClamped, input.styleName)}`;
+      : `${input.styleName.trim()}: ${stripLeadingStyleName(lengthClamped, input.styleName)}`;
 
   const verdict = await moderateText(text, `Description de style musical (${input.kind}) pour "${input.styleName}"`);
   if (verdict.flagged) {

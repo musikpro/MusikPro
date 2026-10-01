@@ -161,7 +161,7 @@ describe("migration 0059 (consignes de style en anglais)", () => {
 
 describe("consigne de style préfixée par le nom", () => {
   it("n'envoie le nom du style qu'une seule fois à Musicful", () => {
-    const prompt = buildStylePrompt("R&B", "R&B:\nBPM 90-110, swing groove", "", false);
+    const prompt = buildStylePrompt("R&B", "R&B: BPM 90-110, swing groove", "", false);
     expect(prompt.startsWith("R&B — BPM 90-110, swing groove")).toBe(true);
     expect(prompt.match(/R&B/g)?.length).toBe(1);
   });

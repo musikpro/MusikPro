@@ -56,7 +56,7 @@ export function buildStylePrompt(
   occasionHint = "",
 ): string {
   let base = genreName;
-  // Le champ « Consigne IA » commence par « Nom du style : » + retour à la ligne : le nom est déjà envoyé en tête,
+  // Le champ « Consigne IA » commence par « Nom du style : » : le nom est déjà envoyé en tête,
   // on retire donc ce préfixe pour ne pas le répéter.
   if (description) description = stripStyleNamePrefix(description, genreName);
   if (description) {
