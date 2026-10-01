@@ -32,6 +32,13 @@ export default function SongPlayerScreen() {
   const audioUrl = isReal ? currentSong?.audioUrl : null;
   // Partage et téléchargement sont réservés au compte propriétaire : une chanson de la communauté
   // (Découvrir, Tendances…) reste écoutable mais n'est ni téléchargeable ni partageable par les autres.
+  // File « Suivant » : les deux chansons qui suivent la chanson courante dans la bibliothèque, dans l'ordre exact
+  // où le bouton « suivant » les parcourt (circulaire), pour que ce qui est affiché soit ce qui sera joué.
+  const queue = demo.library;
+  const currentIndex = queue.findIndex((song) => song.id === currentSong?.id);
+  const upNext = (currentIndex === -1 ? queue : [...queue.slice(currentIndex + 1), ...queue.slice(0, currentIndex)])
+    .filter((song) => song.id !== currentSong?.id)
+    .slice(0, 2);
   const canExport = !isReal || demo.songs.some((song) => song.id === currentSong?.id);
 
   // A visitor can land here while the song is still "processing": DemoProvider polls the library until
@@ -172,7 +179,11 @@ export default function SongPlayerScreen() {
               const duration = e.currentTarget.duration;
               if (Number.isFinite(duration)) setProgress((p) => ({ ...p, duration }));
             }}
-            onEnded={() => demo.setPlaying(false)}
+            onEnded={() => {
+              // Fin de chanson : on enchaîne sur la suivante de la file ; seule dans la bibliothèque, on s'arrête.
+              if (upNext.length > 0) demo.nextSong(1);
+              else demo.setPlaying(false);
+            }}
             onError={() => {
               demo.setPlaying(false);
               demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
@@ -359,22 +370,31 @@ export default function SongPlayerScreen() {
       <div className="px-4 pb-6 border-t border-border">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">{t("Suivant")}</p>
         <div className="space-y-2">
-          {demo.library
-            .filter((song) => song.id !== currentSong.id)
-            .slice(0, 2)
-            .map((song) => (
-              <div key={song.id} className="flex items-center gap-3 p-3 bg-card rounded-xl border border-border/30">
+          {upNext.map((song) => {
+            // Une chanson sans fichier audio (en mode réel) ne peut pas être jouée.
+            const playable = !isReal || Boolean((song as { audioUrl?: string | null }).audioUrl);
+            return (
+              <button
+                key={song.id}
+                type="button"
+                data-demo-ready="true"
+                disabled={!playable}
+                onClick={() => demo.selectSong(song.id)}
+                aria-label={`${t("Écouter")} ${song.title}`}
+                className="flex w-full items-center gap-3 p-3 bg-card rounded-xl border border-border/30 text-left transition-colors hover:border-primary/40 active:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+              >
                 <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Icon i="music-2" size={14} className="text-primary" />
+                  <Icon i="play" size={14} className="text-primary" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm text-foreground truncate">{song.title}</p>
                   <p className="text-xs text-muted-foreground">{song.style}</p>
                 </div>
                 <span className="text-xs text-muted-foreground flex-shrink-0">{song.duration}</span>
-              </div>
-            ))}
-          {demo.library.filter((song) => song.id !== currentSong.id).length === 0 && (
+              </button>
+            );
+          })}
+          {upNext.length === 0 && (
             <div className="rounded-xl border border-border bg-card px-4 py-5 text-center">
               <p className="text-sm font-semibold text-foreground">Aucune autre chanson</p>
             </div>

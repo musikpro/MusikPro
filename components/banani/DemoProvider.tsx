@@ -592,6 +592,15 @@ function useDemoState(
     if (!library.length) return;
     const index = library.findIndex((s) => s.id === selectedSongId);
     setSelectedSongId(library[(index + direction + library.length) % library.length].id);
+    // Passer à une autre chanson doit la lancer (et repartir de sa première version).
+    setSelectedVersion(0);
+    setPlaying(true);
+  };
+  /** Joue directement une chanson choisie dans la file « Suivant » du lecteur (sans changer de page). */
+  const selectSong = (id: string | number) => {
+    setSelectedSongId(id);
+    setSelectedVersion(0);
+    setPlaying(true);
   };
   const refreshSongs = async () => {
     if (isDemo) return;
@@ -845,6 +854,7 @@ function useDemoState(
     currentSong,
     openSong,
     nextSong,
+    selectSong,
     playing,
     setPlaying,
     packIndex,
