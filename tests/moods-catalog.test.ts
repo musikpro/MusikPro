@@ -204,3 +204,18 @@ describe("consigne vocale (voix + langue) en anglais", () => {
     expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
   });
 });
+
+describe("mode strict : la phrase de rigueur n'est jamais coupée", () => {
+  it("raccourcit la description, pas la phrase", () => {
+    const prompt = buildStylePrompt(
+      "Afrobeat",
+      "d ".repeat(400),
+      "joyful, fun, cheerful, feel-good, bright",
+      true,
+      "o".repeat(150),
+      "male and female duet vocals, sung in French",
+    );
+    expect(prompt).toContain("without drifting toward a more generic genre.");
+    expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
+  });
+});
