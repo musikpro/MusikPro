@@ -1,9 +1,11 @@
 "use client";
+import { goToAuthenticatedSpace } from "@/lib/auth/go-to-authenticated-space";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
 import { canUseNativeGoogleSignIn, NATIVE_GOOGLE_CANCELLED, nativeGoogleIdToken } from "@/lib/auth/native-google";
+import { InlineNotice } from "@/components/ui/inline-notice";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { emailSchema, loginSchema, registerIdentitySchema, registerSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
@@ -23,6 +25,7 @@ export function AuthForm({
 }) {
   const router = useRouter();
   const [error, setError] = useState(initialError);
+  const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -35,6 +38,7 @@ export function AuthForm({
   async function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
+    setNotice("");
     const f = new FormData(e.currentTarget);
     const submittedEmail = String(f.get("email") || identityEmail);
     const submittedName = String(f.get("name") || identityName);
@@ -97,6 +101,13 @@ export function AuthForm({
         setBusy(false);
         return;
       }
+      // Vérification d'e-mail exigée : le compte est créé mais aucune session n'est ouverte. On l'explique au lieu
+      // de renvoyer silencieusement vers la page de connexion.
+      if (!r.data?.token) {
+        setNotice("Compte créé. Vérifiez votre e-mail pour l’activer, puis connectez-vous.");
+        setBusy(false);
+        return;
+      }
     } else {
       const r = await authClient.signIn.email({
         email,
@@ -122,8 +133,7 @@ export function AuthForm({
         return;
       }
     }
-    router.push("/auth/continue");
-    router.refresh();
+    goToAuthenticatedSpace();
   }
   async function googleSignIn() {
     setBusy(true);
@@ -134,8 +144,7 @@ export function AuthForm({
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
         if (native?.error) throw new Error(native.error.message || "Connexion Google impossible");
-        router.push("/auth/continue");
-        router.refresh();
+        goToAuthenticatedSpace();
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
         if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || "Connexion Google impossible");
@@ -274,6 +283,7 @@ export function AuthForm({
               </div>
             )}
             {isPasswordStep && <TurnstileWidget onToken={setCaptchaToken} />}
+            {notice && <InlineNotice tone="success">{notice}</InlineNotice>}
             {error && (
               <p className="auth-alert auth-alert-error" role="alert">
                 {error}
