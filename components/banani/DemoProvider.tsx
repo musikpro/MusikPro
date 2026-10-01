@@ -57,6 +57,7 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
       hour: "2-digit",
       minute: "2-digit",
     }),
+    createdAt: song.createdAt,
     lyrics: song.lyrics || "",
     status: song.status,
     coverUrl: song.coverUrl,
