@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
@@ -18,6 +19,8 @@ import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/tra
 
 export default function PaymentScreen() {
   const demo = useDemo();
+  // Achat lancé depuis « Crédits & tarifs » : le pack est déjà choisi, on va droit à la passerelle de paiement.
+  const isCreditsPurchase = useSearchParams().get("intent") === "credits" && Boolean(demo.pack);
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<"name" | "email" | "phone", string>>>({});
   const selectedCountry = resolvePhoneCountry(demo.choices.phoneCountry, demo.phonePrefixes);
   const phoneRule =
@@ -43,7 +46,8 @@ export default function PaymentScreen() {
     });
   };
 
-  const hasEnoughCredits = demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION;
+  const hasEnoughCredits =
+    !isCreditsPurchase && (demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION);
 
   const handleContinue = () => {
     const parsed = buildDemoPaymentSchema(demo.phonePrefixes).safeParse({
@@ -67,6 +71,13 @@ export default function PaymentScreen() {
     setFieldErrors({});
     if (hasEnoughCredits) {
       demo.go("/dashboard/payment-preview/generating");
+      return;
+    }
+    if (isCreditsPurchase) {
+      try {
+        window.sessionStorage.removeItem("musikpro:chariow-checkout-started");
+      } catch {}
+      demo.go("/dashboard/payment-preview/chariow");
       return;
     }
     demo.go("/dashboard/create/pack");
@@ -217,7 +228,7 @@ export default function PaymentScreen() {
             </>
           ) : (
             <>
-              {t("Continuer vers les crédits")}
+              {isCreditsPurchase ? t("Continuer vers le paiement") : t("Continuer vers les crédits")}
               <Icon i="arrow-right" size={19} />
             </>
           )}
