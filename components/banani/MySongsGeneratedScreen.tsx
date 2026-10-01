@@ -46,6 +46,20 @@ export default function MySongsGenerated() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo.isDemo]);
 
+  // Drives the "taking longer than usual" notice: a coarse clock, only running while a song is still generating.
+  const [nowMs, setNowMs] = useState(() => Date.now());
+  const hasPendingSong = !demo.isDemo && demo.songs.some((song) => song.status === "processing");
+  useEffect(() => {
+    if (!hasPendingSong) return;
+    const timer = window.setInterval(() => setNowMs(Date.now()), 15_000);
+    return () => window.clearInterval(timer);
+  }, [hasPendingSong]);
+  const isTakingLonger = (song: { status?: string; createdAt?: string }) =>
+    !demo.isDemo &&
+    song.status === "processing" &&
+    Boolean(song.createdAt) &&
+    nowMs - Date.parse(song.createdAt as string) > demo.generationRedirectDelaySeconds * 1000;
+
   useEffect(() => {
     if (!versionPickerTarget) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -434,6 +448,19 @@ export default function MySongsGenerated() {
                   </div>
                 );
               })}
+              {isTakingLonger(song) ? (
+                <p
+                  role="status"
+                  className="mt-1 flex items-start gap-2 rounded-lg border border-primary/20 bg-secondary px-3 py-2 text-xs leading-relaxed text-foreground"
+                >
+                  <Icon i="clock" size={14} className="mt-0.5 flex-shrink-0 text-primary" />
+                  <span>
+                    {t(
+                      "La génération prend plus de temps que prévu. Tu peux quitter cette page : ta chanson apparaîtra ici dès qu’elle est prête, et tes crédits te sont rendus automatiquement en cas d’échec.",
+                    )}
+                  </span>
+                </p>
+              ) : null}
             </div>
 
             {/* Divider */}

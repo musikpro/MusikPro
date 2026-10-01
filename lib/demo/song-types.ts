@@ -18,6 +18,8 @@ export type WorkspaceSong = {
   occasion: string;
   style: string;
   date: string;
+  /** Real mode only — ISO creation timestamp, used to tell when a generation is taking longer than usual. */
+  createdAt?: string;
   lyrics: string;
   status?: "processing" | "completed" | "failed";
   coverUrl?: string | null;
