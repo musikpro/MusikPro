@@ -158,3 +158,19 @@ describe("migration 0059 (consignes de style en anglais)", () => {
     }
   });
 });
+
+describe("consigne de style préfixée par le nom", () => {
+  it("n'envoie le nom du style qu'une seule fois à Musicful", () => {
+    const prompt = buildStylePrompt("R&B", "R&B: BPM 90-110, swing groove", "", false);
+    expect(prompt.startsWith("R&B — BPM 90-110, swing groove")).toBe(true);
+    expect(prompt.match(/R&B/g)?.length).toBe(1);
+  });
+
+  it("la migration 0060 est idempotente (ne préfixe pas deux fois)", () => {
+    const sql = readFileSync(
+      path.resolve(__dirname, "../db/migrations/0060_music_styles_ai_description_name_prefix.sql"),
+      "utf8",
+    );
+    expect(sql).toContain(`<> lower("name") || ':'`);
+  });
+});

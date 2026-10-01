@@ -30,6 +30,12 @@ function clampToWordCount(text: string, maxWords: number): string {
     .replace(/[,;.]+$/, "");
 }
 
+/** Retire un « Nom : » que le modèle aurait déjà écrit en tête, pour ne pas le dupliquer. */
+function stripLeadingStyleName(text: string, styleName: string): string {
+  const escaped = styleName.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return text.replace(new RegExp(`^\\s*${escaped}\\s*[:\\-—]\\s*`, "i"), "").trim();
+}
+
 function promptFor(input: MusicStyleDescriptionRequest) {
   const reference = input.otherDescription
     ? ` Pour référence, voici l'autre description déjà rédigée pour ce style : "${input.otherDescription}".`
@@ -49,7 +55,7 @@ function promptFor(input: MusicStyleDescriptionRequest) {
     "ALWAYS cover, in this order, the model recommended by Musicful: BPM (approximate tempo) + rhythm + percussion + bass + instruments + structure (verse/chorus/bridge...) + vocal type + backing vocals + energy + mood + regional characteristics. " +
     "Keep each of these eleven elements VERY concise (a few words each, short phrases) so the whole text fits in 600 characters without being cut. " +
     'For regional characteristics: if the style has a recognisable local or regional origin (country, region or continent), state it explicitly (e.g. "Ivorian music" or "African rhythm"); if the style is international/generic, do not invent an origin. ' +
-    "Be concrete and specific, avoid generalities. Return only the English text."
+    "Be concrete and specific, avoid generalities. Return only the English text, without repeating the style name."
   );
 }
 
@@ -59,7 +65,11 @@ export async function generateMusicStyleDescription(input: MusicStyleDescription
 
   const raw = await runProviderTextTask(provider, SYSTEM_INSTRUCTIONS, promptFor(input));
   const lengthClamped = clampToLength(raw.text, MAX_LENGTH[input.kind]);
-  const text = input.kind === "client" ? clampToWordCount(lengthClamped, CLIENT_MAX_WORDS) : lengthClamped;
+  // Consigne IA : « Nom du style : » suivi directement de la description, sur une seule ligne (même champ).
+  const text =
+    input.kind === "client"
+      ? clampToWordCount(lengthClamped, CLIENT_MAX_WORDS)
+      : `${input.styleName.trim()}: ${stripLeadingStyleName(lengthClamped, input.styleName)}`;
 
   const verdict = await moderateText(text, `Description de style musical (${input.kind}) pour "${input.styleName}"`);
   if (verdict.flagged) {

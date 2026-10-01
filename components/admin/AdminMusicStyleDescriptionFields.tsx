@@ -91,7 +91,7 @@ export default function AdminMusicStyleDescriptionFields({
         </div>
         <textarea
           name="aiDescription"
-          maxLength={600}
+          maxLength={680}
           rows={4}
           value={aiDescription}
           onChange={(event) => setAiDescription(event.target.value)}
@@ -100,8 +100,8 @@ export default function AdminMusicStyleDescriptionFields({
         />
       </div>
       <small id="music-style-ai-hint" className="admin-editor-field is-wide">
-        Seule cette consigne en anglais est envoyée à Musicful avec le nom du style ; la description client n’est jamais
-        transmise. {aiDescription.length}/600
+        Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client n’est
+        jamais transmise. {aiDescription.length}/680
       </small>
       {error ? <p className="admin-field-error admin-editor-field is-wide">{error}</p> : null}
     </>
