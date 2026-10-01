@@ -223,7 +223,7 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.pack && demo.go("/dashboard/payment-preview")}
+          onClick={() => demo.pack && demo.go("/dashboard/payment-preview?intent=credits")}
           disabled={!demo.pack}
           className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-55"
         >
