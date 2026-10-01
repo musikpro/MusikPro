@@ -43,6 +43,10 @@
       </array>
     </dict>
 	</dict>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MusikPro utilise le microphone pour transcrire ton histoire quand tu parles au lieu d’écrire.</string>
+	<key>NSSpeechRecognitionUsageDescription</key>
+	<string>MusikPro transforme ta voix en texte pour décrire la chanson que tu veux créer.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

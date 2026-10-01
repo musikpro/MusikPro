@@ -32,4 +32,16 @@
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Microphone : transcription vocale de l'histoire de la chanson (écran « Raconte ton histoire »). -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+    <!-- Le micro n'est pas indispensable : l'application reste installable sur un appareil sans micro. -->
+    <uses-feature android:name="android.hardware.microphone" android:required="false" />
+
+    <!-- Android 11+ : permet à la WebView de trouver le service de reconnaissance vocale du téléphone. -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 </manifest>
