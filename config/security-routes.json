@@ -20,6 +20,12 @@
       "rateLimit": "scheduler-exempt",
       "markers": ["verifyCronRequest(request)"]
     },
+    "app/api/cron/reconcile-music-jobs/route.ts": {
+      "auth": "cron-secret",
+      "validation": "no-user-body",
+      "rateLimit": "scheduler-exempt",
+      "markers": ["verifyCronRequest(request)"]
+    },
     "app/api/cron/refresh-currency-rates/route.ts": {
       "auth": "cron-secret",
       "validation": "no-user-body",

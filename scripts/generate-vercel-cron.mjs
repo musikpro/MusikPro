@@ -20,7 +20,8 @@ let crons = Array.isArray(vercel.crons)
       (c) =>
         c?.path !== "/api/cron/reconcile-payments" &&
         c?.path !== "/api/cron/funnel-retention" &&
-        c?.path !== "/api/cron/refresh-currency-rates",
+        c?.path !== "/api/cron/refresh-currency-rates" &&
+        c?.path !== "/api/cron/reconcile-music-jobs",
     )
   : [];
 
@@ -31,6 +32,10 @@ console.log("Cron config: purge des événements d’entonnoir (180 jours) progr
 // Always registered — refreshes the exchange rates of the currencies flagged "auto" once a day.
 crons.push({ path: "/api/cron/refresh-currency-rates", schedule: process.env.CURRENCY_RATES_CRON || "0 2 * * *" });
 console.log("Cron config: actualisation quotidienne des taux de change programmée.");
+
+// Always registered — safety net that finalizes/fails/refunds music jobs left "processing" when no client polls them.
+crons.push({ path: "/api/cron/reconcile-music-jobs", schedule: process.env.MUSIC_JOBS_RECONCILE_CRON || "0 5 * * *" });
+console.log("Cron config: rattrapage des générations musicales programmé.");
 
 if (providers.length) {
   crons.push({ path: "/api/cron/reconcile-payments", schedule: process.env.PAYMENT_RECONCILE_CRON || "0 4 * * *" });
