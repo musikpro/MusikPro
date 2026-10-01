@@ -224,6 +224,24 @@
       ],
       "disableBehavior": "Ne pas générer le cron lorsque paymentsEnabled=false."
     },
+    "music-jobs-reconciliation-cron": {
+      "description": "Rattrapage serveur des générations musicales restées « en cours » (finalisation, échec après délai max, remboursement) quand aucun client n'interroge la page",
+      "optional": false,
+      "env": [
+        "CRON_SECRET"
+      ],
+      "files": [
+        "app/api/cron/reconcile-music-jobs/route.ts",
+        "lib/cron/auth.ts"
+      ],
+      "routes": [
+        "/api/cron/reconcile-music-jobs"
+      ],
+      "removalComplexity": "safe",
+      "dependsOn": [
+        "database"
+      ]
+    },
     "cloudinary": {
       "description": "Upload d'images optionnel avec validation MIME + magic bytes",
       "optional": true,
