@@ -219,3 +219,21 @@ describe("mode strict : la phrase de rigueur n'est jamais coupée", () => {
     expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
   });
 });
+
+describe("régression production : une consigne de style réelle n'est pas tronquée", () => {
+  it("garde l'origine complète du R&B en mode strict avec ambiance, occasion et voix", () => {
+    const rnb =
+      "R&B: BPM 90-110 | Shuffled triplet swing groove | Funk-jazz drums, syncopated hi-hat | Melodic groovy bass, bent notes | Rhodes keys, soul guitar, lush strings | Spoken/sung verses, repeated melodic chorus | Warm voice, legato, vibrato | Thick vocal harmonies, ad-libs | Moderate sensual energy | Intimate, nocturnal, romantic mood | Origins: USA (Memphis, Motown, New Orleans)";
+    const prompt = buildStylePrompt(
+      "R&B",
+      rnb,
+      "romantic, tender, warm, heartfelt, intimate",
+      true,
+      "birthday celebration, joyful, warm, heartfelt tribute",
+      "male and female duet vocals, sung in French",
+    );
+    expect(prompt).toContain("Origins: USA (Memphis, Motown, New Orleans)");
+    expect(prompt).toContain("without drifting toward a more generic genre.");
+    expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
+  });
+});
