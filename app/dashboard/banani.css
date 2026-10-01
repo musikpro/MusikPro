@@ -3440,6 +3440,30 @@
   overscroll-behavior: contain;
 }
 
+/* Écrans tactiles (navigateur mobile + application Android/iOS) : les barres de défilement « overlay » sont
+   masquées par défaut, donc la liste (ex. préfixes téléphoniques) semble se limiter à ce qui est visible.
+   On rend une fine barre toujours visible ; sur ordinateur, la barre native reste inchangée. */
+@media (hover: none) and (pointer: coarse) {
+  .musik-select-menu {
+    padding-right: 4px;
+  }
+
+  .musik-select-menu::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .musik-select-menu::-webkit-scrollbar-track {
+    margin: 8px 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+  }
+
+  .musik-select-menu::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-primary) 60%, transparent);
+  }
+}
+
 @keyframes musik-select-open {
   from {
     opacity: 0;
