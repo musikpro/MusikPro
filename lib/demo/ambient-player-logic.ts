@@ -33,3 +33,17 @@ export function resolveAutoplayOutcome(playSucceeded: boolean, storedMutePrefere
 export function isFatalAudioError(errorCode: number | null | undefined): boolean {
   return errorCode !== 1;
 }
+
+export const AMBIENT_MIN_PERCENT = 1;
+export const AMBIENT_MAX_PERCENT = 50;
+
+/**
+ * Gain réellement appliqué à l'élément <audio> pour le réglage admin (en %). Une courbe quadratique plutôt
+ * que linéaire : l'oreille perçoit le volume de façon logarithmique, donc un gain linéaire de 0,05 reste
+ * très audible quand le téléphone est réglé fort. À 50 % le gain vaut 0,5 (comme avant) ; en dessous il
+ * baisse beaucoup plus vite (5 % → 0,005, soit environ -46 dB).
+ */
+export function ambientGain(percent: number): number {
+  const clamped = Math.min(AMBIENT_MAX_PERCENT, Math.max(AMBIENT_MIN_PERCENT, percent));
+  return 0.5 * (clamped / AMBIENT_MAX_PERCENT) ** 2;
+}

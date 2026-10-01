@@ -11,11 +11,11 @@ describe("setAmbientTrackSchema", () => {
     expect(() => setAmbientTrackSchema.parse({ songGroupId: "", volumePercent: "20" })).toThrow();
   });
 
-  it.each([0, 4, 51, 100, -5])("rejette un volumePercent hors bornes : %d", (volumePercent) => {
+  it.each([0, -1, 51, 100, -5])("rejette un volumePercent hors bornes : %d", (volumePercent) => {
     expect(() => setAmbientTrackSchema.parse({ songGroupId: "grp_1", volumePercent: String(volumePercent) })).toThrow();
   });
 
-  it.each([5, 20, 50])("accepte un volumePercent aux bornes ou au milieu : %d", (volumePercent) => {
+  it.each([1, 5, 20, 50])("accepte un volumePercent aux bornes ou au milieu : %d", (volumePercent) => {
     const result = setAmbientTrackSchema.parse({ songGroupId: "grp_1", volumePercent: String(volumePercent) });
     expect(result.volumePercent).toBe(volumePercent);
   });

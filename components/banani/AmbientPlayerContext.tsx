@@ -6,6 +6,7 @@ import {
   resolveAutoplayOutcome,
   isFatalAudioError,
   shouldShowAmbientBar,
+  ambientGain,
 } from "@/lib/demo/ambient-player-logic";
 
 type AmbientPlayerContextValue = {
@@ -67,7 +68,7 @@ export function AmbientPlayerProvider({
     if (startedRef.current) return undefined;
     startedRef.current = true;
 
-    audio.volume = Math.min(50, Math.max(5, status.volumePercent)) / 100;
+    audio.volume = ambientGain(status.volumePercent);
     const storedMutePreference = readStoredMutePreference(window.localStorage);
     audio.muted = false;
     audio
@@ -94,6 +95,11 @@ export function AmbientPlayerProvider({
     // page.tsx à chaque changement de réglage admin via revalidatePath) : un seul montage suffit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
+
+  // Le volume suit toujours le réglage admin, même si la valeur change sans remontage du composant.
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = ambientGain(status.volumePercent);
+  }, [enabled, status.volumePercent]);
 
   useEffect(() => {
     if (!enabled) return undefined;
