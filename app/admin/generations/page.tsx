@@ -15,6 +15,12 @@ function formatDuration(seconds: number) {
   return `${minutes}m ${String(seconds % 60).padStart(2, "0")}s`;
 }
 
+/** Time from creation to the final state, or to now while the job is still pending (never negative). */
+function elapsedSeconds(row: { status: string; createdAt: Date; completedAt: Date | null; failedAt: Date | null }) {
+  const end = TERMINAL_STATUSES.has(row.status) ? (row.completedAt ?? row.failedAt) : new Date();
+  return end ? Math.max(0, Math.round((end.getTime() - row.createdAt.getTime()) / 1000)) : null;
+}
+
 export default async function AdminGenerationsPage() {
   await requireAdmin();
   const db = getServiceDb();
@@ -33,7 +39,10 @@ export default async function AdminGenerationsPage() {
       durationSeconds: musicGenerationJobs.durationSeconds,
       audioUrl: musicGenerationJobs.audioUrl,
       failureReason: musicGenerationJobs.failureReason,
+      providerStatus: musicGenerationJobs.providerStatus,
       createdAt: musicGenerationJobs.createdAt,
+      completedAt: musicGenerationJobs.completedAt,
+      failedAt: musicGenerationJobs.failedAt,
     })
     .from(musicGenerationJobs)
     .leftJoin(user, eq(musicGenerationJobs.userId, user.id))
@@ -97,6 +106,8 @@ export default async function AdminGenerationsPage() {
           durationSeconds: row.durationSeconds,
           audioUrl: row.audioUrl,
           failureReason: row.failureReason,
+          providerStatus: row.providerStatus,
+          elapsedSeconds: elapsedSeconds(row),
           createdAt: row.createdAt.toISOString(),
         }))}
       />
