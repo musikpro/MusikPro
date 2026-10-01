@@ -407,6 +407,13 @@
       "when": 1790868464994,
       "tag": "0057_moods_catalog",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1790871046773,
+      "tag": "0058_occasions_ai_hint",
+      "breakpoints": true
     }
   ]
 }

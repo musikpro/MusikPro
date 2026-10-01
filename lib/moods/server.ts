@@ -13,17 +13,17 @@ export async function getActiveMoods(options: { demo?: boolean } = {}): Promise<
       .from(moods)
       .where(eq(moods.active, true))
       .orderBy(asc(moods.sortOrder), asc(moods.name));
-    return rows.map(({ id, name, slug, description, emoji, aiHint, translations }) => ({
+    // La consigne IA (aiHint) reste côté serveur : elle n'est pas renvoyée au navigateur du client.
+    return rows.map(({ id, name, slug, description, emoji, translations }) => ({
       id,
       name,
       slug,
       description,
       emoji,
-      aiHint,
       translations: translations as MoodOption["translations"],
     }));
   } catch (error) {
-    if (options.demo) return DEFAULT_MOODS;
+    if (options.demo) return DEFAULT_MOODS.map(({ aiHint: _aiHint, ...mood }) => mood);
     throw error;
   }
 }

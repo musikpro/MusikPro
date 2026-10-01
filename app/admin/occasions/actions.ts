@@ -7,7 +7,8 @@ import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { occasions } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { isOccasionEmoji } from "@/lib/occasions/catalog";
+import { isOccasionEmoji, OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
+import { generateOccasionAiHint } from "@/lib/ai/catalog-ai-hint";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 
@@ -17,6 +18,12 @@ const occasionFormSchema = z.object({
   name: z.string().trim().min(2).max(60),
   description: z.string().trim().max(240),
   emoji: z.string().trim().min(1).max(16).refine(isOccasionEmoji, "Choisis un emoji dans la liste proposée."),
+  aiHint: z
+    .string()
+    .trim()
+    .max(OCCASION_AI_HINT_MAX_LENGTH, `${OCCASION_AI_HINT_MAX_LENGTH} caractères maximum.`)
+    .optional()
+    .default(""),
   active: z.enum(["true", "false"]),
   sortOrder: z.coerce.number().int().min(0).max(999),
 });
@@ -86,6 +93,7 @@ export async function updateOccasion(_previous: OccasionActionState, formData: F
         slug,
         description: parsed.description,
         emoji: parsed.emoji,
+        aiHint: parsed.aiHint,
         active: parsed.active === "true",
         sortOrder: parsed.sortOrder,
         updatedAt: new Date(),
@@ -104,10 +112,7 @@ export async function updateOccasion(_previous: OccasionActionState, formData: F
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette occasion.") };
   }
 }
-export async function toggleOccasion(
-  _previous: OccasionActionState,
-  formData: FormData,
-): Promise<OccasionActionState> {
+export async function toggleOccasion(_previous: OccasionActionState, formData: FormData): Promise<OccasionActionState> {
   const session = await requireAdmin();
   try {
     const parsed = toggleOccasionSchema.parse(Object.fromEntries(formData));
@@ -126,10 +131,7 @@ export async function toggleOccasion(
     return { ok: false, message: actionErrorMessage(error, "Impossible de modifier cette occasion.") };
   }
 }
-export async function deleteOccasion(
-  _previous: OccasionActionState,
-  formData: FormData,
-): Promise<OccasionActionState> {
+export async function deleteOccasion(_previous: OccasionActionState, formData: FormData): Promise<OccasionActionState> {
   const session = await requireAdmin();
   try {
     const parsed = occasionMutationSchema.parse(Object.fromEntries(formData));
@@ -166,4 +168,35 @@ export async function reorderOccasions(formData: FormData) {
     metadata: { order },
   });
   revalidateOccasions();
+}
+
+/** Bouton « Suggérer » du formulaire : propose la consigne IA (anglais) d'après le nom et la description ; ne modifie rien en base. */
+export async function suggestOccasionAiHint(input: {
+  name: string;
+  description?: string;
+}): Promise<{ ok: true; hint: string } | { ok: false; message: string }> {
+  const session = await requireAdmin();
+  try {
+    const parsed = z
+      .object({
+        name: z.string().trim().min(2).max(60),
+        description: z.string().trim().max(240).optional().default(""),
+      })
+      .parse(input);
+    return { ok: true, hint: await generateOccasionAiHint(parsed, session.user.id) };
+  } catch (error) {
+    if (error instanceof Error && error.message === "AI_PROVIDER_NOT_CONFIGURED") {
+      return {
+        ok: false,
+        message: "Aucun fournisseur IA n’est configuré. Enregistrez sa clé dans Fournisseurs IA, puis réessayez.",
+      };
+    }
+    if (error instanceof Error && error.message === "CONTENT_BLOCKED_RESULT") {
+      return {
+        ok: false,
+        message: "La suggestion a été bloquée par la modération. Reformule le nom ou la description.",
+      };
+    }
+    return { ok: false, message: actionErrorMessage(error, "Impossible de suggérer une consigne pour le moment.") };
+  }
 }

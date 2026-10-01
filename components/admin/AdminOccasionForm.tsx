@@ -1,18 +1,21 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import AdminOccasionEmojiPicker from "@/components/admin/AdminOccasionEmojiPicker";
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
-import type { OccasionActionState } from "@/app/admin/occasions/actions";
+import { suggestOccasionAiHint, type OccasionActionState } from "@/app/admin/occasions/actions";
+import { useAdminToast } from "@/components/admin/AdminToastProvider";
+import { OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
 
 type OccasionFormValues = {
   id?: string;
   name?: string;
   description?: string;
   emoji?: string;
+  aiHint?: string;
   active?: boolean;
   sortOrder?: number;
 };
@@ -27,6 +30,27 @@ export default function AdminOccasionForm({
   const editing = Boolean(values.id);
   const [state, formAction, pending] = useActionState<OccasionActionState, FormData>(action, null);
   useAdminActionToast(state);
+  const showToast = useAdminToast();
+  const nameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLTextAreaElement>(null);
+  const [aiHint, setAiHint] = useState(values.aiHint ?? "");
+  const [suggesting, startSuggest] = useTransition();
+  const suggest = () => {
+    const name = nameRef.current?.value.trim() ?? "";
+    if (name.length < 2) {
+      showToast({ message: "Saisis d’abord le nom de l’occasion.", tone: "error" });
+      return;
+    }
+    startSuggest(async () => {
+      const result = await suggestOccasionAiHint({ name, description: descriptionRef.current?.value.trim() ?? "" });
+      if (result.ok) {
+        setAiHint(result.hint);
+        showToast({ message: "Consigne suggérée : relis-la puis enregistre.", tone: "success" });
+      } else {
+        showToast({ message: result.message, tone: "error" });
+      }
+    });
+  };
   return (
     <section className="admin-panel admin-editor-card">
       <form action={formAction} className="admin-editor-grid admin-occasion-editor-grid">
@@ -34,6 +58,7 @@ export default function AdminOccasionForm({
         <label className="admin-editor-field">
           <span>Nom de l’occasion</span>
           <input
+            ref={nameRef}
             name="name"
             required
             minLength={2}
@@ -49,6 +74,7 @@ export default function AdminOccasionForm({
         <label className="admin-editor-field">
           <span>Description</span>
           <textarea
+            ref={descriptionRef}
             name="description"
             maxLength={240}
             rows={4}
@@ -57,6 +83,25 @@ export default function AdminOccasionForm({
           />
         </label>
         <AdminOccasionEmojiPicker defaultEmoji={values.emoji} />
+        <label className="admin-editor-field is-wide">
+          <span>Consigne pour l’IA musicale (anglais, facultative)</span>
+          <textarea
+            name="aiHint"
+            rows={2}
+            maxLength={OCCASION_AI_HINT_MAX_LENGTH}
+            value={aiHint}
+            onChange={(event) => setAiHint(event.target.value)}
+            placeholder="Ex. birthday celebration, joyful, warm, heartfelt tribute"
+          />
+          <small>
+            Seule cette consigne est envoyée à Musicful (jamais le nom français) ; elle n’est pas montrée au client.
+            Vide : rien n’est envoyé pour l’occasion. {aiHint.length}/{OCCASION_AI_HINT_MAX_LENGTH}
+          </small>
+          <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
+            <Icon i="sparkles" size={15} />
+            {suggesting ? "Suggestion…" : "Suggérer la consigne"}
+          </button>
+        </label>
         <div className="admin-editor-field">
           <span>État</span>
           <AdminSelect

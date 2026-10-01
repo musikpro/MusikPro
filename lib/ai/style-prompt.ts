@@ -1,7 +1,7 @@
 import "server-only";
 import { eq, ilike, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { moods, musicStyles } from "@/db/schema";
+import { moods, musicStyles, occasions } from "@/db/schema";
 import { buildMoodText, buildStylePrompt } from "./style-prompt-builder";
 
 export { buildMoodText, buildStylePrompt, MUSICFUL_STYLE_MAX_LENGTH } from "./style-prompt-builder";
@@ -22,6 +22,7 @@ export async function resolveStylePrompt(
   genreName: string,
   mood: string,
   strictStyleAdherence: boolean,
+  occasion = "",
 ): Promise<string> {
   const database = getServiceDb();
   const [exact] = await database
@@ -37,7 +38,13 @@ export async function resolveStylePrompt(
         .where(ilike(musicStyles.name, genreName))
         .limit(1);
   const description = (exact ?? fuzzy)?.aiDescription?.trim();
-  return buildStylePrompt(genreName, description, await resolveMoodText(mood), strictStyleAdherence);
+  return buildStylePrompt(
+    genreName,
+    description,
+    await resolveMoodText(mood),
+    strictStyleAdherence,
+    await resolveOccasionHint(occasion),
+  );
 }
 
 /**
@@ -55,4 +62,20 @@ async function resolveMoodText(mood: string): Promise<string> {
     .where(sql`lower(${moods.name}) = lower(${name})`)
     .limit(1);
   return buildMoodText(name, row?.aiHint);
+}
+
+/**
+ * L'occasion choisie par le client est le nom français d'une ligne du catalogue « Occasions » : seule la consigne
+ * IA (anglais) rédigée par le propriétaire est envoyée à Musicful, jamais le nom. Sans consigne (ou occasion
+ * inconnue) : rien n'est ajouté — le rédacteur de paroles et le titre continuent d'utiliser le nom français.
+ */
+async function resolveOccasionHint(occasion: string): Promise<string> {
+  const name = occasion.trim();
+  if (!name) return "";
+  const [row] = await getServiceDb()
+    .select({ aiHint: occasions.aiHint })
+    .from(occasions)
+    .where(sql`lower(${occasions.name}) = lower(${name})`)
+    .limit(1);
+  return row?.aiHint?.trim() ?? "";
 }

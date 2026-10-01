@@ -52,6 +52,7 @@ export type SortableOccasion = {
   name: string;
   description: string;
   emoji: string;
+  aiHint?: string;
   active: boolean;
   sortOrder: number;
 };
@@ -76,7 +77,9 @@ export default function AdminOccasionSortableGrid({ occasions }: { occasions: So
           </div>
           <h2>{occasion.name}</h2>
           <p>{occasion.description || "Aucune description"}</p>
-          <small>Ordre {context.index + 1}</small>
+          <small>
+            Ordre {context.index + 1} · {occasion.aiHint ? "Consigne IA définie" : "Aucune consigne IA"}
+          </small>
           <footer className="admin-style-actions">
             <Link className="admin-secondary-action admin-style-edit" href={`/admin/occasions/${occasion.id}`}>
               <Icon i="pencil" size={15} /> Modifier

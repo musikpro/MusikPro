@@ -33,10 +33,12 @@ function truncateAtWord(text: string, maxLength: number): string {
   return (lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated).trimEnd();
 }
 
-/** Texte d'ambiance envoyé à Musicful : « Nom (consigne IA) » si l'admin en a défini une, sinon le nom seul. */
+/**
+ * Texte d'ambiance envoyé à Musicful : la consigne IA (anglais) rédigée par le propriétaire REMPLACE le nom
+ * français ; sans consigne, repli sur le nom (comportement historique).
+ */
 export function buildMoodText(name: string, aiHint?: string | null): string {
-  const hint = aiHint?.trim();
-  return hint ? `${name} (${hint})` : name;
+  return aiHint?.trim() || name;
 }
 
 export function buildStylePrompt(
@@ -44,6 +46,8 @@ export function buildStylePrompt(
   description: string | null | undefined,
   mood: string,
   strictStyleAdherence: boolean,
+  /** Consigne IA (anglais) de l'occasion ; vide : rien n'est envoyé pour l'occasion. */
+  occasionHint = "",
 ): string {
   let base = genreName;
   if (description) {
@@ -53,7 +57,8 @@ export function buildStylePrompt(
   }
   // L'ambiance (nom + consigne IA éventuelle) et les directives sont toujours conservées : seule la
   // description du genre est tronquée pour rester sous la limite de Musicful.
-  const moodPart = mood ? ` — Ambiance : ${mood}` : "";
+  const occasionPart = occasionHint.trim() ? ` — Occasion : ${occasionHint.trim()}` : "";
+  const moodPart = (mood ? ` — Ambiance : ${mood}` : "") + occasionPart;
   const suffix = ` — ${PRODUCTION_DIRECTIVES}`;
   const budget = Math.max(0, MUSICFUL_STYLE_MAX_LENGTH - suffix.length - moodPart.length);
   return `${truncateAtWord(base, budget)}${moodPart}${suffix}`;

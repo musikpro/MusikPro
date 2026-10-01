@@ -7,8 +7,8 @@ export type MoodOption = {
   slug: string;
   description: string;
   emoji: string;
-  /** Consigne envoyée à Musicful (jamais montrée au client). */
-  aiHint: string;
+  /** Consigne envoyée à Musicful : lue côté serveur uniquement (jamais transmise au navigateur du client). */
+  aiHint?: string;
   translations?: CatalogTranslations | null;
 };
 
