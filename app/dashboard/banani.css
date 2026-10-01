@@ -421,7 +421,8 @@
 /* Sticky, blurred nav bar — a soft shadow marks the separation from the content scrolling under it */
 .landing-page .landing-nav {
   position: sticky;
-  top: 0;
+  /* sous la barre d'état de l'app native (voir --native-top-inset dans globals.css) */
+  top: var(--native-top-inset, 0px);
   z-index: 40;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
