@@ -19,10 +19,9 @@ export async function nativeGoogleIdToken(webClientId: string): Promise<string> 
   const { SocialLogin } = await import("@capgo/capacitor-social-login");
   await SocialLogin.initialize({ google: { webClientId, mode: "online" } });
   try {
-    const login = await SocialLogin.login({
-      provider: "google",
-      options: { scopes: ["email", "profile"] },
-    });
+    // Pas de `scopes` : le plugin les refuse sans modifier MainActivity ; il ajoute déjà e-mail, profil et
+    // openid par défaut, donc l'idToken contient ce qu'il faut.
+    const login = await SocialLogin.login({ provider: "google", options: {} });
     const result = login.result as { idToken?: string | null } | undefined;
     if (!result?.idToken) throw new Error("Jeton Google manquant");
     return result.idToken;
