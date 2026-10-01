@@ -3205,6 +3205,13 @@
   padding: 9px 18px;
 }
 
+.admin-store-links-form .admin-field-hint {
+  margin: -4px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--admin-muted);
+}
+
 .admin-route-list,
 .admin-mapping-list {
   display: grid;

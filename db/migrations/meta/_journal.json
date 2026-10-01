@@ -393,6 +393,13 @@
       "when": 1790731901768,
       "tag": "0055_trending_cover_overrides",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1790822570657,
+      "tag": "0056_store_buttons_hide_in_app",
+      "breakpoints": true
     }
   ]
 }

@@ -14,11 +14,13 @@ export async function setStoreLinks(_previous: AdminActionState, formData: FormD
     const parsed = setStoreLinksSchema.parse({
       googlePlayUrl: formData.get("googlePlayUrl"),
       appStoreUrl: formData.get("appStoreUrl"),
+      hideInApp: formData.get("hideInApp"),
     });
     const db = getServiceDb();
     const fields = {
       googlePlayUrl: parsed.googlePlayUrl || null,
       appStoreUrl: parsed.appStoreUrl || null,
+      hideInApp: parsed.hideInApp,
       updatedBy: session.user.id,
       updatedAt: new Date(),
     };
@@ -31,7 +33,7 @@ export async function setStoreLinks(_previous: AdminActionState, formData: FormD
       actorId: session.user.id,
       targetType: "mobile_store_links",
       targetId: "global",
-      metadata: { googlePlayUrl: fields.googlePlayUrl, appStoreUrl: fields.appStoreUrl },
+      metadata: { googlePlayUrl: fields.googlePlayUrl, appStoreUrl: fields.appStoreUrl, hideInApp: fields.hideInApp },
     });
     revalidatePath("/admin/mobile-apps");
     revalidatePath("/dashboard", "layout");

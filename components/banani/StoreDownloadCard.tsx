@@ -1,6 +1,8 @@
 "use client";
 
+import { useSyncExternalStore } from "react";
 import { useDemo } from "./DemoProvider";
+import { isNativeMobileApp } from "@/lib/mobile/native-runtime";
 import { translate as t } from "@/lib/i18n/translate";
 
 export function GooglePlayLogo() {
@@ -25,6 +27,20 @@ export function AppleLogo() {
   );
 }
 
+const subscribeNever = () => () => {};
+
+/**
+ * Vrai uniquement dans l'application native (Capacitor) quand le propriétaire a choisi de masquer les
+ * boutons des stores (/admin/mobile-apps, masqué par défaut). Sur le web — mobile ou ordinateur — la
+ * valeur reste toujours fausse : les boutons ne sont jamais masqués. Rendu serveur = faux, donc pas
+ * d'écart d'hydratation ; le masquage s'applique dès l'hydratation dans l'application.
+ */
+export function useHideStoreButtons(): boolean {
+  const { storeLinks } = useDemo();
+  const native = useSyncExternalStore(subscribeNever, isNativeMobileApp, () => false);
+  return native && storeLinks.hideInApp;
+}
+
 /**
  * The Google Play / App Store buttons, shared by the dashboard card and the mobile drawer. With a
  * store link configured (/admin store links) they open it in a new tab; without one they say the
@@ -32,12 +48,26 @@ export function AppleLogo() {
  */
 export function StoreBadges({ className = "musik-store-actions" }: { className?: string }) {
   const demo = useDemo();
+  const hidden = useHideStoreButtons();
   const unavailable = () => demo.notify("L’application MusikPro sera bientôt disponible sur les stores.");
   const { googlePlayUrl, appStoreUrl } = demo.storeLinks;
   const stores = [
-    { url: googlePlayUrl, logo: <GooglePlayLogo />, label: "Télécharger MusikPro sur Google Play", small: "Disponible sur", name: "Google Play" },
-    { url: appStoreUrl, logo: <AppleLogo />, label: "Télécharger MusikPro sur l’App Store", small: "Télécharger dans", name: "l’App Store" },
+    {
+      url: googlePlayUrl,
+      logo: <GooglePlayLogo />,
+      label: "Télécharger MusikPro sur Google Play",
+      small: "Disponible sur",
+      name: "Google Play",
+    },
+    {
+      url: appStoreUrl,
+      logo: <AppleLogo />,
+      label: "Télécharger MusikPro sur l’App Store",
+      small: "Télécharger dans",
+      name: "l’App Store",
+    },
   ];
+  if (hidden) return null;
   return (
     <div className={className}>
       {stores.map((store) => {
@@ -65,6 +95,8 @@ export function StoreBadges({ className = "musik-store-actions" }: { className?:
 }
 
 export default function StoreDownloadCard({ compact = false }: { compact?: boolean }) {
+  const hidden = useHideStoreButtons();
+  if (hidden) return null;
   return (
     <section className={`musik-store-card ${compact ? "musik-store-card-compact" : ""}`}>
       <h2>{t("Télécharger l’application MusikPro")}</h2>

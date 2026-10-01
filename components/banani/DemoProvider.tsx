@@ -73,7 +73,7 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
 }
 
 type DemoProfile = { name: string; email: string; location: string };
-type StoreLinks = { googlePlayUrl: string | null; appStoreUrl: string | null };
+type StoreLinks = { googlePlayUrl: string | null; appStoreUrl: string | null; hideInApp: boolean };
 
 function useDemoState(
   mode: "demo" | "real",
@@ -950,7 +950,7 @@ export function DemoProvider({
   initialPhonePrefixes,
   initialDetectedCurrency,
   initialCurrencies = DEFAULT_CURRENCIES,
-  storeLinks = { googlePlayUrl: null, appStoreUrl: null },
+  storeLinks = { googlePlayUrl: null, appStoreUrl: null, hideInApp: true },
 }: {
   children: ReactNode;
   mode: "demo" | "real";
