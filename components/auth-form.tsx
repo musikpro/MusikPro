@@ -134,8 +134,10 @@ export function AuthForm({
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
         if (native?.error) throw new Error(native.error.message || "Connexion Google impossible");
-        router.push("/auth/continue");
-        router.refresh();
+        // Navigation complète plutôt que router.push + router.refresh : /auth/continue est une page
+        // serveur qui redirige ; en WebView sur un vrai téléphone, les deux navigations client se
+        // télescopaient et laissaient une page blanche tant que l'application n'était pas relancée.
+        window.location.assign(new URL("/auth/continue", window.location.origin).toString());
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
         if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || "Connexion Google impossible");
