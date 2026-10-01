@@ -72,6 +72,9 @@ export function buildVocalHint(language: string, voice: string): string {
   return [voicePart, languagePart ? `sung in ${languagePart}` : ""].filter(Boolean).join(", ");
 }
 
+const STRICT_STYLE_SENTENCE =
+  " Faithfully respect the authentic rhythmic, instrumental and vocal codes of this specific musical style, without drifting toward a more generic genre.";
+
 export function buildStylePrompt(
   genreName: string,
   description: string | null | undefined,
@@ -82,21 +85,24 @@ export function buildStylePrompt(
   /** Consigne vocale en anglais (voix + langue chantée) ; vide : rien n'est ajouté. */
   vocalHint = "",
 ): string {
-  let base = genreName;
   // Le champ « Consigne IA » commence par « Nom du style : » : le nom est déjà envoyé en tête,
   // on retire donc ce préfixe pour ne pas le répéter.
   if (description) description = stripStyleNamePrefix(description, genreName);
-  if (description) {
-    base = strictStyleAdherence
-      ? `${genreName} (${description}). Faithfully respect the authentic rhythmic, instrumental and vocal codes of this specific musical style, without drifting toward a more generic genre.`
-      : `${genreName} — ${description}`;
-  }
-  // L'ambiance (nom + consigne IA éventuelle) et les directives sont toujours conservées : seule la
-  // description du genre est tronquée pour rester sous la limite de Musicful.
+  // L'ambiance (nom + consigne IA éventuelle), la consigne vocale et les directives sont toujours conservées :
+  // seule la description du genre est tronquée pour rester sous la limite de Musicful.
   const occasionPart = occasionHint.trim() ? ` — Occasion: ${occasionHint.trim()}` : "";
   const vocalPart = vocalHint.trim() ? ` — Vocals: ${vocalHint.trim()}` : "";
   const moodPart = (mood ? ` — Mood: ${mood}` : "") + occasionPart + vocalPart;
   const suffix = ` — ${PRODUCTION_DIRECTIVES}`;
   const budget = Math.max(0, MUSICFUL_STYLE_MAX_LENGTH - suffix.length - moodPart.length);
+  let base = genreName;
+  if (description && strictStyleAdherence) {
+    // La phrase de rigueur reste entière : on raccourcit la description, jamais cette phrase.
+    const head = `${genreName} (`;
+    const tail = `).${STRICT_STYLE_SENTENCE}`;
+    base = `${head}${truncateAtWord(description, Math.max(0, budget - head.length - tail.length))}${tail}`;
+  } else if (description) {
+    base = `${genreName} — ${description}`;
+  }
   return `${truncateAtWord(base, budget)}${moodPart}${suffix}`;
 }
