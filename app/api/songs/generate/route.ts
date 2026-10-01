@@ -9,6 +9,7 @@ import { buildVocalHint, resolveStylePrompt } from "@/lib/ai/style-prompt";
 import { submitSongGeneration } from "@/lib/ai/songs";
 import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
+import { recordSongGroupCharge } from "@/lib/credits/generation-refund";
 import { deductCredits, refundCredits } from "@/lib/credits/service";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 import { hasAppRole } from "@/lib/auth/permissions";
@@ -141,6 +142,8 @@ export async function POST(request: Request) {
         { status: 502 },
       );
     }
+    // Génération réellement partie : on note le débit pour pouvoir rendre les crédits si elle échoue ensuite.
+    if (!bypassActive) await recordSongGroupCharge(session.user.id, songGroupId, CREDITS_PER_GENERATION);
     await writeAuditLog({
       action: "musicful.generation.submitted",
       actorId: session.user.id,

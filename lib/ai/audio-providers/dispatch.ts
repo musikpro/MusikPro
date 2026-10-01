@@ -4,6 +4,7 @@ import { getServiceDb } from "@/db";
 import { musicGenerationJobs } from "@/db/schema";
 import { createLogger } from "@/lib/observability/logger";
 import { writeAuditLog } from "@/lib/security/audit";
+import { refundSongGroupIfFailed } from "@/lib/credits/generation-refund";
 import { getAudioProviderConfig } from "../musicful";
 import { ensureVerifiedMp3, getJobForUser, pollMusicJob, submitSongGroupJobs, type Mp3Resolution } from "../music-jobs";
 import { getAudioProviderDefinition } from "./catalog";
@@ -122,6 +123,13 @@ export async function submitSongGroupJobsForProvider(jobIds: string[]): Promise<
 
 /** Advances one job by polling the provider it belongs to (Musicful path unchanged). */
 export async function pollJobForProvider(jobId: string, userId: string) {
+  const job = await advanceJobForProvider(jobId, userId);
+  // Échec définitif de toutes les versions du groupe : les crédits débités sont rendus (une seule fois).
+  if (job.status === "failed") await refundSongGroupIfFailed(userId, job.songGroupId);
+  return job;
+}
+
+async function advanceJobForProvider(jobId: string, userId: string) {
   const job = await getJobForUser(jobId, userId);
   if (getAudioProviderDefinition(job.provider).id === "musicful") return pollMusicJob(jobId, userId);
   if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId)

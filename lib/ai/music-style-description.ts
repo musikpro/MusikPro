@@ -3,13 +3,17 @@ import type { MusicStyleDescriptionRequest } from "@/lib/validation/ai";
 import { getLyricsProvider } from "./provider";
 import { runProviderTextTask } from "./text-generation";
 import { moderateText } from "./moderation";
+import { STYLE_AI_DESCRIPTION_MAX_LENGTH } from "./style-prompt-builder";
 import { writeAuditLog } from "@/lib/security/audit";
 
 const SYSTEM_INSTRUCTIONS =
   "Tu es l'assistant éditorial de MusikPro, un SaaS qui génère des chansons personnalisées. Retourne uniquement le texte final demandé, sans commentaire, sans guillemets et sans balise Markdown.";
 
 /** Mirrors the DB/Zod limits (musicStyleFormSchema in app/admin/music-styles/actions.ts) — the model is asked to stay under this, and the result is still clamped server-side below since an LLM can't be trusted to respect an exact character count. */
-const MAX_LENGTH: Record<MusicStyleDescriptionRequest["kind"], number> = { client: 240, ai: 600 };
+const MAX_LENGTH: Record<MusicStyleDescriptionRequest["kind"], number> = {
+  client: 240,
+  ai: STYLE_AI_DESCRIPTION_MAX_LENGTH,
+};
 
 function clampToLength(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
@@ -36,6 +40,29 @@ function stripLeadingStyleName(text: string, styleName: string): string {
   return text.replace(new RegExp(`^\\s*${escaped}\\s*[:\\-—]\\s*`, "i"), "").trim();
 }
 
+/** Place restante pour la description une fois « Nom : » écrit en tête du champ. */
+function aiBodyMax(styleName: string): number {
+  return Math.max(120, STYLE_AI_DESCRIPTION_MAX_LENGTH - styleName.trim().length - 2);
+}
+
+/** Cible demandée au modèle : un peu sous la limite, car il dépasse souvent le nombre de caractères annoncé. */
+function aiBodyTarget(styleName: string): number {
+  return Math.max(100, aiBodyMax(styleName) - 60);
+}
+
+/** Si le texte dépasse la limite, on le coupe à la fin de la dernière phrase complète plutôt qu'en plein mot. */
+function clampToSentence(text: string, maxLength: number): string {
+  if (text.length <= maxLength) return text;
+  const head = text.slice(0, maxLength);
+  const lastStop = Math.max(head.lastIndexOf(". "), head.lastIndexOf(" | "));
+  if (lastStop > maxLength * 0.6)
+    return head
+      .slice(0, lastStop + 1)
+      .replace(/\s*\|$/, "")
+      .trim();
+  return clampToLength(text, maxLength);
+}
+
 function promptFor(input: MusicStyleDescriptionRequest) {
   const reference = input.otherDescription
     ? ` Pour référence, voici l'autre description déjà rédigée pour ce style : "${input.otherDescription}".`
@@ -51,9 +78,9 @@ function promptFor(input: MusicStyleDescriptionRequest) {
   }
   return (
     `Musical style: "${input.styleName}".${reference}\n` +
-    "Write the instruction in ENGLISH ONLY (never French), maximum 600 characters, meant to guide a music-generation AI (Musicful) so it faithfully respects the authentic codes of this style. " +
+    `Write the instruction in ENGLISH ONLY (never French), maximum ${aiBodyTarget(input.styleName)} characters, meant to guide a music-generation AI (Musicful) so it faithfully respects the authentic codes of this style. ` +
     "ALWAYS cover, in this order, the model recommended by Musicful: BPM (approximate tempo) + rhythm + percussion + bass + instruments + structure (verse/chorus/bridge...) + vocal type + backing vocals + energy + mood + regional characteristics. " +
-    "Keep each of these eleven elements VERY concise (a few words each, short phrases) so the whole text fits in 600 characters without being cut. " +
+    `Keep each of these eleven elements VERY concise (a few words each, short phrases) so the whole text fits in ${aiBodyTarget(input.styleName)} characters without being cut. ` +
     'For regional characteristics: if the style has a recognisable local or regional origin (country, region or continent), state it explicitly (e.g. "Ivorian music" or "African rhythm"); if the style is international/generic, do not invent an origin. ' +
     "Be concrete and specific, avoid generalities. Return only the English text, without repeating the style name."
   );
@@ -64,7 +91,10 @@ export async function generateMusicStyleDescription(input: MusicStyleDescription
   if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");
 
   const raw = await runProviderTextTask(provider, SYSTEM_INSTRUCTIONS, promptFor(input));
-  const lengthClamped = clampToLength(raw.text, MAX_LENGTH[input.kind]);
+  const lengthClamped =
+    input.kind === "ai"
+      ? clampToSentence(raw.text, aiBodyMax(input.styleName))
+      : clampToLength(raw.text, MAX_LENGTH.client);
   // Consigne IA : « Nom du style : » suivi directement de la description, sur une seule ligne (même champ).
   const text =
     input.kind === "client"

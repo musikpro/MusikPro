@@ -39,7 +39,10 @@ async function setListed(request: Request, ctx: Ctx, listed: boolean) {
   if (listed) {
     const restored = await restoreDiscoverSong(parsedId.data, false);
     if (!restored)
-      return NextResponse.json({ error: "Cette chanson a été retirée de Découvrir par l’équipe MusikPro." }, { status: 403 });
+      return NextResponse.json(
+        { error: "Cette chanson a été retirée de Découvrir par l’équipe MusikPro." },
+        { status: 403 },
+      );
   } else {
     await hideDiscoverSong(parsedId.data, "owner");
   }

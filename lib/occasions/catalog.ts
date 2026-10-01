@@ -63,7 +63,7 @@ export const OCCASION_EMOJI_OPTIONS = [
 ] as const;
 
 /** Longueur maximale de la consigne IA : elle fait partie du champ `style` de Musicful (1 000 caractères au total). */
-export const OCCASION_AI_HINT_MAX_LENGTH = 150;
+export const OCCASION_AI_HINT_MAX_LENGTH = 70;
 
 export type OccasionEmoji = (typeof OCCASION_EMOJI_OPTIONS)[number]["value"];
 

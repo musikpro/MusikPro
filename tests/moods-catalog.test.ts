@@ -6,7 +6,9 @@ import {
   buildStylePrompt,
   buildVocalHint,
   MUSICFUL_STYLE_MAX_LENGTH,
+  STYLE_AI_DESCRIPTION_MAX_LENGTH,
 } from "@/lib/ai/style-prompt-builder";
+import { OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
 import { DEFAULT_MOODS, MOOD_AI_HINT_MAX_LENGTH, isMoodEmoji } from "@/lib/moods/catalog";
 import { moodFormSchema, reorderMoodsSchema, slugifyMood, toggleMoodSchema } from "@/lib/validation/moods";
 
@@ -120,9 +122,15 @@ describe("prompt Musicful avec consigne d'occasion", () => {
   });
 
   it("ne dépasse jamais la limite de Musicful avec ambiance, occasion et très longue description de genre", () => {
-    const prompt = buildStylePrompt("Amapiano", "d ".repeat(900), "m".repeat(150), true, "o".repeat(150));
+    const prompt = buildStylePrompt(
+      "Amapiano",
+      "d ".repeat(900),
+      "m".repeat(MOOD_AI_HINT_MAX_LENGTH),
+      true,
+      "o".repeat(OCCASION_AI_HINT_MAX_LENGTH),
+    );
     expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
-    expect(prompt).toContain("Occasion: " + "o".repeat(150));
+    expect(prompt).toContain("Occasion: " + "o".repeat(OCCASION_AI_HINT_MAX_LENGTH));
     expect(prompt).toContain("End the song with a natural outro");
   });
 });
@@ -195,9 +203,9 @@ describe("consigne vocale (voix + langue) en anglais", () => {
     const prompt = buildStylePrompt(
       "Amapiano",
       "d ".repeat(900),
-      "m".repeat(150),
+      "m".repeat(MOOD_AI_HINT_MAX_LENGTH),
       true,
-      "o".repeat(150),
+      "o".repeat(OCCASION_AI_HINT_MAX_LENGTH),
       "male and female duet vocals, sung in French",
     );
     expect(prompt).toContain("Vocals: male and female duet vocals, sung in French");
@@ -212,7 +220,7 @@ describe("mode strict : la phrase de rigueur n'est jamais coupée", () => {
       "d ".repeat(400),
       "joyful, fun, cheerful, feel-good, bright",
       true,
-      "o".repeat(150),
+      "o".repeat(OCCASION_AI_HINT_MAX_LENGTH),
       "male and female duet vocals, sung in French",
     );
     expect(prompt).toContain("without drifting toward a more generic genre.");
@@ -235,5 +243,62 @@ describe("régression production : une consigne de style réelle n'est pas tronq
     expect(prompt).toContain("Origins: USA (Memphis, Motown, New Orleans)");
     expect(prompt).toContain("without drifting toward a more generic genre.");
     expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
+  });
+});
+
+describe("limites de longueur : rien n'est tronqué même au maximum", () => {
+  it("le pire cas (nom de 60 caractères, consigne, ambiance, occasion et voix au maximum) tient dans Musicful sans coupure", () => {
+    const name = "N".repeat(60);
+    const description = `${name}: ${"w".repeat(STYLE_AI_DESCRIPTION_MAX_LENGTH - name.length - 2)}`;
+    const prompt = buildStylePrompt(
+      name,
+      description,
+      "m".repeat(MOOD_AI_HINT_MAX_LENGTH),
+      true,
+      "o".repeat(OCCASION_AI_HINT_MAX_LENGTH),
+      buildVocalHint("Français", "Duo"),
+    );
+    expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
+    expect(prompt).toContain("w".repeat(STYLE_AI_DESCRIPTION_MAX_LENGTH - name.length - 2));
+    expect(prompt).toContain("without drifting toward a more generic genre.");
+  });
+});
+
+describe("migration 0061 (remboursement des générations échouées + limites de style)", () => {
+  const sql = readFileSync(
+    path.resolve(__dirname, "../db/migrations/0061_refund_failed_generation_and_style_limits.sql"),
+    "utf8",
+  );
+
+  it("ajoute les colonnes de façon idempotente", () => {
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS "credits_charged"');
+    expect(sql).toContain('ADD COLUMN IF NOT EXISTS "credits_refunded_at"');
+  });
+
+  it("ne raccourcit que les consignes de style qui dépassent la limite, en restant dans la limite", () => {
+    const updates = sql.split("\n").filter((line) => line.startsWith("UPDATE"));
+    expect(updates.length).toBe(5);
+    for (const line of updates) expect(line).toContain(`length("ai_description") > ${STYLE_AI_DESCRIPTION_MAX_LENGTH}`);
+    for (const match of sql.matchAll(/SET "ai_description" = '((?:[^']|'')*)'/g)) {
+      expect(match[1].length).toBeLessThanOrEqual(STYLE_AI_DESCRIPTION_MAX_LENGTH);
+    }
+  });
+});
+
+describe("remboursement automatique d'une génération échouée", () => {
+  const source = readFileSync(path.resolve(__dirname, "../lib/credits/generation-refund.ts"), "utf8");
+
+  it("rembourse en une seule instruction atomique, uniquement si toutes les versions ont échoué et sans doublon", () => {
+    expect(source).toContain("credits_refunded_at IS NULL");
+    expect(source).toContain("credits_charged > 0");
+    expect(source).toContain("other.status NOT IN ('failed', 'cancelled')");
+    expect(source).toContain("UPDATE credits");
+  });
+
+  it("est branché sur le suivi des tâches et sur le lancement de la génération", () => {
+    const dispatch = readFileSync(path.resolve(__dirname, "../lib/ai/audio-providers/dispatch.ts"), "utf8");
+    expect(dispatch).toContain("refundSongGroupIfFailed(userId, job.songGroupId)");
+    const route = readFileSync(path.resolve(__dirname, "../app/api/songs/generate/route.ts"), "utf8");
+    expect(route).toContain("recordSongGroupCharge(session.user.id, songGroupId, CREDITS_PER_GENERATION)");
   });
 });

@@ -51,7 +51,8 @@ export function isMoodEmoji(value: string): boolean {
 }
 
 /** Longueur maximale de la consigne IA : l'ambiance fait partie du champ `style` de Musicful (1 000 caractères au total). */
-export const MOOD_AI_HINT_MAX_LENGTH = 150;
+/** Limites calées pour que ambiance + occasion + style + voix + directives tiennent dans les 1000 caractères de Musicful. */
+export const MOOD_AI_HINT_MAX_LENGTH = 70;
 
 /** Valeurs de départ (identiques à la migration 0057) : repli si la base est inaccessible en démo. */
 export const DEFAULT_MOODS: MoodOption[] = [

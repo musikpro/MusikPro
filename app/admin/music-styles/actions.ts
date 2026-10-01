@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { musicStyles } from "@/db/schema";
+import { STYLE_AI_DESCRIPTION_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
 import { requireAdmin } from "@/lib/auth/session";
 import { MUSIC_STYLE_ICONS, MUSIC_STYLE_TONES } from "@/lib/music-styles/catalog";
 import { writeAuditLog } from "@/lib/security/audit";
@@ -13,8 +14,12 @@ import { writeAuditLog } from "@/lib/security/audit";
 const musicStyleFormSchema = z.object({
   name: z.string().trim().min(2).max(60),
   description: z.string().trim().min(5).max(240),
-  // 600 caractères de consigne + « Nom du style : » (nom ≤ 60)
-  aiDescription: z.string().trim().max(680).optional().default(""),
+  aiDescription: z
+    .string()
+    .trim()
+    .max(STYLE_AI_DESCRIPTION_MAX_LENGTH, `${STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères maximum.`)
+    .optional()
+    .default(""),
   icon: z.enum(MUSIC_STYLE_ICONS),
   tone: z.enum(MUSIC_STYLE_TONES),
   active: z.enum(["true", "false"]),

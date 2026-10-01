@@ -20,11 +20,17 @@ const DISCOVER_SCAN_LIMIT = 800;
 
 export async function getDiscoverSettings(): Promise<DiscoverSettingsValue> {
   try {
-    const [row] = await getServiceDb().select().from(discoverSettings).where(eq(discoverSettings.id, "global")).limit(1);
+    const [row] = await getServiceDb()
+      .select()
+      .from(discoverSettings)
+      .where(eq(discoverSettings.id, "global"))
+      .limit(1);
     if (!row) return DEFAULT_DISCOVER_SETTINGS;
     return {
       enabled: row.enabled,
-      sortBy: (DISCOVER_SORT_OPTIONS as readonly string[]).includes(row.sortBy) ? (row.sortBy as DiscoverSettingsValue["sortBy"]) : "recent",
+      sortBy: (DISCOVER_SORT_OPTIONS as readonly string[]).includes(row.sortBy)
+        ? (row.sortBy as DiscoverSettingsValue["sortBy"])
+        : "recent",
       maxItems: Math.min(DISCOVER_MAX_ITEMS_MAX, Math.max(DISCOVER_MAX_ITEMS_MIN, row.maxItems)),
     };
   } catch {
@@ -123,7 +129,11 @@ export async function listDiscoverSongsForAdmin(limit = 100): Promise<AdminDisco
   const hiddenBy = new Map(hiddenRows.map((row) => [row.songGroupId, row.hiddenBy]));
   return groupIntoSongs(rows, null)
     .slice(0, limit)
-    .map((song) => ({ ...song, hidden: hiddenBy.has(song.songGroupId), hiddenBy: hiddenBy.get(song.songGroupId) ?? null }));
+    .map((song) => ({
+      ...song,
+      hidden: hiddenBy.has(song.songGroupId),
+      hiddenBy: hiddenBy.get(song.songGroupId) ?? null,
+    }));
 }
 
 export async function hideDiscoverSong(songGroupId: string, hiddenBy: "owner" | "admin"): Promise<void> {
@@ -140,7 +150,11 @@ export async function hideDiscoverSong(songGroupId: string, hiddenBy: "owner" | 
 /** Returns false when the song is hidden by an admin and the caller is not one. */
 export async function restoreDiscoverSong(songGroupId: string, byAdmin: boolean): Promise<boolean> {
   const database = getServiceDb();
-  const [row] = await database.select().from(discoverHiddenSongs).where(eq(discoverHiddenSongs.songGroupId, songGroupId)).limit(1);
+  const [row] = await database
+    .select()
+    .from(discoverHiddenSongs)
+    .where(eq(discoverHiddenSongs.songGroupId, songGroupId))
+    .limit(1);
   if (!row) return true;
   if (row.hiddenBy === "admin" && !byAdmin) return false;
   await database.delete(discoverHiddenSongs).where(inArray(discoverHiddenSongs.songGroupId, [songGroupId]));

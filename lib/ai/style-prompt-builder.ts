@@ -26,6 +26,13 @@ const PRODUCTION_DIRECTIVES =
  */
 export const MUSICFUL_STYLE_MAX_LENGTH = 1000;
 
+/**
+ * Longueur maximale (nom du style et « : » compris) de la consigne IA d'un style. Avec ambiance et occasion
+ * (70 chacune), voix, phrase de rigueur et directives, le pire cas tient alors dans MUSICFUL_STYLE_MAX_LENGTH :
+ * rien n'est tronqué (voir tests/moods-catalog.test.ts).
+ */
+export const STYLE_AI_DESCRIPTION_MAX_LENGTH = 420;
+
 function truncateAtWord(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   const truncated = text.slice(0, maxLength);

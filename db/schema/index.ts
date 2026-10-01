@@ -731,6 +731,10 @@ export const musicGenerationJobs = pgTable(
     versionLabel: text("version_label"),
     plays: integer("plays").notNull().default(0),
     liked: boolean("liked").notNull().default(false),
+    /** Crédits débités pour ce groupe de chansons (porté par une seule version) ; 0 = rien à rembourser (offert/admin). */
+    creditsCharged: integer("credits_charged").notNull().default(0),
+    /** Renseigné quand ces crédits ont été rendus après un échec complet : garantit un seul remboursement. */
+    creditsRefundedAt: timestamp("credits_refunded_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     startedAt: timestamp("started_at"),
     completedAt: timestamp("completed_at"),
