@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>MusikPro</title>
+<style>
+  :root { --bg: #fafaf7; --fg: #1a1a1a; --muted: #736a62; --brand: #fb5104; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #161513; --fg: #f4f1ec; --muted: #a79d93; } }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 14px; padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px));
+    text-align: center; }
+  .logo { width: 72px; height: 72px; border-radius: 20px; background: var(--brand); display: grid; place-items: center; }
+  .logo svg { width: 38px; height: 38px; fill: #fff; }
+  h1 { margin: 6px 0 0; font-size: 1.35rem; }
+  p { margin: 0; max-width: 20rem; line-height: 1.5; color: var(--muted); }
+  button { margin-top: 10px; border: 0; border-radius: 999px; padding: 14px 28px; font: inherit; font-weight: 600;
+    color: #fff; background: var(--brand); }
+  button:active { opacity: .85; }
+  .state { font-size: .85rem; min-height: 1.2em; }
+</style>
+</head>
+<body>
+<main>
+  <div class="logo" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M38 15v25.2a9.5 9.5 0 1 1-4-7.75V19.3l15 5.7v6.2l-11-4.15V15Z"/></svg></div>
+  <h1>Connexion impossible</h1>
+  <p>MusikPro n’arrive pas à charger. Vérifie ta connexion internet : l’application se relance toute seule dès qu’elle revient.</p>
+  <button id="retry" type="button">Réessayer</button>
+  <div class="state" id="state" role="status" aria-live="polite"></div>
+</main>
+<script>
+  // Page de secours locale (Capacitor server.errorPath) : affichée quand le site hébergé ne se charge pas,
+  // au lieu d'un écran noir figé. Relance automatiquement dès que le site répond.
+  var SITE = "https://musikpro.net/";
+  var state = document.getElementById("state");
+  // Recharge le site dès que le navigateur se déclare en ligne. Si le site reste injoignable, Capacitor
+  // réaffiche cette page (errorPath) : on espace donc les tentatives automatiques.
+  function go() { window.location.replace(SITE); }
+  function retry(manual) {
+    if (manual) state.textContent = "Nouvelle tentative…";
+    if (navigator.onLine === false) {
+      if (manual) state.textContent = "Toujours pas de connexion.";
+      return;
+    }
+    go();
+  }
+  document.getElementById("retry").addEventListener("click", function () { retry(true); });
+  window.addEventListener("online", function () { retry(false); });
+  setInterval(function () { retry(false); }, 6000);
+</script>
+</body>
+</html>

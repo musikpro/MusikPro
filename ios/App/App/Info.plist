@@ -45,6 +45,10 @@
 	</dict>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>MusikPro utilise le microphone pour transcrire ton histoire quand tu parles au lieu d’écrire.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>MusikPro utilise l’appareil photo pour que tu puisses prendre une photo comme pochette de ta chanson.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MusikPro accède à tes photos pour que tu puisses choisir l’image de la pochette de ta chanson.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>MusikPro transforme ta voix en texte pour décrire la chanson que tu veux créer.</string>
 	<key>UILaunchStoryboardName</key>

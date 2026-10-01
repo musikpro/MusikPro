@@ -38,6 +38,12 @@
     <!-- Le micro n'est pas indispensable : l'application reste installable sur un appareil sans micro. -->
     <uses-feature android:name="android.hardware.microphone" android:required="false" />
 
+    <!-- Pochette de chanson : choisir une image dans la galerie ou en prendre une avec l'appareil photo. -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <!-- Android 11+ : permet à la WebView de trouver le service de reconnaissance vocale du téléphone. -->
     <queries>
         <intent>
