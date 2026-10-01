@@ -9,8 +9,8 @@ describe("Musicful prompt guidance: natural ending + variant diversity", () => {
   it("asks Musicful for a fade-out ending and a musically distinct pair in every style prompt", async () => {
     const source = await fs.readFile("lib/ai/style-prompt-builder.ts", "utf8");
     expect(source).toContain("fade-out");
-    expect(source).toContain("sans coupure brutale");
-    expect(source).toContain("nettement distincts");
+    expect(source).toContain("no abrupt cut");
+    expect(source).toContain("clearly distinct");
     // Applied unconditionally (not only when a catalog aiDescription or mood is set), and always
     // kept intact by truncating the (possibly long) description first — see MUSICFUL_STYLE_MAX_LENGTH.
     expect(source).toContain("const suffix = ` — ${PRODUCTION_DIRECTIVES}`;");

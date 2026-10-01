@@ -96,9 +96,9 @@ describe("prompt Musicful avec ambiance", () => {
   it("conserve l'ambiance et les directives quand la description du genre est tronquée", () => {
     const mood = buildMoodText("Nostalgique", "nostalgic, warm, bittersweet");
     const prompt = buildStylePrompt("Amapiano", "d ".repeat(900), mood, true);
-    expect(prompt).toContain("Ambiance : nostalgic, warm, bittersweet");
+    expect(prompt).toContain("Mood: nostalgic, warm, bittersweet");
     expect(prompt).not.toContain("Nostalgique");
-    expect(prompt).toContain("Termine la chanson par un outro naturel");
+    expect(prompt).toContain("End the song with a natural outro");
   });
 });
 
@@ -110,15 +110,15 @@ describe("prompt Musicful avec consigne d'occasion", () => {
 
   it("n'envoie que la consigne anglaise de l'occasion", () => {
     const prompt = buildStylePrompt("Zouglou", null, "romantic", true, "birthday celebration, joyful");
-    expect(prompt).toContain("Occasion : birthday celebration, joyful");
+    expect(prompt).toContain("Occasion: birthday celebration, joyful");
     expect(prompt).not.toContain("Anniversaire");
   });
 
   it("ne dépasse jamais la limite de Musicful avec ambiance, occasion et très longue description de genre", () => {
     const prompt = buildStylePrompt("Amapiano", "d ".repeat(900), "m".repeat(150), true, "o".repeat(150));
     expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
-    expect(prompt).toContain("Occasion : " + "o".repeat(150));
-    expect(prompt).toContain("Termine la chanson par un outro naturel");
+    expect(prompt).toContain("Occasion: " + "o".repeat(150));
+    expect(prompt).toContain("End the song with a natural outro");
   });
 });
 
@@ -135,6 +135,26 @@ describe("migration 0058 (consignes d'occasion)", () => {
   it("garde chaque consigne de départ dans la limite", () => {
     for (const match of sql.matchAll(/SET "ai_hint" = '([^']*)'/g)) {
       expect(match[1].length).toBeLessThanOrEqual(150);
+    }
+  });
+});
+
+describe("migration 0059 (consignes de style en anglais)", () => {
+  const sql = readFileSync(
+    path.resolve(__dirname, "../db/migrations/0059_music_styles_english_ai_description.sql"),
+    "utf8",
+  );
+  const updates = sql.split("\n").filter((line) => line.startsWith("UPDATE"));
+
+  it("ne remplace que les consignes encore en français (accents), jamais une consigne anglaise déjà saisie", () => {
+    expect(updates.length).toBe(12);
+    for (const line of updates) expect(line).toContain(`"ai_description" ~ '[^\\x01-\\x7F]'`);
+  });
+
+  it("garde chaque consigne anglaise dans la limite de 600 caractères et sans accent", () => {
+    for (const match of sql.matchAll(/SET "ai_description" = '((?:[^']|'')*)'/g)) {
+      expect(match[1].length).toBeLessThanOrEqual(600);
+      expect(/^[\x00-\x7F]*$/.test(match[1])).toBe(true);
     }
   });
 });

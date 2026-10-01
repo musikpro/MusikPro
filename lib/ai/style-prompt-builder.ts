@@ -13,7 +13,7 @@
  * Best-effort prompt guidance, not a guaranteed platform-level control.
  */
 const PRODUCTION_DIRECTIVES =
-  "Termine la chanson par un outro naturel : la mélodie et les instruments diminuent progressivement (fade-out) sur les dernières secondes, sans coupure brutale. Les deux interprétations générées pour cette demande doivent avoir des mélodies, arrangements et tempos nettement distincts l'un de l'autre, tout en respectant fidèlement ce style musical et ces paroles.";
+  "End the song with a natural outro: the melody and instruments gradually fade out (fade-out) over the last seconds, with no abrupt cut. The two versions generated for this request must have clearly distinct melodies, arrangements and tempos, while faithfully respecting this musical style and these lyrics.";
 
 /**
  * Musicful's "Style of Music" field is capped at 1,000 characters (confirmed in Musicful's own
@@ -52,13 +52,13 @@ export function buildStylePrompt(
   let base = genreName;
   if (description) {
     base = strictStyleAdherence
-      ? `${genreName} (${description}). Respecte fidèlement les codes rythmiques, instrumentaux et vocaux authentiques de ce style musical précis, sans dériver vers un genre plus générique.`
+      ? `${genreName} (${description}). Faithfully respect the authentic rhythmic, instrumental and vocal codes of this specific musical style, without drifting toward a more generic genre.`
       : `${genreName} — ${description}`;
   }
   // L'ambiance (nom + consigne IA éventuelle) et les directives sont toujours conservées : seule la
   // description du genre est tronquée pour rester sous la limite de Musicful.
-  const occasionPart = occasionHint.trim() ? ` — Occasion : ${occasionHint.trim()}` : "";
-  const moodPart = (mood ? ` — Ambiance : ${mood}` : "") + occasionPart;
+  const occasionPart = occasionHint.trim() ? ` — Occasion: ${occasionHint.trim()}` : "";
+  const moodPart = (mood ? ` — Mood: ${mood}` : "") + occasionPart;
   const suffix = ` — ${PRODUCTION_DIRECTIVES}`;
   const budget = Math.max(0, MUSICFUL_STYLE_MAX_LENGTH - suffix.length - moodPart.length);
   return `${truncateAtWord(base, budget)}${moodPart}${suffix}`;

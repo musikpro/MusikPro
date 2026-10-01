@@ -44,12 +44,12 @@ function promptFor(input: MusicStyleDescriptionRequest) {
     );
   }
   return (
-    `Style musical : "${input.styleName}".${reference}\n` +
-    "Rédige une description technique et précise (600 caractères maximum) destinée à guider une IA de génération musicale (Musicful) afin qu'elle respecte fidèlement les codes authentiques de ce style. " +
-    "Structure IMPÉRATIVEMENT la description en couvrant, dans cet ordre, ce modèle recommandé par Musicful — ne rédige jamais la description au hasard, base-toi toujours sur ce modèle : BPM (tempo approximatif) + rythme + percussions + basse + instruments + structure (couplet/refrain/pont…) + type de voix + chœurs + énergie + ambiance + caractéristiques régionales. " +
-    "Formule ces onze éléments de façon TRÈS concise (quelques mots chacun, phrases courtes) pour que la description tienne intégralement dans la limite de 600 caractères sans être coupée — mieux vaut chaque point bref que certains points manquants. " +
-    "Pour les caractéristiques régionales : si ce style est rattaché à une origine locale ou régionale reconnaissable (un pays, une région ou un continent), précise explicitement cette origine (par exemple « musique ivoirienne » ou « rythme africain ») afin que l'IA génératrice de musique respecte l'authenticité culturelle du style. Si le style est international/générique sans origine locale marquée, n'invente pas d'origine. " +
-    "Sois concret et spécifique, évite les généralités."
+    `Musical style: "${input.styleName}".${reference}\n` +
+    "Write the instruction in ENGLISH ONLY (never French), maximum 600 characters, meant to guide a music-generation AI (Musicful) so it faithfully respects the authentic codes of this style. " +
+    "ALWAYS cover, in this order, the model recommended by Musicful: BPM (approximate tempo) + rhythm + percussion + bass + instruments + structure (verse/chorus/bridge...) + vocal type + backing vocals + energy + mood + regional characteristics. " +
+    "Keep each of these eleven elements VERY concise (a few words each, short phrases) so the whole text fits in 600 characters without being cut. " +
+    'For regional characteristics: if the style has a recognisable local or regional origin (country, region or continent), state it explicitly (e.g. "Ivorian music" or "African rhythm"); if the style is international/generic, do not invent an origin. ' +
+    "Be concrete and specific, avoid generalities. Return only the English text."
   );
 }
 
