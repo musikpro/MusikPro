@@ -6,6 +6,7 @@ import {
   writeStoredMutePreference,
   resolveAutoplayOutcome,
   isFatalAudioError,
+  ambientGain,
 } from "@/lib/demo/ambient-player-logic";
 
 describe("shouldShowAmbientBar", () => {
@@ -95,5 +96,23 @@ describe("isFatalAudioError", () => {
   it("traite l'absence de code d'erreur comme fatale (par prudence)", () => {
     expect(isFatalAudioError(null)).toBe(true);
     expect(isFatalAudioError(undefined)).toBe(true);
+  });
+});
+
+describe("ambientGain — courbe de volume perceptuelle", () => {
+  it("garde le même gain qu'avant au maximum (50 % → 0,5)", () => {
+    expect(ambientGain(50)).toBeCloseTo(0.5, 5);
+  });
+
+  it("baisse plus vite que linéaire : 5 % est bien plus discret que 0,05", () => {
+    expect(ambientGain(5)).toBeLessThan(0.01);
+    expect(ambientGain(5)).toBeLessThan(5 / 100);
+  });
+
+  it("est croissant et borné entre 1 % et 50 %", () => {
+    expect(ambientGain(1)).toBeGreaterThan(0);
+    expect(ambientGain(10)).toBeGreaterThan(ambientGain(5));
+    expect(ambientGain(0)).toBe(ambientGain(1));
+    expect(ambientGain(100)).toBe(ambientGain(50));
   });
 });

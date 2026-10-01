@@ -88,8 +88,8 @@ export default function AmbientMusicPanel({
         <div>
           <h2>Musique d&apos;ambiance du tableau de bord</h2>
           <p>
-            Jouée automatiquement, à faible volume, sur l&apos;écran d&apos;accueil du tableau de bord (démo publique
-            et comptes réels). Elle s&apos;arrête dès que la personne quitte l&apos;accueil.
+            Jouée automatiquement, à faible volume, sur l&apos;écran d&apos;accueil du tableau de bord (démo publique et
+            comptes réels). Elle s&apos;arrête dès que la personne quitte l&apos;accueil.
           </p>
         </div>
         <span className={`admin-status ${status.enabled ? "is-success" : "is-pending"}`}>
@@ -121,7 +121,12 @@ export default function AmbientMusicPanel({
                 })),
               ]}
             />
-            <button type="button" className="admin-secondary-action" disabled={!selectedSong?.audioUrl} onClick={togglePlay}>
+            <button
+              type="button"
+              className="admin-secondary-action"
+              disabled={!selectedSong?.audioUrl}
+              onClick={togglePlay}
+            >
               <Icon i={playing ? "pause" : "play"} size={15} />
               {playing ? "Pause" : "Lecture"}
             </button>
@@ -171,20 +176,22 @@ export default function AmbientMusicPanel({
             </button>
           </div>
           <small>
-            Seules les {songs.length} générations les plus récentes apparaissent dans la liste ci-dessus — le
-            catalogue peut en contenir bien plus ; pour une chanson plus ancienne, copie son identifiant depuis
-            « Générations » et colle-le ici.
+            Seules les {songs.length} générations les plus récentes apparaissent dans la liste ci-dessus — le catalogue
+            peut en contenir bien plus ; pour une chanson plus ancienne, copie son identifiant depuis « Générations » et
+            colle-le ici.
           </small>
-          {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
+          {idLookupError ? (
+            <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p>
+          ) : null}
         </div>
         <div className="admin-ambient-field">
-          <label htmlFor="ambient-volume-input">Volume (5 à 50 %)</label>
+          <label htmlFor="ambient-volume-input">Volume (1 à 50 %)</label>
           <div className="admin-ambient-volume">
             {/* Bulle qui suit le curseur : le pourcentage exact reste visible pendant le glissement. */}
             <output
               htmlFor="ambient-volume-input"
               className="admin-ambient-volume-bubble"
-              style={{ "--volume-ratio": (volume - 5) / 45 } as React.CSSProperties}
+              style={{ "--volume-ratio": (volume - 1) / 49 } as React.CSSProperties}
             >
               {volume} %
             </output>
@@ -192,7 +199,7 @@ export default function AmbientMusicPanel({
               id="ambient-volume-input"
               type="range"
               name="volumePercent"
-              min={5}
+              min={1}
               max={50}
               value={volume}
               onChange={(event) => setVolume(Number(event.target.value))}
