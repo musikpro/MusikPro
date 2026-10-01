@@ -70,7 +70,11 @@ export function convertFromXof(valueInXof: number, currency: string, catalog: Cr
   return valueInUsd * target.unitsPerUsd;
 }
 
-export function formatCreditPrice(valueInXof: number, currency: string, catalog: CreditCurrency[] = DEFAULT_CURRENCIES) {
+export function formatCreditPrice(
+  valueInXof: number,
+  currency: string,
+  catalog: CreditCurrency[] = DEFAULT_CURRENCIES,
+) {
   const code = resolveCurrencyCode(currency, catalog);
   const entry = findCurrency(catalog, code) ?? findCurrency(DEFAULT_CURRENCIES, BASE_CURRENCY_CODE)!;
   const value = convertFromXof(valueInXof, code, catalog);

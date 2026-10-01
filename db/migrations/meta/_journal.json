@@ -428,6 +428,13 @@
       "when": 1790871048773,
       "tag": "0060_music_styles_ai_description_name_prefix",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1790871049773,
+      "tag": "0061_refund_failed_generation_and_style_limits",
+      "breakpoints": true
     }
   ]
 }

@@ -29,7 +29,7 @@ export async function generateMoodAiHint(input: { name: string; description?: st
     provider,
     SYSTEM_INSTRUCTIONS,
     `Ambiance musicale : « ${input.name} ».${context}\n` +
-      "Rédige EN ANGLAIS une consigne très courte destinée à une IA de génération musicale (Musicful), sous forme de 4 à 6 mots-clés séparés par des virgules : adjectifs d'ambiance puis une ou deux qualités musicales (tempo, instruments, intensité). " +
+      "Rédige EN ANGLAIS une consigne très courte destinée à une IA de génération musicale (Musicful), sous forme de 3 à 5 mots-clés très courts séparés par des virgules : adjectifs d'ambiance puis une ou deux qualités musicales (tempo, instruments, intensité). " +
       `${MOOD_AI_HINT_MAX_LENGTH} caractères maximum. Exemple pour « Nostalgique » : nostalgic, warm, bittersweet, soft piano and strings, slow tempo. Réponds uniquement avec les mots-clés.`,
   );
   const text = clamp(raw.text, MOOD_AI_HINT_MAX_LENGTH);
@@ -54,7 +54,7 @@ export async function generateOccasionAiHint(input: { name: string; description?
     provider,
     SYSTEM_INSTRUCTIONS,
     `Occasion d'une chanson personnalisée : « ${input.name} ».${context}\n` +
-      "Rédige EN ANGLAIS une consigne très courte destinée à une IA de génération musicale (Musicful) pour qu'elle compose une chanson adaptée à cette occasion, sous forme de 4 à 6 mots-clés séparés par des virgules : la nature de l'occasion, puis l'émotion et le ton recherchés. " +
+      "Rédige EN ANGLAIS une consigne très courte destinée à une IA de génération musicale (Musicful) pour qu'elle compose une chanson adaptée à cette occasion, sous forme de 3 à 5 mots-clés très courts séparés par des virgules : la nature de l'occasion, puis l'émotion et le ton recherchés. " +
       `${MOOD_AI_HINT_MAX_LENGTH} caractères maximum. Exemple pour « Anniversaire » : birthday celebration, joyful, warm, heartfelt tribute. Réponds uniquement avec les mots-clés.`,
   );
   const text = clamp(raw.text, MOOD_AI_HINT_MAX_LENGTH);

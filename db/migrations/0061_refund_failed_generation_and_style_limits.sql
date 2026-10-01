@@ -1,0 +1,13 @@
+ALTER TABLE "music_generation_jobs" ADD COLUMN IF NOT EXISTS "credits_charged" integer DEFAULT 0 NOT NULL;
+--> statement-breakpoint
+ALTER TABLE "music_generation_jobs" ADD COLUMN IF NOT EXISTS "credits_refunded_at" timestamp;
+--> statement-breakpoint
+UPDATE "music_styles" SET "ai_description" = 'Rap: BPM 85-100, syncopated 4/4 swing breakbeat. 808 drums, snappy snare, tight hi-hats, heavy deep sub bass. Cinematic piano/strings, vinyl scratches, retro samples. Minimal intro, long verses, spoken bridge, energetic drops. Natural rap vocals, aggressive poetic flow, ad-libs. Raw, defiant, urban, gritty, introspective mood. Origin: American rap.' WHERE "slug" = 'rap' AND length("ai_description") > 420;
+--> statement-breakpoint
+UPDATE "music_styles" SET "ai_description" = 'Zouk: BPM 120-130, syncopated danceable rhythm. Layered Creole drums, ti-bwa, gwo-ka. Deep groove, slap bass, soft keyboards, occasional horns. Repetitive verse-chorus, short instrumental bridge. Warm Creole vocals, call-and-response backing. Festive, sensual, tropical, euphoric energy. Caribbean zouk (Martinique, Guadeloupe).' WHERE "slug" = 'zouk' AND length("ai_description") > 420;
+--> statement-breakpoint
+UPDATE "music_styles" SET "ai_description" = 'Afropop: Tempo 100-130 BPM, syncopated danceable groove. Sharp hi-hats, off-beat kick, crisp claps, melodic prominent bass. Brass bursts, percussive guitars, modern synths. Verse-chorus, energetic bridge. Melodic conversational vocals, ad-libs, simple harmonies. Very high festive energy, joyful urban mood. West African origin (Nigeria, Ghana).' WHERE "slug" = 'afropop' AND length("ai_description") > 420;
+--> statement-breakpoint
+UPDATE "music_styles" SET "ai_description" = 'Amapiano: BPM 105-110, syncopated danceable rhythm. Closed hi-hat, synthetic kicks, crisp claps, deep pulsing sub-bass. Melodic piano (4-chord progressions), warm synths. Piano intro, repetitive verses, catchy hook chorus, minimal breakdowns. Soft sung/spoken vocals, conversational ad-libs. Relaxed groove, laid-back nocturnal urban mood. South African house origin.' WHERE "slug" = 'amapiano' AND length("ai_description") > 420;
+--> statement-breakpoint
+UPDATE "music_styles" SET "ai_description" = 'Slow: Tempo 60-80 BPM, minimalist, steady, breathing rhythm. Discreet or absent percussion, deep spacious bass. Strings, piano, acoustic guitar, ambient synths. Long verses, memorable chorus, extended instrumental passages. Soft, whispered, introspective vocals, minimal backing. Low calm energy, vulnerable intimate mood. International, timeless contemplative style.' WHERE "slug" = 'slow' AND length("ai_description") > 420;

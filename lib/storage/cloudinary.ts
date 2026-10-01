@@ -7,7 +7,12 @@ const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/a
 const DEFAULT_TARGET_MAX_BYTES = 2 * 1024 * 1024;
 // AVIF only: smaller than WebP/JPEG at equal quality, which also makes the 2 MB cap below easier
 // to hit, and is supported by every current major browser.
-const COMPRESSION_STEPS = ["q_auto:good,f_avif", "q_auto:eco,f_avif", "w_1600,c_limit,q_auto:low,f_avif", "w_1000,c_limit,q_auto:low,f_avif"];
+const COMPRESSION_STEPS = [
+  "q_auto:good,f_avif",
+  "q_auto:eco,f_avif",
+  "w_1600,c_limit,q_auto:low,f_avif",
+  "w_1000,c_limit,q_auto:low,f_avif",
+];
 
 function startsWith(bytes: Uint8Array, signature: number[]) {
   return signature.every((value, index) => bytes[index] === value);
@@ -155,11 +160,19 @@ export async function uploadImageToCloudinary(
     if (result.bytes <= maxBytes) break;
     const eager = await cloudinaryExplicit(result.publicId, step, cloudName, apiKey, apiSecret);
     if (!eager?.secure_url || !eager.bytes) continue;
-    result = { ...result, url: eager.secure_url, width: eager.width ?? result.width, height: eager.height ?? result.height, bytes: eager.bytes };
+    result = {
+      ...result,
+      url: eager.secure_url,
+      width: eager.width ?? result.width,
+      height: eager.height ?? result.height,
+      bytes: eager.bytes,
+    };
   }
 
   if (result.bytes > maxBytes)
-    throw new Error(`Impossible de compresser cette image sous ${Math.round(maxBytes / 1024 / 1024)} Mo. Essaie une image plus légère.`);
+    throw new Error(
+      `Impossible de compresser cette image sous ${Math.round(maxBytes / 1024 / 1024)} Mo. Essaie une image plus légère.`,
+    );
 
   return result;
 }

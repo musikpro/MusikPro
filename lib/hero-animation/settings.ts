@@ -45,11 +45,7 @@ function normalizeTextSize(value: string): HeroTextSize {
 /** Global Hero setting read by both the public landing (app/page.tsx) and the admin settings panel. */
 export async function getHeroSettings(): Promise<HeroSettings> {
   try {
-    const [row] = await db
-      .select()
-      .from(heroAnimationSettings)
-      .where(eq(heroAnimationSettings.id, "global"))
-      .limit(1);
+    const [row] = await db.select().from(heroAnimationSettings).where(eq(heroAnimationSettings.id, "global")).limit(1);
     if (!row) return DEFAULT_SETTINGS;
     return {
       headline: row.headline || DEFAULT_HEADLINE,

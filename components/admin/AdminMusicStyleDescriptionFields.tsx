@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Icon from "@/components/banani/Icon";
+import { STYLE_AI_DESCRIPTION_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
 
 type Kind = "client" | "ai";
 
@@ -91,7 +92,7 @@ export default function AdminMusicStyleDescriptionFields({
         </div>
         <textarea
           name="aiDescription"
-          maxLength={680}
+          maxLength={STYLE_AI_DESCRIPTION_MAX_LENGTH}
           rows={4}
           value={aiDescription}
           onChange={(event) => setAiDescription(event.target.value)}
@@ -101,7 +102,7 @@ export default function AdminMusicStyleDescriptionFields({
       </div>
       <small id="music-style-ai-hint" className="admin-editor-field is-wide">
         Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client n’est
-        jamais transmise. {aiDescription.length}/680
+        jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH}
       </small>
       {error ? <p className="admin-field-error admin-editor-field is-wide">{error}</p> : null}
     </>
