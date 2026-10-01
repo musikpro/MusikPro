@@ -38,6 +38,7 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
       { href: "/admin/plans", icon: "coins", label: "Crédits & tarifs" },
       { href: "/admin/music-styles", icon: "sliders-horizontal", label: "Styles musicaux" },
       { href: "/admin/occasions", icon: "calendar-heart", label: "Occasions" },
+      { href: "/admin/moods", icon: "smile-plus", label: "Ambiances" },
       { href: "/admin/recipient-relations", icon: "heart-handshake", label: "Liens destinataire" },
       { href: "/admin/languages", icon: "languages", label: "Langues et Monnaies" },
       { href: "/admin/ai-providers", icon: "cpu", label: "Fournisseurs IA" },

@@ -1,10 +1,10 @@
 import "server-only";
-import { eq, ilike } from "drizzle-orm";
+import { eq, ilike, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { musicStyles } from "@/db/schema";
-import { buildStylePrompt } from "./style-prompt-builder";
+import { moods, musicStyles } from "@/db/schema";
+import { buildMoodText, buildStylePrompt } from "./style-prompt-builder";
 
-export { buildStylePrompt, MUSICFUL_STYLE_MAX_LENGTH } from "./style-prompt-builder";
+export { buildMoodText, buildStylePrompt, MUSICFUL_STYLE_MAX_LENGTH } from "./style-prompt-builder";
 
 /**
  * Musicful's `style` field is free text with no controlled vocabulary — a bare genre name
@@ -37,5 +37,22 @@ export async function resolveStylePrompt(
         .where(ilike(musicStyles.name, genreName))
         .limit(1);
   const description = (exact ?? fuzzy)?.aiDescription?.trim();
-  return buildStylePrompt(genreName, description, mood, strictStyleAdherence);
+  return buildStylePrompt(genreName, description, await resolveMoodText(mood), strictStyleAdherence);
+}
+
+/**
+ * L'ambiance choisie par le client est le nom français d'une ligne du catalogue « Ambiances » : si le
+ * propriétaire y a rédigé une consigne IA, elle est envoyée à Musicful avec le nom (jamais montrée au client).
+ * Ambiance inconnue (supprimée entre-temps) ou sans consigne : le nom seul, comme avant.
+ */
+async function resolveMoodText(mood: string): Promise<string> {
+  const name = mood.trim();
+  if (!name) return "";
+  // Comparaison insensible à la casse SANS joker (ilike interpréterait % et _ saisis par le client).
+  const [row] = await getServiceDb()
+    .select({ aiHint: moods.aiHint })
+    .from(moods)
+    .where(sql`lower(${moods.name}) = lower(${name})`)
+    .limit(1);
+  return buildMoodText(name, row?.aiHint);
 }

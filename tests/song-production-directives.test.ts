@@ -14,7 +14,7 @@ describe("Musicful prompt guidance: natural ending + variant diversity", () => {
     // Applied unconditionally (not only when a catalog aiDescription or mood is set), and always
     // kept intact by truncating the (possibly long) description first — see MUSICFUL_STYLE_MAX_LENGTH.
     expect(source).toContain("const suffix = ` — ${PRODUCTION_DIRECTIVES}`;");
-    expect(source).toContain("return `${truncateAtWord(withMood, budget)}${suffix}`;");
+    expect(source).toContain("return `${truncateAtWord(base, budget)}${moodPart}${suffix}`;");
   });
 
   it("asks the lyrics writer for a closing outro section instead of an abrupt end", async () => {

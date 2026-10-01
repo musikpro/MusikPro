@@ -400,6 +400,13 @@
       "when": 1790822570657,
       "tag": "0056_store_buttons_hide_in_app",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1790868464994,
+      "tag": "0057_moods_catalog",
+      "breakpoints": true
     }
   ]
 }

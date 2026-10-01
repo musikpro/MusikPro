@@ -11,6 +11,7 @@ import { demoCreationChoicesSchema, buildDemoPaymentDraftSchema } from "@/lib/va
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import { DEFAULT_CURRENCIES, type CreditCurrency, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
 import type { OccasionOption } from "@/lib/occasions/catalog";
+import type { MoodOption } from "@/lib/moods/catalog";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
 import type { RecipientRelationOption } from "@/lib/recipient-relations/catalog";
 import type { DiscoverSong } from "@/lib/discover/types";
@@ -81,6 +82,7 @@ function useDemoState(
   initialBalance: number,
   initialCreditPlans: CreditPlanOption[],
   initialOccasions: OccasionOption[],
+  initialMoods: MoodOption[],
   initialMusicStyles: MusicStyleOption[],
   initialRecipientRelations: RecipientRelationOption[],
   initialDiscoverSongs: DiscoverSong[],
@@ -392,12 +394,14 @@ function useDemoState(
   };
   const songPacks = initialCreditPlans;
   const occasions = initialOccasions;
+  const moods = initialMoods;
   const musicStyles = initialMusicStyles;
   const recipientRelations = initialRecipientRelations;
   const interfaceLanguages = initialInterfaceLanguages;
   const phonePrefixes = initialPhonePrefixes;
   const lyricsLanguages = initialLyricsLanguages;
   const occasionEmoji = (name: string) => occasions.find((occasion) => occasion.name === name)?.emoji ?? "";
+  const moodEmoji = (name: string) => moods.find((mood) => mood.name === name)?.emoji ?? "";
   /**
    * Displays a catalog choice (occasion/genre/plan/recipient-relation name) in the active UI
    * language, without ever changing the stored/matched value itself: demo.choices.* and the
@@ -831,6 +835,7 @@ function useDemoState(
     library,
     songPacks,
     occasions,
+    moods,
     musicStyles,
     recipientRelations,
     removeFromDiscover,
@@ -838,6 +843,7 @@ function useDemoState(
     lyricsLanguages,
     phonePrefixes,
     occasionEmoji,
+    moodEmoji,
     displayName,
     favorites,
     favoriteSongs,
@@ -946,6 +952,7 @@ export function DemoProvider({
   initialBalance = 0,
   initialCreditPlans,
   initialOccasions,
+  initialMoods,
   initialMusicStyles,
   initialRecipientRelations,
   initialDiscoverSongs,
@@ -968,6 +975,7 @@ export function DemoProvider({
   initialBalance?: number;
   initialCreditPlans: CreditPlanOption[];
   initialOccasions: OccasionOption[];
+  initialMoods: MoodOption[];
   initialMusicStyles: MusicStyleOption[];
   initialRecipientRelations: RecipientRelationOption[];
   initialDiscoverSongs: DiscoverSong[];
@@ -990,6 +998,7 @@ export function DemoProvider({
     initialBalance,
     initialCreditPlans,
     initialOccasions,
+    initialMoods,
     initialMusicStyles,
     initialRecipientRelations,
     initialDiscoverSongs,

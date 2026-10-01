@@ -12,6 +12,7 @@ import {
   languages,
   localizationSettings,
   musicStyles,
+  moods,
   occasions,
   phonePrefixes,
   plans,
@@ -279,9 +280,10 @@ async function runCatalogTranslationsRefresh() {
   const session = await requireAdmin();
   const serviceDb = getServiceDb();
 
-  const [occasionRows, styleRows, relationRows, planRows, prefixRows, heroTextRows, heroSettingsRows] =
+  const [occasionRows, moodRows, styleRows, relationRows, planRows, prefixRows, heroTextRows, heroSettingsRows] =
     await Promise.all([
       serviceDb.select().from(occasions),
+      serviceDb.select().from(moods),
       serviceDb.select().from(musicStyles),
       serviceDb.select().from(recipientRelations),
       serviceDb.select().from(plans),
@@ -292,6 +294,7 @@ async function runCatalogTranslationsRefresh() {
 
   const [
     occasionTranslations,
+    moodTranslations,
     styleTranslations,
     relationTranslations,
     planTranslations,
@@ -301,6 +304,9 @@ async function runCatalogTranslationsRefresh() {
   ] = await Promise.all([
     translateCatalogTable(
       occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
+    ),
+    translateCatalogTable(
+      moodRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
     ),
     translateCatalogTable(
       styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
@@ -330,6 +336,12 @@ async function runCatalogTranslationsRefresh() {
         .update(occasions)
         .set({ translations: occasionTranslations.get(row.id) ?? {}, updatedAt: new Date() })
         .where(eq(occasions.id, row.id)),
+    ),
+    ...moodRows.map((row) =>
+      serviceDb
+        .update(moods)
+        .set({ translations: moodTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(moods.id, row.id)),
     ),
     ...styleRows.map((row) =>
       serviceDb
@@ -371,6 +383,7 @@ async function runCatalogTranslationsRefresh() {
 
   const counts = {
     occasions: occasionRows.length,
+    moods: moodRows.length,
     musicStyles: styleRows.length,
     recipientRelations: relationRows.length,
     plans: planRows.length,

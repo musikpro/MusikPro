@@ -13,16 +13,19 @@ import { OCCASION_EMOJI_OPTIONS as CATALOG_EMOJI_OPTIONS } from "@/lib/occasions
 export default function AdminOccasionEmojiPicker({
   defaultEmoji = "🎉",
   subject = "de l’occasion",
+  options: catalogOptions = CATALOG_EMOJI_OPTIONS,
 }: {
   defaultEmoji?: string;
   subject?: string;
+  /** Liste d'emojis proposée ; celle des occasions par défaut (les ambiances fournissent la leur). */
+  options?: readonly { value: string; label: string }[];
 }) {
   const OCCASION_EMOJI_OPTIONS = useMemo(
     () =>
-      CATALOG_EMOJI_OPTIONS.some((option) => option.value === defaultEmoji)
-        ? CATALOG_EMOJI_OPTIONS
-        : [{ value: defaultEmoji, label: "Emoji actuel" }, ...CATALOG_EMOJI_OPTIONS],
-    [defaultEmoji],
+      catalogOptions.some((option) => option.value === defaultEmoji)
+        ? catalogOptions
+        : [{ value: defaultEmoji, label: "Emoji actuel" }, ...catalogOptions],
+    [defaultEmoji, catalogOptions],
   );
   const [emoji, setEmoji] = useState<string>(defaultEmoji);
   const [open, setOpen] = useState(false);
