@@ -1,4 +1,5 @@
 "use client";
+import { goToAuthenticatedSpace } from "@/lib/auth/go-to-authenticated-space";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -122,8 +123,7 @@ export function AuthForm({
         return;
       }
     }
-    router.push("/auth/continue");
-    router.refresh();
+    goToAuthenticatedSpace();
   }
   async function googleSignIn() {
     setBusy(true);
@@ -134,8 +134,7 @@ export function AuthForm({
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
         if (native?.error) throw new Error(native.error.message || "Connexion Google impossible");
-        router.push("/auth/continue");
-        router.refresh();
+        goToAuthenticatedSpace();
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
         if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || "Connexion Google impossible");

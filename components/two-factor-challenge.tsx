@@ -1,5 +1,6 @@
 "use client";
 
+import { goToAuthenticatedSpace } from "@/lib/auth/go-to-authenticated-space";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
@@ -79,8 +80,7 @@ export function TwoFactorChallenge() {
       return;
     }
     sessionStorage.removeItem("owner-2fa-method");
-    router.push("/auth/continue");
-    router.refresh();
+    goToAuthenticatedSpace();
   }
 
   async function resend() {
