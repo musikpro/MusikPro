@@ -28,7 +28,8 @@ describe("connexion Google native", () => {
     login.mockResolvedValue({ provider: "google", result: { idToken: "jeton-google" } });
     await expect(nativeGoogleIdToken("web-client")).resolves.toBe("jeton-google");
     expect(initialize).toHaveBeenCalledWith({ google: { webClientId: "web-client", mode: "online" } });
-    expect(login).toHaveBeenCalledWith({ provider: "google", options: { scopes: ["email", "profile"] } });
+    // Sans `scopes` : le plugin les refuse tant que MainActivity n'est pas modifiée.
+    expect(login).toHaveBeenCalledWith({ provider: "google", options: {} });
   });
 
   it("refuse une réponse sans jeton", async () => {
