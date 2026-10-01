@@ -294,11 +294,11 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
               {t2.real ? (
                 <span
                   aria-hidden="true"
-                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary rounded-full shadow-lg flex items-center justify-center"
                 >
                   <Icon
                     i={nowPlayingTrend?.key === t2.key ? "pause" : "play"}
-                    size={12}
+                    size={20}
                     className="text-primary-foreground"
                   />
                 </span>
@@ -308,9 +308,9 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
                   data-demo-ready
                   onClick={() => demo.openSong(t2.title)}
                   aria-label="Écouter la chanson"
-                  className="absolute top-2 right-2 w-8 h-8 bg-primary rounded-lg flex items-center justify-center"
+                  className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary rounded-full shadow-lg flex items-center justify-center"
                 >
-                  <Icon i="play" size={12} className="text-primary-foreground" />
+                  <Icon i="play" size={20} className="text-primary-foreground" />
                 </button>
               )}
             </div>
