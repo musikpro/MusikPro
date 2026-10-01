@@ -275,6 +275,26 @@ body {
   min-width: 0;
   overflow-x: hidden;
 }
+/* Zone sûre en haut de l'écran (barre d'état, encoche, caméra) pour l'application Android/iOS
+   plein écran et la PWA installée. Capacitor 8 injecte --safe-area-inset-top (WebView Android sans
+   support fiable de env()). Vaut 0 dans un navigateur classique : aucun effet sur le site web. */
+:root {
+  --native-top-inset: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+}
+body {
+  padding-top: var(--native-top-inset);
+}
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 39;
+  height: var(--native-top-inset);
+  background: var(--color-background, #f7f8fa);
+  pointer-events: none;
+}
 .app-content {
   min-height: 100dvh;
   padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
