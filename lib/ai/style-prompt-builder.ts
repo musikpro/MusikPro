@@ -13,7 +13,7 @@
  * Best-effort prompt guidance, not a guaranteed platform-level control.
  */
 const PRODUCTION_DIRECTIVES =
-  "End the song with a natural outro: the melody and instruments gradually fade out (fade-out) over the last seconds, with no abrupt cut. The two versions generated for this request must have clearly distinct melodies, arrangements and tempos, while faithfully respecting this musical style and these lyrics.";
+  "End the song with a natural outro: fade-out gradually over the last seconds, with no abrupt cut. The two versions must have clearly distinct melodies, arrangements and tempos, while respecting this style and these lyrics.";
 
 /**
  * Musicful's "Style of Music" field is capped at 1,000 characters (confirmed in Musicful's own
@@ -73,7 +73,7 @@ export function buildVocalHint(language: string, voice: string): string {
 }
 
 const STRICT_STYLE_SENTENCE =
-  " Faithfully respect the authentic rhythmic, instrumental and vocal codes of this specific musical style, without drifting toward a more generic genre.";
+  " Stay faithful to this style's authentic rhythmic, instrumental and vocal codes, without drifting toward a more generic genre.";
 
 export function buildStylePrompt(
   genreName: string,
