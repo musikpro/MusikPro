@@ -20,8 +20,15 @@ export type AdminGenerationRow = {
   durationSeconds: number | null;
   audioUrl: string | null;
   failureReason: string | null;
+  /** Raw numeric `status` last reported by the provider (Musicful: 0 = finished, 4 observed on failed tasks). */
+  providerStatus: number | null;
+  /** Seconds from creation to the final state, or to now while still pending. */
+  elapsedSeconds: number | null;
   createdAt: string;
 };
+
+/** A pending job older than this is flagged as slow — Musicful usually delivers within ~5 minutes. */
+const SLOW_PENDING_SECONDS = 300;
 
 const STATUS_LABELS: Record<string, string> = {
   queued: "En file",
@@ -44,6 +51,11 @@ function formatDuration(seconds: number | null) {
   return `${minutes}m ${String(seconds % 60).padStart(2, "0")}s`;
 }
 
+function formatElapsed(seconds: number | null) {
+  if (seconds === null) return "—";
+  return `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, "0")} s`;
+}
+
 export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationRow[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
@@ -54,7 +66,10 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
   const copyId = async (songGroupId: string) => {
     try {
       await navigator.clipboard.writeText(songGroupId);
-      showToast({ message: "Identifiant copié — colle-le dans « Tendances » pour ajouter cette chanson.", tone: "success" });
+      showToast({
+        message: "Identifiant copié — colle-le dans « Tendances » pour ajouter cette chanson.",
+        tone: "success",
+      });
     } catch {
       showToast({ message: "Impossible de copier l’identifiant.", tone: "error" });
     }
@@ -133,6 +148,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
               <th>Fournisseur</th>
               <th>Durée</th>
               <th>Statut</th>
+              <th>Délai</th>
               <th>
                 <span className="sr-only">Écoute</span>
               </th>
@@ -182,6 +198,22 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
                   <span className={`admin-status ${statusTone(row.status)}`}>
                     {STATUS_LABELS[row.status] ?? row.status}
                   </span>
+                  {row.providerStatus !== null ? (
+                    <small title="Statut brut renvoyé par le fournisseur lors de la dernière vérification">
+                      <br />
+                      {row.provider} : statut {row.providerStatus}
+                    </small>
+                  ) : null}
+                </td>
+                <td data-label="Délai">
+                  {formatElapsed(row.elapsedSeconds)}
+                  {!["completed", "failed", "cancelled"].includes(row.status) &&
+                  (row.elapsedSeconds ?? 0) > SLOW_PENDING_SECONDS ? (
+                    <small className="admin-generation-failure">
+                      <br />
+                      Plus lent que d’habitude
+                    </small>
+                  ) : null}
                 </td>
                 <td data-label="Écoute">
                   <button
