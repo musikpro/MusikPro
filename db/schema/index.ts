@@ -223,6 +223,30 @@ export const occasions = pgTable(
   }),
 );
 
+export const moods = pgTable(
+  "moods",
+  {
+    id: text("id").primaryKey(),
+    /** Nom français : valeur canonique choisie par le client et envoyée à la génération. */
+    name: text("name").notNull(),
+    slug: text("slug").notNull().unique(),
+    /** Sous-titre affiché au client (facultatif). */
+    description: text("description").notNull().default(""),
+    emoji: text("emoji").notNull().default("🎶"),
+    /** Consigne envoyée à Musicful à la place du nom seul (ex. « nostalgic, warm, soft piano ») — jamais montrée au client. */
+    aiHint: text("ai_hint").notNull().default(""),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(100),
+    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    activeOrderIndex: index("moods_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
+
 export const recipientRelations = pgTable(
   "recipient_relations",
   {

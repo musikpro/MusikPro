@@ -1,5 +1,4 @@
 "use client";
-import { MOOD_EMOJIS } from "./StepStyleAndMood";
 import { useEffect, useState } from "react";
 import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
@@ -39,7 +38,9 @@ export default function StepAdditionalParams() {
       <div className="px-4 pt-3 pb-1">
         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-secondary px-3 py-1.5 rounded-lg">
           {demo.occasionEmoji(demo.choices.occasion)} {demo.displayName(demo.occasions, demo.choices.occasion)}
-          {demo.choices.mood ? ` • ${MOOD_EMOJIS[demo.choices.mood] ?? "🎶"} ${t(demo.choices.mood)}` : ""}
+          {demo.choices.mood
+            ? ` • ${demo.moodEmoji(demo.choices.mood) || "🎶"} ${demo.displayName(demo.moods, demo.choices.mood)}`
+            : ""}
         </span>
       </div>
 

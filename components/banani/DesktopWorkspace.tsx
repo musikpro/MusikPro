@@ -100,7 +100,7 @@ export default function DesktopWorkspace({ children }: { children: ReactNode }) 
                   {[
                     [t("Occasion"), demo.displayName(demo.occasions, demo.choices.occasion)],
                     [t("Style musical"), demo.displayName(demo.musicStyles, demo.choices.genre)],
-                    [t("Ambiance"), t(demo.choices.mood)],
+                    [t("Ambiance"), demo.displayName(demo.moods, demo.choices.mood)],
                     [t("Langue"), t(demo.choices.language)],
                     [t("Voix"), t(demo.choices.voice)],
                   ].map(([label, value]) => (

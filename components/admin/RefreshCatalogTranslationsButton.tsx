@@ -6,6 +6,7 @@ import { refreshCatalogTranslations } from "@/app/admin/languages/actions";
 
 type Counts = {
   occasions: number;
+  moods: number;
   musicStyles: number;
   recipientRelations: number;
   plans: number;
@@ -38,9 +39,9 @@ export default function RefreshCatalogTranslationsButton() {
       </button>
       {counts && !pending ? (
         <p className="admin-language-detection-hint">
-          Traductions à jour : {counts.occasions} occasions, {counts.musicStyles} styles musicaux,{" "}
-          {counts.recipientRelations} relations, {counts.plans} offres de crédits, {counts.heroAnimatedTexts} textes
-          animés.
+          Traductions à jour : {counts.occasions} occasions, {counts.moods} ambiances, {counts.musicStyles} styles
+          musicaux, {counts.recipientRelations} relations, {counts.plans} offres de crédits, {counts.heroAnimatedTexts}{" "}
+          textes animés.
         </p>
       ) : null}
       {error ? <p className="admin-field-error">{error}</p> : null}

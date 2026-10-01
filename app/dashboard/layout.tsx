@@ -11,6 +11,7 @@ import { credits } from "@/db/schema";
 import { getActiveCreditPlans } from "@/lib/credit-plans/server";
 import { getEnabledCurrencies } from "@/lib/credit-plans/currencies-server";
 import { getActiveOccasions } from "@/lib/occasions/server";
+import { getActiveMoods } from "@/lib/moods/server";
 import { getActiveMusicStyles } from "@/lib/music-styles/server";
 import { getActiveRecipientRelations } from "@/lib/recipient-relations/server";
 import { listDiscoverSongs } from "@/lib/discover/server";
@@ -60,6 +61,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const [
     creditPlans,
     occasionOptions,
+    moodOptions,
     musicStyleOptions,
     recipientRelationOptions,
     discoverSongs,
@@ -76,6 +78,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ] = await Promise.all([
     getActiveCreditPlans({ demo }),
     getActiveOccasions({ demo }),
+    getActiveMoods({ demo }),
     getActiveMusicStyles({ demo }),
     getActiveRecipientRelations({ demo }),
     // Real accounts only: the demo library is the static showcase data of DemoProvider.
@@ -109,6 +112,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       storeLinks={storeLinks}
       initialCreditPlans={creditPlans}
       initialOccasions={occasionOptions}
+      initialMoods={moodOptions}
       initialMusicStyles={musicStyleOptions}
       initialRecipientRelations={recipientRelationOptions}
       initialDiscoverSongs={discoverSongs}

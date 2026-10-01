@@ -33,6 +33,12 @@ function truncateAtWord(text: string, maxLength: number): string {
   return (lastSpace > 0 ? truncated.slice(0, lastSpace) : truncated).trimEnd();
 }
 
+/** Texte d'ambiance envoyé à Musicful : « Nom (consigne IA) » si l'admin en a défini une, sinon le nom seul. */
+export function buildMoodText(name: string, aiHint?: string | null): string {
+  const hint = aiHint?.trim();
+  return hint ? `${name} (${hint})` : name;
+}
+
 export function buildStylePrompt(
   genreName: string,
   description: string | null | undefined,
@@ -45,8 +51,10 @@ export function buildStylePrompt(
       ? `${genreName} (${description}). Respecte fidèlement les codes rythmiques, instrumentaux et vocaux authentiques de ce style musical précis, sans dériver vers un genre plus générique.`
       : `${genreName} — ${description}`;
   }
-  const withMood = mood ? `${base} — Ambiance : ${mood}` : base;
+  // L'ambiance (nom + consigne IA éventuelle) et les directives sont toujours conservées : seule la
+  // description du genre est tronquée pour rester sous la limite de Musicful.
+  const moodPart = mood ? ` — Ambiance : ${mood}` : "";
   const suffix = ` — ${PRODUCTION_DIRECTIVES}`;
-  const budget = Math.max(0, MUSICFUL_STYLE_MAX_LENGTH - suffix.length);
-  return `${truncateAtWord(withMood, budget)}${suffix}`;
+  const budget = Math.max(0, MUSICFUL_STYLE_MAX_LENGTH - suffix.length - moodPart.length);
+  return `${truncateAtWord(base, budget)}${moodPart}${suffix}`;
 }

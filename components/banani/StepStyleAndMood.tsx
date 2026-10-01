@@ -10,28 +10,13 @@ import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 
-/** Emoji of each mood, keyed by its canonical French label — shared with the "Paramètres" step header. */
-export const MOOD_EMOJIS: Record<string, string> = {
-  Énergique: "🚀",
-  Romantique: "💕",
-  Épique: "👑",
-  Joyeuse: "😂",
-  Dramatique: "🎭",
-  Mystique: "🌙",
-};
-
 export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[] }) {
   const demo = useDemo();
   const hasSelectedGenre = genres.some((genre) => genre.name === demo.choices.genre);
-  const moods = [
-    { emoji: MOOD_EMOJIS["Énergique"], label: "Énergique", desc: t("Upbeat") },
-    { emoji: MOOD_EMOJIS["Romantique"], label: "Romantique", desc: t("Tender") },
-    { emoji: MOOD_EMOJIS["Épique"], label: "Épique", desc: t("Majestic") },
-    { emoji: MOOD_EMOJIS["Joyeuse"], label: "Joyeuse", desc: t("Fun") },
-    { emoji: MOOD_EMOJIS["Dramatique"], label: "Dramatique", desc: t("Epic") },
-    { emoji: MOOD_EMOJIS["Mystique"], label: "Mystique", desc: t("Magical") },
-  ];
-  const hasSelectedMood = moods.some((mood) => mood.label === demo.choices.mood);
+  // Ambiances gérées par le propriétaire (menu admin « Ambiances ») ; le nom français reste la valeur choisie.
+  const moods = demo.moods;
+  // Garde-fou : sans aucune ambiance active, on ne bloque pas le parcours sur un choix impossible.
+  const hasSelectedMood = moods.length === 0 || moods.some((mood) => mood.name === demo.choices.mood);
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard/create/recipient" current={4} total={8} />
@@ -100,14 +85,20 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.choose("mood", demo.choices.mood === mood.label ? "" : mood.label)}
-                aria-pressed={demo.choices.mood === mood.label}
-                key={mood.label}
+                onClick={() => demo.choose("mood", demo.choices.mood === mood.name ? "" : mood.name)}
+                aria-pressed={demo.choices.mood === mood.name}
+                key={mood.id}
                 className="demo-choice-card bg-card border-2 border-border rounded-lg py-3 px-2 flex flex-col items-center gap-1"
               >
                 <span className="text-2xl">{mood.emoji}</span>
-                <p className="font-semibold text-xs text-foreground text-center">{t(mood.label)}</p>
-                <p className="text-xs text-muted-foreground">{mood.desc}</p>
+                <p className="font-semibold text-xs text-foreground text-center">
+                  {localizeField(mood.name, mood.translations, "name")}
+                </p>
+                {mood.description ? (
+                  <p className="text-xs text-muted-foreground text-center">
+                    {localizeField(mood.description, mood.translations, "description")}
+                  </p>
+                ) : null}
               </button>
             ))}
           </div>
