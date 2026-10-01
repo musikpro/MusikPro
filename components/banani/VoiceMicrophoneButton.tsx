@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
+import { isNativeMobileApp } from "@/lib/mobile/native-runtime";
 
 type SpeechRecognitionEventLike = Event & {
   resultIndex: number;
@@ -36,6 +37,22 @@ function recognitionConstructor() {
   return speechWindow.SpeechRecognition ?? speechWindow.webkitSpeechRecognition;
 }
 
+/**
+ * Dans l'application native (Capacitor), la reconnaissance vocale de la WebView ne déclenche pas toute seule
+ * la demande d'autorisation Android/iOS : on la provoque via getUserMedia, dont la demande est relayée par
+ * Capacitor. Sur le web, le navigateur demande déjà l'autorisation lui-même, donc rien à faire.
+ */
+async function ensureNativeMicrophoneAccess(): Promise<boolean> {
+  if (!isNativeMobileApp() || !navigator.mediaDevices?.getUserMedia) return true;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach((track) => track.stop());
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export default function VoiceMicrophoneButton({
   label,
   value,
@@ -66,7 +83,16 @@ export default function VoiceMicrophoneButton({
       recognitionRef.current?.stop();
       return;
     }
+    void (async () => {
+      if (!(await ensureNativeMicrophoneAccess())) {
+        onMessage("Autorise le microphone dans les réglages du navigateur, puis réessaie.");
+        return;
+      }
+      startListening();
+    })();
+  };
 
+  const startListening = () => {
     const Recognition = recognitionConstructor();
     if (!Recognition) {
       onMessage("La transcription vocale n’est pas prise en charge par ce navigateur. Essaie Chrome ou Safari.");
