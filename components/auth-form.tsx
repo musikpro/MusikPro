@@ -3,6 +3,7 @@ import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { authClient } from "@/lib/auth/client";
+import { canUseNativeGoogleSignIn, NATIVE_GOOGLE_CANCELLED, nativeGoogleIdToken } from "@/lib/auth/native-google";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { emailSchema, loginSchema, registerIdentitySchema, registerSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
@@ -11,10 +12,13 @@ import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
 export function AuthForm({
   mode,
   googleEnabled = false,
+  googleWebClientId,
   initialError = "",
 }: {
   mode: "login" | "register";
   googleEnabled?: boolean;
+  /** Identifiant client Google « Web » (public) : requis par la connexion Google native de l'application. */
+  googleWebClientId?: string;
   initialError?: string;
 }) {
   const router = useRouter();
@@ -124,6 +128,21 @@ export function AuthForm({
   async function googleSignIn() {
     setBusy(true);
     setError("");
+    if (canUseNativeGoogleSignIn(googleWebClientId)) {
+      // Application Android/iOS : connexion native, la session reste dans l'application (pas de Chrome).
+      try {
+        const token = await nativeGoogleIdToken(googleWebClientId);
+        const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
+        if (native?.error) throw new Error(native.error.message || "Connexion Google impossible");
+        router.push("/auth/continue");
+        router.refresh();
+      } catch (nativeError) {
+        const message = nativeError instanceof Error ? nativeError.message : "";
+        if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || "Connexion Google impossible");
+        setBusy(false);
+      }
+      return;
+    }
     const r = await authClient.signIn.social({
       provider: "google",
       callbackURL: "/auth/continue",
