@@ -126,12 +126,7 @@ export default function StepRecipient() {
         }
       }
       for (const issue of parsedSender.success ? [] : parsedSender.error.issues) {
-        const field =
-          issue.path[0] === "name"
-            ? "senderName"
-            : issue.path[0] === "pronunciation"
-              ? "senderPronunciation"
-              : undefined;
+        const field = issue.path[0] === "name" ? "senderName" : issue.path[0] === "pronunciation" ? "senderPronunciation" : undefined;
         if (field && !nextErrors[field]) nextErrors[field] = issue.message;
       }
       setFieldErrors(nextErrors);
