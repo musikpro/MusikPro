@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 import { i18nClientTextSelectors } from "../eslint/i18n-client-text.mjs";
 
 // Parseur TypeScript exposé par eslint-config-next/typescript (indépendant de la disposition de node_modules).
-const tsParser = (nextTs as unknown as Array<{ languageOptions?: { parser?: Linter.Parser } }>)[0].languageOptions
-  ?.parser as Linter.Parser;
+const tsParser = (nextTs as unknown as Array<{ languageOptions?: { parser?: Linter.Parser } }>).find(
+  (config) => config.languageOptions?.parser,
+)?.languageOptions?.parser;
+if (!tsParser) throw new Error("Parseur TypeScript introuvable dans eslint-config-next/typescript.");
 
 const linter = new Linter({ configType: "flat" });
 const lint = (code: string) =>
