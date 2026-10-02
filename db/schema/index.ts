@@ -215,6 +215,12 @@ export const occasions = pgTable(
     aiHint: text("ai_hint").notNull().default(""),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
+    /** Affiche le bloc « La personne concernée » à l'étape « Personnalise ta chanson » (faux pour un spot publicitaire). */
+    showRecipient: boolean("show_recipient").notNull().default(true),
+    /** Affiche le bloc « De la part de qui ». */
+    showSender: boolean("show_sender").notNull().default(true),
+    /** Champ (occasion_fields.id) dont la valeur sert de titre quand il n'y a pas de destinataire. */
+    titleFieldId: text("title_field_id"),
     /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -222,6 +228,42 @@ export const occasions = pgTable(
   },
   (table) => ({
     activeOrderIndex: index("occasions_active_order_idx").on(table.active, table.sortOrder),
+  }),
+);
+
+export const occasionFields = pgTable(
+  "occasion_fields",
+  {
+    id: text("id").primaryKey(),
+    occasionId: text("occasion_id")
+      .notNull()
+      .references(() => occasions.id, { onDelete: "cascade" }),
+    /** Identifiant stable (ex. birth_day), unique par occasion. */
+    key: text("key").notNull(),
+    /** Libellé français : valeur canonique. */
+    label: text("label").notNull(),
+    helpText: text("help_text").notNull().default(""),
+    icon: text("icon").notNull().default(""),
+    placeholder: text("placeholder").notNull().default(""),
+    /** short_text | long_text | select | number | date — voir lib/occasion-fields/types.ts. */
+    type: text("type").notNull(),
+    /** [{ label, emoji }] pour le type select. */
+    options: jsonb("options").notNull().default([]),
+    /** { maxLength, min, max, display }. */
+    config: jsonb("config").notNull().default({}),
+    required: boolean("required").notNull().default(false),
+    /** Consigne anglaise pour le parolier IA (jamais montrée au client). */
+    aiHint: text("ai_hint").notNull().default(""),
+    sortOrder: integer("sort_order").notNull().default(100),
+    active: boolean("active").notNull().default(true),
+    /** AI-generated per-locale { en: { label, helpText, placeholder, option0… }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    translations: jsonb("translations"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    occasionKeyUnique: uniqueIndex("occasion_fields_occasion_key_unique").on(table.occasionId, table.key),
+    occasionOrderIndex: index("occasion_fields_occasion_order_idx").on(table.occasionId, table.active, table.sortOrder),
   }),
 );
 
