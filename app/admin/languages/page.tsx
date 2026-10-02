@@ -329,10 +329,10 @@ export default async function AdminLanguagesPage() {
                 <div>
                   <h2>Traductions du catalogue</h2>
                   <p>
-                    Traduit avec l’IA connectée les occasions, ambiances, styles musicaux, relations, champs de détail,
-                    offres de crédits et textes animés dans toutes les langues actives, pour que le parcours de
-                    création et les crédits s’affichent dans la langue choisie par le client. Le contenu source en
-                    français n’est jamais modifié.
+                    Traduit avec l’IA connectée les textes de l’interface et le catalogue (occasions, ambiances, styles
+                    musicaux, relations, champs de détail, offres de crédits, textes animés) dans toutes les langues
+                    actives. Seuls les textes nouveaux ou modifiés sont traduits : ce qui l’est déjà n’est jamais
+                    retraduit. Le contenu source en français n’est jamais modifié.
                   </p>
                 </div>
               </div>

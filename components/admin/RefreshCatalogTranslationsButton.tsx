@@ -3,31 +3,51 @@
 import { useState, useTransition } from "react";
 import Icon from "@/components/banani/Icon";
 import { refreshCatalogTranslations } from "@/app/admin/languages/actions";
+import { useAdminToast } from "@/components/admin/AdminToastProvider";
 
-type Counts = {
-  occasions: number;
-  moods: number;
-  musicStyles: number;
-  recipientRelations: number;
-  plans: number;
-  heroAnimatedTexts: number;
-  occasionFields: number;
-};
+const MAX_CALLS = 40;
+
+type Summary = { translated: number; alreadyUpToDate: number; remaining: number };
 
 export default function RefreshCatalogTranslationsButton() {
+  const showToast = useAdminToast();
   const [pending, startTransition] = useTransition();
-  const [counts, setCounts] = useState<Counts | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [progress, setProgress] = useState<string | null>(null);
 
   function handleClick() {
-    setError(null);
+    setSummary(null);
+    setProgress("Analyse des textes à traduire…");
     startTransition(async () => {
+      let translated = 0;
+      let alreadyUpToDate = 0;
+      let remaining = 0;
       try {
-        const result = await refreshCatalogTranslations();
-        if (result.ok) setCounts(result.counts);
-        else setError(result.message);
+        for (let call = 0; call < MAX_CALLS; call += 1) {
+          const result = await refreshCatalogTranslations();
+          if (!result.ok) {
+            showToast({ message: result.message, tone: "error" });
+            setSummary({ translated, alreadyUpToDate, remaining });
+            return;
+          }
+          if (call === 0) alreadyUpToDate = result.alreadyUpToDate;
+          translated += result.translated;
+          remaining = result.remaining;
+          if (remaining > 0) setProgress(`${translated} textes traduits, ${remaining} restants…`);
+          if (remaining === 0 || result.translated === 0) break; // fini, ou aucun progrès : ne jamais boucler dans le vide
+        }
+        setSummary({ translated, alreadyUpToDate, remaining });
+        showToast({
+          message:
+            translated === 0 && remaining === 0
+              ? `Tout est déjà traduit (${alreadyUpToDate} textes à jour).`
+              : `${translated} textes traduits, ${alreadyUpToDate} déjà à jour${remaining ? `, ${remaining} restent à traduire (relance)` : ""}.`,
+          tone: remaining ? "info" : "success",
+        });
       } catch (err) {
-        setError(err instanceof Error ? err.message : "La mise à jour des traductions a échoué.");
+        showToast({ message: err instanceof Error ? err.message : "La mise à jour des traductions a échoué.", tone: "error" });
+      } finally {
+        setProgress(null);
       }
     });
   }
@@ -38,14 +58,13 @@ export default function RefreshCatalogTranslationsButton() {
         <Icon i="sparkles" size={16} />
         {pending ? "Actualisation en cours…" : "Actualiser les traductions"}
       </button>
-      {counts && !pending ? (
+      {pending && progress ? <p className="admin-language-detection-hint">{progress}</p> : null}
+      {summary && !pending ? (
         <p className="admin-language-detection-hint">
-          Traductions à jour : {counts.occasions} occasions, {counts.moods} ambiances, {counts.musicStyles} styles
-          musicaux, {counts.recipientRelations} relations, {counts.plans} offres de crédits, {counts.heroAnimatedTexts}{" "}
-          textes animés, {counts.occasionFields} champs de détail.
+          {summary.translated} textes traduits, {summary.alreadyUpToDate} déjà à jour
+          {summary.remaining ? `, ${summary.remaining} restent à traduire` : ""}.
         </p>
       ) : null}
-      {error ? <p className="admin-field-error">{error}</p> : null}
     </div>
   );
 }
