@@ -8,6 +8,12 @@ export type OccasionOption = {
   emoji: string;
   /** Consigne anglaise envoyée à Musicful (jamais montrée au client). */
   aiHint?: string;
+  /** Bloc « La personne concernée » affiché à l'étape de personnalisation (défaut : oui). */
+  showRecipient?: boolean;
+  /** Bloc « De la part de qui » (défaut : oui). */
+  showSender?: boolean;
+  /** Champ (occasion_fields.id) servant de titre quand il n'y a pas de destinataire. */
+  titleFieldId?: string | null;
   translations?: CatalogTranslations | null;
 };
 
