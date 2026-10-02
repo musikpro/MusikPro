@@ -29,10 +29,16 @@ import { loadStoredUiTexts } from "./untranslated-server";
 
 export const MAX_BATCHES_PER_CALL = 5;
 export const BATCH_SIZE = 40;
-/** Plafond de caractères par lot : au-delà, le JSON renvoyé par l'IA risque d'être tronqué. */
-export const MAX_CHARS_PER_BATCH = 6000;
-/** Budget de temps avant d'arrêter de lancer des lots (la fonction a maxDuration = 300 s sur la page). */
-export const MAX_MILLIS_PER_CALL = 100_000;
+/**
+ * Plafond de caractères par lot : l'IA répète les clés dans sa réponse JSON (≈ 2,2× l'entrée), donc 2500
+ * caractères d'entrée restent bien sous le maxOutputTokens par défaut (4000) ; au-delà, le JSON risque d'être tronqué.
+ */
+export const MAX_CHARS_PER_BATCH = 2500;
+/**
+ * Budget de temps avant d'arrêter de lancer des lots. Un appel lancé juste avant la limite peut durer
+ * jusqu'à ≈ 220 s (client Anthropic : timeout 110 s × (1 reprise + 1)) : 60 + 220 = 280 < maxDuration = 300 s.
+ */
+export const MAX_MILLIS_PER_CALL = 60_000;
 const UI_INSERT_CHUNK = 200;
 
 export type Counts = {

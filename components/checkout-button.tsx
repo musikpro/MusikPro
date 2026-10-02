@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { translate as t } from "@/lib/i18n/translate";
 
 export function CheckoutButton({ planId }: { planId: string }) {
   const [busy, setBusy] = useState(false);
@@ -20,7 +21,7 @@ export function CheckoutButton({ planId }: { planId: string }) {
     });
     const data = await r.json();
     if (!r.ok || !data.checkoutUrl) {
-      setError(data.error || "Paiement indisponible");
+      setError(data.error || t("Paiement indisponible"));
       setBusy(false);
       return;
     }
@@ -29,7 +30,7 @@ export function CheckoutButton({ planId }: { planId: string }) {
   return (
     <>
       <button className="btn" onClick={pay} disabled={busy}>
-        {busy ? "Ouverture…" : "Continuer vers le paiement"}
+        {busy ? t("Ouverture…") : t("Continuer vers le paiement")}
       </button>
       {error && <InlineNotice tone="error">{error}</InlineNotice>}
     </>

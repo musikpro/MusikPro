@@ -11,7 +11,7 @@ describe("pickDashboardLocale", () => {
   it("falls back to Accept-Language without URL prefix", () => {
     expect(pickDashboardLocale(null, "es-ES,es;q=0.9")).toBe("es");
   });
-  it("ignores unsupported URL codes", () => {
-    expect(pickDashboardLocale("de", "pt-BR")).toBe("pt");
+  it("falls back to French for a present but unsupported URL code", () => {
+    expect(pickDashboardLocale("de", "pt-BR")).toBe("fr");
   });
 });

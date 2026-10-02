@@ -1,3 +1,5 @@
+"use client";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import Preview from "./Preview";
 import { translate as t } from "@/lib/i18n/translate";

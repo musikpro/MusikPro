@@ -5,10 +5,13 @@ import type { Locale } from "./translate";
 
 const LOCALES: readonly Locale[] = ["fr", "en", "es", "pt"];
 
-/** Pure part: the URL language (when it is a supported locale) wins, else the browser's Accept-Language. */
+/**
+ * Pure part: a supported URL language wins; a URL language that is present but unsupported (admin-added
+ * language, which the client shell also renders in French) gives "fr"; no URL language → Accept-Language.
+ */
 export function pickDashboardLocale(urlCode: string | null | undefined, acceptLanguage: string | null): Locale {
-  const fromUrl = LOCALES.find((locale) => locale === urlCode);
-  return fromUrl ?? resolveLocaleFromAcceptLanguage(acceptLanguage);
+  if (urlCode) return LOCALES.find((locale) => locale === urlCode) ?? "fr";
+  return resolveLocaleFromAcceptLanguage(acceptLanguage);
 }
 
 /**
