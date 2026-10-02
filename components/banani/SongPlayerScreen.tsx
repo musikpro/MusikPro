@@ -314,7 +314,7 @@ export default function SongPlayerScreen() {
             onClick={() =>
               audioUrl
                 ? setMuted((prev) => !prev)
-                : demo.notify("Action de démonstration : aucune opération réelle effectuée.")
+                : demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })
             }
             aria-pressed={muted}
             aria-label={muted ? "Réactiver le son" : "Couper le son"}
@@ -333,7 +333,7 @@ export default function SongPlayerScreen() {
               disabled={Boolean(isPending)}
               onClick={async () => {
                 if (!audioUrl) {
-                  demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                  demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
                   return;
                 }
                 const result = await shareAudioFile(audioUrl, currentSong.title);
@@ -351,7 +351,7 @@ export default function SongPlayerScreen() {
               disabled={Boolean(isPending)}
               onClick={async () => {
                 if (!audioUrl) {
-                  demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                  demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
                   return;
                 }
                 const ok = await downloadAudioFile(audioUrl, currentSong.title);

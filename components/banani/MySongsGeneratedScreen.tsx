@@ -111,7 +111,7 @@ export default function MySongsGenerated() {
     version?: (typeof demo.songs)[number]["versions"][number],
   ) => {
     if (demo.isDemo) {
-      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
       return;
     }
     const chosen = version ?? song.versions[0];
@@ -149,7 +149,7 @@ export default function MySongsGenerated() {
   const handleDownloadClick = (song: (typeof demo.songs)[number]) => {
     const primary = song.versions[0];
     if (demo.isDemo) {
-      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
       return;
     }
     if (!primary?.audioUrl) {
@@ -179,7 +179,7 @@ export default function MySongsGenerated() {
 
   const openPosterPicker = (songId: string | number) => {
     if (demo.isDemo) {
-      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
       return;
     }
     setCoverTargetId(songId);
@@ -414,7 +414,7 @@ export default function MySongsGenerated() {
                         disabled={!demo.isDemo && (isPending || isFailed)}
                         onClick={() => {
                           if (demo.isDemo) {
-                            demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                            demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
                           } else if (!v.audioUrl) {
                             demo.notify("Cette version n’est pas encore prête à être partagée.");
                           } else {
@@ -432,7 +432,7 @@ export default function MySongsGenerated() {
                         disabled={!demo.isDemo && (isPending || isFailed)}
                         onClick={() => {
                           if (demo.isDemo) {
-                            demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+                            demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
                           } else if (!v.audioUrl) {
                             demo.notify("Cette version n’est pas encore prête à être téléchargée.");
                           } else {

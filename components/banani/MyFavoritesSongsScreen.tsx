@@ -41,7 +41,7 @@ export default function MyFavoritesSongs() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
+          onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })}
           aria-label="Options"
           className="text-muted-foreground"
         >

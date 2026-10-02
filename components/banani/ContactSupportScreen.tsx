@@ -28,7 +28,7 @@ export default function ContactSupportScreen() {
       return;
     }
     if (demo.isDemo) {
-      demo.notify("Formulaire valide. Aucun email n’est envoyé depuis la démonstration.");
+      demo.notify("Formulaire valide. Aucun email n’est envoyé depuis la démonstration.", { demoOnly: true });
       return;
     }
     setSubmitting(true);

@@ -127,7 +127,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
   };
   const downloadSong = async (song: (typeof recentSongs)[number]) => {
     if (demo.isDemo) {
-      demo.notify("Action de démonstration : aucune opération réelle effectuée.");
+      demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
       return;
     }
     if (!song.audioUrl) {

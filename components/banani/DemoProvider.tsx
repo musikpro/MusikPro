@@ -22,7 +22,7 @@ import { apiFetch, ApiClientError } from "@/lib/api/client";
 import { persistLanguageCookie } from "@/lib/languages/preference-client";
 import { withLocalePrefix } from "@/lib/languages/locale-path";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
-import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
+import { localizeField, translate as t, translateTemplate, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 import type { OccasionFieldClientDefinition } from "@/lib/occasion-fields/types";
 import { blockVisibility } from "@/lib/occasion-fields/client";
@@ -114,10 +114,10 @@ function useDemoState(
   const [localeCode, setLocaleCode] = useState<string | null>(initialDetectedInterfaceLanguage?.code ?? null);
   const href = (route: string) => dashboardHref(route, isDemo, localeCode);
   const [message, setMessage] = useState("");
-  const notify = (nextMessage: string) =>
+  const notify = (nextMessage: string, options?: { demoOnly?: boolean }) =>
     setMessage(
-      !isDemo && /démonstration/i.test(nextMessage)
-        ? "Cette fonctionnalité sera bientôt disponible dans votre espace MusikPro."
+      options?.demoOnly && !isDemo
+        ? t("Cette fonctionnalité sera bientôt disponible dans votre espace MusikPro.")
         : nextMessage,
     );
   useEffect(() => {
@@ -398,9 +398,9 @@ function useDemoState(
     try {
       await apiFetch(`/api/songs/${songGroupId}/discover`, { method: "DELETE", timeoutMs: 15_000 });
       setRemovedDiscoverIds((prev) => [...prev, songGroupId]);
-      notify("Chanson retirée de Découvrir.");
+      notify(t("Chanson retirée de Découvrir."));
     } catch (error) {
-      notify(error instanceof ApiClientError ? error.message : "Impossible de retirer cette chanson pour le moment.");
+      notify(error instanceof ApiClientError ? error.message : t("Impossible de retirer cette chanson pour le moment."));
     }
   };
   const songPacks = initialCreditPlans;
@@ -562,7 +562,7 @@ function useDemoState(
               : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: !nextLiked } : v)) },
           ),
         );
-        notify("Impossible d’enregistrer ce favori pour le moment.");
+        notify(t("Impossible d’enregistrer ce favori pour le moment."));
       });
       return;
     }
@@ -740,7 +740,7 @@ function useDemoState(
   const startRealGeneration = async (): Promise<{ songGroupId: string } | null> => {
     if (!paymentBypassEnabled && balance < CREDITS_PER_GENERATION) {
       router.push(href("/dashboard/credits"));
-      notify(`Il faut ${CREDITS_PER_GENERATION} crédits pour lancer une génération musicale.`);
+      notify(translateTemplate("Il faut {credits} crédits pour lancer une génération musicale.", { credits: CREDITS_PER_GENERATION }));
       return null;
     }
     try {
@@ -766,7 +766,7 @@ function useDemoState(
       notify(
         error instanceof ApiClientError
           ? error.message
-          : "La génération n’a pas pu démarrer. Réessaie dans un instant.",
+          : t("La génération n’a pas pu démarrer. Réessaie dans un instant."),
       );
       go("/dashboard/songs");
       return null;
@@ -778,7 +778,7 @@ function useDemoState(
   ) => {
     if (isDemo) {
       field("lyrics", task === "lyrics.extend" ? `${fields.lyrics}\n\n${demoLyrics}` : demoLyrics);
-      if (task === "lyrics.rewrite") notify("Les paroles de démonstration ont été révisées.");
+      if (task === "lyrics.rewrite") notify(t("Les paroles de démonstration ont été révisées."), { demoOnly: true });
       go("/dashboard/create/lyrics");
       return true;
     }
@@ -816,10 +816,10 @@ function useDemoState(
     } catch (error) {
       notify(
         error instanceof DOMException && error.name === "AbortError"
-          ? "La génération prend plus de temps que prévu. Réessaie dans un instant."
+          ? t("La génération prend plus de temps que prévu. Réessaie dans un instant.")
           : error instanceof Error
             ? error.message
-            : "La génération des paroles a échoué.",
+            : t("La génération des paroles a échoué."),
       );
       go(task === "lyrics.generate" ? "/dashboard/create/parameters" : "/dashboard/create/lyrics");
       return false;
@@ -902,26 +902,26 @@ function useDemoState(
         setSongs((prev) => prev.filter((s) => s.id !== id));
         setFavorites((prev) => prev.filter((v) => v !== song.id));
         setVersionFavorites((prev) => prev.filter((v) => !v.startsWith(`${song.id}|`)));
-        notify("Chanson retirée de cette démonstration locale.");
+        notify(t("Chanson retirée de cette démonstration locale."), { demoOnly: true });
         return;
       }
       try {
         await apiFetch(`/api/songs/${id}`, { method: "DELETE" });
         await refreshSongs();
-        notify("Chanson retirée.");
+        notify(t("Chanson retirée."));
       } catch (error) {
         // A song the owner has placed somewhere (landing sections, Tendances, ambient music) is
         // protected server-side; its message names where it is used.
         notify(
           error instanceof ApiClientError && error.code === "SONG_IN_USE"
             ? error.message
-            : "Impossible de retirer cette chanson pour le moment.",
+            : t("Impossible de retirer cette chanson pour le moment."),
         );
       }
     },
     publishSong: async (id: string | number, jobId?: string): Promise<string | null> => {
       if (isDemo) {
-        notify("Action de démonstration : aucune opération réelle effectuée.");
+        notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true });
         return null;
       }
       try {
@@ -939,7 +939,7 @@ function useDemoState(
     },
     setSongCover: async (id: string | number, coverUrl: string): Promise<boolean> => {
       if (isDemo) {
-        notify("Action de démonstration : aucune opération réelle effectuée.");
+        notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true });
         return false;
       }
       try {
@@ -1054,8 +1054,8 @@ export function DemoProvider({
       {offline && (
         <InlineNotice tone="warning" className="demo-offline">
           {state.isDemo
-            ? "Hors ligne — les données de cette démonstration restent locales."
-            : "Hors ligne — certaines données peuvent être indisponibles."}
+            ? t("Hors ligne — les données de cette démonstration restent locales.")
+            : t("Hors ligne — certaines données peuvent être indisponibles.")}
         </InlineNotice>
       )}
       {children}

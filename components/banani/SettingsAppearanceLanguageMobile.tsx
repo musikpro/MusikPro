@@ -174,7 +174,7 @@ export default function SettingsMobile() {
             <button
               type="button"
               data-demo-ready="true"
-              onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.")}
+              onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })}
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-border"
             >
               <div className="flex-1 text-left">
