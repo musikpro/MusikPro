@@ -85,7 +85,7 @@ export default function DashboardSkeleton() {
       <div className="banani-desktop">
         <Content desktop />
       </div>
-      <span className="sr-only">Chargement…</span>
+      <span className="sr-only">{t("Chargement…")}</span>
     </div>
   );
 }

@@ -48,7 +48,7 @@ export default function RouteSkeleton({
           {variant === "form" && <Skeleton height="128px" style={{ marginTop: 16, borderRadius: 20 }} />}
           <Skeleton height="54px" style={{ marginTop: 24, borderRadius: 32 }} />
         </div>
-        <span className="sr-only">Chargement…</span>
+        <span className="sr-only">{t("Chargement…")}</span>
       </div>
     </Preview>
   );

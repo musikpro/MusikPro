@@ -96,7 +96,7 @@ export default function VoiceMicrophoneButton({
   const startListening = () => {
     const Recognition = recognitionConstructor();
     if (!Recognition) {
-      onMessage("La transcription vocale n’est pas prise en charge par ce navigateur. Essaie Chrome ou Safari.");
+      onMessage(t("La transcription vocale n’est pas prise en charge par ce navigateur. Essaie Chrome ou Safari."));
       return;
     }
 
@@ -152,7 +152,7 @@ export default function VoiceMicrophoneButton({
     >
       <Icon i="mic" size={20} />
       <span className="sr-only" aria-live="polite">
-        {isListening ? "Microphone actif, parle maintenant." : "Microphone inactif."}
+        {isListening ? t("Microphone actif, parle maintenant.") : t("Microphone inactif.")}
       </span>
     </button>
   );
