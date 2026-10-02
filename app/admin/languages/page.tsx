@@ -9,6 +9,7 @@ import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogT
 import { getServiceDb } from "@/db";
 import { countryLanguages, currencySettings, languages } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { getUntranslatedSummary } from "@/lib/i18n/untranslated-server";
 import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
 import type { CreditCurrency } from "@/lib/credit-plans/currency";
 import CurrencySection from "./CurrencySection";
@@ -237,11 +238,16 @@ function CountryLanguageSection({
 export default async function AdminLanguagesPage() {
   await requireAdmin();
   const serviceDb = getServiceDb();
-  const [rows, countryLanguageRows, currencyCatalog, [rateSettings]] = await Promise.all([
+  const [rows, countryLanguageRows, currencyCatalog, [rateSettings], untranslated] = await Promise.all([
     serviceDb.select().from(languages).orderBy(asc(languages.name)),
     serviceDb.select().from(countryLanguages),
     getCurrencyCatalog(),
-    serviceDb.select().from(currencySettings).limit(1).catch(() => []),
+    serviceDb
+      .select()
+      .from(currencySettings)
+      .limit(1)
+      .catch(() => []),
+    getUntranslatedSummary(),
   ]);
   const countryCountByCurrency: Record<string, number> = {};
   for (const row of countryLanguageRows) {
@@ -335,10 +341,18 @@ export default async function AdminLanguagesPage() {
                     Traduit avec l’IA connectée les textes de l’interface et le catalogue (occasions, ambiances, styles
                     musicaux, relations, champs de détail, offres de crédits, textes animés) dans toutes les langues
                     actives. Seuls les textes nouveaux ou modifiés sont traduits : ce qui l’est déjà n’est jamais
-                    retraduit. Le contenu source en français n’est jamais modifié.
+                    retraduit. Le bouton traduit aussi les nouveaux textes ajoutés au code. Le contenu source en
+                    français n’est jamais modifié.
                   </p>
                 </div>
               </div>
+              <p>
+                <span className={`admin-status ${untranslated.total === 0 ? "is-success" : "is-pending"}`}>
+                  {untranslated.total === 0
+                    ? "Tous les textes de l’interface sont traduits."
+                    : `${untranslated.total} ${untranslated.total > 1 ? "textes" : "texte"} d’interface non traduit${untranslated.total > 1 ? "s" : ""} (${untranslated.perLocale.en} en anglais, ${untranslated.perLocale.es} en espagnol, ${untranslated.perLocale.pt} en portugais).`}
+                </span>
+              </p>
               <RefreshCatalogTranslationsButton />
             </section>
           </div>

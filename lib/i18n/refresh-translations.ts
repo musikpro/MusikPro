@@ -25,6 +25,7 @@ import manifest from "./manifest.json";
 import { OVERLAY_TAG } from "./overlay-server";
 import { runRefresh, type CatalogSource, type RefreshResult } from "./refresh-core";
 import type { CatalogTranslations } from "./translate";
+import { loadStoredUiTexts } from "./untranslated-server";
 
 export const MAX_BATCHES_PER_CALL = 5;
 export const BATCH_SIZE = 40;
@@ -200,16 +201,7 @@ export async function runTranslationsRefresh(): Promise<RefreshResult & { counts
     },
   ];
 
-  const storedEntries = await Promise.all(
-    TRANSLATION_LOCALES.map(async (locale) => {
-      const rows = await serviceDb
-        .select({ s: uiTranslations.sourceText })
-        .from(uiTranslations)
-        .where(eq(uiTranslations.locale, locale));
-      return [locale, new Set(rows.map((row) => row.s))] as const;
-    }),
-  );
-  const stored = Object.fromEntries(storedEntries) as unknown as Record<TranslationLocale, ReadonlySet<string>>;
+  const stored = await loadStoredUiTexts(serviceDb);
 
   const saveUi = async (locale: TranslationLocale, entries: Record<string, string>) => {
     const values = Object.entries(entries).map(([sourceText, translation]) => ({ locale, sourceText, translation }));
