@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import AdminOccasionFieldAiPanel from "@/components/admin/AdminOccasionFieldAiPanel";
 import AdminOccasionBlocksForm from "@/components/admin/AdminOccasionBlocksForm";
 import AdminOccasionFieldSortableGrid from "@/components/admin/AdminOccasionFieldSortableGrid";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
@@ -49,6 +50,7 @@ export default async function AdminOccasionDetailsPage({ params }: { params: Pro
           />
         </AdminTabPanel>
         <AdminTabPanel id="fields">
+          <AdminOccasionFieldAiPanel occasionId={occasion.id} />
           <div className="admin-editor-actions">
             <Link className="admin-secondary-action" href={`/admin/occasion-fields/${occasion.id}/fields/new`}>
               <Icon i="plus" size={15} /> Nouveau champ

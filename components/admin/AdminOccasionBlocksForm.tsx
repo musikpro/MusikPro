@@ -1,5 +1,8 @@
 "use client";
 
+import { useState, useTransition } from "react";
+import { proposeOccasionBlocks } from "@/app/admin/occasion-fields/ai-actions";
+import { useAdminToast } from "@/components/admin/AdminToastProvider";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
@@ -18,6 +21,23 @@ export default function AdminOccasionBlocksForm({
   titleFieldId: string | null;
   fields: Array<{ id: string; label: string }>;
 }) {
+  const [recipient, setRecipient] = useState(String(showRecipient));
+  const [sender, setSender] = useState(String(showSender));
+  const [titleField, setTitleField] = useState(titleFieldId ?? "");
+  const showToast = useAdminToast();
+  const [suggesting, startSuggest] = useTransition();
+  const suggest = () =>
+    startSuggest(async () => {
+      const result = await proposeOccasionBlocks(occasionId);
+      if (!result.ok) {
+        showToast({ message: result.message, tone: "error" });
+        return;
+      }
+      setRecipient(String(result.showRecipient));
+      setSender(String(result.showSender));
+      setTitleField(result.titleFieldId ?? "");
+      showToast({ message: "Blocs suggérés par l’IA : relis puis enregistre.", tone: "success" });
+    });
   const yesNo = (label: string) => [
     { value: "true", label: `${label} — affiché` },
     { value: "false", label: `${label} — masqué` },
@@ -31,7 +51,8 @@ export default function AdminOccasionBlocksForm({
           <AdminSelect
             name="showRecipient"
             ariaLabel="Afficher la personne concernée"
-            defaultValue={String(showRecipient)}
+            value={recipient}
+            onValueChange={setRecipient}
             options={yesNo("Personne concernée")}
           />
         </div>
@@ -40,7 +61,8 @@ export default function AdminOccasionBlocksForm({
           <AdminSelect
             name="showSender"
             ariaLabel="Afficher de la part de qui"
-            defaultValue={String(showSender)}
+            value={sender}
+            onValueChange={setSender}
             options={yesNo("De la part de qui")}
           />
         </div>
@@ -49,11 +71,15 @@ export default function AdminOccasionBlocksForm({
           <AdminSelect
             name="titleFieldId"
             ariaLabel="Champ du titre"
-            defaultValue={titleFieldId ?? ""}
+            value={titleField}
+            onValueChange={setTitleField}
             options={[{ value: "", label: "Aucun — titre sans nom" }, ...fields.map((f) => ({ value: f.id, label: f.label }))]}
           />
         </div>
         <div className="admin-editor-actions is-wide">
+          <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
+            <Icon i="sparkles" size={15} /> {suggesting ? "L’IA réfléchit…" : "Suggérer avec l’IA"}
+          </button>
           <button type="submit">
             <Icon i="save" size={17} /> Enregistrer les blocs
           </button>

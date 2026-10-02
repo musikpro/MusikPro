@@ -11,6 +11,7 @@ import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { withAdminNotice } from "@/lib/admin/notice-redirect";
 import { requireAdmin } from "@/lib/auth/session";
+import { proposalToFormInput, type FieldProposal } from "@/lib/occasion-fields/ai-schema";
 import { occasionFieldFormSchema, slugifyFieldKey } from "@/lib/occasion-fields/form-schema";
 import { MAX_ACTIVE_FIELDS_PER_OCCASION } from "@/lib/occasion-fields/types";
 import { writeAuditLog } from "@/lib/security/audit";
@@ -307,4 +308,82 @@ export async function reorderOccasionFields(occasionId: string, formData: FormDa
     metadata: { order },
   });
   revalidateOccasionFields(occasionId);
+}
+
+const addProposedSchema = z.object({
+  occasionId: z.string().trim().min(1).max(120),
+  proposals: z
+    .string()
+    .max(40000)
+    .transform((value, context) => {
+      try {
+        return JSON.parse(value) as unknown;
+      } catch {
+        context.addIssue({ code: "custom", message: "Propositions invalides." });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.array(z.record(z.string(), z.unknown())).min(1).max(8)),
+});
+
+export async function addProposedFields(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  const session = await requireAdmin();
+  try {
+    const parsed = addProposedSchema.parse(Object.fromEntries(formData));
+    const database = getServiceDb();
+    const [activeRow] = await database
+      .select({ total: count() })
+      .from(occasionFields)
+      .where(and(eq(occasionFields.occasionId, parsed.occasionId), eq(occasionFields.active, true)));
+    const room = MAX_ACTIVE_FIELDS_PER_OCCASION - (activeRow?.total ?? 0);
+    if (parsed.proposals.length > room)
+      throw new Error(`Il reste de la place pour ${Math.max(room, 0)} champ(s) actif(s) seulement.`);
+    const [last] = await database
+      .select({ sortOrder: occasionFields.sortOrder })
+      .from(occasionFields)
+      .where(eq(occasionFields.occasionId, parsed.occasionId))
+      .orderBy(sql`${occasionFields.sortOrder} desc`)
+      .limit(1);
+    let order = (last?.sortOrder ?? 0) + 10;
+    const created: string[] = [];
+    for (const candidate of parsed.proposals) {
+      // Revalidation complète côté serveur : le navigateur n'est jamais cru sur parole.
+      const row = occasionFieldFormSchema.parse(
+        proposalToFormInput(candidate as unknown as FieldProposal, parsed.occasionId, order),
+      );
+      const id = randomUUID();
+      await database.insert(occasionFields).values({
+        id,
+        occasionId: parsed.occasionId,
+        key: await uniqueKey(parsed.occasionId, row.label),
+        label: row.label,
+        helpText: row.helpText,
+        icon: row.icon,
+        placeholder: row.placeholder,
+        type: row.type,
+        options: row.options,
+        config: row.config,
+        required: row.required === "true",
+        aiHint: row.aiHint,
+        sortOrder: order,
+        active: true,
+      });
+      created.push(id);
+      order += 10;
+    }
+    await writeAuditLog({
+      action: "occasion_field.ai_added",
+      actorId: session.user.id,
+      targetType: "occasion",
+      targetId: parsed.occasionId,
+      metadata: { fieldIds: created },
+    });
+    revalidateOccasionFields(parsed.occasionId);
+    return {
+      ok: true,
+      message: `${created.length} champ(s) ajouté(s). Lance « Actualiser les traductions » pour les traduire.`,
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’ajouter les champs proposés.") };
+  }
 }

@@ -25,4 +25,9 @@ describe("occasion-fields actions", () => {
     expect(source).toContain('revalidatePath("/dashboard/create/recipient")');
     expect(source).toContain('revalidatePath("/demo/create/recipient")');
   });
+
+  it("adds AI-proposed fields with a full server-side revalidation", () => {
+    expect(source).toContain("export async function addProposedFields");
+    expect(source).toContain("occasionFieldFormSchema.parse(");
+  });
 });
