@@ -4,8 +4,12 @@
  * missing from lib/i18n/locales/{en,es,pt}.json, and fills them in via the connected AI
  * provider (same lib/ai pipeline already used for lyrics and admin text generation).
  *
+ * It also writes (or, with --check, verifies) lib/i18n/manifest.json: the sorted list of the
+ * French keys found in the code.
+ *
  * Usage: npm run i18n:sync [-- --check]
- *   --check   exits with a non-zero status if any locale is missing keys, without calling the
+ *   --check   exits with a non-zero status if any locale is missing keys or the manifest is
+ *             stale, without calling the
  *             AI provider or writing files (useful in CI to catch un-synced translations). This
  *             mode is a pure local file scan and needs no environment variables at all.
  *
@@ -89,6 +93,12 @@ function writeDictionary(locale: TranslationLocale, dict: Record<string, string>
   writeFileSync(file, JSON.stringify(sorted, null, 2) + "\n");
 }
 
+const MANIFEST_FILE = path.join(ROOT, "lib/i18n/manifest.json");
+
+function manifestSource(keys: Set<string>): string {
+  return JSON.stringify([...keys].sort((a, b) => a.localeCompare(b, "fr")), null, 2) + "\n";
+}
+
 async function main() {
   const translateBatch = CHECK_ONLY ? null : (await import("../lib/i18n/ai-translate")).translateBatch;
 
@@ -100,6 +110,25 @@ async function main() {
   );
 
   let anyMissing = false;
+  const expectedManifest = manifestSource(usedKeys);
+  let manifestStale = false;
+  try {
+    manifestStale = readFileSync(MANIFEST_FILE, "utf8") !== expectedManifest;
+  } catch {
+    manifestStale = true;
+  }
+  if (manifestStale) {
+    if (CHECK_ONLY) {
+      anyMissing = true;
+      console.error("  manifest: lib/i18n/manifest.json is out of date.");
+    } else {
+      writeFileSync(MANIFEST_FILE, expectedManifest);
+      console.log(`  manifest: written (${usedKeys.size} keys).`);
+    }
+  } else {
+    console.log(`  manifest: up to date (${usedKeys.size} keys).`);
+  }
+
   for (const locale of LOCALES) {
     const dict = loadDictionary(locale);
     const missing = [...usedKeys].filter((key) => !(key in dict));
@@ -129,7 +158,7 @@ async function main() {
   }
 
   if (CHECK_ONLY && anyMissing) {
-    console.error("\nSome locales are missing translations. Run `npm run i18n:sync` to fill them in.");
+    console.error("\nSome locales are missing translations or the manifest is stale. Run `npm run i18n:sync`.");
     process.exit(1);
   }
   console.log(anyMissing ? "\nDone." : "\nAll locales already up to date, nothing to do.");
