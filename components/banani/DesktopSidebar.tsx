@@ -52,14 +52,14 @@ export default function DesktopSidebar() {
     };
   }, []);
   return (
-    <aside ref={sidebar} className="workspace-sidebar" aria-label="Navigation bureau">
+    <aside ref={sidebar} className="workspace-sidebar" aria-label={t("Navigation bureau")}>
       <Link href={demo.href("/dashboard")} className="workspace-brand">
         <span>
           <Icon i="music-2" size={19} />
         </span>
         MusikPro
       </Link>
-      <nav aria-label="Navigation principale">
+      <nav aria-label={t("Navigation principale")}>
         {groups.map((group, index) => (
           <div className="workspace-nav-group" key={index}>
             {group.map(([icon, label, suffix]) => {

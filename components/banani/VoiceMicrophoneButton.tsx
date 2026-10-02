@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Icon from "./Icon";
 import { isNativeMobileApp } from "@/lib/mobile/native-runtime";
+import { translate as t } from "@/lib/i18n/translate";
 
 type SpeechRecognitionEventLike = Event & {
   resultIndex: number;
@@ -85,7 +86,7 @@ export default function VoiceMicrophoneButton({
     }
     void (async () => {
       if (!(await ensureNativeMicrophoneAccess())) {
-        onMessage("Autorise le microphone dans les réglages du navigateur, puis réessaie.");
+        onMessage(t("Autorise le microphone dans les réglages du navigateur, puis réessaie."));
         return;
       }
       startListening();
@@ -117,10 +118,10 @@ export default function VoiceMicrophoneButton({
     recognition.onerror = (event) => {
       const message =
         event.error === "not-allowed" || event.error === "service-not-allowed"
-          ? "Autorise le microphone dans les réglages du navigateur, puis réessaie."
+          ? t("Autorise le microphone dans les réglages du navigateur, puis réessaie.")
           : event.error === "no-speech"
-            ? "Aucune parole détectée. Rapproche-toi du microphone et réessaie."
-            : "La transcription vocale a été interrompue. Réessaie dans un instant.";
+            ? t("Aucune parole détectée. Rapproche-toi du microphone et réessaie.")
+            : t("La transcription vocale a été interrompue. Réessaie dans un instant.");
       onMessage(message);
       setIsListening(false);
     };
@@ -135,7 +136,7 @@ export default function VoiceMicrophoneButton({
     } catch {
       recognitionRef.current = null;
       setIsListening(false);
-      onMessage("Le microphone est déjà utilisé. Arrête l’écoute puis réessaie.");
+      onMessage(t("Le microphone est déjà utilisé. Arrête l’écoute puis réessaie."));
     }
   };
 
@@ -144,9 +145,9 @@ export default function VoiceMicrophoneButton({
       type="button"
       data-demo-ready="true"
       onClick={toggleListening}
-      aria-label={isListening ? "Arrêter la transcription" : label}
+      aria-label={isListening ? t("Arrêter la transcription") : label}
       aria-pressed={isListening}
-      title={isListening ? "Arrêter la transcription" : label}
+      title={isListening ? t("Arrêter la transcription") : label}
       className={`story-mic-button flex items-center justify-center ${isListening ? "is-listening" : ""} ${className}`.trim()}
     >
       <Icon i="mic" size={20} />

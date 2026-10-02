@@ -6,6 +6,7 @@ import MobileBottomNav from "./MobileBottomNav";
 import MobileTopBar from "./MobileTopBar";
 import { useDemo } from "./DemoProvider";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { translate as t } from "@/lib/i18n/translate";
 
 export default function SecurityAccountScreen({
   emailVerified,
@@ -26,9 +27,9 @@ export default function SecurityAccountScreen({
       <MobileTopBar credits={demo.balance} />
       <div className="security-top-nav">
         <button type="button" onClick={() => demo.go("/dashboard/profile")}>
-          <Icon i="arrow-left" size={18} /> Retour au profil
+          <Icon i="arrow-left" size={18} /> {t("Retour au profil")}
         </button>
-        <span>Sécurité</span>
+        <span>{t("Sécurité")}</span>
       </div>
 
       <div className="security-content">
@@ -37,15 +38,15 @@ export default function SecurityAccountScreen({
             <Icon i="shield-check" size={28} />
           </span>
           <div>
-            <p className="security-eyebrow">Protection du compte</p>
-            <h1>Mot de passe et sécurité</h1>
-            <p>Renforce la protection de tes chansons et de tes informations personnelles.</p>
+            <p className="security-eyebrow">{t("Protection du compte")}</p>
+            <h1>{t("Mot de passe et sécurité")}</h1>
+            <p>{t("Renforce la protection de tes chansons et de tes informations personnelles.")}</p>
           </div>
         </section>
 
         {required && (
           <InlineNotice tone="error" className="security-required">
-            Le double facteur doit être activé avant d’accéder à l’administration.
+            {t("Le double facteur doit être activé avant d’accéder à l’administration.")}
           </InlineNotice>
         )}
 
@@ -55,8 +56,8 @@ export default function SecurityAccountScreen({
               <Icon i="mail-check" size={19} />
             </span>
             <div>
-              <small>Adresse e-mail</small>
-              <strong>{emailVerified ? "Vérifiée" : "À vérifier"}</strong>
+              <small>{t("Adresse e-mail")}</small>
+              <strong>{emailVerified ? t("Vérifiée") : t("À vérifier")}</strong>
             </div>
           </article>
           {isOwner && (
@@ -65,9 +66,13 @@ export default function SecurityAccountScreen({
                 <Icon i="smartphone" size={19} />
               </span>
               <div>
-                <small>Double facteur propriétaire</small>
+                <small>{t("Double facteur propriétaire")}</small>
                 <strong>
-                  {twoFactorAvailable ? (twoFactorEnabled ? "Activé" : "À activer") : "Désactivé temporairement"}
+                  {twoFactorAvailable
+                    ? twoFactorEnabled
+                      ? t("Activé")
+                      : t("À activer")
+                    : t("Désactivé temporairement")}
                 </strong>
               </div>
             </article>
@@ -81,8 +86,8 @@ export default function SecurityAccountScreen({
                 <Icon i="key-round" size={20} />
               </span>
               <div>
-                <h2>Authentification renforcée</h2>
-                <p>Utilise une application comme Google Authenticator pour protéger la connexion.</p>
+                <h2>{t("Authentification renforcée")}</h2>
+                <p>{t("Utilise une application comme Google Authenticator pour protéger la connexion.")}</p>
               </div>
             </div>
             <TwoFactorSetup enabled={twoFactorEnabled} />
@@ -91,24 +96,25 @@ export default function SecurityAccountScreen({
 
         {isOwner && !twoFactorAvailable && (
           <InlineNotice tone="info">
-            Le double facteur propriétaire est temporairement désactivé. Tu peux accéder à l’administration avec ton
-            compte habituel.
+            {t(
+              "Le double facteur propriétaire est temporairement désactivé. Tu peux accéder à l’administration avec ton compte habituel.",
+            )}
           </InlineNotice>
         )}
 
         <section className="security-tips">
           <h2>
-            <Icon i="badge-check" size={18} /> Les bons réflexes
+            <Icon i="badge-check" size={18} /> {t("Les bons réflexes")}
           </h2>
           <ul>
             <li>
-              <Icon i="check" size={14} /> Utilise un mot de passe unique pour MusikPro.
+              <Icon i="check" size={14} /> {t("Utilise un mot de passe unique pour MusikPro.")}
             </li>
             <li>
-              <Icon i="check" size={14} /> Garde tes codes de secours dans un endroit privé.
+              <Icon i="check" size={14} /> {t("Garde tes codes de secours dans un endroit privé.")}
             </li>
             <li>
-              <Icon i="check" size={14} /> Ne communique jamais un code reçu ou généré.
+              <Icon i="check" size={14} /> {t("Ne communique jamais un code reçu ou généré.")}
             </li>
           </ul>
         </section>

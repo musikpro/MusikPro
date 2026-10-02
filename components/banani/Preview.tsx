@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import { useDemo } from "./DemoProvider";
 import DesktopWorkspace from "./DesktopWorkspace";
+import { translate as t } from "@/lib/i18n/translate";
 export default function Preview({ children }: { children: ReactNode }) {
   const demo = useDemo();
   return (
@@ -22,13 +23,13 @@ export default function Preview({ children }: { children: ReactNode }) {
           event.preventDefault();
           demo.notify(
             demo.isDemo
-              ? "Mode démonstration — cette action sera disponible avec les fonctionnalités MusikPro."
-              : "Cette action sera bientôt disponible dans votre espace MusikPro.",
+              ? t("Mode démonstration — cette action sera disponible avec les fonctionnalités MusikPro.")
+              : t("Cette action sera bientôt disponible dans votre espace MusikPro."),
           );
         }
       }}
     >
-      {demo.isDemo && <span className="sr-only">Maquette MusikPro avec données fictives.</span>}
+      {demo.isDemo && <span className="sr-only">{t("Maquette MusikPro avec données fictives.")}</span>}
       <DesktopWorkspace>{children}</DesktopWorkspace>
     </div>
   );

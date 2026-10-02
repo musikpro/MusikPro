@@ -32,7 +32,7 @@ export default function EditLyricsScreen() {
           <div className="bg-card border border-border rounded-lg p-4 flex-1 flex items-start justify-start">
             <DemoField
               name="lyrics"
-              label="Tes paroles"
+              label={t("Tes paroles")}
               multiline
               rows={12}
               maxLength={DEMO_LYRICS_MAX_CHARACTERS}
@@ -72,8 +72,8 @@ export default function EditLyricsScreen() {
             onClick={() =>
               (() => {
                 navigator.clipboard.writeText(demo.fields.lyrics).then(
-                  () => demo.notify("Paroles copiées."),
-                  () => demo.notify("La copie est indisponible dans ce navigateur."),
+                  () => demo.notify(t("Paroles copiées.")),
+                  () => demo.notify(t("La copie est indisponible dans ce navigateur.")),
                 );
               })()
             }

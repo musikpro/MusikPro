@@ -24,7 +24,7 @@ export default function MobileTopBar({ credits = 0 }) {
             type="button"
             data-demo-ready
             onClick={() => setMenuOpen(true)}
-            aria-label="Ouvrir le menu"
+            aria-label={t("Ouvrir le menu")}
             className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center"
           >
             <Icon i="menu" size={20} className="text-foreground" />
@@ -46,7 +46,7 @@ export default function MobileTopBar({ credits = 0 }) {
           <button
             type="button"
             data-demo-ready
-            aria-label="Voir mes crédits disponibles"
+            aria-label={t("Voir mes crédits disponibles")}
             onClick={() => demo.go("/dashboard/credits")}
             className="flex items-center gap-1 bg-secondary px-3 py-1.5 rounded-xl"
           >
@@ -60,7 +60,7 @@ export default function MobileTopBar({ credits = 0 }) {
             type="button"
             data-demo-ready
             onClick={() => demo.go("/dashboard/notifications")}
-            aria-label="Notifications"
+            aria-label={t("Notifications")}
             className="w-9 h-9 rounded-lg bg-card border border-border flex items-center justify-center relative"
           >
             <Icon i="bell" size={18} className="text-foreground" />

@@ -91,7 +91,7 @@ export default function PaymentScreen() {
         <header className="checkout-information-heading">
           <span className="checkout-information-kicker">
             <Icon i="user-round-check" size={16} />
-            Dernière vérification
+            {t("Dernière vérification")}
           </span>
           <h1>{t("Vos informations")}</h1>
           <p>{t("Vérifie tes coordonnées avant de choisir ton offre de crédits.")}</p>
@@ -115,9 +115,9 @@ export default function PaymentScreen() {
                 <Icon i="user" size={19} />
                 <DemoField
                   name="payment.name"
-                  label="Nom complet"
+                  label={t("Nom complet")}
                   type="text"
-                  placeholder="Ex. Ballo Issa"
+                  placeholder={t("Ex. Ballo Issa")}
                   maxLength={100}
                   className="checkout-input"
                   ariaInvalid={Boolean(fieldErrors.name)}
@@ -138,7 +138,7 @@ export default function PaymentScreen() {
                 <Icon i="mail" size={19} />
                 <DemoField
                   name="payment.email"
-                  label="Adresse e-mail"
+                  label={t("Adresse e-mail")}
                   type="email"
                   placeholder="nom@exemple.com"
                   maxLength={254}
@@ -163,7 +163,7 @@ export default function PaymentScreen() {
                 <MusikSelect
                   className="checkout-prefix-select"
                   menuClassName="checkout-prefix-menu"
-                  ariaLabel="Indicatif téléphonique"
+                  ariaLabel={t("Indicatif téléphonique")}
                   portal
                   portalWidth={126}
                   showOptionLabels={false}
@@ -181,7 +181,7 @@ export default function PaymentScreen() {
                 <span className="checkout-phone-divider" aria-hidden="true" />
                 <DemoField
                   name="payment.phone"
-                  label="Numéro de téléphone"
+                  label={t("Numéro de téléphone")}
                   type="tel"
                   placeholder={phoneRule?.placeholder ?? ""}
                   maxLength={phoneRule?.digits ?? 0}

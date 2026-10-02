@@ -49,22 +49,22 @@ export function useHideStoreButtons(): boolean {
 export function StoreBadges({ className = "musik-store-actions" }: { className?: string }) {
   const demo = useDemo();
   const hidden = useHideStoreButtons();
-  const unavailable = () => demo.notify("L’application MusikPro sera bientôt disponible sur les stores.");
+  const unavailable = () => demo.notify(t("L’application MusikPro sera bientôt disponible sur les stores."));
   const { googlePlayUrl, appStoreUrl } = demo.storeLinks;
   const stores = [
     {
       url: googlePlayUrl,
       logo: <GooglePlayLogo />,
-      label: "Télécharger MusikPro sur Google Play",
-      small: "Disponible sur",
+      label: t("Télécharger MusikPro sur Google Play"),
+      small: t("Disponible sur"),
       name: "Google Play",
     },
     {
       url: appStoreUrl,
       logo: <AppleLogo />,
-      label: "Télécharger MusikPro sur l’App Store",
-      small: "Télécharger dans",
-      name: "l’App Store",
+      label: t("Télécharger MusikPro sur l’App Store"),
+      small: t("Télécharger dans"),
+      name: t("l’App Store"),
     },
   ];
   if (hidden) return null;

@@ -1,17 +1,18 @@
 import assets from "./assets.json";
+import { translate as t } from "@/lib/i18n/translate";
 export default function Image({ ar, prompt, className = "" }: { ar: string; prompt: string; className?: string }) {
   const src = (assets as Record<string, string>)[`${ar}\n${prompt}`];
   const description = /choir|church/i.test(prompt)
-    ? "Chœur gospel dans une église africaine"
+    ? t("Chœur gospel dans une église africaine")
     : /couple|romantic/i.test(prompt)
-      ? "Couple dansant dans la lumière du coucher de soleil"
+      ? t("Couple dansant dans la lumière du coucher de soleil")
       : /concert|festival|stage/i.test(prompt)
-        ? "Scène musicale et public en Afrique"
+        ? t("Scène musicale et public en Afrique")
         : /sunset|sunrise|landscape/i.test(prompt)
-          ? "Paysage africain dans une lumière chaleureuse"
+          ? t("Paysage africain dans une lumière chaleureuse")
           : /singer|musician|studio/i.test(prompt)
-            ? "Artiste dans un univers musical"
-            : "Illustration musicale MusikPro";
+            ? t("Artiste dans un univers musical")
+            : t("Illustration musicale MusikPro");
   return (
     <img
       src={src}

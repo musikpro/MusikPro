@@ -7,41 +7,48 @@ export const screenSize = "mobile";
 
 import Icon from "./Icon";
 
-const faqs = [
+const getFaqs = () => [
   {
-    question: "Comment créer une chanson ?",
-    answer:
+    question: t("Comment créer une chanson ?"),
+    answer: t(
       "Pour créer une chanson, cliquez sur le bouton \"Créer\" depuis l'écran d'accueil. Suivez les étapes pour sélectionner votre style musical et votre occasion spéciale, puis notre IA générera une chanson unique pour vous.",
+    ),
   },
   {
-    question: "Combien de chansons puis-je créer ?",
-    answer:
+    question: t("Combien de chansons puis-je créer ?"),
+    answer: t(
       "Chaque génération musicale consomme 2 crédits. Votre solde indique combien de générations restent disponibles.",
+    ),
   },
   {
-    question: "Puis-je télécharger mes chansons ?",
-    answer:
+    question: t("Puis-je télécharger mes chansons ?"),
+    answer: t(
       'Oui, vous pouvez télécharger vos chansons générées au format MP3 directement depuis votre bibliothèque "Mes chansons".',
+    ),
   },
   {
-    question: "Comment fonctionnent les crédits ?",
-    answer:
+    question: t("Comment fonctionnent les crédits ?"),
+    answer: t(
       "Choisissez une offre de crédits selon vos besoins. L’offre Découverte contient 5 crédits, soit 2 générations musicales.",
+    ),
   },
   {
-    question: "Puis-je partager mes chansons ?",
-    answer:
+    question: t("Puis-je partager mes chansons ?"),
+    answer: t(
       "Absolument ! Vous pouvez partager vos chansons sur les réseaux sociaux ou avec vos amis via un lien direct depuis la page de chaque chanson.",
+    ),
   },
   {
-    question: "Que faire si j'ai un problème technique ?",
-    answer:
+    question: t("Que faire si j'ai un problème technique ?"),
+    answer: t(
       'Si vous rencontrez un problème, veuillez contacter notre équipe de support via le formulaire "Contacter le support" dans les paramètres de votre profil.',
+    ),
   },
 ];
 
 export default function HelpFAQScreen() {
   const demo = useDemo();
+  const faqs = getFaqs();
   return (
     <div className="bg-background flex flex-col">
       {/* Top Nav */}

@@ -41,7 +41,7 @@ export default function MySongsScreen() {
           type="button"
           data-demo-ready="true"
           onClick={() => demo.go("/dashboard/songs")}
-          aria-label="Voir les versions de mes chansons"
+          aria-label={t("Voir les versions de mes chansons")}
           className="border border-border rounded-lg px-3 py-2 bg-input"
         >
           <Icon i="list" size={16} className="text-muted-foreground" />
@@ -55,7 +55,7 @@ export default function MySongsScreen() {
             role="status"
             className="rounded-xl border border-border bg-card p-5 text-center text-sm text-muted-foreground"
           >
-            Aucune chanson créée pour le moment.
+            {t("Aucune chanson créée pour le moment.")}
           </p>
         )}
         {mySongs.map((song) => (

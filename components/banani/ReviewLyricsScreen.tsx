@@ -61,7 +61,7 @@ export default function ReviewLyricsScreen() {
             <div
               className="lyrics-scrollbox bg-card border border-border rounded-lg p-4"
               role="region"
-              aria-label="Paroles générées, zone défilable"
+              aria-label={t("Paroles générées, zone défilable")}
               tabIndex={0}
             >
               <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap">{demo.fields.lyrics}</p>

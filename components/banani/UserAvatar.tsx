@@ -2,6 +2,7 @@
 import assets from "./assets.json";
 import { useDemo } from "./DemoProvider";
 import { getNameInitials } from "@/lib/profile/name-initials";
+import { translate as t } from "@/lib/i18n/translate";
 export default function UserAvatar({
   gender,
   ageGroup,
@@ -34,7 +35,7 @@ export default function UserAvatar({
   return (
     <img
       src={src}
-      alt="Photo de profil MusikPro"
+      alt={t("Photo de profil MusikPro")}
       className={className}
       style={{ objectFit: "cover", borderRadius: "50%", display: "block" }}
     />

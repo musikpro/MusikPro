@@ -38,7 +38,7 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
             : activeTab;
   return (
     <nav
-      aria-label="Navigation mobile"
+      aria-label={t("Navigation mobile")}
       className="banani-bottom-nav bg-card border border-border rounded-xl mx-4 mb-4 px-2 py-2 flex items-center justify-around"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.10)" }}
     >

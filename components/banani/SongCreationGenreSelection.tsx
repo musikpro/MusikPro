@@ -135,7 +135,9 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
           <button
             type="button"
             data-demo-ready="true"
-            onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })}
+            onClick={() =>
+              demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true })
+            }
             className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             <Icon i="globe" size={17} />
@@ -167,7 +169,7 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
               type="button"
               data-demo-ready="true"
               onClick={() => demo.go("/dashboard/notifications")}
-              aria-label="Notifications"
+              aria-label={t("Notifications")}
               className="relative"
             >
               <Icon i="bell" size={20} className="text-muted-foreground" />
@@ -233,8 +235,8 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
             {!genres.length ? (
               <div className="music-style-empty col-span-3">
                 <Icon i="music-2" size={25} />
-                <strong>Aucun style disponible</strong>
-                <p>Les styles musicaux seront bientôt proposés.</p>
+                <strong>{t("Aucun style disponible")}</strong>
+                <p>{t("Les styles musicaux seront bientôt proposés.")}</p>
               </div>
             ) : null}
           </div>

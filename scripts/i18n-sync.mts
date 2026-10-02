@@ -51,7 +51,20 @@ const MANIFEST_ONLY = process.argv.includes("--manifest-only");
  * elsewhere, such as DesktopSidebar's nav items) aren't found by the T_CALL regex below, which
  * only matches literal t("...") call sites. List them here so they still get synced.
  */
-const MANUAL_KEYS = ["Mes paroles"];
+const MANUAL_KEYS = [
+  // DesktopSidebar / MobileMenuDrawer : libellés de menus passés à t(label) depuis un tableau.
+  "Mes paroles",
+  "Paiements",
+  // StepAdditionalParams / FinalConfirmationScreen / DesktopWorkspace : t(voice.text), t(demo.choices.voice).
+  "Femme",
+  "Homme",
+  "Duo",
+  // StepAdditionalParams / FinalConfirmationScreen / DesktopWorkspace : t(lang.name) pour les langues par défaut
+  // (lib/languages/catalog.ts, DEFAULT_LANGUAGES ; « Français » est déjà une clé littérale ailleurs).
+  "Anglais",
+  "Espagnol",
+  "Portugais",
+];
 
 function walk(entry: string): string[] {
   const abs = path.join(ROOT, entry);

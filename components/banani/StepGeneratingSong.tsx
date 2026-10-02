@@ -45,11 +45,12 @@ function phaseText(phase: GenerationPhase) {
   }
 }
 
-const encouragementMessages = [
-  { icon: "music-2", text: "Ta chanson unique est en cours de création…" },
-  { icon: "mic", text: "Chaque note est personnalisée juste pour toi." },
-  { icon: "heart", text: "Prépare-toi à écouter quelque chose d’extraordinaire !" },
-] as const;
+const getEncouragementMessages = () =>
+  [
+    { icon: "music-2", text: t("Ta chanson unique est en cours de création…") },
+    { icon: "mic", text: t("Chaque note est personnalisée juste pour toi.") },
+    { icon: "heart", text: t("Prépare-toi à écouter quelque chose d’extraordinaire !") },
+  ] as const;
 
 function formatElapsed(totalSeconds: number) {
   const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
@@ -59,6 +60,7 @@ function formatElapsed(totalSeconds: number) {
 
 export default function StepGeneratingSong() {
   const demo = useDemo();
+  const encouragementMessages = getEncouragementMessages();
   const [progress, setProgress] = useState(0);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [messageIndex, setMessageIndex] = useState(0);
@@ -320,7 +322,7 @@ export default function StepGeneratingSong() {
                 className={i === messageIndex ? "text-primary flex-shrink-0" : "text-muted-foreground flex-shrink-0"}
               />
               <span className={`text-sm font-medium ${i === messageIndex ? "text-primary" : "text-muted-foreground"}`}>
-                {t(msg.text)}
+                {msg.text}
               </span>
               {i < messageIndex ? (
                 <Icon i="circle-check-big" size={14} className="text-primary ml-auto flex-shrink-0" />
@@ -351,7 +353,7 @@ export default function StepGeneratingSong() {
           onClick={skip}
           className="w-full mt-8 py-3 rounded-2xl font-bold text-sm text-primary flex items-center justify-center gap-2 border border-primary/20 bg-secondary"
         >
-          {t(demo.isDemo ? "Passer l’animation" : "Continuer en arrière-plan")}
+          {demo.isDemo ? t("Passer l’animation") : t("Continuer en arrière-plan")}
         </button>
       </div>
 

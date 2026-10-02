@@ -33,7 +33,7 @@ export default function EditProfileScreen() {
         <div>
           <label className="text-xs font-bold text-muted-foreground uppercase">{t("Nom complet")}</label>
           <div className="border border-border rounded-lg px-3 py-3 mt-2 bg-input">
-            <DemoField name="profile.name" label="Nom complet" type="text" maxLength={254} />
+            <DemoField name="profile.name" label={t("Nom complet")} type="text" maxLength={254} />
           </div>
         </div>
 
@@ -41,7 +41,7 @@ export default function EditProfileScreen() {
         <div>
           <label className="text-xs font-bold text-muted-foreground uppercase">{t("Email")}</label>
           <div className="border border-border rounded-lg px-3 py-3 mt-2 bg-input">
-            <DemoField name="profile.email" label="Email" type="email" maxLength={254} />
+            <DemoField name="profile.email" label={t("Email")} type="email" maxLength={254} />
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function EditProfileScreen() {
         <div>
           <label className="text-xs font-bold text-muted-foreground uppercase">{t("Localisation")}</label>
           <div className="border border-border rounded-lg px-3 py-3 mt-2 bg-input">
-            <DemoField name="profile.location" label="Localisation" type="text" maxLength={254} />
+            <DemoField name="profile.location" label={t("Localisation")} type="text" maxLength={254} />
           </div>
         </div>
       </div>
@@ -67,7 +67,7 @@ export default function EditProfileScreen() {
                 location: demo.fields["profile.location"],
               });
               if (!parsed.success) {
-                demo.notify("Vérifie ton nom, ton email et ta localisation.");
+                demo.notify(t("Vérifie ton nom, ton email et ta localisation."));
                 return;
               }
               demo.setProfile(parsed.data);

@@ -7,6 +7,7 @@ import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
+import { translate as t } from "@/lib/i18n/translate";
 
 export const displayName = "Contacter le support";
 export const screenSize = "mobile";
@@ -24,11 +25,11 @@ export default function ContactSupportScreen() {
       phone: demo.fields["support.phone"],
     });
     if (!parsed.success) {
-      demo.notify("Complète le sujet, un message de 10 caractères minimum et un email valide.");
+      demo.notify(t("Complète le sujet, un message de 10 caractères minimum et un email valide."));
       return;
     }
     if (demo.isDemo) {
-      demo.notify("Formulaire valide. Aucun email n’est envoyé depuis la démonstration.", { demoOnly: true });
+      demo.notify(t("Formulaire valide. Aucun email n’est envoyé depuis la démonstration."), { demoOnly: true });
       return;
     }
     setSubmitting(true);
@@ -41,9 +42,9 @@ export default function ContactSupportScreen() {
       demo.field("support.subject", "");
       demo.field("support.message", "");
       demo.field("support.phone", "");
-      demo.notify("Ton message a bien été envoyé au support MusikPro.");
+      demo.notify(t("Ton message a bien été envoyé au support MusikPro."));
     } catch (error) {
-      demo.notify(error instanceof Error ? error.message : "Le message n’a pas pu être envoyé.");
+      demo.notify(error instanceof Error ? error.message : t("Le message n’a pas pu être envoyé."));
     } finally {
       setSubmitting(false);
     }
@@ -52,9 +53,9 @@ export default function ContactSupportScreen() {
     <div className="support-screen bg-background flex flex-col">
       <div className="support-top-nav">
         <button type="button" data-demo-ready onClick={() => demo.go("/dashboard/help")}>
-          <Icon i="arrow-left" size={18} /> Retour
+          <Icon i="arrow-left" size={18} /> {t("Retour")}
         </button>
-        <span>Centre d’aide</span>
+        <span>{t("Centre d’aide")}</span>
       </div>
 
       <div className="support-content flex-1 px-4 py-5 overflow-y-auto">
@@ -63,31 +64,31 @@ export default function ContactSupportScreen() {
             <Icon i="headphones" size={24} />
           </span>
           <div>
-            <p className="support-eyebrow">Support MusikPro</p>
-            <h1>Nous sommes ici pour vous aider</h1>
-            <p>Décris ta demande. Notre équipe te répondra avec une solution claire.</p>
+            <p className="support-eyebrow">{t("Support MusikPro")}</p>
+            <h1>{t("Nous sommes ici pour vous aider")}</h1>
+            <p>{t("Décris ta demande. Notre équipe te répondra avec une solution claire.")}</p>
           </div>
         </section>
 
-        <section className="support-form-card" aria-label="Formulaire de support">
+        <section className="support-form-card" aria-label={t("Formulaire de support")}>
           <div className="support-card-heading">
             <span>
               <Icon i="message-square-text" size={18} />
             </span>
             <div>
-              <h2>Parle-nous de ta demande</h2>
-              <p>Ces informations nous aident à mieux te répondre.</p>
+              <h2>{t("Parle-nous de ta demande")}</h2>
+              <p>{t("Ces informations nous aident à mieux te répondre.")}</p>
             </div>
           </div>
 
           <label className="support-field">
-            <span>Sujet</span>
+            <span>{t("Sujet")}</span>
             <span className="support-input-shell">
               <Icon i="mail" size={17} />
               <DemoField
                 name="support.subject"
-                label="Sujet"
-                placeholder="Ex. Problème avec ma chanson"
+                label={t("Sujet")}
+                placeholder={t("Ex. Problème avec ma chanson")}
                 multiline={false}
                 type="text"
                 maxLength={254}
@@ -96,24 +97,28 @@ export default function ContactSupportScreen() {
           </label>
 
           <div className="support-field">
-            <span>Catégorie</span>
+            <span>{t("Catégorie")}</span>
             <MusikSelect
               className="support-category-select"
               icon="list"
-              ariaLabel="Catégorie"
+              ariaLabel={t("Catégorie")}
               value={demo.fields["support.category"]}
               onChange={(value) => demo.field("support.category", value)}
-              options={["Problème technique", "Compte", "Crédits"].map((label) => ({ value: label, label }))}
+              options={[
+                { value: "Problème technique", label: t("Problème technique") },
+                { value: "Compte", label: t("Compte") },
+                { value: "Crédits", label: t("Crédits") },
+              ]}
             />
           </div>
 
           <label className="support-field">
-            <span>Votre message</span>
+            <span>{t("Votre message")}</span>
             <span className="support-input-shell is-message">
               <DemoField
                 name="support.message"
-                label="Votre message"
-                placeholder="Décris le problème et ce que tu essayais de faire..."
+                label={t("Votre message")}
+                placeholder={t("Décris le problème et ce que tu essayais de faire...")}
                 multiline
                 type="text"
                 maxLength={5000}
@@ -128,18 +133,18 @@ export default function ContactSupportScreen() {
               <Icon i="phone-call" size={18} />
             </span>
             <div>
-              <h2>Comment pouvons-nous te joindre ?</h2>
-              <p>Ces informations servent uniquement à cette demande.</p>
+              <h2>{t("Comment pouvons-nous te joindre ?")}</h2>
+              <p>{t("Ces informations servent uniquement à cette demande.")}</p>
             </div>
           </div>
           <div className="support-contact-grid">
             <label className="support-field">
-              <span>Email</span>
+              <span>{t("Email")}</span>
               <span className="support-input-shell">
                 <Icon i="at-sign" size={17} />
                 <DemoField
                   name="support.email"
-                  label="Email"
+                  label={t("Email")}
                   placeholder="kofi@example.com"
                   multiline={false}
                   type="email"
@@ -149,13 +154,13 @@ export default function ContactSupportScreen() {
             </label>
             <label className="support-field">
               <span>
-                Téléphone <small>optionnel</small>
+                {t("Téléphone")} <small>{t("optionnel")}</small>
               </span>
               <span className="support-input-shell">
                 <Icon i="phone" size={17} />
                 <DemoField
                   name="support.phone"
-                  label="Téléphone"
+                  label={t("Téléphone")}
                   placeholder="+225 XX XX XX XX"
                   multiline={false}
                   type="tel"
@@ -169,8 +174,8 @@ export default function ContactSupportScreen() {
         <div className="support-response-note">
           <Icon i="clock-3" size={17} />
           <p>
-            <strong>Réponse sous 24 heures</strong>
-            <span>Tu recevras une réponse sur l’adresse indiquée.</span>
+            <strong>{t("Réponse sous 24 heures")}</strong>
+            <span>{t("Tu recevras une réponse sur l’adresse indiquée.")}</span>
           </p>
         </div>
       </div>
@@ -183,10 +188,10 @@ export default function ContactSupportScreen() {
           disabled={submitting}
           onClick={() => void submitSupportRequest()}
         >
-          <Icon i="send" size={19} /> {submitting ? "Envoi en cours…" : "Envoyer mon message"}
+          <Icon i="send" size={19} /> {submitting ? t("Envoi en cours…") : t("Envoyer mon message")}
         </button>
         <button type="button" data-demo-ready className="support-cancel" onClick={() => demo.go("/dashboard/help")}>
-          Annuler
+          {t("Annuler")}
         </button>
       </div>
     </div>

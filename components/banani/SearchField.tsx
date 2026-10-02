@@ -1,5 +1,6 @@
 "use client";
 import Icon from "./Icon";
+import { translate as t } from "@/lib/i18n/translate";
 export default function SearchField({
   value,
   onChange,
@@ -15,12 +16,12 @@ export default function SearchField({
         <Icon i="search" size={17} />
       </span>
       <label className="demo-search-content">
-        <span>Rechercher</span>
+        <span>{t("Rechercher")}</span>
         <input
           type="search"
           aria-label={label}
           className="demo-field"
-          placeholder="Titre, style ou occasion…"
+          placeholder={t("Titre, style ou occasion…")}
           maxLength={200}
           value={value}
           onChange={(event) => onChange(event.target.value)}
@@ -30,7 +31,7 @@ export default function SearchField({
         <button
           type="button"
           data-demo-ready="true"
-          aria-label="Effacer la recherche"
+          aria-label={t("Effacer la recherche")}
           onClick={() => onChange("")}
           className="demo-search-clear"
         >

@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import Icon from "./Icon";
+import { translate as t } from "@/lib/i18n/translate";
 
 export type MusikSelectOption = {
   value: string;
@@ -15,7 +16,7 @@ export default function MusikSelect({
   options,
   onChange,
   ariaLabel,
-  placeholder = "Sélectionner",
+  placeholder = t("Sélectionner"),
   icon,
   className = "",
   showOptionLabels = true,

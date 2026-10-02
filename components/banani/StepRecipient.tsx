@@ -255,7 +255,7 @@ export default function StepRecipient() {
               <input
                 type="text"
                 value={demo.fields.recipientPronunciation}
-                placeholder="Aï-cha"
+                placeholder={t("Aï-cha")}
                 aria-labelledby="recipient-pronunciation-label"
                 aria-readonly="true"
                 aria-invalid={Boolean(fieldErrors.pronunciation)}
@@ -349,7 +349,7 @@ export default function StepRecipient() {
               <input
                 type="text"
                 value={demo.fields.senderPronunciation}
-                placeholder="Mou-ssa"
+                placeholder={t("Mou-ssa")}
                 aria-labelledby="sender-pronunciation-label"
                 aria-readonly="true"
                 aria-invalid={Boolean(fieldErrors.senderPronunciation)}

@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import DemoToggle from "./DemoToggle";
@@ -28,7 +28,7 @@ export default function SettingsMobile() {
           type="button"
           data-demo-ready="true"
           onClick={() => demo.go("/dashboard")}
-          aria-label="Fermer"
+          aria-label={t("Fermer")}
           className="text-muted-foreground"
         >
           <Icon i="x" size={20} />
@@ -97,7 +97,7 @@ export default function SettingsMobile() {
                 <span className="text-xs text-muted-foreground">{t("Normal")}</span>
               </div>
               <input
-                aria-label="Taille du texte"
+                aria-label={t("Taille du texte")}
                 type="range"
                 min="1"
                 max="5"
@@ -149,7 +149,7 @@ export default function SettingsMobile() {
                 <p className="text-sm font-semibold text-foreground">{t("Volume des notifications")}</p>
                 <p className="text-xs text-muted-foreground">{t("Sons de l'app")}</p>
               </div>
-              <DemoToggle label="Volume des notifications" large />
+              <DemoToggle toggleKey="Volume des notifications" label={t("Volume des notifications")} large />
             </div>
 
             {/* Divider */}
@@ -161,7 +161,7 @@ export default function SettingsMobile() {
                 <p className="text-sm font-semibold text-foreground">{t("Qualité audio")}</p>
                 <p className="text-xs text-muted-foreground">{t("Haute qualité")}</p>
               </div>
-              <DemoToggle label="Qualité audio" large />
+              <DemoToggle toggleKey="Qualité audio" label={t("Qualité audio")} large />
             </div>
           </div>
         </div>
@@ -174,7 +174,9 @@ export default function SettingsMobile() {
             <button
               type="button"
               data-demo-ready="true"
-              onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })}
+              onClick={() =>
+                demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true })
+              }
               className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg border border-border"
             >
               <div className="flex-1 text-left">
@@ -223,7 +225,9 @@ export default function SettingsMobile() {
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.notify("Information de maquette : " + item.label)}
+                onClick={() =>
+                  demo.notify(translateTemplate("Information de maquette : {label}", { label: item.label }))
+                }
                 key={item.label}
                 className="w-full flex items-center justify-between px-3 py-2.5 text-left"
               >

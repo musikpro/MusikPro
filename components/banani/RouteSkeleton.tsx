@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import Preview from "./Preview";
+import { translate as t } from "@/lib/i18n/translate";
 export default function RouteSkeleton({
   variant = "form",
 }: {
@@ -7,7 +8,7 @@ export default function RouteSkeleton({
 }) {
   return (
     <Preview>
-      <div className="banani-screen demo-route-skeleton" aria-busy="true" aria-label="Chargement de la page">
+      <div className="banani-screen demo-route-skeleton" aria-busy="true" aria-label={t("Chargement de la page")}>
         <div className="flex items-center justify-between p-4 border-b border-border">
           <Skeleton width="100px" height="24px" />
           <Skeleton width="80px" height="24px" />

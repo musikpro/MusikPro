@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { translate as t } from "@/lib/i18n/translate";
 
 function Content({ desktop = false }: { desktop?: boolean }) {
   return (
@@ -77,7 +78,7 @@ function Content({ desktop = false }: { desktop?: boolean }) {
 }
 export default function DashboardSkeleton() {
   return (
-    <div className="banani-copy" aria-busy="true" aria-label="Chargement du dashboard">
+    <div className="banani-copy" aria-busy="true" aria-label={t("Chargement du dashboard")}>
       <div className="banani-mobile">
         <Content />
       </div>

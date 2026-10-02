@@ -7,45 +7,45 @@ export const screenSize = "mobile";
 
 import Icon from "./Icon";
 
-const notifications = [
+const getNotifications = () => [
   {
     id: 1,
     type: "music",
-    title: "Génération terminée",
-    message: 'Votre chanson "Danse la Nuit" est prête à écouter !',
-    time: "Il y a 2h",
+    title: t("Génération terminée"),
+    message: t('Votre chanson "Danse la Nuit" est prête à écouter !'),
+    time: t("Il y a 2h"),
     unread: true,
   },
   {
     id: 2,
     type: "heart",
-    title: "Nouvelles likes",
-    message: 'Votre chanson "Pour toi Mariam" a reçu 12 likes.',
-    time: "Il y a 5h",
+    title: t("Nouvelles likes"),
+    message: t('Votre chanson "Pour toi Mariam" a reçu 12 likes.'),
+    time: t("Il y a 5h"),
     unread: true,
   },
   {
     id: 3,
     type: "play",
-    title: "Nouvelles écoutes",
-    message: 'Votre chanson "Rêve d\'Afrique" a été écoutée 45 fois.',
-    time: "Hier",
+    title: t("Nouvelles écoutes"),
+    message: t('Votre chanson "Rêve d\'Afrique" a été écoutée 45 fois.'),
+    time: t("Hier"),
     unread: false,
   },
   {
     id: 4,
     type: "bell",
-    title: "Concours du mois",
-    message: "Participez à notre concours mensuel et gagnez des chansons !",
-    time: "Il y a 2 jours",
+    title: t("Concours du mois"),
+    message: t("Participez à notre concours mensuel et gagnez des chansons !"),
+    time: t("Il y a 2 jours"),
     unread: false,
   },
   {
     id: 5,
     type: "mail",
-    title: "Promotion spéciale",
-    message: "Profitez de 20% de réduction sur votre prochain abonnement.",
-    time: "Il y a 3 jours",
+    title: t("Promotion spéciale"),
+    message: t("Profitez de 20% de réduction sur votre prochain abonnement."),
+    time: t("Il y a 3 jours"),
     unread: false,
   },
 ];
@@ -63,7 +63,7 @@ const getIcon = (type: string) => {
 
 export default function NotificationCenterScreen() {
   const demo = useDemo();
-  const visibleNotifications = demo.isDemo ? notifications : [];
+  const visibleNotifications = demo.isDemo ? getNotifications() : [];
   return (
     <div className="bg-background flex flex-col">
       {/* Top Nav */}
@@ -92,8 +92,8 @@ export default function NotificationCenterScreen() {
         {visibleNotifications.length === 0 && (
           <div className="rounded-xl border border-border bg-card px-5 py-8 text-center">
             <Icon i="bell" size={26} className="mx-auto mb-2 text-primary" />
-            <p className="font-semibold text-foreground">Aucune notification</p>
-            <p className="mt-1 text-sm text-muted-foreground">Tes prochaines notifications apparaîtront ici.</p>
+            <p className="font-semibold text-foreground">{t("Aucune notification")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("Tes prochaines notifications apparaîtront ici.")}</p>
           </div>
         )}
         {visibleNotifications.map((notif) => (
