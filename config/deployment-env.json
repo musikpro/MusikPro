@@ -281,6 +281,22 @@
           "example": "openssl rand -base64 48"
         },
         {
+          "name": "EASYCRON_API_KEY",
+          "sensitive": true,
+          "required": "optional",
+          "vercel": ["Production"],
+          "source": "Clé d'API EasyCron (https://www.easycron.com/user/key), utilisée en lecture par la boîte Planificateur de /admin/settings.",
+          "example": "..."
+        },
+        {
+          "name": "EASYCRON_CRON_JOB_ID",
+          "sensitive": false,
+          "required": "optional",
+          "vercel": ["Production"],
+          "source": "Numéro de la tâche EasyCron qui appelle /api/cron/reconcile-music-jobs.",
+          "example": "11552353"
+        },
+        {
           "name": "TURNSTILE_SECRET_KEY",
           "sensitive": true,
           "required": "optional",

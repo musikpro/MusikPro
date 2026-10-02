@@ -4,7 +4,7 @@ import { localizationSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { getPaymentBypassStatus } from "@/lib/settings/payment-bypass";
 import { isUpstashConfigured } from "@/lib/cache/upstash";
-import { getSchedulerStatus } from "@/lib/cron/github-actions";
+import { getSchedulerStatus } from "@/lib/cron/easycron";
 import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
 import PaymentBypassPanel from "./PaymentBypassPanel";
 import CountryDetectionPanel from "./CountryDetectionPanel";
