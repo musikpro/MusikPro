@@ -10,6 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "invalid_locale" }, { status: 400, headers: { "Cache-Control": "no-store" } });
   }
   return NextResponse.json(await loadOverlay(locale.data), {
-    headers: { "Cache-Control": "public, max-age=30, stale-while-revalidate=300" },
+    headers: { "Cache-Control": "public, max-age=0, must-revalidate" },
   });
 }

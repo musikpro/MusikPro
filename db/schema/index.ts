@@ -12,7 +12,7 @@ export const plans = pgTable("plans", {
   active: boolean("active").notNull().default(true),
   features: jsonb("features"),
   metadata: jsonb("metadata"),
-  /** AI-generated per-locale { en: { name, description, bonus }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+  /** AI-generated per-locale { en: { name, description, bonus }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
   translations: jsonb("translations"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -193,7 +193,7 @@ export const musicStyles = pgTable(
     tone: text("tone").notNull().default("orange"),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
-    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -221,7 +221,7 @@ export const occasions = pgTable(
     showSender: boolean("show_sender").notNull().default(true),
     /** Champ (occasion_fields.id) dont la valeur sert de titre quand il n'y a pas de destinataire. */
     titleFieldId: text("title_field_id"),
-    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -256,7 +256,7 @@ export const occasionFields = pgTable(
     aiHint: text("ai_hint").notNull().default(""),
     sortOrder: integer("sort_order").notNull().default(100),
     active: boolean("active").notNull().default(true),
-    /** AI-generated per-locale { en: { label, helpText, placeholder, option0… }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { label, helpText, placeholder, option0… }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -299,7 +299,7 @@ export const moods = pgTable(
     aiHint: text("ai_hint").notNull().default(""),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
-    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -317,7 +317,7 @@ export const recipientRelations = pgTable(
     slug: text("slug").notNull().unique(),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
-    /** AI-generated per-locale { en: { name }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { name }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -339,7 +339,7 @@ export const heroAnimatedTexts = pgTable(
     emoji: text("emoji").notNull().default("🎵"),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
-    /** AI-generated per-locale { en: { label }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { label }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -358,7 +358,7 @@ export const heroAnimationSettings = pgTable("hero_animation_settings", {
   id: text("id").primaryKey().default("global"),
   /** Canonical French Hero H1 — replaces the old hardcoded t("...") string, editable by the owner. */
   headline: text("headline").notNull().default("Crée ta chanson personnalisée"),
-  /** AI-generated per-locale { en: { headline }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+  /** AI-generated per-locale { en: { headline }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
   translations: jsonb("translations"),
   animationType: text("animation_type").notNull().default("fade"),
   textSize: text("text_size").notNull().default("md"),
@@ -838,7 +838,7 @@ export const phonePrefixes = pgTable(
     placeholder: text("placeholder").notNull(),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
-    /** AI-generated per-locale { en: { countryName }, es: {...}, pt: {...} } — see lib/i18n/catalog-translate.ts. */
+    /** AI-generated per-locale { en: { countryName }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

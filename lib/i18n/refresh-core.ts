@@ -23,6 +23,10 @@ export type RefreshDeps = {
   saveUi: (locale: TranslationLocale, entries: Record<string, string>) => Promise<void>;
   maxBatches: number;
   batchSize: number;
+  /** Budget de temps (ms) : plus aucun lot n'est lancé une fois dépassé ; l'écriture a toujours lieu. */
+  maxMillis?: number;
+  /** Horloge injectable (tests). */
+  now?: () => number;
 };
 
 export type RefreshResult = {
@@ -68,11 +72,14 @@ export async function runRefresh(deps: RefreshDeps): Promise<RefreshResult> {
   };
   const has = (locale: TranslationLocale, text: string) => Object.hasOwn(translated[locale], text) && Boolean(translated[locale][text]);
   let budget = deps.maxBatches;
+  const now = deps.now ?? Date.now;
+  const startedAt = now();
   let error: unknown = null;
   try {
     outer: for (const job of jobs) {
       for (let i = 0; i < job.pool.length; i += deps.batchSize) {
         if (budget <= 0) break outer;
+        if (deps.maxMillis !== undefined && now() - startedAt >= deps.maxMillis) break outer;
         budget -= 1;
         Object.assign(translated[job.locale], await deps.translateBatch(job.locale, job.pool.slice(i, i + deps.batchSize)));
       }

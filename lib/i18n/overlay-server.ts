@@ -19,7 +19,7 @@ export async function loadOverlay(locale: OverlayLocale): Promise<Record<string,
       return Object.fromEntries(rows.map((row) => [row.source, row.translation]));
     },
     [OVERLAY_TAG, locale],
-    { tags: [OVERLAY_TAG] },
+    { tags: [OVERLAY_TAG], revalidate: 3600 },
   )();
 }
 

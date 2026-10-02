@@ -132,3 +132,22 @@ describe("runRefresh", () => {
     expect(result.remaining).toBe(3);
   });
 });
+
+describe("runRefresh time budget", () => {
+  it("stops launching batches once the budget is exceeded, still persists and reports remaining", async () => {
+    let clock = 0;
+    const translateBatch = vi.fn(async (locale: string, strings: string[]) => {
+      clock += 200_000; // le premier lot « dure » plus que le budget
+      return upper(locale, strings);
+    });
+    const { deps, savedUi, savedRows } = makeDeps({ translateBatch, maxMillis: 100_000, now: () => clock });
+    const result = await runRefresh(deps);
+    expect(translateBatch).toHaveBeenCalledTimes(1);
+    expect(savedUi).toHaveLength(1);
+    expect(savedUi[0].locale).toBe("en");
+    expect(savedRows).toHaveLength(1);
+    expect(result.error).toBeNull();
+    // es et pt non traités : (Bonjour, Merci, Anniversaire) x 2
+    expect(result.remaining).toBe(6);
+  });
+});

@@ -28,6 +28,7 @@ async function loadCurrentLocale() {
     if (!response.ok) throw new Error("overlay unavailable");
     const dictionary: unknown = await response.json();
     if (isDictionary(dictionary)) setOverlay(locale, dictionary);
+    else loadedAt.delete(locale); // forme invalide : ne pas bloquer les nouvelles tentatives
   } catch {
     loadedAt.delete(locale); // repli silencieux sur les fichiers JSON ; nouvel essai au prochain changement de langue
   }

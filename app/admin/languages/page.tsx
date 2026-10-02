@@ -15,6 +15,9 @@ import CurrencySection from "./CurrencySection";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { deleteLanguage, removeCountryLanguage, setCountryLanguage, toggleLanguageScope } from "./actions";
 
+// Les Server Actions de la page (Actualiser les traductions) héritent de cette durée max (voir doc Next : maxDuration).
+export const maxDuration = 300;
+
 function LanguageSection({
   title,
   description,

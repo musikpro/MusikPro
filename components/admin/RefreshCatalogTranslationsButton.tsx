@@ -7,6 +7,12 @@ import { useAdminToast } from "@/components/admin/AdminToastProvider";
 
 const MAX_CALLS = 40;
 
+const texts = (count: number) => `${count} ${count === 1 ? "texte" : "textes"}`;
+const translatedLabel = (count: number) => `${texts(count)} ${count === 1 ? "traduit" : "traduits"}`;
+const remainingLabel = (count: number) => `${texts(count)} ${count === 1 ? "restant" : "restants"}`;
+const upToDateLabel = (count: number) => `${count} déjà à jour`;
+const toTranslateLabel = (count: number) => `${count} ${count === 1 ? "reste" : "restent"} à traduire`;
+
 type Summary = { translated: number; alreadyUpToDate: number; remaining: number };
 
 export default function RefreshCatalogTranslationsButton() {
@@ -33,15 +39,17 @@ export default function RefreshCatalogTranslationsButton() {
           if (call === 0) alreadyUpToDate = result.alreadyUpToDate;
           translated += result.translated;
           remaining = result.remaining;
-          if (remaining > 0) setProgress(`${translated} textes traduits, ${remaining} restants…`);
+          if (remaining > 0) setProgress(`${translatedLabel(translated)}, ${remainingLabel(remaining)}…`);
           if (remaining === 0 || result.translated === 0) break; // fini, ou aucun progrès : ne jamais boucler dans le vide
         }
         setSummary({ translated, alreadyUpToDate, remaining });
         showToast({
           message:
             translated === 0 && remaining === 0
-              ? `Tout est déjà traduit (${alreadyUpToDate} textes à jour).`
-              : `${translated} textes traduits, ${alreadyUpToDate} déjà à jour${remaining ? `, ${remaining} restent à traduire (relance)` : ""}.`,
+              ? alreadyUpToDate > 0
+                ? `Tout est déjà traduit (${texts(alreadyUpToDate)} à jour).`
+                : "Rien à traduire."
+              : `${translatedLabel(translated)}, ${upToDateLabel(alreadyUpToDate)}${remaining ? `, ${toTranslateLabel(remaining)} (relance)` : ""}.`,
           tone: remaining ? "info" : "success",
         });
       } catch (err) {
@@ -61,8 +69,8 @@ export default function RefreshCatalogTranslationsButton() {
       {pending && progress ? <p className="admin-language-detection-hint">{progress}</p> : null}
       {summary && !pending ? (
         <p className="admin-language-detection-hint">
-          {summary.translated} textes traduits, {summary.alreadyUpToDate} déjà à jour
-          {summary.remaining ? `, ${summary.remaining} restent à traduire` : ""}.
+          {translatedLabel(summary.translated)}, {upToDateLabel(summary.alreadyUpToDate)}
+          {summary.remaining ? `, ${toTranslateLabel(summary.remaining)}` : ""}.
         </p>
       ) : null}
     </div>

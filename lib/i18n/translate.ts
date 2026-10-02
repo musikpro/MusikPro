@@ -33,7 +33,9 @@ const dictionaries: Record<Exclude<Locale, "fr">, Record<string, string>> = { en
  */
 export function translateForLocale(text: string, locale: Locale): string {
   if (locale === "fr") return text;
-  return dictionaries[locale]?.[text] ?? getOverlayEntry(locale, text) ?? text;
+  const dictionary = dictionaries[locale] as Record<string, string> | undefined;
+  const fixed = dictionary && Object.hasOwn(dictionary, text) ? dictionary[text] : undefined;
+  return fixed ?? getOverlayEntry(locale, text) ?? text;
 }
 
 export function translate(text: string): string {

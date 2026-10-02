@@ -28,6 +28,8 @@ import type { CatalogTranslations } from "./translate";
 
 export const MAX_BATCHES_PER_CALL = 5;
 export const BATCH_SIZE = 40;
+/** Budget de temps avant d'arrêter de lancer des lots (la fonction a maxDuration = 300 s sur la page). */
+export const MAX_MILLIS_PER_CALL = 100_000;
 const UI_INSERT_CHUNK = 200;
 
 export type Counts = {
@@ -146,7 +148,10 @@ export async function runTranslationsRefresh(): Promise<RefreshResult & { counts
         translations: asTranslations(row.translations),
       })),
       save: async (id, translations) => {
-        await serviceDb.update(phonePrefixes).set({ translations, updatedAt: new Date() }).where(eq(phonePrefixes.id, id));
+        await serviceDb
+          .update(phonePrefixes)
+          .set({ translations, updatedAt: new Date() })
+          .where(eq(phonePrefixes.id, id));
       },
     },
     {
@@ -219,18 +224,23 @@ export async function runTranslationsRefresh(): Promise<RefreshResult & { counts
     }
   };
 
-  const result = await runRefresh({
-    manifest,
-    json: { en, es, pt },
-    stored,
-    sources,
-    translateBatch,
-    saveUi,
-    maxBatches: MAX_BATCHES_PER_CALL,
-    batchSize: BATCH_SIZE,
-  });
-
-  if (result.ui.translated > 0) revalidateTag(OVERLAY_TAG, { expire: 0 });
+  let result: RefreshResult;
+  try {
+    result = await runRefresh({
+      manifest,
+      json: { en, es, pt },
+      stored,
+      sources,
+      translateBatch,
+      saveUi,
+      maxBatches: MAX_BATCHES_PER_CALL,
+      batchSize: BATCH_SIZE,
+      maxMillis: MAX_MILLIS_PER_CALL,
+    });
+  } finally {
+    // Toujours invalider : même en cas d'échec, un saveUi partiel a pu écrire des lignes.
+    revalidateTag(OVERLAY_TAG, { expire: 0 });
+  }
 
   const counts: Counts = {
     occasions: occasionRows.length,

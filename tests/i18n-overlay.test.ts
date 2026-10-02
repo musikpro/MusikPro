@@ -63,3 +63,12 @@ describe("overlayLocaleSchema", () => {
     expect(overlayLocaleSchema.safeParse(null).success).toBe(false);
   });
 });
+
+describe("translateForLocale prototype safety", () => {
+  it("never returns inherited members of the dictionary", () => {
+    expect(translateForLocale("constructor", "en")).toBe("constructor");
+    expect(translateForLocale("toString", "es")).toBe("toString");
+    expect(translateForLocale("__proto__", "pt")).toBe("__proto__");
+    expect(translateForLocale("Bonjour", "xx" as never)).toBe("Bonjour");
+  });
+});

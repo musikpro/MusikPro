@@ -13,7 +13,7 @@ describe("GET /api/i18n/overlay", () => {
     const response = await call("?locale=en");
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ "Texte inédit": "Brand new text" });
-    expect(response.headers.get("Cache-Control")).toContain("public");
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=0, must-revalidate");
     expect(loadOverlay).toHaveBeenCalledWith("en");
   });
 

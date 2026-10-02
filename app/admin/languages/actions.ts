@@ -279,6 +279,7 @@ export async function refreshCatalogTranslations(): Promise<
     const result = await runTranslationsRefresh();
     if (result.translated > 0) {
       await writeAuditLog({
+        // Nom d'action conservé tel quel : continuité de l'historique d'audit.
         action: "catalog.translations.refreshed",
         actorId: session.user.id,
         targetType: "localization_settings",
