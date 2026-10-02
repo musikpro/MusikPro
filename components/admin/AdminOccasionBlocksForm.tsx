@@ -44,7 +44,7 @@ export default function AdminOccasionBlocksForm({
   ];
   return (
     <section className="admin-panel admin-editor-card">
-      <AdminActionForm action={updateOccasionBlocks} className="admin-editor-grid admin-occasion-editor-grid">
+      <AdminActionForm action={updateOccasionBlocks} className="admin-editor-grid admin-occasion-editor-grid admin-occasion-fields-form">
         <input type="hidden" name="occasionId" value={occasionId} />
         <div className="admin-editor-field">
           <span>Bloc « La personne concernée » (nom, prononciation, lien)</span>
@@ -66,7 +66,7 @@ export default function AdminOccasionBlocksForm({
             options={yesNo("De la part de qui")}
           />
         </div>
-        <div className="admin-editor-field is-wide">
+        <div className="admin-editor-field">
           <span>Champ utilisé pour le titre quand il n’y a pas de destinataire (ex. nom du produit)</span>
           <AdminSelect
             name="titleFieldId"
@@ -76,7 +76,7 @@ export default function AdminOccasionBlocksForm({
             options={[{ value: "", label: "Aucun — titre sans nom" }, ...fields.map((f) => ({ value: f.id, label: f.label }))]}
           />
         </div>
-        <div className="admin-editor-actions is-wide">
+        <div className="admin-editor-actions is-wide admin-occasion-fields-actions">
           <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
             <Icon i="sparkles" size={15} /> {suggesting ? "L’IA réfléchit…" : "Suggérer avec l’IA"}
           </button>

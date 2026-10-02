@@ -77,7 +77,7 @@ export default function AdminOccasionFieldSortableGrid({
     <AdminSortableGrid
       items={fields}
       onReorder={reorderOccasionFields.bind(null, occasionId)}
-      className="admin-music-style-grid admin-recipient-relation-grid"
+      className="admin-music-style-grid admin-recipient-relation-grid admin-occasion-field-grid"
       itemLabel={(field) => field.label}
       renderItem={(field, context) => (
         <article
@@ -105,12 +105,12 @@ export default function AdminOccasionFieldSortableGrid({
             <DeleteForm id={field.id} label={field.label} />
           </footer>
           {otherOccasions.length ? (
-            <AdminActionForm action={duplicateOccasionField} className="admin-style-actions">
+            <AdminActionForm action={duplicateOccasionField} className="admin-field-duplicate">
               <input type="hidden" name="id" value={field.id} />
               <AdminSelect
                 name="targetOccasionId"
                 ariaLabel={`Dupliquer ${field.label} vers`}
-                placeholder="Dupliquer vers…"
+                placeholder="Vers…"
                 defaultValue=""
                 options={otherOccasions.map((occasion) => ({ value: occasion.id, label: occasion.name }))}
               />

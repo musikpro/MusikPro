@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useState, useTransition, type ReactNode } from "react";
 import { addProposedFields } from "@/app/admin/occasion-fields/actions";
 import { proposeOccasionFields } from "@/app/admin/occasion-fields/ai-actions";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
@@ -16,7 +16,14 @@ const TYPE_LABELS: Record<string, string> = {
   date: "Date",
 };
 
-export default function AdminOccasionFieldAiPanel({ occasionId }: { occasionId: string }) {
+export default function AdminOccasionFieldAiPanel({
+  occasionId,
+  extraAction,
+}: {
+  occasionId: string;
+  /** Action secondaire (ex. « Nouveau champ ») affichée à côté du bouton IA, dans la même barre d’outils. */
+  extraAction?: ReactNode;
+}) {
   const showToast = useAdminToast();
   const [proposals, setProposals] = useState<FieldProposal[]>([]);
   const [checked, setChecked] = useState<Set<number>>(new Set());
@@ -45,9 +52,12 @@ export default function AdminOccasionFieldAiPanel({ occasionId }: { occasionId: 
   const selected = proposals.filter((_, index) => checked.has(index));
   return (
     <section className="admin-panel admin-editor-card">
-      <button type="button" className="admin-secondary-action" onClick={propose} disabled={loading}>
-        <Icon i="sparkles" size={16} /> {loading ? "L’IA réfléchit…" : "Proposer des champs avec l’IA"}
-      </button>
+      <div className="admin-occasion-fields-toolbar">
+        <button type="button" className="admin-secondary-action" onClick={propose} disabled={loading}>
+          <Icon i="sparkles" size={16} /> {loading ? "L’IA réfléchit…" : "Proposer des champs avec l’IA"}
+        </button>
+        {extraAction}
+      </div>
       {proposals.length ? (
         <form action={formAction}>
           <input type="hidden" name="occasionId" value={occasionId} />

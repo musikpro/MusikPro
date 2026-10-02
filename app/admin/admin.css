@@ -6827,3 +6827,73 @@ body:has(.admin-app),
     grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
+
+/* Détails par occasion : boutons compacts (jamais pleine largeur), barre d'outils et « Dupliquer vers » propres. */
+.admin-occasion-fields-actions {
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.admin-occasion-fields-actions > button {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.admin-occasion-fields-actions > button.admin-secondary-action {
+  border: 1px solid var(--admin-border);
+  color: var(--admin-foreground);
+  background: var(--admin-card);
+}
+
+.admin-occasion-fields-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-occasion-fields-toolbar > .admin-secondary-action {
+  width: auto;
+  min-height: 44px;
+  flex: 0 0 auto;
+  padding: 0 16px;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.admin-field-duplicate {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.admin-field-duplicate .admin-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.admin-field-duplicate .admin-select-trigger {
+  min-height: 40px;
+  font-size: 11px;
+}
+
+.admin-field-duplicate > button {
+  width: auto;
+  min-height: 40px;
+  flex: 0 0 auto;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+/* Cartes de champs : une seule colonne sur téléphone pour garder les actions lisibles. */
+@media (max-width: 599px) {
+  .admin-catalog-grid.admin-occasion-field-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

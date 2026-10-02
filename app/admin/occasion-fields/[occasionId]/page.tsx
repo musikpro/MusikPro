@@ -52,12 +52,14 @@ export default async function AdminOccasionDetailsPage({ params }: { params: Pro
           />
         </AdminTabPanel>
         <AdminTabPanel id="fields">
-          <AdminOccasionFieldAiPanel occasionId={occasion.id} />
-          <div className="admin-editor-actions">
-            <Link className="admin-secondary-action" href={`/admin/occasion-fields/${occasion.id}/fields/new`}>
-              <Icon i="plus" size={15} /> Nouveau champ
-            </Link>
-          </div>
+          <AdminOccasionFieldAiPanel
+            occasionId={occasion.id}
+            extraAction={
+              <Link className="admin-secondary-action" href={`/admin/occasion-fields/${occasion.id}/fields/new`}>
+                <Icon i="plus" size={15} /> Nouveau champ
+              </Link>
+            }
+          />
           {fields.length ? (
             <AdminOccasionFieldSortableGrid
               occasionId={occasion.id}
