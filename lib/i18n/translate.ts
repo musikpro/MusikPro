@@ -1,6 +1,7 @@
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";
+import { getOverlayEntry } from "./overlay";
 
 export type Locale = "fr" | "en" | "es" | "pt";
 
@@ -20,6 +21,7 @@ export type CatalogTranslations = Partial<Record<Exclude<Locale, "fr">, Record<s
  * French is the source language (keys double as the fallback string, never translated here).
  * The en/es/pt dictionaries are generated files: run `npm run i18n:sync` after adding new
  * t("...") calls to fill in missing keys via the connected AI provider (see scripts/i18n-sync.mts).
+ * Complété par le dictionnaire en base (lib/i18n/overlay.ts) rempli par le bouton Actualiser les traductions.
  */
 const dictionaries: Record<Exclude<Locale, "fr">, Record<string, string>> = { en, es, pt };
 
@@ -30,7 +32,8 @@ const dictionaries: Record<Exclude<Locale, "fr">, Record<string, string>> = { en
  * DemoProvider to read a saved preference from).
  */
 export function translateForLocale(text: string, locale: Locale): string {
-  return locale === "fr" ? text : (dictionaries[locale]?.[text] ?? text);
+  if (locale === "fr") return text;
+  return dictionaries[locale]?.[text] ?? getOverlayEntry(locale, text) ?? text;
 }
 
 export function translate(text: string): string {
