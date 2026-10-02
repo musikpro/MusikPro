@@ -1,10 +1,9 @@
 import Link from "next/link";
-import { headers } from "next/headers";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
-import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
+import { resolveDashboardLocale } from "@/lib/i18n/dashboard-locale";
 import { translateForLocale } from "@/lib/i18n/translate";
 export async function DashboardNav({ admin = false }: { admin?: boolean }) {
-  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const locale = await resolveDashboardLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   return (

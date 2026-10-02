@@ -4,12 +4,11 @@ import { payments, plans } from "@/db/schema";
 import { requireUser } from "@/lib/auth/session";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { CheckoutButton } from "@/components/checkout-button";
-import { headers } from "next/headers";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
-import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
+import { resolveDashboardLocale } from "@/lib/i18n/dashboard-locale";
 import { translateForLocale } from "@/lib/i18n/translate";
 export default async function Page() {
-  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const locale = await resolveDashboardLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   const s = await requireUser();

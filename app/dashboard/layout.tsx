@@ -32,8 +32,8 @@ import { getMusicfulGenerationScreenSettings, getMusicfulVersionsPerGeneration }
 import { getStoreLinks } from "@/lib/settings/store-links";
 import { headers } from "next/headers";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
-import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
-import { translateForLocale, type Locale } from "@/lib/i18n/translate";
+import { resolveDashboardLocale } from "@/lib/i18n/dashboard-locale";
+import { translateForLocale } from "@/lib/i18n/translate";
 import { notFound, redirect } from "next/navigation";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
@@ -108,11 +108,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // The language comes from the URL prefix; one that is not an active catalog language is a 404.
   if (!detectedInterfaceLanguage) notFound();
   // Server-side texts follow the URL language (the one the client shell uses), else the browser's.
-  const urlLocale = detectedInterfaceLanguage.code;
-  const locale: Locale =
-    urlLocale === "fr" || urlLocale === "en" || urlLocale === "es" || urlLocale === "pt"
-      ? urlLocale
-      : resolveLocaleFromAcceptLanguage(requestHeaders.get("accept-language"));
+  const locale = await resolveDashboardLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   return (
