@@ -4,8 +4,6 @@ import { z } from "zod";
 const API_BASE = "https://api.easycron.com/v1";
 /** Nombre de passages lus : 288 par jour à 5 min, donc environ 8 h d'historique en une seule requête. */
 const SAMPLE_SIZE = 100;
-/** Chaque lecture est mise en cache côté serveur pour rester très loin des quotas d'appels de l'API EasyCron. */
-const CACHE_SECONDS = 60;
 const REQUEST_TIMEOUT_MS = 8_000;
 /** Au-delà de ce délai sans passage (cron toutes les 5 min), le planificateur est considéré à l'arrêt. */
 export const STALE_AFTER_MINUTES = 15;
@@ -125,7 +123,8 @@ export async function getSchedulerStatus(now = Date.now()): Promise<SchedulerSta
     const response = await fetch(`${API_BASE}/cron-jobs/${jobId.data}/logs?page=1&page_size=${SAMPLE_SIZE}`, {
       headers: { Accept: "application/json", "X-API-Key": apiKey },
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-      next: { revalidate: CACHE_SECONDS },
+      // Pas de cache de données : un cache Next.js resservait une ancienne réponse quand sa revalidation échouait. La page admin est rare et réservée au propriétaire, donc le quota d'appels reste très loin.
+      cache: "no-store",
     });
     if (response.status === 401 || response.status === 403) {
       return {
