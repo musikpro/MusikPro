@@ -1,3 +1,4 @@
+import { primeOverlay } from "@/lib/i18n/overlay-server";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -16,6 +17,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
   const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   const translateTemplate = (text: string, values: Record<string, string | number>) =>
     translateTemplateForLocale(text, values, locale);
@@ -35,6 +37,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 export default async function PublicSongPage({ params }: Params) {
   const { slug } = await params;
   const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
 
   const song = await getPublicSongBySlug(slug);

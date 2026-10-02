@@ -706,9 +706,15 @@
         "components/banani/QuickLanguageSelect.tsx",
         "components/banani/StepAdditionalParams.tsx",
         "components/banani/DemoProvider.tsx",
-        "app/dashboard/layout.tsx"
+        "app/dashboard/layout.tsx",
+        "lib/i18n/overlay.ts",
+        "lib/i18n/overlay-schema.ts",
+        "lib/i18n/overlay-server.ts",
+        "app/api/i18n/overlay/route.ts"
       ],
-      "routes": [],
+      "routes": [
+        "/api/i18n/overlay"
+      ],
       "dependsOn": [
         "database",
         "auth"
@@ -719,7 +725,8 @@
         "Une langue peut être active pour l’interface, les paroles, ou les deux indépendamment.",
         "Les quatre langues initiales sont le français, l’anglais, l’espagnol et le portugais.",
         "La détection Country.is est pilotée depuis Neon, mise en cache sept jours dans Upstash et n’écrase jamais un choix manuel du client.",
-        "L’onglet « Association pays → langue » (table country_languages) permet au propriétaire d’associer un pays détecté à une langue d’interface active ; sans association explicite, la détection retombe sur la carte statique de lib/languages/country-language.ts."
+        "L’onglet « Association pays → langue » (table country_languages) permet au propriétaire d’associer un pays détecté à une langue d’interface active ; sans association explicite, la détection retombe sur la carte statique de lib/languages/country-language.ts.",
+        "GET /api/i18n/overlay?locale=en|es|pt (public, lecture seule, validée par Zod) renvoie le dictionnaire incrémental des textes fixes (table ui_translations), mis en cache serveur avec le tag i18n-overlay."
       ]
     },
     "audio-provider-slots": {

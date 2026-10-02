@@ -32,6 +32,12 @@
       "rateLimit": "scheduler-exempt",
       "markers": ["verifyCronRequest(request)"]
     },
+    "app/api/i18n/overlay/route.ts": {
+      "auth": "public-read",
+      "validation": "zod-query",
+      "rateLimit": "cacheable-read-exempt",
+      "markers": ["safeParse("]
+    },
     "app/api/health/route.ts": {
       "auth": "public-health",
       "validation": "no-input",

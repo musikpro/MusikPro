@@ -1,3 +1,4 @@
+import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
@@ -5,6 +6,7 @@ import { translateForLocale } from "@/lib/i18n/translate";
 
 export default async function PublicSongNotFound() {
   const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
 
   return (

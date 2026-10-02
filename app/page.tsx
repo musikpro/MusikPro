@@ -1,3 +1,4 @@
+import { primeOverlay } from "@/lib/i18n/overlay-server";
 import type { Metadata } from "next";
 import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
@@ -122,6 +123,7 @@ export default async function Home() {
   if (!isLanguageSwitch) after(() => writeFunnelEvent({ event: FUNNEL_EVENT.SITE_VISIT }));
 
   const locale = toSupportedLocale(activeLanguage?.code);
+  await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   const translateTemplate = (text: string, params: Record<string, string | number>) =>
     translateTemplateForLocale(text, params, locale);
