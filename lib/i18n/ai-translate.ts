@@ -21,6 +21,14 @@ const SYSTEM_INSTRUCTIONS =
   'Preserve capitalization style, punctuation, emoji, and any placeholders or variables exactly. Do not translate product name "MusikPro". ' +
   "Respond with ONLY a single JSON object mapping each input string to its translation — no markdown fences, no commentary, no extra keys.";
 
+/** Réponse IA illisible (JSON tronqué/invalide) : seule erreur que le moteur d'actualisation retente en scindant le lot. */
+export class TranslationParseError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "TranslationParseError";
+  }
+}
+
 function promptFor(locale: TranslationLocale, strings: string[]) {
   return (
     `Target language: ${LOCALE_NAMES[locale]}.\n` +
@@ -62,10 +70,10 @@ export async function translateBatch(locale: TranslationLocale, strings: string[
         // fall through to the error below
       }
     }
-    throw new Error(`AI translation response was not valid JSON: ${raw.text.slice(0, 200)}`);
+    throw new TranslationParseError(`AI translation response was not valid JSON: ${raw.text.slice(0, 200)}`);
   }
   if (!parsed || typeof parsed !== "object" || Array.isArray(parsed))
-    throw new Error("AI translation response was not a JSON object");
+    throw new TranslationParseError("AI translation response was not a JSON object");
 
   // Models sometimes normalize typographic apostrophes (’ → ') when echoing a key back, even
   // when told to keep it exact — match on a normalized form instead of relying on a byte-exact

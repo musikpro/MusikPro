@@ -16,7 +16,7 @@ import {
 } from "@/db/schema";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { fieldTranslationInput } from "@/lib/occasion-fields/types";
-import { translateBatch } from "./ai-translate";
+import { TranslationParseError, translateBatch } from "./ai-translate";
 import { TRANSLATION_LOCALES, type TranslationLocale } from "./incremental";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
@@ -29,6 +29,8 @@ import { loadStoredUiTexts } from "./untranslated-server";
 
 export const MAX_BATCHES_PER_CALL = 5;
 export const BATCH_SIZE = 40;
+/** Plafond de caractères par lot : au-delà, le JSON renvoyé par l'IA risque d'être tronqué. */
+export const MAX_CHARS_PER_BATCH = 6000;
 /** Budget de temps avant d'arrêter de lancer des lots (la fonction a maxDuration = 300 s sur la page). */
 export const MAX_MILLIS_PER_CALL = 100_000;
 const UI_INSERT_CHUNK = 200;
@@ -228,6 +230,8 @@ export async function runTranslationsRefresh(): Promise<RefreshResult & { counts
       maxBatches: MAX_BATCHES_PER_CALL,
       batchSize: BATCH_SIZE,
       maxMillis: MAX_MILLIS_PER_CALL,
+      maxCharsPerBatch: MAX_CHARS_PER_BATCH,
+      isRetryableError: (e) => e instanceof TranslationParseError,
     });
   } finally {
     // Toujours invalider : même en cas d'échec, un saveUi partiel a pu écrire des lignes.

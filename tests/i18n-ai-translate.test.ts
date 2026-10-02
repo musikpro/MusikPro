@@ -6,7 +6,7 @@ vi.mock("@/lib/ai/provider-core", () => ({
 }));
 vi.mock("@/lib/ai/text-generation-core", () => ({ runProviderTextTask }));
 
-import { translateBatch } from "@/lib/i18n/ai-translate";
+import { TranslationParseError, translateBatch } from "@/lib/i18n/ai-translate";
 
 describe("translateBatch", () => {
   it("recovers a single-string batch when the provider echoes a bare value instead of { key: value }", async () => {
@@ -27,5 +27,15 @@ describe("translateBatch", () => {
   it("does not apply the single-string recovery to a multi-string batch", async () => {
     runProviderTextTask.mockResolvedValueOnce({ text: '{\n  "juste une valeur"\n}' });
     await expect(translateBatch("es", ["Un", "Deux"])).rejects.toThrow("AI translation response was not valid JSON");
+  });
+
+  it("throws a TranslationParseError for both parse failures, a plain Error otherwise", async () => {
+    runProviderTextTask.mockResolvedValueOnce({ text: "not json at all" });
+    await expect(translateBatch("es", ["Un", "Deux"])).rejects.toBeInstanceOf(TranslationParseError);
+    runProviderTextTask.mockResolvedValueOnce({ text: '["a"]' });
+    await expect(translateBatch("es", ["Un", "Deux"])).rejects.toBeInstanceOf(TranslationParseError);
+    runProviderTextTask.mockRejectedValueOnce(new Error("timeout"));
+    const err = await translateBatch("es", ["Un"]).catch((e) => e);
+    expect(err).not.toBeInstanceOf(TranslationParseError);
   });
 });

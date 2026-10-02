@@ -8,6 +8,27 @@ import {
 } from "./incremental";
 import type { CatalogTranslations } from "./translate";
 
+/**
+ * Découpe en lots d'au plus `maxItems` textes ET `maxChars` caractères cumulés, ordre conservé.
+ * Un texte plus long que `maxChars` forme son propre lot.
+ */
+export function chunkByBudget(strings: string[], maxItems: number, maxChars: number): string[][] {
+  const chunks: string[][] = [];
+  let current: string[] = [];
+  let chars = 0;
+  for (const text of strings) {
+    if (current.length > 0 && (current.length >= maxItems || chars + text.length > maxChars)) {
+      chunks.push(current);
+      current = [];
+      chars = 0;
+    }
+    current.push(text);
+    chars += text.length;
+  }
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
+
 export type CatalogSource = {
   key: string;
   rows: CatalogRowInput[];
@@ -27,12 +48,18 @@ export type RefreshDeps = {
   maxMillis?: number;
   /** Horloge injectable (tests). */
   now?: () => number;
+  /** Erreurs « réponse illisible » : le lot est scindé en deux et retenté. Par défaut aucune (tout abandonne). */
+  isRetryableError?: (error: unknown) => boolean;
+  /** Plafond de caractères cumulés par lot (les gros paragraphes font tronquer le JSON de l'IA). Défaut : illimité. */
+  maxCharsPerBatch?: number;
 };
 
 export type RefreshResult = {
   translated: number;
   alreadyUpToDate: number;
   remaining: number;
+  /** Textes du pool qui ont échoué même seuls (réponse IA illisible) : laissés non traduits, retentés au prochain passage. */
+  skipped: number;
   ui: { translated: number; alreadyUpToDate: number };
   catalog: { translated: number; alreadyUpToDate: number };
   error: unknown | null;
@@ -75,13 +102,40 @@ export async function runRefresh(deps: RefreshDeps): Promise<RefreshResult> {
   const now = deps.now ?? Date.now;
   const startedAt = now();
   let error: unknown = null;
+  let skipped = 0;
+  const isRetryable = deps.isRetryableError ?? (() => false);
+  const overTime = () => deps.maxMillis !== undefined && now() - startedAt >= deps.maxMillis;
+
+  /**
+   * Traduit un lot. Sur erreur « réponse illisible » (retryable) et plus d'un texte, scinde en deux moitiés
+   * traduites récursivement ; un texte seul qui échoue est ignoré (reste non traduit, compté dans `skipped`).
+   * Ces retentatives ne consomment PAS `maxBatches` : elles sont bornées par le budget de temps `maxMillis`
+   * (horloge vérifiée avant chaque appel de retentative). Toute autre erreur remonte et interrompt la passe.
+   */
+  async function translateChunk(locale: TranslationLocale, chunk: string[]): Promise<void> {
+    try {
+      Object.assign(translated[locale], await deps.translateBatch(locale, chunk));
+    } catch (caught) {
+      if (!isRetryable(caught)) throw caught;
+      if (chunk.length === 1) {
+        skipped += 1;
+        return;
+      }
+      const middle = Math.ceil(chunk.length / 2);
+      for (const half of [chunk.slice(0, middle), chunk.slice(middle)]) {
+        if (overTime()) return;
+        await translateChunk(locale, half);
+      }
+    }
+  }
+
   try {
     outer: for (const job of jobs) {
-      for (let i = 0; i < job.pool.length; i += deps.batchSize) {
+      for (const chunk of chunkByBudget(job.pool, deps.batchSize, deps.maxCharsPerBatch ?? Infinity)) {
         if (budget <= 0) break outer;
-        if (deps.maxMillis !== undefined && now() - startedAt >= deps.maxMillis) break outer;
+        if (overTime()) break outer;
         budget -= 1;
-        Object.assign(translated[job.locale], await deps.translateBatch(job.locale, job.pool.slice(i, i + deps.batchSize)));
+        await translateChunk(job.locale, chunk);
       }
     }
   } catch (caught) {
@@ -126,6 +180,7 @@ export async function runRefresh(deps: RefreshDeps): Promise<RefreshResult> {
     translated: uiTranslated + catalogTranslated,
     alreadyUpToDate: uiUpToDate + catalogUpToDate,
     remaining,
+    skipped,
     ui: { translated: uiTranslated, alreadyUpToDate: uiUpToDate },
     catalog: { translated: catalogTranslated, alreadyUpToDate: catalogUpToDate },
     error,

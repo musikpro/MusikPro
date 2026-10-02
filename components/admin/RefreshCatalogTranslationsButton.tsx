@@ -13,6 +13,9 @@ const remainingLabel = (count: number) => `${texts(count)} ${count === 1 ? "rest
 const upToDateLabel = (count: number) => `${count} déjà à jour`;
 const toTranslateLabel = (count: number) => `${count} ${count === 1 ? "reste" : "restent"} à traduire`;
 
+const skippedLabel = (count: number) =>
+  `${texts(count)} ${count === 1 ? "n’a pas pu être traduit" : "n’ont pas pu être traduits"} (réponse IA invalide), ${count === 1 ? "il sera retenté" : "ils seront retentés"} au prochain clic.`;
+
 type Summary = { translated: number; alreadyUpToDate: number; remaining: number };
 
 export default function RefreshCatalogTranslationsButton() {
@@ -28,6 +31,7 @@ export default function RefreshCatalogTranslationsButton() {
       let translated = 0;
       let alreadyUpToDate = 0;
       let remaining = 0;
+      let skipped = 0;
       try {
         for (let call = 0; call < MAX_CALLS; call += 1) {
           const result = await refreshCatalogTranslations();
@@ -39,10 +43,18 @@ export default function RefreshCatalogTranslationsButton() {
           if (call === 0) alreadyUpToDate = result.alreadyUpToDate;
           translated += result.translated;
           remaining = result.remaining;
+          skipped = result.skipped;
           if (remaining > 0) setProgress(`${translatedLabel(translated)}, ${remainingLabel(remaining)}…`);
-          if (remaining === 0 || result.translated === 0) break; // fini, ou aucun progrès : ne jamais boucler dans le vide
+          if (remaining === 0 || result.translated === 0 || remaining === skipped) break; // fini, ou aucun progrès : ne jamais boucler dans le vide
         }
         setSummary({ translated, alreadyUpToDate, remaining });
+        if (skipped > 0) {
+          showToast({
+            message: `${translatedLabel(translated)}, ${upToDateLabel(alreadyUpToDate)}. ${skippedLabel(skipped)}`,
+            tone: "info",
+          });
+          return;
+        }
         showToast({
           message:
             translated === 0 && remaining === 0

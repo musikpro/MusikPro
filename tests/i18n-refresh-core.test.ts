@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { sourceHash } from "@/lib/i18n/incremental";
-import { runRefresh, type CatalogSource, type RefreshDeps } from "@/lib/i18n/refresh-core";
+import { chunkByBudget, runRefresh, type CatalogSource, type RefreshDeps } from "@/lib/i18n/refresh-core";
 import type { CatalogTranslations } from "@/lib/i18n/translate";
 
 const upper = (_locale: string, strings: string[]) =>
@@ -149,5 +149,90 @@ describe("runRefresh time budget", () => {
     expect(result.error).toBeNull();
     // es et pt non traités : (Bonjour, Merci, Anniversaire) x 2
     expect(result.remaining).toBe(6);
+  });
+});
+
+class ParseErr extends Error {}
+const retryable = (e: unknown) => e instanceof ParseErr;
+
+describe("runRefresh parse-error recovery", () => {
+  const four = ["a", "b", "c", "d"];
+
+  it("splits a chunk that fails to parse and recovers every string", async () => {
+    const translateBatch = vi.fn(async (l: string, strings: string[]) => {
+      if (strings.length > 2) throw new ParseErr("truncated");
+      return upper(l, strings);
+    });
+    const { deps } = makeDeps({ manifest: four, json: { en: {}, es: {}, pt: {} }, sources: [], translateBatch, isRetryableError: retryable });
+    const result = await runRefresh(deps);
+    expect(result.error).toBeNull();
+    expect(result.remaining).toBe(0);
+    expect(result.skipped).toBe(0);
+    expect(result.translated).toBe(12);
+  });
+
+  it("skips a single poison string, keeps the rest and continues with the next locale", async () => {
+    const translateBatch = vi.fn(async (l: string, strings: string[]) => {
+      if (strings.includes("poison")) {
+        if (strings.length > 1) throw new ParseErr("truncated");
+        throw new ParseErr("still bad");
+      }
+      return upper(l, strings);
+    });
+    const { deps, savedUi } = makeDeps({ manifest: ["ok1", "poison", "ok2"], json: { en: {}, es: {}, pt: {} }, sources: [], translateBatch, isRetryableError: retryable });
+    const result = await runRefresh(deps);
+    expect(result.error).toBeNull();
+    expect(result.skipped).toBe(3);
+    expect(result.remaining).toBe(3);
+    expect(result.translated).toBe(6);
+    expect(savedUi.map((s) => s.locale).sort()).toEqual(["en", "es", "pt"]);
+    expect(savedUi.every((s) => !("poison" in s.entries) && "ok1" in s.entries && "ok2" in s.entries)).toBe(true);
+  });
+
+  it("still aborts on a non-retryable error and persists what was obtained", async () => {
+    const translateBatch = vi
+      .fn<RefreshDeps["translateBatch"]>()
+      .mockImplementationOnce(upper)
+      .mockRejectedValueOnce(new Error("network"));
+    const manifest = Array.from({ length: 50 }, (_, i) => `Texte ${i}`);
+    const { deps, savedUi } = makeDeps({ manifest, json: { en: {}, es: {}, pt: {} }, sources: [], translateBatch, isRetryableError: retryable });
+    const result = await runRefresh(deps);
+    expect(result.error).toBeInstanceOf(Error);
+    expect(savedUi).toHaveLength(1);
+    expect(result.skipped).toBe(0);
+  });
+
+  it("stops retrying once the clock exceeds maxMillis", async () => {
+    let clock = 0;
+    const translateBatch = vi.fn(async () => {
+      clock += 200_000;
+      throw new ParseErr("truncated");
+    });
+    const { deps } = makeDeps({ manifest: four, json: { en: {}, es: {}, pt: {} }, sources: [], translateBatch, isRetryableError: retryable, maxMillis: 100_000, now: () => clock });
+    const result = await runRefresh(deps);
+    expect(translateBatch).toHaveBeenCalledTimes(1);
+    expect(result.error).toBeNull();
+    expect(result.remaining).toBe(12);
+  });
+
+  it("uses the char budget to build chunks", async () => {
+    const { deps } = makeDeps({ manifest: ["aaaa", "bbbb", "cccc"], json: { en: {}, es: {}, pt: {} }, sources: [], maxCharsPerBatch: 8, maxBatches: 10 });
+    await runRefresh(deps);
+    expect(vi.mocked(deps.translateBatch).mock.calls.filter((c) => c[0] === "en").map((c) => c[1])).toEqual([["aaaa", "bbbb"], ["cccc"]]);
+  });
+});
+
+describe("chunkByBudget", () => {
+  it("preserves order and respects maxItems", () => {
+    expect(chunkByBudget(["a", "b", "c", "d", "e"], 2, 1000)).toEqual([["a", "b"], ["c", "d"], ["e"]]);
+  });
+  it("respects the char cap", () => {
+    expect(chunkByBudget(["aaa", "bbb", "cc", "d"], 10, 5)).toEqual([["aaa"], ["bbb", "cc"], ["d"]]);
+  });
+  it("puts an oversize string alone", () => {
+    expect(chunkByBudget(["a", "x".repeat(50), "b"], 10, 10)).toEqual([["a"], ["x".repeat(50)], ["b"]]);
+  });
+  it("returns no chunk for no strings", () => {
+    expect(chunkByBudget([], 5, 5)).toEqual([]);
   });
 });
