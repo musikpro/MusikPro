@@ -47,10 +47,12 @@ describe("migration 0062_occasion_fields", () => {
   });
 
   it("is registered in the drizzle journal after 0061", () => {
-    const last = journal.entries[journal.entries.length - 1];
-    const previous = journal.entries[journal.entries.length - 2];
-    expect(last.tag).toBe("0062_occasion_fields");
-    expect(last.idx).toBe(previous.idx + 1);
-    expect(last.when).toBe(previous.when + 1000);
+    const position = journal.entries.findIndex((entry: { tag: string }) => entry.tag === "0062_occasion_fields");
+    expect(position).toBeGreaterThan(0);
+    const entry = journal.entries[position];
+    const previous = journal.entries[position - 1];
+    expect(previous.tag).toMatch(/^0061_/);
+    expect(entry.idx).toBe(previous.idx + 1);
+    expect(entry.when).toBe(previous.when + 1000);
   });
 });

@@ -7,7 +7,7 @@ export type Locale = "fr" | "en" | "es" | "pt";
 
 /**
  * Shape stored in an admin-managed catalog row's `translations` jsonb column (occasions, music
- * styles, recipient relations, credit plans) — kept here, not in lib/i18n/catalog-translate.ts,
+ * styles, recipient relations, credit plans) — kept here, not in lib/i18n/refresh-translations.ts,
  * so pure client-side types (e.g. lib/occasions/catalog.ts's OccasionOption) can reference it
  * without pulling in that module's server-only AI/DB dependencies into a client bundle.
  * `_src` stocke l'empreinte du texte français traduit, par langue puis par champ (traduction incrémentale).

@@ -47,7 +47,7 @@ export type ResolvedAnswer = {
   aiHint: string;
 };
 
-/** Champs français à traduire pour `translateCatalogTable` (clés plates, `option0…` pour les listes). */
+/** Champs français à traduire pour la traduction du catalogue (lib/i18n/refresh-translations.ts) (clés plates, `option0…` pour les listes). */
 export function fieldTranslationInput(field: {
   label: string;
   helpText: string;

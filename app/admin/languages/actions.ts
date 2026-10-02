@@ -5,26 +5,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import {
-  countryLanguages,
-  heroAnimatedTexts,
-  heroAnimationSettings,
-  languages,
-  localizationSettings,
-  musicStyles,
-  moods,
-  occasionFields,
-  occasions,
-  phonePrefixes,
-  plans,
-  recipientRelations,
-} from "@/db/schema";
+import { countryLanguages, languages, localizationSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
-import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
-import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
-import { fieldTranslationInput } from "@/lib/occasion-fields/types";
+import { describeRefreshError } from "@/lib/i18n/refresh-errors";
+import { runTranslationsRefresh } from "@/lib/i18n/refresh-translations";
+import { rateLimit } from "@/lib/security/rate-limit";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { withAdminNotice } from "@/lib/admin/notice-redirect";
@@ -271,184 +258,40 @@ export async function removeCountryLanguage(
   }
 }
 
-/**
- * Re-translates every admin-managed catalog table (occasions, music styles, recipient
- * relations, credit plans) via the connected AI provider and stores the result in each row's
- * own `translations` jsonb column — see lib/i18n/catalog-translate.ts. Triggered by the
- * "Actualiser les traductions" button so the admin can refresh translations whenever catalog
- * content changes, without a redeploy.
- */
-async function runCatalogTranslationsRefresh() {
-  const session = await requireAdmin();
-  const serviceDb = getServiceDb();
-
-  const [
-    occasionRows,
-    moodRows,
-    styleRows,
-    relationRows,
-    planRows,
-    prefixRows,
-    heroTextRows,
-    heroSettingsRows,
-    occasionFieldRows,
-  ] = await Promise.all([
-      serviceDb.select().from(occasions),
-      serviceDb.select().from(moods),
-      serviceDb.select().from(musicStyles),
-      serviceDb.select().from(recipientRelations),
-      serviceDb.select().from(plans),
-      serviceDb.select().from(phonePrefixes),
-      serviceDb.select().from(heroAnimatedTexts),
-      serviceDb.select().from(heroAnimationSettings),
-      serviceDb.select().from(occasionFields),
-    ]);
-
-  const [
-    occasionTranslations,
-    moodTranslations,
-    styleTranslations,
-    relationTranslations,
-    planTranslations,
-    prefixTranslations,
-    heroTextTranslations,
-    heroSettingsTranslations,
-    occasionFieldTranslations,
-  ] = await Promise.all([
-    translateCatalogTable(
-      occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-    ),
-    translateCatalogTable(
-      moodRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-    ),
-    translateCatalogTable(
-      styleRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
-    ),
-    translateCatalogTable(relationRows.map((row) => ({ id: row.id, fields: { name: row.name } }))),
-    translateCatalogTable(
-      planRows.map((row) => {
-        const features = creditPlanFeaturesSchema.safeParse(row.features);
-        return {
-          id: row.id,
-          fields: {
-            name: row.name,
-            description: row.description,
-            bonus: features.success ? features.data.bonus : null,
-          },
-        };
-      }),
-    ),
-    translateCatalogTable(prefixRows.map((row) => ({ id: row.id, fields: { countryName: row.countryName } }))),
-    translateCatalogTable(heroTextRows.map((row) => ({ id: row.id, fields: { label: row.label } }))),
-    translateCatalogTable(heroSettingsRows.map((row) => ({ id: row.id, fields: { headline: row.headline } }))),
-    translateCatalogTable(
-      occasionFieldRows.map((row) => ({
-        id: row.id,
-        fields: fieldTranslationInput({
-          label: row.label,
-          helpText: row.helpText,
-          placeholder: row.placeholder,
-          options: (row.options ?? []) as Array<{ label: string; emoji: string }>,
-        }),
-      })),
-    ),
-  ]);
-
-  await Promise.all([
-    ...occasionRows.map((row) =>
-      serviceDb
-        .update(occasions)
-        .set({ translations: occasionTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(occasions.id, row.id)),
-    ),
-    ...moodRows.map((row) =>
-      serviceDb
-        .update(moods)
-        .set({ translations: moodTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(moods.id, row.id)),
-    ),
-    ...styleRows.map((row) =>
-      serviceDb
-        .update(musicStyles)
-        .set({ translations: styleTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(musicStyles.id, row.id)),
-    ),
-    ...relationRows.map((row) =>
-      serviceDb
-        .update(recipientRelations)
-        .set({ translations: relationTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(recipientRelations.id, row.id)),
-    ),
-    ...planRows.map((row) =>
-      serviceDb
-        .update(plans)
-        .set({ translations: planTranslations.get(row.id) ?? {} })
-        .where(eq(plans.id, row.id)),
-    ),
-    ...prefixRows.map((row) =>
-      serviceDb
-        .update(phonePrefixes)
-        .set({ translations: prefixTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(phonePrefixes.id, row.id)),
-    ),
-    ...heroTextRows.map((row) =>
-      serviceDb
-        .update(heroAnimatedTexts)
-        .set({ translations: heroTextTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(heroAnimatedTexts.id, row.id)),
-    ),
-    ...heroSettingsRows.map((row) =>
-      serviceDb
-        .update(heroAnimationSettings)
-        .set({ translations: heroSettingsTranslations.get(row.id) ?? {} })
-        .where(eq(heroAnimationSettings.id, row.id)),
-    ),
-    ...occasionFieldRows.map((row) =>
-      serviceDb
-        .update(occasionFields)
-        .set({ translations: occasionFieldTranslations.get(row.id) ?? {}, updatedAt: new Date() })
-        .where(eq(occasionFields.id, row.id)),
-    ),
-  ]);
-
-  const counts = {
-    occasions: occasionRows.length,
-    moods: moodRows.length,
-    musicStyles: styleRows.length,
-    recipientRelations: relationRows.length,
-    plans: planRows.length,
-    phonePrefixes: prefixRows.length,
-    heroAnimatedTexts: heroTextRows.length,
-    occasionFields: occasionFieldRows.length,
-  };
-
-  await writeAuditLog({
-    action: "catalog.translations.refreshed",
-    actorId: session.user.id,
-    targetType: "localization_settings",
-    targetId: "global",
-    metadata: counts,
-  });
-
-  refresh();
-  return { counts };
+async function guardRefresh(userId: string) {
+  const limit = await rateLimit(`admin:translations-refresh:${userId}`, 300, 3600);
+  if (limit.backend === "unavailable") throw new Error("Le contrôle de débit est indisponible.");
+  if (!limit.success) throw new Error("RATE_LIMITED");
 }
 
+/**
+ * Une passe incrémentale de « Actualiser les traductions » : textes fixes de l'interface et tables
+ * catalogue (colonne `translations`) via le fournisseur IA connecté — voir lib/i18n/refresh-translations.ts.
+ * Le bouton relance l'action tant qu'il reste des textes (`remaining`).
+ */
 export async function refreshCatalogTranslations(): Promise<
-  | { ok: true; counts: Awaited<ReturnType<typeof runCatalogTranslationsRefresh>>["counts"] }
-  | { ok: false; message: string }
+  ({ ok: true } & Awaited<ReturnType<typeof runTranslationsRefresh>> & { error: null }) | { ok: false; message: string }
 > {
+  // Hors du try : requireAdmin() redirige un non-admin, la redirection ne doit pas être avalée.
+  const session = await requireAdmin();
   try {
-    const { counts } = await runCatalogTranslationsRefresh();
-    return { ok: true, counts };
-  } catch (error) {
-    // Production masks thrown Server Action messages ("Minified React error #441"): report a readable one.
-    if (error instanceof Error && error.message === "AI_PROVIDER_NOT_CONFIGURED") {
-      return {
-        ok: false,
-        message: "Aucun fournisseur IA n’est configuré. Enregistrez sa clé dans Fournisseurs IA, puis réessayez.",
-      };
+    await guardRefresh(session.user.id);
+    const result = await runTranslationsRefresh();
+    if (result.translated > 0) {
+      await writeAuditLog({
+        action: "catalog.translations.refreshed",
+        actorId: session.user.id,
+        targetType: "localization_settings",
+        targetId: "global",
+        metadata: { ...result.counts, translated: result.translated, remaining: result.remaining },
+      });
+      refresh();
     }
-    return { ok: false, message: actionErrorMessage(error, "La mise à jour des traductions a échoué.") };
+    if (result.error) {
+      return { ok: false, message: describeRefreshError(result.error, result.translated) };
+    }
+    return { ok: true, ...result, error: null };
+  } catch (error) {
+    return { ok: false, message: describeRefreshError(error, 0) };
   }
 }
