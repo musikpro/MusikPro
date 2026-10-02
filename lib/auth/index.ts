@@ -28,6 +28,10 @@ export const auth = betterAuth({
     provider: "pg",
     schema,
   }),
+  // Les jetons OAuth (accès, rafraîchissement, identité) sont chiffrés avant d'être écrits dans `account`. Les lignes
+  // déjà stockées en clair restent lisibles (Better Auth ne déchiffre que ce qui a l'air chiffré) ; elles sont
+  // chiffrées à la prochaine connexion. Le chiffrement dérive de BETTER_AUTH_SECRET.
+  account: { encryptOAuthTokens: true },
   socialProviders:
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? {
