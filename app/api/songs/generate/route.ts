@@ -17,6 +17,7 @@ import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
 import { writeAuditLog } from "@/lib/security/audit";
+import { OccasionDetailsError, resolveOccasionDetails } from "@/lib/occasion-fields/server";
 import { createLogger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
@@ -82,6 +83,19 @@ export async function POST(request: Request) {
     );
   const input = parsed.data;
 
+  let occasionDetails: Awaited<ReturnType<typeof resolveOccasionDetails>>;
+  try {
+    occasionDetails = await resolveOccasionDetails(input.occasion, input.occasionDetails);
+  } catch (error) {
+    if (error instanceof OccasionDetailsError) {
+      return NextResponse.json(
+        { error: "Certaines informations personnalisées sont invalides.", code: "OCCASION_DETAILS_INVALID", fields: error.errors },
+        { status: 422 },
+      );
+    }
+    throw error;
+  }
+
   const isOwner = hasAppRole((session.user as { role?: string }).role, "admin");
   const bypassActive = isOwner && (await isPaymentBypassEnabled());
 
@@ -106,7 +120,11 @@ export async function POST(request: Request) {
     newBalance = deducted;
   }
 
-  const title = buildSongTitle({ recipientName: input.recipientName, occasion: input.occasion, genre: input.genre });
+  const title = buildSongTitle({
+    recipientName: input.recipientName || occasionDetails.titleValue,
+    occasion: input.occasion,
+    genre: input.genre,
+  });
   const style = await resolveStylePrompt(
     input.genre,
     input.mood,
@@ -124,6 +142,7 @@ export async function POST(request: Request) {
         occasion: input.occasion,
         style,
         lyrics: input.lyrics,
+        occasionDetails: occasionDetails.answers.map(({ fieldId, label, value }) => ({ fieldId, label, value })),
         gender,
         instrumental: provider.defaultInstrumental ? 1 : 0,
       },

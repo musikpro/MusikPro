@@ -6,6 +6,8 @@ import { aiLyricsTaskSchema } from "@/lib/validation/ai";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
 import { classifyAnthropicError, classifyOpenAiError } from "@/lib/ai/errors";
+import { ANSWER_ERROR_MESSAGES } from "@/lib/occasion-fields/answers";
+import { OccasionDetailsError, resolveOccasionDetails } from "@/lib/occasion-fields/server";
 import { createLogger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
@@ -33,8 +35,25 @@ export async function POST(request: Request) {
       { error: "Paramètres de paroles invalides.", details: parsed.error.flatten() },
       { status: 400 },
     );
+  let details: Awaited<ReturnType<typeof resolveOccasionDetails>>["answers"] = [];
   try {
-    const result = await runLyricsTask(parsed.data, session.user.id);
+    details = (await resolveOccasionDetails(parsed.data.input.occasion, parsed.data.input.occasionDetails)).answers;
+  } catch (error) {
+    if (error instanceof OccasionDetailsError) {
+      const first = Object.values(error.errors)[0];
+      return NextResponse.json(
+        {
+          error: `Certaines informations personnalisées sont invalides (${ANSWER_ERROR_MESSAGES[first]}). Vérifie l’étape « Personnalise ta chanson ».`,
+          code: "OCCASION_DETAILS_INVALID",
+          fields: error.errors,
+        },
+        { status: 422 },
+      );
+    }
+    throw error;
+  }
+  try {
+    const result = await runLyricsTask(parsed.data, session.user.id, details);
     return NextResponse.json({ lyrics: result.text, requestId: result.id });
   } catch (error) {
     const code = error instanceof Error ? error.message : "AI_REQUEST_FAILED";

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { occasionAnswersSchema } from "@/lib/occasion-fields/answers";
 import { DEMO_DETAIL_MAX_CHARACTERS, DEMO_STORY_MAX_CHARACTERS } from "./musikpro-demo";
 
 export const openAiSettingsSchema = z.object({
@@ -94,6 +95,7 @@ export const songGenerateRequestSchema = z.object({
   voice: z.string().trim().max(80).optional().default(""),
   language: z.string().trim().max(80).optional().default(""),
   lyrics: z.string().trim().min(1).max(30_000),
+  occasionDetails: occasionAnswersSchema,
 });
 
 export type SongGenerateRequest = z.infer<typeof songGenerateRequestSchema>;
@@ -171,6 +173,7 @@ const lyricsContextSchema = z.object({
   language: z.string().trim().min(1).max(50),
   voice: z.string().trim().min(1).max(80),
   additionalDetails: z.string().trim().max(DEMO_DETAIL_MAX_CHARACTERS).optional().default(""),
+  occasionDetails: occasionAnswersSchema,
 });
 
 export const aiLyricsTaskSchema = z.discriminatedUnion("task", [

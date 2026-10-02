@@ -23,6 +23,7 @@ const input = {
   language: "Français",
   voice: "Duo",
   additionalDetails: "",
+  occasionDetails: [],
 };
 
 describe("unknown words pronunciation rule", () => {

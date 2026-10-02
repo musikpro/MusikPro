@@ -102,6 +102,7 @@ export async function submitSongGeneration(
     occasion: string;
     style: string;
     lyrics: string;
+    occasionDetails?: Array<{ fieldId: string; label: string; value: string }>;
     gender: "male" | "female" | "";
     instrumental?: 0 | 1;
   },
@@ -122,7 +123,7 @@ export async function submitSongGeneration(
           instrumental: input.instrumental ?? 0,
         },
         model,
-        { songGroupId, versionLabel: `Version ${index + 1}`, occasion: input.occasion, provider: providerId },
+        { songGroupId, versionLabel: `Version ${index + 1}`, occasion: input.occasion, provider: providerId, occasionDetails: input.occasionDetails },
       ),
     ),
   );

@@ -71,6 +71,7 @@ export type MusicJobGroupContext = {
   songGroupId?: string;
   versionLabel?: string;
   occasion?: string;
+  occasionDetails?: Array<{ fieldId: string; label: string; value: string }>;
 };
 
 export async function createMusicJob(
@@ -99,7 +100,7 @@ export async function createMusicJob(
       instrumental: input.instrumental === 1,
       gender: input.gender || null,
       status: "queued",
-      requestPayload: input,
+      requestPayload: context.occasionDetails?.length ? { ...input, occasionDetails: context.occasionDetails } : input,
     })
     .returning();
   return job;
