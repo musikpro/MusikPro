@@ -12,6 +12,7 @@
     "music_styles": "global music catalog, server-managed; client reads are filtered by active flag",
     "occasions": "global occasion catalog, server-managed; client reads are filtered by active flag",
     "occasion_fields": "per-occasion personalisation field catalog (labels, types, options), server-managed; client reads are filtered by active flag and never include ai_hint, which is only read server-side to build the lyrics prompt; answers are re-validated server-side against these definitions",
+    "ui_translations": "global UI-text translation overlay (French source text → en/es/pt), server-managed by the admin 'Actualiser les traductions' action; contains no user data; read publicly through /api/i18n/overlay",
     "moods": "global mood (ambiance) catalog, server-managed; client reads are filtered by active flag; ai_hint is only read server-side to build the Musicful prompt",
     "phone_prefixes": "global phone-prefix catalog, server-managed; client reads are filtered by active flag",
     "recipient_relations": "global recipient-relation catalog, server-managed; client reads are filtered by active flag",

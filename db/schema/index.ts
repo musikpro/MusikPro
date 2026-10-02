@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, integer, numeric, jsonb, boolean, uniqueIndex, index } from "drizzle-orm/pg-core";
+import { pgTable, text, timestamp, integer, numeric, jsonb, boolean, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
 import { user, organization } from "./auth.generated";
 
 export const plans = pgTable("plans", {
@@ -264,6 +264,24 @@ export const occasionFields = pgTable(
   (table) => ({
     occasionKeyUnique: uniqueIndex("occasion_fields_occasion_key_unique").on(table.occasionId, table.key),
     occasionOrderIndex: index("occasion_fields_occasion_order_idx").on(table.occasionId, table.active, table.sortOrder),
+  }),
+);
+
+/**
+ * Traductions des textes fixes de l'interface (t("...")) ajoutées depuis l'admin, au-dessus des
+ * fichiers lib/i18n/locales/*.json. La clé est le texte français lui-même : s'il change, il
+ * redevient « non traduit ». Voir lib/i18n/refresh-core.ts.
+ */
+export const uiTranslations = pgTable(
+  "ui_translations",
+  {
+    locale: text("locale").notNull(),
+    sourceText: text("source_text").notNull(),
+    translation: text("translation").notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.locale, table.sourceText], name: "ui_translations_locale_source_pk" }),
   }),
 );
 

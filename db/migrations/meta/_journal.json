@@ -442,6 +442,13 @@
       "when": 1790871050773,
       "tag": "0062_occasion_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1790871051773,
+      "tag": "0063_ui_translations",
+      "breakpoints": true
     }
   ]
 }
