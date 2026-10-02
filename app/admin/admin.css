@@ -6820,3 +6820,10 @@ body:has(.admin-app),
   padding: 0;
   list-style: none;
 }
+
+/* « Détails par occasion » : liste des occasions sur 4 colonnes (2 sur mobile) au lieu d'une pile verticale. */
+@media (min-width: 900px) {
+  .admin-catalog-grid.admin-occasion-fields-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}

@@ -23,7 +23,7 @@ export default async function AdminOccasionFieldsPage() {
         title="Détails par occasion"
         description="Choisis, pour chaque occasion, les blocs et les champs de l’étape « Personnalise ta chanson »."
       />
-      <div className="admin-music-style-grid admin-recipient-relation-grid">
+      <div className="admin-catalog-grid admin-occasion-fields-grid">
         {rows.map((occasion) => (
           <Link key={occasion.id} href={`/admin/occasion-fields/${occasion.id}`} className="admin-catalog-card admin-music-style-card is-active">
             <div className="admin-catalog-card-head">
