@@ -21,6 +21,7 @@ import type { PhonePrefixOption } from "@/lib/phone-prefixes/catalog";
 import { apiFetch, ApiClientError } from "@/lib/api/client";
 import { persistLanguageCookie } from "@/lib/languages/preference-client";
 import { withLocalePrefix } from "@/lib/languages/locale-path";
+import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
 import type { OccasionFieldClientDefinition } from "@/lib/occasion-fields/types";
@@ -1036,6 +1037,7 @@ export function DemoProvider({
     generationRedirectDelaySeconds,
     generationPollIntervalMs,
   );
+  useI18nOverlay();
   const [offline, setOffline] = useState(false);
   useEffect(() => {
     const update = () => setOffline(!navigator.onLine);
