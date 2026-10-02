@@ -6,7 +6,7 @@ import { useDemo } from "./DemoProvider";
 import DemoField from "./DemoField";
 import { DEMO_DETAIL_MAX_CHARACTERS, demoDetailSchema } from "@/lib/validation/musikpro-demo";
 
-export const displayName = "Étape 5 — Paramètres additionnels";
+export const displayName = "Étape 5 — Langue et voix";
 export const screenSize = "mobile";
 
 import StepProgressBar from "./StepProgressBar";
@@ -46,8 +46,8 @@ export default function StepAdditionalParams() {
 
       {/* Title */}
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Paramètres additionnels")}</h1>
-        <p className="text-sm text-muted-foreground">{t("Affine ta chanson avec plus d'options")}</p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Langue et voix")}</h1>
+        <p className="text-sm text-muted-foreground">{t("Choisis la langue des paroles et la voix du chanteur")}</p>
       </div>
 
       {/* Content */}

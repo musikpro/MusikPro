@@ -14,6 +14,7 @@ import { getActiveOccasions } from "@/lib/occasions/server";
 import { getActiveMoods } from "@/lib/moods/server";
 import { getActiveMusicStyles } from "@/lib/music-styles/server";
 import { getActiveRecipientRelations } from "@/lib/recipient-relations/server";
+import { getActiveOccasionFields } from "@/lib/occasion-fields/server";
 import { listDiscoverSongs } from "@/lib/discover/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { getActivePhonePrefixes } from "@/lib/phone-prefixes/server";
@@ -64,6 +65,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     moodOptions,
     musicStyleOptions,
     recipientRelationOptions,
+    occasionFieldsByOccasion,
     discoverSongs,
     languageCatalog,
     detectedInterfaceLanguage,
@@ -81,6 +83,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     getActiveMoods({ demo }),
     getActiveMusicStyles({ demo }),
     getActiveRecipientRelations({ demo }),
+    getActiveOccasionFields({ demo }),
     // Real accounts only: the demo library is the static showcase data of DemoProvider.
     demo ? Promise.resolve([]) : listDiscoverSongs(session.user.id),
     languageCatalogPromise,
@@ -115,6 +118,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialMoods={moodOptions}
       initialMusicStyles={musicStyleOptions}
       initialRecipientRelations={recipientRelationOptions}
+      initialOccasionFields={occasionFieldsByOccasion}
       initialDiscoverSongs={discoverSongs}
       initialInterfaceLanguages={languageCatalog.interfaceLanguages}
       initialLyricsLanguages={languageCatalog.lyricsLanguages}

@@ -10,8 +10,11 @@ import MusikSelect from "./MusikSelect";
 import StepProgressBar from "./StepProgressBar";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import { translate as t, localizeField } from "@/lib/i18n/translate";
+import OccasionFieldsSection from "./OccasionFieldsSection";
+import { validateOccasionAnswers, buildOccasionDetails, type AnswerErrorCode } from "@/lib/occasion-fields/answers";
+import { clearHiddenBlockValues } from "@/lib/occasion-fields/client";
 
-export const displayName = "Étape 3 — Destinataire de la chanson";
+export const displayName = "Étape 3 — Personnalisation de la chanson";
 export const screenSize = "mobile";
 
 function localPronunciationGuess(name: string) {
@@ -31,16 +34,20 @@ type SenderField = "senderName" | "senderPronunciation";
 export default function StepRecipient() {
   const demo = useDemo();
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecipientField | SenderField, string>>>({});
+  const [detailErrors, setDetailErrors] = useState<Record<string, AnswerErrorCode>>({});
   const [pronunciationLoading, setPronunciationLoading] = useState(false);
   const [senderPronunciationLoading, setSenderPronunciationLoading] = useState(false);
   const latestRequestedName = useRef("");
   const latestRequestedSenderName = useRef("");
 
   useEffect(() => {
-    if (Object.keys(fieldErrors).length === 0) return;
-    const timer = window.setTimeout(() => setFieldErrors({}), 4200);
+    if (Object.keys(fieldErrors).length === 0 && Object.keys(detailErrors).length === 0) return;
+    const timer = window.setTimeout(() => {
+      setFieldErrors({});
+      setDetailErrors({});
+    }, 4200);
     return () => window.clearTimeout(timer);
-  }, [fieldErrors]);
+  }, [fieldErrors, detailErrors]);
 
   useEffect(() => {
     if (demo.isDemo) return;
@@ -108,36 +115,62 @@ export default function StepRecipient() {
   };
 
   const continueToStyle = () => {
-    const parsedRecipient = demoRecipientSchema.safeParse({
-      name: demo.fields.recipientName,
-      pronunciation: demo.fields.recipientPronunciation,
-      relation: demo.choices.recipientRelation,
-    });
-    const parsedSender = demoSenderSchema.safeParse({
-      name: demo.fields.senderName,
-      pronunciation: demo.fields.senderPronunciation,
-    });
-    if (!parsedRecipient.success || !parsedSender.success) {
+    const { showRecipient, showSender } = demo.occasionBlocks;
+    const parsedRecipient = showRecipient
+      ? demoRecipientSchema.safeParse({
+          name: demo.fields.recipientName,
+          pronunciation: demo.fields.recipientPronunciation,
+          relation: demo.choices.recipientRelation,
+        })
+      : null;
+    const parsedSender = showSender
+      ? demoSenderSchema.safeParse({
+          name: demo.fields.senderName,
+          pronunciation: demo.fields.senderPronunciation,
+        })
+      : null;
+    const details = validateOccasionAnswers(
+      demo.occasionFields,
+      buildOccasionDetails(demo.occasionFields, demo.details),
+    );
+    const recipientFailed = parsedRecipient !== null && !parsedRecipient.success;
+    const senderFailed = parsedSender !== null && !parsedSender.success;
+    if (recipientFailed || senderFailed || !details.ok) {
       const nextErrors: Partial<Record<RecipientField | SenderField, string>> = {};
-      for (const issue of parsedRecipient.success ? [] : parsedRecipient.error.issues) {
+      for (const issue of recipientFailed ? parsedRecipient.error.issues : []) {
         const field = issue.path[0];
         if ((field === "name" || field === "pronunciation" || field === "relation") && !nextErrors[field]) {
           nextErrors[field] = issue.message;
         }
       }
-      for (const issue of parsedSender.success ? [] : parsedSender.error.issues) {
+      for (const issue of senderFailed ? parsedSender.error.issues : []) {
         const field = issue.path[0] === "name" ? "senderName" : issue.path[0] === "pronunciation" ? "senderPronunciation" : undefined;
         if (field && !nextErrors[field]) nextErrors[field] = issue.message;
       }
       setFieldErrors(nextErrors);
+      setDetailErrors(details.ok ? {} : details.errors);
       return;
     }
     setFieldErrors({});
-    demo.field("recipientName", parsedRecipient.data.name);
-    demo.field("recipientPronunciation", parsedRecipient.data.pronunciation);
-    demo.choose("recipientRelation", parsedRecipient.data.relation);
-    demo.field("senderName", parsedSender.data.name);
-    demo.field("senderPronunciation", parsedSender.data.pronunciation);
+    setDetailErrors({});
+    // Un bloc masqué ne doit rien envoyer à la génération, même avec une saisie héritée d'une autre occasion.
+    const cleared = clearHiddenBlockValues(demo.occasionBlocks, { fields: demo.fields, choices: demo.choices });
+    if (!showRecipient) {
+      demo.field("recipientName", cleared.fields.recipientName);
+      demo.field("recipientPronunciation", cleared.fields.recipientPronunciation);
+      demo.choose("recipientRelation", cleared.choices.recipientRelation);
+    } else if (parsedRecipient?.success) {
+      demo.field("recipientName", parsedRecipient.data.name);
+      demo.field("recipientPronunciation", parsedRecipient.data.pronunciation);
+      demo.choose("recipientRelation", parsedRecipient.data.relation);
+    }
+    if (!showSender) {
+      demo.field("senderName", cleared.fields.senderName);
+      demo.field("senderPronunciation", cleared.fields.senderPronunciation);
+    } else if (parsedSender?.success) {
+      demo.field("senderName", parsedSender.data.name);
+      demo.field("senderPronunciation", parsedSender.data.pronunciation);
+    }
     demo.go("/dashboard/create/style");
   };
 
@@ -157,14 +190,15 @@ export default function StepRecipient() {
 
       <div className="px-4 pt-4 pb-5">
         <h1 className="font-headings font-bold text-2xl text-foreground mb-1">
-          {t("À qui est destinée la chanson ?")}
+          {t("Personnalise ta chanson")}
         </h1>
         <p className="text-sm text-muted-foreground">
-          {t("Aide MusikPro à personnaliser les paroles et la prononciation.")}
+          {t("Quelques détails pour que ce soit vraiment la tienne")}
         </p>
       </div>
 
       <div className="recipient-form-shell px-4">
+        {demo.occasionBlocks.showRecipient ? (
         <section className="story-recipient-card recipient-page-card" aria-labelledby="recipient-form-title">
           <div className="story-recipient-heading">
             <span className="story-recipient-heading-icon">
@@ -256,7 +290,9 @@ export default function StepRecipient() {
             )}
           </div>
         </section>
+        ) : null}
 
+        {demo.occasionBlocks.showSender ? (
         <section className="story-recipient-card recipient-page-card" aria-labelledby="sender-form-title">
           <div className="story-recipient-heading">
             <span className="story-recipient-heading-icon">
@@ -320,8 +356,21 @@ export default function StepRecipient() {
             </div>
           </div>
         </section>
+        ) : null}
+        <OccasionFieldsSection
+          errors={detailErrors}
+          onChange={(fieldId) =>
+            setDetailErrors((current) => {
+              if (!current[fieldId]) return current;
+              const next = { ...current };
+              delete next[fieldId];
+              return next;
+            })
+          }
+        />
       </div>
 
+      {demo.occasionBlocks.showRecipient || demo.occasionBlocks.showSender ? (
       <section className="recipient-tips mx-4 mt-4 mb-6" aria-labelledby="recipient-tips-title">
         <div className="recipient-tips-title">
           <span>
@@ -356,6 +405,7 @@ export default function StepRecipient() {
           </li>
         </ul>
       </section>
+      ) : null}
 
       <div className="creation-mobile-cta px-4 pb-8">
         <button

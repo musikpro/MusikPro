@@ -23,6 +23,9 @@ import { persistLanguageCookie } from "@/lib/languages/preference-client";
 import { withLocalePrefix } from "@/lib/languages/locale-path";
 import { localizeField, translate as t, type CatalogTranslations } from "@/lib/i18n/translate";
 import type { WorkspaceSong } from "@/lib/demo/song-types";
+import type { OccasionFieldClientDefinition } from "@/lib/occasion-fields/types";
+import { blockVisibility } from "@/lib/occasion-fields/client";
+import { buildOccasionDetails } from "@/lib/occasion-fields/answers";
 
 export type SongGroupResponse = {
   songGroupId: string;
@@ -86,6 +89,7 @@ function useDemoState(
   initialMoods: MoodOption[],
   initialMusicStyles: MusicStyleOption[],
   initialRecipientRelations: RecipientRelationOption[],
+  initialOccasionFields: Record<string, OccasionFieldClientDefinition[]>,
   initialDiscoverSongs: DiscoverSong[],
   initialInterfaceLanguages: LanguageOption[],
   initialLyricsLanguages: LanguageOption[],
@@ -152,6 +156,11 @@ function useDemoState(
     phoneCountry: "CI",
     recipientRelation: "",
   });
+  const [details, setDetails] = useState<Record<string, string>>({});
+  const currentOccasion = initialOccasions.find((occasion) => occasion.name === choices.occasion);
+  const occasionFields = currentOccasion ? (initialOccasionFields[currentOccasion.id] ?? []) : [];
+  const occasionBlocks = blockVisibility(currentOccasion);
+  const setDetail = (fieldId: string, value: string) => setDetails((prev) => ({ ...prev, [fieldId]: value }));
   const [creationDraftReady, setCreationDraftReady] = useState(false);
   const creationDraftKey = `musikpro:creation-draft:v1:${persistenceId}`;
   const paymentInfoKey = `musikpro:payment-info:v1:${persistenceId}`;
@@ -489,6 +498,7 @@ function useDemoState(
     });
   };
   const choose = (key: string, value: string) => {
+    if (key === "occasion" && value !== choices.occasion) setDetails({});
     const nextChoices = { ...choices, [key]: value };
     setChoices(nextChoices);
     if (key === "appLanguage") {
@@ -744,6 +754,7 @@ function useDemoState(
           voice: choices.voice,
           language: choices.language,
           lyrics: fields.lyrics,
+          occasionDetails: buildOccasionDetails(occasionFields, details),
         }),
         timeoutMs: 30_000,
       });
@@ -791,6 +802,7 @@ function useDemoState(
             language: choices.language,
             voice: choices.voice,
             additionalDetails: fields.detail,
+            occasionDetails: buildOccasionDetails(occasionFields, details),
             ...(task === "lyrics.extend" ? { lyrics: fields.lyrics } : {}),
             ...(task === "lyrics.rewrite" ? { lyrics: fields.lyrics, instruction } : {}),
           },
@@ -840,6 +852,10 @@ function useDemoState(
     moods,
     musicStyles,
     recipientRelations,
+    occasionFields,
+    details,
+    setDetail,
+    occasionBlocks,
     removeFromDiscover,
     interfaceLanguages,
     lyricsLanguages,
@@ -957,6 +973,7 @@ export function DemoProvider({
   initialMoods,
   initialMusicStyles,
   initialRecipientRelations,
+  initialOccasionFields = {},
   initialDiscoverSongs,
   initialInterfaceLanguages,
   initialLyricsLanguages,
@@ -980,6 +997,7 @@ export function DemoProvider({
   initialMoods: MoodOption[];
   initialMusicStyles: MusicStyleOption[];
   initialRecipientRelations: RecipientRelationOption[];
+  initialOccasionFields?: Record<string, OccasionFieldClientDefinition[]>;
   initialDiscoverSongs: DiscoverSong[];
   initialInterfaceLanguages: LanguageOption[];
   initialLyricsLanguages: LanguageOption[];
@@ -1003,6 +1021,7 @@ export function DemoProvider({
     initialMoods,
     initialMusicStyles,
     initialRecipientRelations,
+    initialOccasionFields,
     initialDiscoverSongs,
     initialInterfaceLanguages,
     initialLyricsLanguages,
