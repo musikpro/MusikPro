@@ -123,4 +123,11 @@ describe("applyCatalogTranslations", () => {
     expect(result.translations?.es).toEqual({ name: "Cumpleaños" });
     expect(result.changed).toBe(true);
   });
+
+  it("never takes an inherited property such as constructor for a received translation", () => {
+    const result = applyCatalogTranslations(row({ fields: { name: "constructor" }, translations: null }), "en", {});
+    expect(result.translatedFields).toBe(0);
+    expect(typeof result.translations?.en?.name).not.toBe("function");
+    expect(result.translations?.en?.name).toBeUndefined();
+  });
 });

@@ -75,7 +75,7 @@ export function applyCatalogTranslations(
 
   for (const [field, text] of activeFields(row.fields)) {
     const hash = sourceHash(text);
-    const received = translated[text];
+    const received = Object.hasOwn(translated, text) ? translated[text] : undefined;
     if (isFresh(row, locale, field, text)) {
       values[field] = previous[field];
       hashes[field] = hash;
