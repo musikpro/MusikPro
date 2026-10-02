@@ -14,11 +14,14 @@ export default function AdminOccasionEmojiPicker({
   defaultEmoji = "🎉",
   subject = "de l’occasion",
   options: catalogOptions = CATALOG_EMOJI_OPTIONS,
+  name = "emoji",
 }: {
   defaultEmoji?: string;
   subject?: string;
   /** Liste d'emojis proposée ; celle des occasions par défaut (les ambiances fournissent la leur). */
   options?: readonly { value: string; label: string }[];
+  /** Nom du champ de formulaire qui porte l'emoji choisi. */
+  name?: string;
 }) {
   const OCCASION_EMOJI_OPTIONS = useMemo(
     () =>
@@ -153,7 +156,7 @@ export default function AdminOccasionEmojiPicker({
 
   return (
     <div className="admin-style-visual-picker admin-editor-field">
-      <input type="hidden" name="emoji" value={emoji} />
+      <input type="hidden" name={name} value={emoji} />
       <div className="admin-style-dropdown-field">
         <span>Emoji</span>
         <p>Déroule la liste pour choisir parmi {OCCASION_EMOJI_OPTIONS.length} emojis.</p>

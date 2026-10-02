@@ -11,6 +11,7 @@ const links = [
   ["/admin/plans", "Crédits & tarifs", "coins"],
   ["/admin/music-styles", "Styles musicaux", "sliders-horizontal"],
   ["/admin/occasions", "Occasions", "calendar-heart"],
+  ["/admin/occasion-fields", "Détails par occasion", "list-checks"],
   ["/admin/moods", "Ambiances", "smile-plus"],
   ["/admin/recipient-relations", "Liens destinataire", "heart-handshake"],
   ["/admin/languages", "Langues et Monnaies", "languages"],

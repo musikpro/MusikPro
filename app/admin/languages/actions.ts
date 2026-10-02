@@ -13,6 +13,7 @@ import {
   localizationSettings,
   musicStyles,
   moods,
+  occasionFields,
   occasions,
   phonePrefixes,
   plans,
@@ -23,6 +24,7 @@ import { writeAuditLog } from "@/lib/security/audit";
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
 import { translateCatalogTable } from "@/lib/i18n/catalog-translate";
+import { fieldTranslationInput } from "@/lib/occasion-fields/types";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { withAdminNotice } from "@/lib/admin/notice-redirect";
@@ -280,8 +282,17 @@ async function runCatalogTranslationsRefresh() {
   const session = await requireAdmin();
   const serviceDb = getServiceDb();
 
-  const [occasionRows, moodRows, styleRows, relationRows, planRows, prefixRows, heroTextRows, heroSettingsRows] =
-    await Promise.all([
+  const [
+    occasionRows,
+    moodRows,
+    styleRows,
+    relationRows,
+    planRows,
+    prefixRows,
+    heroTextRows,
+    heroSettingsRows,
+    occasionFieldRows,
+  ] = await Promise.all([
       serviceDb.select().from(occasions),
       serviceDb.select().from(moods),
       serviceDb.select().from(musicStyles),
@@ -290,6 +301,7 @@ async function runCatalogTranslationsRefresh() {
       serviceDb.select().from(phonePrefixes),
       serviceDb.select().from(heroAnimatedTexts),
       serviceDb.select().from(heroAnimationSettings),
+      serviceDb.select().from(occasionFields),
     ]);
 
   const [
@@ -301,6 +313,7 @@ async function runCatalogTranslationsRefresh() {
     prefixTranslations,
     heroTextTranslations,
     heroSettingsTranslations,
+    occasionFieldTranslations,
   ] = await Promise.all([
     translateCatalogTable(
       occasionRows.map((row) => ({ id: row.id, fields: { name: row.name, description: row.description } })),
@@ -328,6 +341,17 @@ async function runCatalogTranslationsRefresh() {
     translateCatalogTable(prefixRows.map((row) => ({ id: row.id, fields: { countryName: row.countryName } }))),
     translateCatalogTable(heroTextRows.map((row) => ({ id: row.id, fields: { label: row.label } }))),
     translateCatalogTable(heroSettingsRows.map((row) => ({ id: row.id, fields: { headline: row.headline } }))),
+    translateCatalogTable(
+      occasionFieldRows.map((row) => ({
+        id: row.id,
+        fields: fieldTranslationInput({
+          label: row.label,
+          helpText: row.helpText,
+          placeholder: row.placeholder,
+          options: (row.options ?? []) as Array<{ label: string; emoji: string }>,
+        }),
+      })),
+    ),
   ]);
 
   await Promise.all([
@@ -379,6 +403,12 @@ async function runCatalogTranslationsRefresh() {
         .set({ translations: heroSettingsTranslations.get(row.id) ?? {} })
         .where(eq(heroAnimationSettings.id, row.id)),
     ),
+    ...occasionFieldRows.map((row) =>
+      serviceDb
+        .update(occasionFields)
+        .set({ translations: occasionFieldTranslations.get(row.id) ?? {}, updatedAt: new Date() })
+        .where(eq(occasionFields.id, row.id)),
+    ),
   ]);
 
   const counts = {
@@ -389,6 +419,7 @@ async function runCatalogTranslationsRefresh() {
     plans: planRows.length,
     phonePrefixes: prefixRows.length,
     heroAnimatedTexts: heroTextRows.length,
+    occasionFields: occasionFieldRows.length,
   };
 
   await writeAuditLog({

@@ -11,6 +11,7 @@ type Counts = {
   recipientRelations: number;
   plans: number;
   heroAnimatedTexts: number;
+  occasionFields: number;
 };
 
 export default function RefreshCatalogTranslationsButton() {
@@ -41,7 +42,7 @@ export default function RefreshCatalogTranslationsButton() {
         <p className="admin-language-detection-hint">
           Traductions à jour : {counts.occasions} occasions, {counts.moods} ambiances, {counts.musicStyles} styles
           musicaux, {counts.recipientRelations} relations, {counts.plans} offres de crédits, {counts.heroAnimatedTexts}{" "}
-          textes animés.
+          textes animés, {counts.occasionFields} champs de détail.
         </p>
       ) : null}
       {error ? <p className="admin-field-error">{error}</p> : null}
