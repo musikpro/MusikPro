@@ -11,6 +11,7 @@
     "plans": "global catalog, server-managed; public reads are filtered by active flag",
     "music_styles": "global music catalog, server-managed; client reads are filtered by active flag",
     "occasions": "global occasion catalog, server-managed; client reads are filtered by active flag",
+    "occasion_fields": "per-occasion personalisation field catalog (labels, types, options), server-managed; client reads are filtered by active flag and never include ai_hint, which is only read server-side to build the lyrics prompt; answers are re-validated server-side against these definitions",
     "moods": "global mood (ambiance) catalog, server-managed; client reads are filtered by active flag; ai_hint is only read server-side to build the Musicful prompt",
     "phone_prefixes": "global phone-prefix catalog, server-managed; client reads are filtered by active flag",
     "recipient_relations": "global recipient-relation catalog, server-managed; client reads are filtered by active flag",
