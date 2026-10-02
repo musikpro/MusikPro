@@ -11,7 +11,7 @@ export default async function AdminNewRecipientRelationPage() {
       <AdminPageHeader
         eyebrow="Liens avec le destinataire"
         title="Nouveau lien"
-        description="Ajoute une nouvelle relation proposée à l’étape « À qui est destinée la chanson ? »."
+        description="Ajoute une nouvelle relation proposée à l’étape « Personnalise ta chanson »."
       />
       <AdminRecipientRelationForm action={createRecipientRelation} />
     </AdminPage>

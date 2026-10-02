@@ -13,7 +13,7 @@ import { withAdminNotice } from "@/lib/admin/notice-redirect";
 import { requireAdmin } from "@/lib/auth/session";
 import { planProposalInserts } from "@/lib/occasion-fields/ai-schema";
 import { occasionFieldFormSchema, slugifyFieldKey } from "@/lib/occasion-fields/form-schema";
-import { MAX_ACTIVE_FIELDS_PER_OCCASION } from "@/lib/occasion-fields/types";
+import { MAX_ACTIVE_FIELDS_PER_OCCASION, translationsStale, type OccasionFieldOption } from "@/lib/occasion-fields/types";
 import { writeAuditLog } from "@/lib/security/audit";
 
 const idSchema = z.object({ id: z.string().trim().min(1).max(120) });
@@ -87,7 +87,7 @@ export async function updateOccasionBlocks(_previous: AdminActionState, formData
         .limit(1);
       if (!field) throw new Error("Le champ du titre n’appartient pas à cette occasion.");
     }
-    await getServiceDb()
+    const updated = await getServiceDb()
       .update(occasions)
       .set({
         showRecipient: parsed.showRecipient === "true",
@@ -95,7 +95,9 @@ export async function updateOccasionBlocks(_previous: AdminActionState, formData
         titleFieldId: parsed.titleFieldId || null,
         updatedAt: new Date(),
       })
-      .where(eq(occasions.id, parsed.occasionId));
+      .where(eq(occasions.id, parsed.occasionId))
+      .returning({ id: occasions.id });
+    if (updated.length === 0) throw new Error("Occasion introuvable.");
     await writeAuditLog({
       action: "occasion_fields.blocks.updated",
       actorId: session.user.id,
@@ -156,9 +158,25 @@ export async function updateOccasionField(_previous: AdminActionState, formData:
     const { id } = idSchema.parse(Object.fromEntries(formData));
     const parsed = occasionFieldFormSchema.parse(Object.fromEntries(formData));
     if (parsed.active === "true") await assertRoomForActiveField(parsed.occasionId, id);
-    await getServiceDb()
+    const [before] = await getServiceDb()
+      .select({
+        label: occasionFields.label,
+        helpText: occasionFields.helpText,
+        placeholder: occasionFields.placeholder,
+        options: occasionFields.options,
+      })
+      .from(occasionFields)
+      .where(and(eq(occasionFields.id, id), eq(occasionFields.occasionId, parsed.occasionId)))
+      .limit(1);
+    if (!before) throw new Error("Champ introuvable (supprimé entre-temps ?)");
+    const staleTranslations = translationsStale(
+      { ...before, options: (before.options ?? []) as OccasionFieldOption[] },
+      { label: parsed.label, helpText: parsed.helpText, placeholder: parsed.placeholder, options: parsed.options },
+    );
+    const updated = await getServiceDb()
       .update(occasionFields)
       .set({
+        ...(staleTranslations ? { translations: null } : {}),
         label: parsed.label,
         helpText: parsed.helpText,
         icon: parsed.icon,
@@ -172,7 +190,9 @@ export async function updateOccasionField(_previous: AdminActionState, formData:
         active: parsed.active === "true",
         updatedAt: new Date(),
       })
-      .where(and(eq(occasionFields.id, id), eq(occasionFields.occasionId, parsed.occasionId)));
+      .where(and(eq(occasionFields.id, id), eq(occasionFields.occasionId, parsed.occasionId)))
+      .returning({ id: occasionFields.id });
+    if (updated.length === 0) throw new Error("Champ introuvable (supprimé entre-temps ?)");
     await writeAuditLog({
       action: "occasion_field.updated",
       actorId: session.user.id,
@@ -181,7 +201,12 @@ export async function updateOccasionField(_previous: AdminActionState, formData:
       metadata: { label: parsed.label, type: parsed.type },
     });
     revalidateOccasionFields(parsed.occasionId);
-    return { ok: true, message: "Champ enregistré." };
+    return {
+      ok: true,
+      message: staleTranslations
+        ? "Champ enregistré. Les traductions de ce champ ont été réinitialisées : lance « Actualiser les traductions » pour les retraduire."
+        : "Champ enregistré.",
+    };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce champ.") };
   }

@@ -36,7 +36,7 @@ INSERT INTO "occasions" ("id", "name", "slug", "description", "emoji", "ai_hint"
 	('default-sport', 'Sport', 'sport', 'Encourager un athlète, une équipe ou une victoire.', '🏆', 'sports anthem, energetic, motivating, stadium chant', true, 90),
 	('default-priere-culte', 'Prière / culte', 'priere-culte', 'Une chanson de prière, de louange ou de recueillement.', '🙏', 'worship and prayer, spiritual, reverent, uplifting', true, 100),
 	('default-spot-publicitaire', 'Spot publicitaire', 'spot-publicitaire', 'Un jingle pour présenter un produit, une marque ou un événement.', '📣', 'advertising jingle, catchy, brand promotion, upbeat', true, 110)
-ON CONFLICT ("slug") DO NOTHING;
+ON CONFLICT DO NOTHING;
 --> statement-breakpoint
 INSERT INTO "occasion_fields" ("id", "occasion_id", "key", "label", "help_text", "icon", "placeholder", "type", "options", "config", "required", "ai_hint", "sort_order")
 SELECT 'seed-' || v.slug || '-' || v.key, o."id", v.key, v.label, v.help_text, v.icon, v.placeholder, v.type, v.options::jsonb, v.config::jsonb, v.required, v.ai_hint, v.sort_order

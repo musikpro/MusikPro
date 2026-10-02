@@ -46,7 +46,9 @@ export default async function AdminOccasionDetailsPage({ params }: { params: Pro
             showRecipient={occasion.showRecipient}
             showSender={occasion.showSender}
             titleFieldId={occasion.titleFieldId}
-            fields={fields.map((field) => ({ id: field.id, label: field.label }))}
+            fields={fields
+              .filter((field) => field.active || field.id === occasion.titleFieldId)
+              .map((field) => ({ id: field.id, label: field.active ? field.label : `${field.label} (inactif)` }))}
           />
         </AdminTabPanel>
         <AdminTabPanel id="fields">

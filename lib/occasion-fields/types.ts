@@ -61,3 +61,13 @@ export function fieldTranslationInput(field: {
     ...Object.fromEntries(field.options.map((option, index) => [`option${index}`, option.label])),
   };
 }
+
+/** Vrai si un texte traduisible a changé : les traductions stockées (positionnelles) ne sont alors plus fiables. */
+export function translationsStale(
+  before: { label: string; helpText: string; placeholder: string; options: OccasionFieldOption[] },
+  after: { label: string; helpText: string; placeholder: string; options: OccasionFieldOption[] },
+): boolean {
+  if (before.label !== after.label || before.helpText !== after.helpText || before.placeholder !== after.placeholder) return true;
+  if (before.options.length !== after.options.length) return true;
+  return before.options.some((option, index) => option.label !== after.options[index].label);
+}

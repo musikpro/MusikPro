@@ -49,8 +49,17 @@ export default function StepRecipient() {
     return () => window.clearTimeout(timer);
   }, [fieldErrors, detailErrors]);
 
+  const showRecipientBlock = demo.occasionBlocks.showRecipient;
+  const showSenderBlock = demo.occasionBlocks.showSender;
+  const showRecipientRef = useRef(showRecipientBlock);
+  const showSenderRef = useRef(showSenderBlock);
   useEffect(() => {
-    if (demo.isDemo) return;
+    showRecipientRef.current = showRecipientBlock;
+    showSenderRef.current = showSenderBlock;
+  }, [showRecipientBlock, showSenderBlock]);
+
+  useEffect(() => {
+    if (demo.isDemo || !showRecipientBlock) return;
     const name = demo.fields.recipientName.trim();
     if (!name) return;
     const timer = window.setTimeout(async () => {
@@ -64,7 +73,7 @@ export default function StepRecipient() {
           timeoutMs: 15_000,
         });
         // Ignore a stale response if the user kept typing a different name meanwhile.
-        if (latestRequestedName.current === name && result.pronunciation) {
+        if (latestRequestedName.current === name && result.pronunciation && showRecipientRef.current) {
           demo.field("recipientPronunciation", result.pronunciation);
         }
       } catch {
@@ -75,10 +84,10 @@ export default function StepRecipient() {
     }, PRONUNCIATION_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo.fields.recipientName, demo.isDemo]);
+  }, [demo.fields.recipientName, demo.isDemo, showRecipientBlock]);
 
   useEffect(() => {
-    if (demo.isDemo) return;
+    if (demo.isDemo || !showSenderBlock) return;
     const name = demo.fields.senderName.trim();
     if (!name) return;
     const timer = window.setTimeout(async () => {
@@ -92,7 +101,7 @@ export default function StepRecipient() {
           timeoutMs: 15_000,
         });
         // Ignore a stale response if the user kept typing a different name meanwhile.
-        if (latestRequestedSenderName.current === name && result.pronunciation) {
+        if (latestRequestedSenderName.current === name && result.pronunciation && showSenderRef.current) {
           demo.field("senderPronunciation", result.pronunciation);
         }
       } catch {
@@ -103,7 +112,7 @@ export default function StepRecipient() {
     }, PRONUNCIATION_DEBOUNCE_MS);
     return () => window.clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo.fields.senderName, demo.isDemo]);
+  }, [demo.fields.senderName, demo.isDemo, showSenderBlock]);
 
   const clearFieldError = (field: RecipientField | SenderField) => {
     setFieldErrors((current) => {

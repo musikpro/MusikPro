@@ -3,9 +3,9 @@
 import { useDemo } from "./DemoProvider";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import MusikSelect from "./MusikSelect";
-import { answerErrorText } from "@/lib/occasion-fields/client";
+import { answerErrorText } from "./occasion-field-errors";
 import type { AnswerErrorCode } from "@/lib/occasion-fields/answers";
-import { localizeField } from "@/lib/i18n/translate";
+import { translate as t, localizeField } from "@/lib/i18n/translate";
 import type { OccasionFieldClientDefinition } from "@/lib/occasion-fields/types";
 
 function FieldLabel({ field, htmlFor }: { field: OccasionFieldClientDefinition; htmlFor?: string }) {
@@ -60,7 +60,7 @@ export default function OccasionFieldsSection({
             {field.type === "select" && field.config.display === "dropdown" ? (
               <MusikSelect
                 ariaLabel={localizeField(field.label, field.translations, "label")}
-                placeholder={placeholder ?? ""}
+                placeholder={placeholder ?? t("Choisir…")}
                 value={value}
                 portal
                 ariaInvalid={Boolean(error)}

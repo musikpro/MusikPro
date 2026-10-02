@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ANSWER_ERROR_MESSAGES } from "@/lib/occasion-fields/answers";
 import { eq } from "drizzle-orm";
 import { auth } from "@/lib/auth";
 import { db, userQuery } from "@/db";
@@ -88,8 +89,10 @@ export async function POST(request: Request) {
     occasionDetails = await resolveOccasionDetails(input.occasion, input.occasionDetails);
   } catch (error) {
     if (error instanceof OccasionDetailsError) {
+      const first = Object.values(error.errors)[0];
+      const cause = (first && ANSWER_ERROR_MESSAGES[first]) || "réponse invalide";
       return NextResponse.json(
-        { error: "Certaines informations personnalisées sont invalides.", code: "OCCASION_DETAILS_INVALID", fields: error.errors },
+        { error: `Certaines informations personnalisées sont invalides (${cause}). Vérifie l’étape « Personnalise ta chanson ».`, code: "OCCASION_DETAILS_INVALID", fields: error.errors },
         { status: 422 },
       );
     }

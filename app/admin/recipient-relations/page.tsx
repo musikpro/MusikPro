@@ -19,7 +19,7 @@ export default async function AdminRecipientRelationsPage() {
       <AdminPageHeader
         eyebrow="Configuration musicale"
         title="Liens avec le destinataire"
-        description={`${activeCount} lien${activeCount > 1 ? "s" : ""} actif${activeCount > 1 ? "s" : ""} sur ${rows.length}. Cette liste alimente l’étape « À qui est destinée la chanson ? » du parcours de création.`}
+        description={`${activeCount} lien${activeCount > 1 ? "s" : ""} actif${activeCount > 1 ? "s" : ""} sur ${rows.length}. Cette liste alimente l’étape « Personnalise ta chanson » du parcours de création.`}
         action={{ href: "/admin/recipient-relations/new", label: "Nouveau lien" }}
       />
       <div className="admin-source-notice is-connected">
