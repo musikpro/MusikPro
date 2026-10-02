@@ -9,8 +9,12 @@ export type Locale = "fr" | "en" | "es" | "pt";
  * styles, recipient relations, credit plans) — kept here, not in lib/i18n/catalog-translate.ts,
  * so pure client-side types (e.g. lib/occasions/catalog.ts's OccasionOption) can reference it
  * without pulling in that module's server-only AI/DB dependencies into a client bundle.
+ * `_src` stocke l'empreinte du texte français traduit, par langue puis par champ (traduction incrémentale).
  */
-export type CatalogTranslations = Partial<Record<Exclude<Locale, "fr">, Record<string, string>>>;
+export type CatalogTranslations = Partial<Record<Exclude<Locale, "fr">, Record<string, string>>> & {
+  /** Empreinte du texte français traduit, par langue puis par champ (voir lib/i18n/incremental.ts). */
+  _src?: Partial<Record<Exclude<Locale, "fr">, Record<string, string>>>;
+};
 
 /**
  * French is the source language (keys double as the fallback string, never translated here).
