@@ -14,22 +14,23 @@ import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
 import { CREDITS_PER_GENERATION, getCreditsConsumed, getGenerationCount } from "@/lib/credit-plans/catalog";
 
-const transactionHistory = [
+// Fonction (et non constante de module) : t() doit s'exécuter au rendu, dans la langue active.
+const getTransactionHistory = () => [
   {
-    date: "20 juillet 2025",
-    action: "Création chanson",
+    date: t("20 juillet 2025"),
+    action: t("Création chanson"),
     credits: -2,
     type: "usage",
   },
   {
-    date: "19 juillet 2025",
-    action: "Achat de crédits Populaire",
+    date: t("19 juillet 2025"),
+    action: translateTemplate("Achat de crédits {plan}", { plan: t("Populaire") }),
     credits: +20,
     type: "purchase",
   },
   {
-    date: "15 juillet 2025",
-    action: "Création chanson",
+    date: t("15 juillet 2025"),
+    action: t("Création chanson"),
     credits: -2,
     type: "usage",
   },
@@ -39,7 +40,7 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
   const demo = useDemo();
   const availableGenerations = getGenerationCount(demo.balance);
   const visibleHistory = demo.isDemo
-    ? transactionHistory
+    ? getTransactionHistory()
     : history.map((entry) => ({
         date: new Date(entry.date).toLocaleDateString(
           typeof document === "undefined" ? "fr" : document.documentElement.lang || "fr",
@@ -67,7 +68,7 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
           type="button"
           data-demo-ready="true"
           onClick={() => demo.go("/dashboard")}
-          aria-label="Fermer"
+          aria-label={t("Fermer")}
           className="text-muted-foreground"
         >
           <Icon i="x" size={20} />
@@ -93,7 +94,9 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
               {demo.balance > 0 ? (
                 <>
                   <strong>
-                    {availableGenerations} génération{availableGenerations > 1 ? "s" : ""}
+                    {availableGenerations > 1
+                      ? translateTemplate("{count} générations", { count: availableGenerations })
+                      : translateTemplate("{count} génération", { count: availableGenerations })}
                   </strong>{" "}
                   {availableGenerations > 1 ? t("disponibles") : t("disponible")} {t("au tarif de 2 crédits chacune")}
                 </>
@@ -120,7 +123,7 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
           <MusikSelect
             className="pack-currency-select"
             icon="coins"
-            ariaLabel="Devise"
+            ariaLabel={t("Devise")}
             showOptionDisplays={false}
             showSelectionMark={false}
             portal
@@ -139,8 +142,10 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
           {demo.songPacks.length === 0 && (
             <div className="col-span-2 rounded-xl border border-border bg-card px-5 py-8 text-center">
               <Icon i="package-open" size={26} className="mx-auto mb-2 text-primary" />
-              <p className="font-semibold text-foreground">Aucune offre de crédits disponible</p>
-              <p className="mt-1 text-sm text-muted-foreground">Les offres publiées par MusikPro apparaîtront ici.</p>
+              <p className="font-semibold text-foreground">{t("Aucune offre de crédits disponible")}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {t("Les offres publiées par MusikPro apparaîtront ici.")}
+              </p>
             </div>
           )}
           {demo.songPacks.map((pack) => {
@@ -274,7 +279,9 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
               </div>
               <span className={`text-sm font-bold ${tx.type === "purchase" ? "text-success" : "text-coral"}`}>
                 {tx.type === "purchase" ? "+" : "-"}
-                {Math.abs(tx.credits)} crédit{Math.abs(tx.credits) > 1 ? "s" : ""}
+                {Math.abs(tx.credits) > 1
+                  ? translateTemplate("{count} crédits", { count: Math.abs(tx.credits) })
+                  : translateTemplate("{count} crédit", { count: Math.abs(tx.credits) })}
               </span>
             </div>
           ))}

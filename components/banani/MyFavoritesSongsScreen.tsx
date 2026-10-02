@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Mes Favoris - Chansons Aimées";
@@ -31,7 +31,7 @@ export default function MyFavoritesSongs() {
             type="button"
             data-demo-ready="true"
             onClick={() => demo.go("/dashboard")}
-            aria-label="Action chevron-left"
+            aria-label={t("Action chevron-left")}
             className="text-muted-foreground"
           >
             <Icon i="chevron-left" size={20} />
@@ -41,8 +41,10 @@ export default function MyFavoritesSongs() {
         <button
           type="button"
           data-demo-ready="true"
-          onClick={() => demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })}
-          aria-label="Options"
+          onClick={() =>
+            demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true })
+          }
+          aria-label={t("Options")}
           className="text-muted-foreground"
         >
           <Icon i="more-vertical" size={18} />
@@ -51,14 +53,16 @@ export default function MyFavoritesSongs() {
 
       {/* Info */}
       <div className="px-4 pt-4 pb-2">
-        <p className="text-sm text-muted-foreground">{demo.favorites.length} chansons favorites</p>
+        <p className="text-sm text-muted-foreground">
+          {translateTemplate("{count} chansons favorites", { count: demo.favorites.length })}
+        </p>
       </div>
 
       {/* Songs List */}
       <div className="workspace-favorites-grid flex-1 px-4 py-4 flex flex-col gap-3 pb-24">
         {demo.favorites.length === 0 && (
           <p role="status" className="text-sm text-muted-foreground">
-            Aucune chanson favorite. Ajoute un favori depuis le lecteur.
+            {t("Aucune chanson favorite. Ajoute un favori depuis le lecteur.")}
           </p>
         )}
         {demo.favoriteSongs.map((song) => (
@@ -80,7 +84,7 @@ export default function MyFavoritesSongs() {
                 type="button"
                 data-demo-ready="true"
                 onClick={() => demo.openSong(song.id)}
-                aria-label="Écouter la chanson"
+                aria-label={t("Écouter la chanson")}
                 className="absolute inset-0 flex items-center justify-center bg-black/20 hover:bg-black/40"
               >
                 <Icon i="play" size={16} className="text-primary-foreground" />
@@ -109,7 +113,7 @@ export default function MyFavoritesSongs() {
                   type="button"
                   data-demo-ready="true"
                   onClick={() => demo.toggleFavorite(song.id)}
-                  aria-label={`Retirer ${song.title} des favoris`}
+                  aria-label={translateTemplate("Retirer {title} des favoris", { title: song.title })}
                   className="text-red-400"
                 >
                   <Icon i="heart" size={14} />

@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { downloadAudioFile, shareAudioFile } from "@/lib/demo/audio-actions";
 import { useDemo } from "./DemoProvider";
 
@@ -87,14 +87,16 @@ export default function SongPlayerScreen() {
         <div className="flex flex-1 items-center justify-center px-4 py-12">
           <div className="w-full max-w-md rounded-3xl border border-border bg-card px-6 py-10 text-center">
             <Icon i="music-2" size={38} className="mx-auto mb-3 text-primary" />
-            <h1 className="font-headings text-xl font-bold text-foreground">Aucune chanson sélectionnée</h1>
-            <p className="mt-2 text-sm text-muted-foreground">Tes chansons réelles pourront être écoutées ici.</p>
+            <h1 className="font-headings text-xl font-bold text-foreground">{t("Aucune chanson sélectionnée")}</h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("Tes chansons réelles pourront être écoutées ici.")}
+            </p>
             <button
               type="button"
               onClick={() => demo.go("/dashboard/songs")}
               className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground"
             >
-              Voir mes chansons
+              {t("Voir mes chansons")}
             </button>
           </div>
         </div>
@@ -147,7 +149,7 @@ export default function SongPlayerScreen() {
             data-demo-ready="true"
             onClick={() => demo.toggleFavorite(currentSong.id)}
             aria-pressed={demo.favorites.includes(currentSong.id)}
-            aria-label={`Favori ${currentSong.title}`}
+            aria-label={translateTemplate("Favori {title}", { title: currentSong.title })}
             className="flex items-center gap-1.5 text-primary font-semibold"
           >
             <Icon i="heart" size={18} />
@@ -186,10 +188,10 @@ export default function SongPlayerScreen() {
             }}
             onError={() => {
               demo.setPlaying(false);
-              demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
+              demo.notify(t("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie."));
             }}
             onStalled={() =>
-              demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")
+              demo.notify(t("La lecture est interrompue par une connexion instable. Patiente ou réessaie."))
             }
             className="sr-only"
           />
@@ -198,7 +200,9 @@ export default function SongPlayerScreen() {
         {isPending ? (
           <div className="px-4 pb-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Icon i="loader-circle" size={16} className="animate-spin text-primary" />
-            {currentSong.status === "failed" ? "La génération de cette version a échoué." : "Génération en cours…"}
+            {currentSong.status === "failed"
+              ? t("La génération de cette version a échoué.")
+              : t("Génération en cours…")}
           </div>
         ) : (
           /* Progress Bar */
@@ -208,11 +212,14 @@ export default function SongPlayerScreen() {
               className={`group relative flex h-6 items-center ${canSeek ? "cursor-pointer" : ""}`}
               style={{ touchAction: "none" }}
               role="slider"
-              aria-label="Position de lecture"
+              aria-label={t("Position de lecture")}
               aria-valuemin={0}
               aria-valuemax={Math.round(progress.duration) || 0}
               aria-valuenow={Math.round(progress.current)}
-              aria-valuetext={`${formatTime(progress.current)} sur ${formatTime(progress.duration)}`}
+              aria-valuetext={translateTemplate("{current} sur {duration}", {
+                current: formatTime(progress.current),
+                duration: formatTime(progress.duration),
+              })}
               aria-disabled={!canSeek}
               tabIndex={canSeek ? 0 : -1}
               onPointerDown={(e) => {
@@ -276,7 +283,7 @@ export default function SongPlayerScreen() {
             type="button"
             data-demo-ready="true"
             onClick={() => demo.nextSong(-1)}
-            aria-label="Chanson précédente"
+            aria-label={t("Chanson précédente")}
             className="text-muted-foreground"
           >
             <Icon i="skip-back" size={24} />
@@ -289,7 +296,7 @@ export default function SongPlayerScreen() {
               if (isReal && !demo.playing && audioUrl) demo.registerPlay(currentSong.id, demo.selectedVersion);
               demo.setPlaying(!demo.playing);
             }}
-            aria-label={demo.playing ? "Mettre en pause" : "Lire"}
+            aria-label={demo.playing ? t("Mettre en pause") : t("Lire")}
             className="w-16 h-16 bg-primary text-primary-foreground rounded-full flex items-center justify-center shadow-lg disabled:opacity-50"
             style={{ boxShadow: "0 6px 18px rgba(242,101,34,0.35)" }}
           >
@@ -299,7 +306,7 @@ export default function SongPlayerScreen() {
             type="button"
             data-demo-ready="true"
             onClick={() => demo.nextSong(1)}
-            aria-label="Chanson suivante"
+            aria-label={t("Chanson suivante")}
             className="text-muted-foreground"
           >
             <Icon i="skip-forward" size={24} />
@@ -314,10 +321,10 @@ export default function SongPlayerScreen() {
             onClick={() =>
               audioUrl
                 ? setMuted((prev) => !prev)
-                : demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true })
+                : demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true })
             }
             aria-pressed={muted}
-            aria-label={muted ? "Réactiver le son" : "Couper le son"}
+            aria-label={muted ? t("Réactiver le son") : t("Couper le son")}
             className="flex items-center gap-2 text-muted-foreground"
           >
             <Icon i={muted ? "volume-x" : "volume-2"} size={18} />
@@ -333,12 +340,12 @@ export default function SongPlayerScreen() {
               disabled={Boolean(isPending)}
               onClick={async () => {
                 if (!audioUrl) {
-                  demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
+                  demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true });
                   return;
                 }
                 const result = await shareAudioFile(audioUrl, currentSong.title);
-                if (result === "copied") demo.notify("Lien de la chanson copié dans le presse-papiers.");
-                if (result === "failed") demo.notify("Impossible de partager cette chanson pour le moment.");
+                if (result === "copied") demo.notify(t("Lien de la chanson copié dans le presse-papiers."));
+                if (result === "failed") demo.notify(t("Impossible de partager cette chanson pour le moment."));
               }}
               className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
             >
@@ -351,11 +358,11 @@ export default function SongPlayerScreen() {
               disabled={Boolean(isPending)}
               onClick={async () => {
                 if (!audioUrl) {
-                  demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
+                  demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true });
                   return;
                 }
                 const ok = await downloadAudioFile(audioUrl, currentSong.title);
-                if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
+                if (!ok) demo.notify(t("Le téléchargement a échoué. Réessaie dans un instant."));
               }}
               className="flex-1 py-3 border border-border rounded-xl font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-50"
             >
@@ -380,7 +387,7 @@ export default function SongPlayerScreen() {
                 data-demo-ready="true"
                 disabled={!playable}
                 onClick={() => demo.selectSong(song.id)}
-                aria-label={`${t("Écouter")} ${song.title}`}
+                aria-label={translateTemplate("Écouter {title}", { title: song.title })}
                 className="flex w-full items-center gap-3 p-3 bg-card rounded-xl border border-border/30 text-left transition-colors hover:border-primary/40 active:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div className="w-10 h-10 bg-secondary rounded-lg flex items-center justify-center flex-shrink-0">
@@ -396,7 +403,7 @@ export default function SongPlayerScreen() {
           })}
           {upNext.length === 0 && (
             <div className="rounded-xl border border-border bg-card px-4 py-5 text-center">
-              <p className="text-sm font-semibold text-foreground">Aucune autre chanson</p>
+              <p className="text-sm font-semibold text-foreground">{t("Aucune autre chanson")}</p>
             </div>
           )}
         </div>

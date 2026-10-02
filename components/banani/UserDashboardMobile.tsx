@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { useDemo } from "./DemoProvider";
 
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { downloadAudioFile } from "@/lib/demo/audio-actions";
 
 export const displayName = "Dashboard Utilisateur Mobile";
@@ -77,7 +77,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
   const [nowPlayingTrend, setNowPlayingTrend] = useState<TrendCard | null>(null);
   const playTrend = (trend: TrendCard) => {
     if (!trend.audioUrl) {
-      demo.notify("Cette chanson n’est pas disponible à l’écoute pour le moment.");
+      demo.notify(t("Cette chanson n’est pas disponible à l’écoute pour le moment."));
       return;
     }
     setNowPlayingTrend((current) => (current?.key === trend.key ? null : trend));
@@ -110,7 +110,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
       return;
     }
     if (!song.audioUrl) {
-      demo.notify("Cette chanson n’est pas encore prête à être écoutée.");
+      demo.notify(t("Cette chanson n’est pas encore prête à être écoutée."));
       return;
     }
     const audio = audioRef.current;
@@ -121,21 +121,21 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
       return;
     }
     audio.src = song.audioUrl;
-    void audio.play().catch(() => demo.notify("La lecture a échoué. Réessaie dans un instant."));
+    void audio.play().catch(() => demo.notify(t("La lecture a échoué. Réessaie dans un instant.")));
     setPlayingSongId(song.id);
     demo.registerPlay(song.id, 0);
   };
   const downloadSong = async (song: (typeof recentSongs)[number]) => {
     if (demo.isDemo) {
-      demo.notify("Action de démonstration : aucune opération réelle effectuée.", { demoOnly: true });
+      demo.notify(t("Action de démonstration : aucune opération réelle effectuée."), { demoOnly: true });
       return;
     }
     if (!song.audioUrl) {
-      demo.notify("Cette chanson n’est pas encore prête à être téléchargée.");
+      demo.notify(t("Cette chanson n’est pas encore prête à être téléchargée."));
       return;
     }
     const ok = await downloadAudioFile(song.audioUrl, song.title);
-    if (!ok) demo.notify("Le téléchargement a échoué. Réessaie dans un instant.");
+    if (!ok) demo.notify(t("Le téléchargement a échoué. Réessaie dans un instant."));
   };
   return (
     <div className="bg-background flex flex-col">
@@ -145,9 +145,9 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
         onEnded={() => setPlayingSongId(null)}
         onError={() => {
           setPlayingSongId(null);
-          demo.notify("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie.");
+          demo.notify(t("Impossible de lire cette chanson pour le moment. Vérifie ta connexion et réessaie."));
         }}
-        onStalled={() => demo.notify("La lecture est interrompue par une connexion instable. Patiente ou réessaie.")}
+        onStalled={() => demo.notify(t("La lecture est interrompue par une connexion instable. Patiente ou réessaie."))}
       />
       <MobileTopBar credits={demo.balance} />
 
@@ -155,11 +155,13 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
       <div className="dashboard-greeting px-4 pt-4 pb-3">
         <div>
           <h1 className="font-headings font-bold text-2xl text-foreground">
-            {`${t("Bonjour")} ${demo.profile.name.split(" ")[0]} 👋`}
+            {translateTemplate("Bonjour {name} 👋", { name: demo.profile.name.split(" ")[0] })}
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">
             {demo.balance > 0
-              ? `Il te reste ${demo.balance} crédit${demo.balance > 1 ? "s" : ""}`
+              ? demo.balance > 1
+                ? translateTemplate("Il te reste {count} crédits", { count: demo.balance })
+                : translateTemplate("Il te reste {count} crédit", { count: demo.balance })
               : t("Aucun crédit disponible")}
           </p>
         </div>
@@ -172,7 +174,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
           type="button"
           data-demo-ready
           onClick={openCreator}
-          aria-label="Créer une chanson"
+          aria-label={t("Créer une chanson")}
           aria-busy={launching}
           className={`musik-create-hero w-full bg-primary rounded-xl px-5 py-4 flex items-center gap-4 ${launching ? "is-launching" : ""}`}
           style={{ boxShadow: "0 4px 20px rgba(242,101,34,0.35)" }}
@@ -255,7 +257,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
                 ? {
                     role: "button",
                     tabIndex: 0,
-                    "aria-label": `${t("Écouter la chanson")} — ${t2.title}`,
+                    "aria-label": translateTemplate("Écouter la chanson — {title}", { title: t2.title }),
                     onClick: () => playTrend(t2),
                     onKeyDown: (event: React.KeyboardEvent) => {
                       if (event.key === "Enter" || event.key === " ") {
@@ -307,7 +309,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
                   type="button"
                   data-demo-ready
                   onClick={() => demo.openSong(t2.title)}
-                  aria-label="Écouter la chanson"
+                  aria-label={t("Écouter la chanson")}
                   className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-primary rounded-full shadow-lg flex items-center justify-center"
                 >
                   <Icon i="play" size={20} className="text-primary-foreground" />

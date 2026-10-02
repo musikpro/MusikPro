@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { matchesSongSearch } from "@/lib/demo/search";
 import SearchField from "./SearchField";
 import { useDemo } from "./DemoProvider";
@@ -28,8 +28,8 @@ export default function MyLyricsScreen() {
   const results = songsWithLyrics.filter((s) => matchesSongSearch(search, s.title, s.style, s.occasion));
   const copyLyrics = (title: string, lyrics: string) => {
     navigator.clipboard.writeText(lyrics).then(
-      () => demo.notify(`Paroles de « ${title} » copiées.`),
-      () => demo.notify("La copie est indisponible dans ce navigateur."),
+      () => demo.notify(translateTemplate("Paroles de « {title} » copiées.", { title })),
+      () => demo.notify(t("La copie est indisponible dans ce navigateur.")),
     );
   };
   return (
@@ -39,24 +39,28 @@ export default function MyLyricsScreen() {
       <div className="px-4 pt-4 pb-4">
         <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Mes paroles")}</h1>
         <p className="text-sm text-muted-foreground">
-          {songsWithLyrics.length} chanson{songsWithLyrics.length !== 1 ? "s" : ""} avec paroles
+          {songsWithLyrics.length !== 1
+            ? translateTemplate("{count} chansons avec paroles", { count: songsWithLyrics.length })
+            : translateTemplate("{count} chanson avec paroles", { count: songsWithLyrics.length })}
         </p>
       </div>
 
       <div className="px-4 pb-4">
-        <SearchField value={search} onChange={setSearch} label="Rechercher une chanson" />
+        <SearchField value={search} onChange={setSearch} label={t("Rechercher une chanson")} />
       </div>
 
       <p role="status" aria-live="polite" className="px-4 pb-3 text-xs text-muted-foreground">
-        {results.length} résultat{results.length !== 1 ? "s" : ""}
+        {results.length !== 1
+          ? translateTemplate("{count} résultats", { count: results.length })
+          : translateTemplate("{count} résultat", { count: results.length })}
       </p>
 
       <div className="workspace-song-grid px-4 flex flex-col gap-4 pb-28">
         {results.length === 0 && (
           <p role="status" className="text-sm text-muted-foreground">
             {songsWithLyrics.length === 0
-              ? "Aucune parole disponible. Elles apparaîtront ici une fois une chanson générée."
-              : "Aucune chanson pour cette recherche."}
+              ? t("Aucune parole disponible. Elles apparaîtront ici une fois une chanson générée.")
+              : t("Aucune chanson pour cette recherche.")}
           </p>
         )}
         {results.map((song) => {

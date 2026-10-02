@@ -1,6 +1,6 @@
 "use client";
 import { useDemo } from "./DemoProvider";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 
 import Icon from "./Icon";
 
@@ -69,7 +69,7 @@ export default function SongCard({
           <button
             type="button"
             data-demo-ready
-            aria-label={`Télécharger ${title}`}
+            aria-label={translateTemplate("Télécharger {title}", { title })}
             disabled={disablePlay}
             onClick={onDownload}
             className="w-10 h-10 border border-border rounded-lg flex items-center justify-center flex-shrink-0 disabled:opacity-50"
@@ -80,7 +80,11 @@ export default function SongCard({
         <button
           type="button"
           data-demo-ready
-          aria-label={isPlaying ? `Mettre en pause ${title}` : `Écouter ${title}`}
+          aria-label={
+            isPlaying
+              ? translateTemplate("Mettre en pause {title}", { title })
+              : translateTemplate("Écouter {title}", { title })
+          }
           aria-pressed={isPlaying}
           disabled={disablePlay}
           onClick={() => (onPlay ? onPlay() : demo.openSong(id))}

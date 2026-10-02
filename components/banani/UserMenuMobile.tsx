@@ -1,5 +1,5 @@
 "use client";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 import { demoDestination } from "@/lib/demo/navigation";
 
@@ -44,7 +44,7 @@ export default function UserMenuMobile() {
           type="button"
           data-demo-ready="true"
           onClick={() => demo.go("/dashboard")}
-          aria-label="Fermer"
+          aria-label={t("Fermer")}
           className="text-muted-foreground"
         >
           <Icon i="x" size={20} />
@@ -67,7 +67,7 @@ export default function UserMenuMobile() {
             type="button"
             data-demo-ready="true"
             onClick={() => demo.go("/dashboard/profile/edit")}
-            aria-label="Éditer le profil"
+            aria-label={t("Éditer le profil")}
             className="text-muted-foreground"
           >
             <Icon i="edit-2" size={16} />
@@ -93,7 +93,9 @@ export default function UserMenuMobile() {
                 <p className="text-sm font-semibold text-foreground">{item.label}</p>
                 <p className="text-xs text-muted-foreground">
                   {item.label === t("Crédits")
-                    ? `${demo.balance} crédit${demo.balance > 1 ? "s" : ""} disponible${demo.balance > 1 ? "s" : ""}`
+                    ? demo.balance > 1
+                      ? translateTemplate("{count} crédits disponibles", { count: demo.balance })
+                      : translateTemplate("{count} crédit disponible", { count: demo.balance })
                     : item.sub}
                 </p>
               </div>

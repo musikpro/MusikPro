@@ -33,7 +33,7 @@ export default function PaymentRedirectScreen() {
     try {
       const country = (demo.choices.phoneCountry || "CI").toUpperCase() as CountryCode;
       const parsedPhone = parsePhoneNumberFromString(demo.fields["payment.phone"] || "", country);
-      if (!parsedPhone?.isValid()) throw new Error("Vérifie le pays et le numéro de téléphone avant de payer.");
+      if (!parsedPhone?.isValid()) throw new Error(t("Vérifie le pays et le numéro de téléphone avant de payer."));
       const origin = window.location.origin;
       const result = await apiFetch<{ checkoutUrl?: string }>("/api/payments/checkout", {
         method: "POST",
@@ -50,14 +50,14 @@ export default function PaymentRedirectScreen() {
           couponCode: demo.coupon?.code,
         }),
       });
-      if (!result.checkoutUrl) throw new Error("Chariow n’a pas retourné de page de paiement.");
+      if (!result.checkoutUrl) throw new Error(t("Chariow n’a pas retourné de page de paiement."));
       try {
         window.sessionStorage.setItem(CHECKOUT_STARTED_KEY, String(Date.now()));
       } catch {}
       window.location.assign(result.checkoutUrl);
     } catch (cause) {
       setResumable(true);
-      setError(cause instanceof Error ? cause.message : "Le paiement Chariow n’a pas pu démarrer.");
+      setError(cause instanceof Error ? cause.message : t("Le paiement Chariow n’a pas pu démarrer."));
       setPending(false);
     }
   };
@@ -81,16 +81,16 @@ export default function PaymentRedirectScreen() {
       <div className="bg-surface flex min-h-full items-center justify-center px-4 py-12">
         <div className="w-full max-w-md rounded-3xl border border-border bg-card px-6 py-10 text-center">
           <Icon i="package-open" size={36} className="mx-auto mb-3 text-primary" />
-          <h1 className="font-headings text-xl font-bold text-foreground">Aucune offre sélectionnée</h1>
+          <h1 className="font-headings text-xl font-bold text-foreground">{t("Aucune offre sélectionnée")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Choisis une offre de crédits avant de continuer vers le paiement.
+            {t("Choisis une offre de crédits avant de continuer vers le paiement.")}
           </p>
           <button
             type="button"
             onClick={() => demo.go("/dashboard/create/pack")}
             className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground"
           >
-            Voir les crédits
+            {t("Voir les crédits")}
           </button>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function PaymentRedirectScreen() {
                     demo.currencies,
                   ),
                 })}
-                {demo.coupon ? ` (code ${demo.coupon.code} appliqué)` : ""}
+                {demo.coupon ? translateTemplate(" (code {code} appliqué)", { code: demo.coupon.code }) : ""}
               </p>
             </div>
           </div>

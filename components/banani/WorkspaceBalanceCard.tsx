@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useDemo } from "./DemoProvider";
 import Icon from "./Icon";
 import { CREDITS_PER_GENERATION, getGenerationCount } from "@/lib/credit-plans/catalog";
-import { translate as t } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 
 export default function WorkspaceBalanceCard() {
   const demo = useDemo();
@@ -31,7 +31,9 @@ export default function WorkspaceBalanceCard() {
         {demo.paymentBypassEnabled
           ? t("Mode test — génération gratuite activée")
           : canGenerate
-            ? `${getGenerationCount(demo.balance)} génération${getGenerationCount(demo.balance) > 1 ? "s" : ""} disponible${getGenerationCount(demo.balance) > 1 ? "s" : ""}`
+            ? getGenerationCount(demo.balance) > 1
+              ? translateTemplate("{count} générations disponibles", { count: getGenerationCount(demo.balance) })
+              : translateTemplate("{count} génération disponible", { count: getGenerationCount(demo.balance) })
             : t("Ajoutez des crédits pour lancer une génération")}
       </p>
       <Link href={demo.href("/dashboard/credits")} className="workspace-primary-link">
