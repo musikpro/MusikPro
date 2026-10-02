@@ -1,33 +1,50 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Scans the client-facing UI source for t("...") calls, finds French source strings that are
- * missing from lib/i18n/locales/{en,es,pt}.json, and fills them in via the connected AI
- * provider (same lib/ai pipeline already used for lyrics and admin text generation).
+ * Scans the client-facing UI source for t("...") calls and writes (or, with --check, verifies)
+ * lib/i18n/manifest.json: the sorted list of the French keys found in the code. The manifest is
+ * what the admin "Actualiser les traductions" button translates from.
  *
- * It also writes (or, with --check, verifies) lib/i18n/manifest.json: the sorted list of the
- * French keys found in the code.
- *
- * Usage: npm run i18n:sync [-- --check]
- *   --check   exits with a non-zero status if any locale is missing keys or the manifest is
- *             stale, without calling the
- *             AI provider or writing files (useful in CI to catch un-synced translations). This
- *             mode is a pure local file scan and needs no environment variables at all.
- *
- * Actually translating (the default, non --check mode) needs the same environment as
- * `npm run db:migrate` (DATABASE_SERVICE_URL, and either a provider configured in
- * /admin/ai-providers or an ANTHROPIC_API_KEY/OPENAI_API_KEY fallback) — lib/i18n/ai-translate
- * is only imported lazily below, so --check never touches the database.
+ * Usage: npm run i18n:manifest | npm run i18n:check | npm run i18n:sync
+ *   --manifest-only  (i18n:manifest) only rewrites the manifest if stale. Pure local file scan:
+ *                    no environment variable, no database, no AI, no JSON dictionary read.
+ *   --check          (i18n:check) exits 1 ONLY if the manifest is stale. Texts missing from
+ *                    lib/i18n/locales/{en,es,pt}.json are reported per locale but do not fail:
+ *                    translations are filled from /admin/languages. Also needs no environment.
+ *   (default)        (i18n:sync, optional locally) fills the missing keys in the JSON dictionaries
+ *                    via the connected AI provider (same lib/ai pipeline as lyrics generation) and
+ *                    writes the manifest. Needs the same environment as `npm run db:migrate`;
+ *                    lib/i18n/ai-translate is only imported lazily, so the other modes never
+ *                    touch the database.
  */
-import { readFileSync, writeFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { TranslationLocale } from "../lib/i18n/ai-translate";
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url)) + "/..";
-const SCAN_DIRS = ["app/dashboard", "app/s", "app/page.tsx", "components/banani", "components/mobile-bottom-nav.tsx"];
+const SCAN_DIRS_WANTED = [
+  "app/dashboard",
+  "app/s",
+  "app/page.tsx",
+  "app/not-found.tsx",
+  "app/loading.tsx",
+  "components/banani",
+  "components/mobile",
+  "components/mobile-bottom-nav.tsx",
+  "components/dashboard-nav.tsx",
+  "components/checkout-button.tsx",
+  "components/ui",
+  "components/pwa",
+];
+const SCAN_DIRS = SCAN_DIRS_WANTED.filter((entry) => {
+  const exists = existsSync(path.join(ROOT, entry));
+  if (!exists) console.warn(`  ! scan path not found, skipped: ${entry}`);
+  return exists;
+});
 const LOCALES: TranslationLocale[] = ["en", "es", "pt"];
 const BATCH_SIZE = 40;
 const CHECK_ONLY = process.argv.includes("--check");
+const MANIFEST_ONLY = process.argv.includes("--manifest-only");
 
 /**
  * Strings passed to t() indirectly (e.g. t(variable) where the literal lives in a data array
@@ -96,11 +113,17 @@ function writeDictionary(locale: TranslationLocale, dict: Record<string, string>
 const MANIFEST_FILE = path.join(ROOT, "lib/i18n/manifest.json");
 
 function manifestSource(keys: Set<string>): string {
-  return JSON.stringify([...keys].sort((a, b) => a.localeCompare(b, "fr")), null, 2) + "\n";
+  return (
+    JSON.stringify(
+      [...keys].sort((a, b) => a.localeCompare(b, "fr")),
+      null,
+      2,
+    ) + "\n"
+  );
 }
 
 async function main() {
-  const translateBatch = CHECK_ONLY ? null : (await import("../lib/i18n/ai-translate")).translateBatch;
+  const translateBatch = CHECK_ONLY || MANIFEST_ONLY ? null : (await import("../lib/i18n/ai-translate")).translateBatch;
 
   const files = SCAN_DIRS.flatMap(walk);
   const usedKeys = collectKeys(files);
@@ -110,6 +133,8 @@ async function main() {
   );
 
   let anyMissing = false;
+  let manifestWritten = false;
+  let staleManifest = false;
   const expectedManifest = manifestSource(usedKeys);
   let manifestStale = false;
   try {
@@ -119,15 +144,18 @@ async function main() {
   }
   if (manifestStale) {
     if (CHECK_ONLY) {
-      anyMissing = true;
+      staleManifest = true;
       console.error("  manifest: lib/i18n/manifest.json is out of date.");
     } else {
       writeFileSync(MANIFEST_FILE, expectedManifest);
+      manifestWritten = true;
       console.log(`  manifest: written (${usedKeys.size} keys).`);
     }
   } else {
     console.log(`  manifest: up to date (${usedKeys.size} keys).`);
   }
+
+  if (MANIFEST_ONLY) return;
 
   for (const locale of LOCALES) {
     const dict = loadDictionary(locale);
@@ -136,12 +164,15 @@ async function main() {
       console.log(`  ${locale}: up to date (${Object.keys(dict).length} keys).`);
       continue;
     }
-    anyMissing = true;
-    console.log(`  ${locale}: ${missing.length} missing key(s).`);
     if (CHECK_ONLY) {
+      console.log(
+        `  ${locale}: ${missing.length} texte(s) sans traduction (à traduire depuis /admin/languages ou avec npm run i18n:sync).`,
+      );
       for (const key of missing.slice(0, 10)) console.log(`    - ${key}`);
       continue;
     }
+    anyMissing = true;
+    console.log(`  ${locale}: ${missing.length} missing key(s).`);
     for (let i = 0; i < missing.length; i += BATCH_SIZE) {
       const batch = missing.slice(i, i + BATCH_SIZE);
       console.log(`    translating ${batch.length} string(s) (${i + batch.length}/${missing.length})...`);
@@ -157,11 +188,17 @@ async function main() {
     console.log(`  ${locale}: written, now ${Object.keys(dict).length} keys.`);
   }
 
-  if (CHECK_ONLY && anyMissing) {
-    console.error("\nSome locales are missing translations or the manifest is stale. Run `npm run i18n:sync`.");
+  if (CHECK_ONLY && staleManifest) {
+    console.error("\nLe manifeste lib/i18n/manifest.json est périmé. Lancez `npm run i18n:manifest`.");
     process.exit(1);
   }
-  console.log(anyMissing ? "\nDone." : "\nAll locales already up to date, nothing to do.");
+  console.log(
+    anyMissing
+      ? "\nDone."
+      : manifestWritten
+        ? "\nManifest rewritten; all locales already up to date."
+        : "\nAll locales already up to date, nothing to do.",
+  );
 }
 
 main().catch((error) => {

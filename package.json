@@ -14,6 +14,7 @@
     "security:audit": "bash scripts/security-audit.sh .",
     "db:generate": "drizzle-kit generate",
     "i18n:sync": "tsx scripts/i18n-sync.mts",
+    "i18n:manifest": "tsx scripts/i18n-sync.mts --manifest-only",
     "i18n:check": "tsx scripts/i18n-sync.mts --check",
     "db:migrate": "drizzle-kit migrate",
     "auth:generate": "auth generate --config ./lib/auth/index.ts --output db/schema/auth.generated.ts -y",
