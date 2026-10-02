@@ -31,7 +31,7 @@ export default async function AdminSettingsPage() {
         tabs={[
           { id: "payments", label: "Paiements" },
           { id: "country", label: "Détection de pays" },
-          { id: "scheduler", label: "Planificateur" },
+          { id: "scheduler", label: "GitHub CRON" },
         ]}
       >
         <AdminTabPanel id="payments">

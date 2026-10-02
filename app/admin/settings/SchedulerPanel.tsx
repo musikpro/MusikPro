@@ -30,7 +30,7 @@ export default function SchedulerPanel({ snapshot }: { snapshot: SchedulerSnapsh
           <Icon i="timer" size={20} />
         </span>
         <div>
-          <h2>Planificateur de rattrapage des chansons</h2>
+          <h2>GitHub CRON — rattrapage des chansons</h2>
           <p>
             Deux planificateurs appellent <code>/api/cron/reconcile-music-jobs</code> pour finaliser, faire échouer ou
             rembourser les générations restées « en cours » quand le client a fermé la page. Le cron Vercel passe une
