@@ -11,7 +11,7 @@ import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { withAdminNotice } from "@/lib/admin/notice-redirect";
 import { requireAdmin } from "@/lib/auth/session";
-import { proposalToFormInput, type FieldProposal } from "@/lib/occasion-fields/ai-schema";
+import { planProposalInserts } from "@/lib/occasion-fields/ai-schema";
 import { occasionFieldFormSchema, slugifyFieldKey } from "@/lib/occasion-fields/form-schema";
 import { MAX_ACTIVE_FIELDS_PER_OCCASION } from "@/lib/occasion-fields/types";
 import { writeAuditLog } from "@/lib/security/audit";
@@ -344,18 +344,22 @@ export async function addProposedFields(_previous: AdminActionState, formData: F
       .where(eq(occasionFields.occasionId, parsed.occasionId))
       .orderBy(sql`${occasionFields.sortOrder} desc`)
       .limit(1);
-    let order = (last?.sortOrder ?? 0) + 10;
-    const created: string[] = [];
-    for (const candidate of parsed.proposals) {
-      // Revalidation complète côté serveur : le navigateur n'est jamais cru sur parole.
-      const row = occasionFieldFormSchema.parse(
-        proposalToFormInput(candidate as unknown as FieldProposal, parsed.occasionId, order),
-      );
-      const id = randomUUID();
-      await database.insert(occasionFields).values({
-        id,
+    const existingKeys = await database
+      .select({ key: occasionFields.key })
+      .from(occasionFields)
+      .where(eq(occasionFields.occasionId, parsed.occasionId));
+    // Tout est validé avant le moindre insert (tout ou rien) ; les propositions sont revalidées côté serveur.
+    const planned = planProposalInserts(parsed.proposals, {
+      occasionId: parsed.occasionId,
+      lastSortOrder: last?.sortOrder ?? 0,
+      takenKeys: existingKeys.map((row) => row.key),
+    });
+    const created = planned.map(() => randomUUID());
+    await database.insert(occasionFields).values(
+      planned.map((row, index) => ({
+        id: created[index],
         occasionId: parsed.occasionId,
-        key: await uniqueKey(parsed.occasionId, row.label),
+        key: row.key,
         label: row.label,
         helpText: row.helpText,
         icon: row.icon,
@@ -365,12 +369,10 @@ export async function addProposedFields(_previous: AdminActionState, formData: F
         config: row.config,
         required: row.required === "true",
         aiHint: row.aiHint,
-        sortOrder: order,
+        sortOrder: row.sortOrder,
         active: true,
-      });
-      created.push(id);
-      order += 10;
-    }
+      })),
+    );
     await writeAuditLog({
       action: "occasion_field.ai_added",
       actorId: session.user.id,

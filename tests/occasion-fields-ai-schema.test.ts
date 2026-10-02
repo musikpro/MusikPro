@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_AI_FIELD_PROPOSALS,
   parseBlockProposal,
+  planProposalInserts,
   proposalToFormInput,
   sanitizeFieldProposals,
   sanitizeSingleProposal,
@@ -97,5 +98,36 @@ describe("parseBlockProposal", () => {
     ).toEqual({ showRecipient: true, showSender: true, titleFieldId: null });
     expect(parseBlockProposal("n'importe quoi", fields)).toBeNull();
     expect(parseBlockProposal(JSON.stringify({ showRecipient: "oui" }), fields)).toBeNull();
+  });
+});
+
+describe("planProposalInserts", () => {
+  const proposals = (labels: string[]) =>
+    sanitizeFieldProposals(
+      JSON.stringify(labels.map((label) => ({ ...good, label, type: "short_text", options: [] }))),
+      ctx,
+    );
+  it("plans rows with strictly increasing sort orders", () => {
+    const rows = planProposalInserts(proposals(["Champ A", "Champ B", "Champ C"]), { occasionId: "occ-1", lastSortOrder: 20, takenKeys: [] });
+    expect(rows.map((r) => r.sortOrder)).toEqual([30, 40, 50]);
+  });
+  it("keeps sort orders within 999 on overflow", () => {
+    const rows = planProposalInserts(proposals(["Champ A", "Champ B", "Champ C"]), { occasionId: "occ-1", lastSortOrder: 995, takenKeys: [] });
+    expect(rows.map((r) => r.sortOrder)).toEqual([979, 989, 999]);
+  });
+  it("throws before producing anything when one proposal is invalid", () => {
+    const list = [...proposals(["Champ A", "Champ B"]), { label: "X", type: "nope" }];
+    expect(() => planProposalInserts(list, { occasionId: "occ-1", lastSortOrder: 0, takenKeys: [] })).toThrow();
+    const bad = [...proposals(["Champ A"]), { ...proposals(["Champ B"])[0], aiHint: "x".repeat(250) }];
+    expect(() => planProposalInserts(bad, { occasionId: "occ-1", lastSortOrder: 0, takenKeys: [] })).toThrow(/invalide/);
+  });
+  it("avoids key collisions between proposals and with existing keys", () => {
+    const [one] = proposals(["Prénom"]);
+    const rows = planProposalInserts([one, { ...one, label: "Prenom!" }], {
+      occasionId: "occ-1",
+      lastSortOrder: 0,
+      takenKeys: ["prenom"],
+    });
+    expect(rows.map((r) => r.key)).toEqual(["prenom_2", "prenom_3"]);
   });
 });

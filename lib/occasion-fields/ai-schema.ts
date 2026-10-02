@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { formatOptionsText, occasionFieldFormSchema } from "./form-schema";
+import { formatOptionsText, occasionFieldFormSchema, slugifyFieldKey } from "./form-schema";
 import {
   OCCASION_FIELD_TYPES,
   type OccasionFieldConfig,
@@ -168,4 +168,56 @@ export function parseBlockProposal(
     showSender: parsed.data.showSender,
     titleFieldId: match?.id ?? null,
   };
+}
+
+const clientProposalSchema = z.object({
+  label: z.string(),
+  helpText: z.string().default(""),
+  icon: z.string().default(""),
+  placeholder: z.string().default(""),
+  type: z.enum(OCCASION_FIELD_TYPES),
+  options: z.array(z.object({ label: z.string(), emoji: z.string().default("") })).default([]),
+  config: z
+    .object({
+      display: z.enum(["dropdown", "tiles"]).optional(),
+      min: z.number().int().optional(),
+      max: z.number().int().optional(),
+      maxLength: z.number().int().optional(),
+    })
+    .default({}),
+  required: z.boolean().default(false),
+  aiHint: z.string().default(""),
+});
+
+export type PlannedFieldInsert = ReturnType<typeof occasionFieldFormSchema.parse> & { key: string; sortOrder: number };
+
+/**
+ * Valide TOUTES les propositions envoyées par le navigateur avant le moindre insert (tout ou rien),
+ * attribue des ordres croissants <= 999 et des clés uniques y compris entre propositions du même lot.
+ * Lève une Error en français si une proposition est invalide.
+ */
+export function planProposalInserts(
+  proposals: unknown[],
+  ctx: { occasionId: string; lastSortOrder: number; takenKeys: Iterable<string> },
+): PlannedFieldInsert[] {
+  const count = proposals.length;
+  const base = Math.max(0, Math.min(ctx.lastSortOrder + 10, 999 - 10 * (count - 1)));
+  const taken = new Set(ctx.takenKeys);
+  return proposals.map((candidate, index) => {
+    const client = clientProposalSchema.safeParse(candidate);
+    if (!client.success) throw new Error(`Proposition ${index + 1} invalide : relance la suggestion.`);
+    const sortOrder = base + 10 * index;
+    const parsed = occasionFieldFormSchema.safeParse(
+      proposalToFormInput(client.data as FieldProposal, ctx.occasionId, sortOrder),
+    );
+    if (!parsed.success) throw new Error(`Proposition « ${client.data.label} » invalide : relance la suggestion.`);
+    const root = slugifyFieldKey(parsed.data.label);
+    let key = root;
+    for (let n = 2; taken.has(key); n += 1) {
+      if (n >= 100) throw new Error("Impossible de générer un identifiant unique pour ce champ.");
+      key = `${root}_${n}`;
+    }
+    taken.add(key);
+    return { ...parsed.data, key, sortOrder };
+  });
 }
