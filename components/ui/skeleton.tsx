@@ -77,9 +77,17 @@ export function SkeletonTable({ rows = 6, columns = 5 }: { rows?: number; column
   );
 }
 
-export function DashboardSkeleton({ admin = false }: { admin?: boolean }) {
+export function DashboardSkeleton({
+  admin = false,
+  label = "Chargement de la page",
+  loadingText = "Chargement…",
+}: {
+  admin?: boolean;
+  label?: string;
+  loadingText?: string;
+}) {
   return (
-    <main className="shell skeleton-page" aria-busy="true" aria-label="Chargement de la page">
+    <main className="shell skeleton-page" aria-busy="true" aria-label={label}>
       <div className="skeleton-nav" aria-hidden="true">
         {Array.from({ length: admin ? 6 : 4 }, (_, i) => (
           <Skeleton key={i} className="skeleton-nav-item" />
@@ -89,7 +97,7 @@ export function DashboardSkeleton({ admin = false }: { admin?: boolean }) {
       <SkeletonKpiGrid count={admin ? 4 : 3} />
       <Skeleton className="skeleton-section-title" />
       <SkeletonCards count={2} />
-      <span className="sr-only">Chargement…</span>
+      <span className="sr-only">{loadingText}</span>
     </main>
   );
 }
@@ -98,13 +106,17 @@ export function AdminTableSkeleton({
   columns = 5,
   rows = 7,
   withForm = false,
+  label = "Chargement de la page d’administration",
+  loadingText = "Chargement…",
 }: {
   columns?: number;
   rows?: number;
   withForm?: boolean;
+  label?: string;
+  loadingText?: string;
 }) {
   return (
-    <main className="shell skeleton-page" aria-busy="true" aria-label="Chargement de la page d’administration">
+    <main className="shell skeleton-page" aria-busy="true" aria-label={label}>
       <Skeleton className="skeleton-page-title" />
       {withForm ? (
         <div className="card skeleton-form-card" aria-hidden="true">
@@ -118,7 +130,7 @@ export function AdminTableSkeleton({
       ) : null}
       <Skeleton className="skeleton-section-title" />
       <SkeletonTable columns={columns} rows={rows} />
-      <span className="sr-only">Chargement…</span>
+      <span className="sr-only">{loadingText}</span>
     </main>
   );
 }

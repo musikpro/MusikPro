@@ -15,12 +15,14 @@ export function InlineNotice({
   className = "",
   id,
   onDismiss,
+  closeLabel = "Fermer la notification",
 }: {
   children: React.ReactNode;
   tone?: NoticeTone;
   className?: string;
   id?: string;
   onDismiss?: () => void;
+  closeLabel?: string;
 }) {
   const NoticeIcon = noticeIcons[tone];
   return (
@@ -32,7 +34,7 @@ export function InlineNotice({
       <NoticeIcon className="site-notice-icon" size={17} aria-hidden="true" />
       <span className="site-notice-message">{children}</span>
       {onDismiss && (
-        <button type="button" className="site-notice-dismiss" onClick={onDismiss} aria-label="Fermer la notification">
+        <button type="button" className="site-notice-dismiss" onClick={onDismiss} aria-label={closeLabel}>
           <X size={16} aria-hidden="true" />
         </button>
       )}

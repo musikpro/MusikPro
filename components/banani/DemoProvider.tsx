@@ -1061,7 +1061,7 @@ export function DemoProvider({
       {children}
       {state.message && (
         <div className="demo-notice">
-          <InlineNotice tone="info" onDismiss={() => state.notify("")}>
+          <InlineNotice tone="info" onDismiss={() => state.notify("")} closeLabel={t("Fermer la notification")}>
             {state.message}
           </InlineNotice>
         </div>

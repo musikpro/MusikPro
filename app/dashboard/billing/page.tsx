@@ -4,7 +4,14 @@ import { payments, plans } from "@/db/schema";
 import { requireUser } from "@/lib/auth/session";
 import { DashboardNav } from "@/components/dashboard-nav";
 import { CheckoutButton } from "@/components/checkout-button";
+import { headers } from "next/headers";
+import { primeOverlay } from "@/lib/i18n/overlay-server";
+import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
+import { translateForLocale } from "@/lib/i18n/translate";
 export default async function Page() {
+  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  await primeOverlay(locale);
+  const t = (text: string) => translateForLocale(text, locale);
   const s = await requireUser();
   const offers = await userQuery(s.user.id, db.select().from(plans).where(eq(plans.active, true)));
   const tx = await userQuery(
@@ -14,27 +21,27 @@ export default async function Page() {
   return (
     <main className="shell">
       <DashboardNav />
-      <h1>Plans et facturation</h1>
+      <h1>{t("Plans et facturation")}</h1>
       <div className="grid">
         {offers.map((p) => (
           <div className="card" key={p.id}>
             <h2>{p.name}</h2>
             <p>{p.description}</p>
             <h3>
-              {p.amount.toLocaleString("fr-FR")} {p.currency}/{p.interval === "year" ? "an" : "mois"}
+              {p.amount.toLocaleString("fr-FR")} {p.currency}/{p.interval === "year" ? t("an") : t("mois")}
             </h3>
             <CheckoutButton planId={p.id} />
           </div>
         ))}
       </div>
-      <h2>Transactions</h2>
+      <h2>{t("Transactions")}</h2>
       <table className="table">
         <thead>
           <tr>
-            <th>Référence</th>
-            <th>Montant</th>
-            <th>Fournisseur</th>
-            <th>Statut</th>
+            <th>{t("Référence")}</th>
+            <th>{t("Montant")}</th>
+            <th>{t("Fournisseur")}</th>
+            <th>{t("Statut")}</th>
           </tr>
         </thead>
         <tbody>

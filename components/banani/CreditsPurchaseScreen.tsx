@@ -250,7 +250,7 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
             <span className="payment-logo payment-logo-wave-money" title="Wave">
               <Image src="/banani/payment-logos/wave.png" alt="Wave" width={96} height={42} />
             </span>
-            <span className="payment-logo payment-logo-card" title="Carte bancaire Visa ou Mastercard">
+            <span className="payment-logo payment-logo-card" title={t("Carte bancaire Visa ou Mastercard")}>
               <Image src="/banani/payment-logos/visa.svg" alt="Visa" width={44} height={15} />
               <Image src="/banani/payment-logos/mastercard.svg" alt="Mastercard" width={31} height={24} />
             </span>

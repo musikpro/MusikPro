@@ -174,7 +174,7 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
               type="button"
               data-demo-ready
               onClick={() => demo.go("/dashboard/notifications")}
-              aria-label="Notifications"
+              aria-label={t("Notifications")}
               className="relative"
             >
               <Icon i="bell" size={20} className="text-muted-foreground" />
