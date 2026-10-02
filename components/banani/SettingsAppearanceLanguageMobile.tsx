@@ -218,9 +218,9 @@ export default function SettingsMobile() {
           <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("À propos")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2">
             {[
-              { label: t("Version"), value: "v2.1.4" },
-              { label: t("Conditions"), value: t("Lire") },
-              { label: t("Confidentialité"), value: t("Lire") },
+              { isVersion: true, label: t("Version"), value: "v2.1.4" },
+              { isVersion: false, label: t("Conditions"), value: t("Lire") },
+              { isVersion: false, label: t("Confidentialité"), value: t("Lire") },
             ].map((item) => (
               <button
                 type="button"
@@ -233,7 +233,7 @@ export default function SettingsMobile() {
               >
                 <span className="text-sm text-foreground">{item.label}</span>
                 <span
-                  className={`text-xs ${item.label === "Version" ? "text-muted-foreground" : "text-primary font-semibold"}`}
+                  className={`text-xs ${item.isVersion ? "text-muted-foreground" : "text-primary font-semibold"}`}
                 >
                   {item.value}
                 </span>

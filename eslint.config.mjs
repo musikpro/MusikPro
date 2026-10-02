@@ -9,7 +9,7 @@ export default defineConfig([
   {
     files: i18nClientFiles,
     ignores: ["**/*.test.{ts,tsx}"],
-    rules: { "no-restricted-syntax": ["warn", ...i18nClientTextSelectors] },
+    rules: { "no-restricted-syntax": ["error", ...i18nClientTextSelectors] },
   },
   globalIgnores([".next/**", "out/**", "build/**", "generated/**", "next-env.d.ts", "skills/providers/**/examples/**"]),
 ]);

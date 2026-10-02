@@ -4,14 +4,16 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { splitLocalePrefix } from "@/lib/languages/locale-path";
+import { translate as t } from "@/lib/i18n/translate";
 import { WebOnly } from "@/components/mobile/web-only";
 import { PremiumIcon, type PremiumIconName } from "@/components/ui/premium-icon";
 
-const items: Array<{ href: string; label: string; icon: PremiumIconName }> = [
-  { href: "/", label: "Accueil", icon: "home" },
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/dashboard/billing", label: "Abonnement", icon: "billing" },
-  { href: "/dashboard/security", label: "Sécurité", icon: "security" },
+// Libellés résolus au rendu (jamais t() au chargement du module).
+const getItems = (): Array<{ href: string; label: string; icon: PremiumIconName }> => [
+  { href: "/", label: t("Accueil"), icon: "home" },
+  { href: "/dashboard", label: t("Dashboard"), icon: "dashboard" },
+  { href: "/dashboard/billing", label: t("Abonnement"), icon: "billing" },
+  { href: "/dashboard/security", label: t("Sécurité"), icon: "security" },
 ];
 
 export function MobileBottomNav() {
@@ -24,28 +26,28 @@ export function MobileBottomNav() {
       !["/dashboard/billing", "/dashboard/security"].some((route) => musikPath.startsWith(route)));
   const destinations = musik
     ? [
-        { href: "/dashboard", label: "Accueil", icon: "home" as const },
+        { href: "/dashboard", label: t("Accueil"), icon: "home" as const },
         {
           href: "/dashboard#mes-chansons",
-          label: "Chansons",
+          label: t("Chansons"),
           icon: "music" as const,
         },
         {
           href: "/dashboard/billing",
-          label: "Compte",
+          label: t("Compte"),
           icon: "billing" as const,
         },
         {
           href: "/dashboard/security",
-          label: "Sécurité",
+          label: t("Sécurité"),
           icon: "security" as const,
         },
       ]
-    : items;
+    : getItems();
   if (musik) return null;
   return (
     <WebOnly>
-      <nav className={`mobile-bottom-nav ${musik ? "musik-bottom-nav" : ""}`} aria-label="Navigation mobile principale">
+      <nav className={`mobile-bottom-nav ${musik ? "musik-bottom-nav" : ""}`} aria-label={t("Navigation mobile principale")}>
         {destinations.map((item) => (
           <Link
             key={item.href}

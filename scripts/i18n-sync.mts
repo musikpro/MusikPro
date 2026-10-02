@@ -36,14 +36,19 @@ const SCAN_DIRS_WANTED = [
   "components/ui",
   "components/pwa",
 ];
+const CHECK_ONLY = process.argv.includes("--check");
 const SCAN_DIRS = SCAN_DIRS_WANTED.filter((entry) => {
   const exists = existsSync(path.join(ROOT, entry));
-  if (!exists) console.warn(`  ! scan path not found, skipped: ${entry}`);
+  if (!exists) {
+    if (CHECK_ONLY) {
+      console.error(`  ! scan path not found: ${entry}`);
+      process.exitCode = 1;
+    } else console.warn(`  ! scan path not found, skipped: ${entry}`);
+  }
   return exists;
 });
 const LOCALES: TranslationLocale[] = ["en", "es", "pt"];
 const BATCH_SIZE = 40;
-const CHECK_ONLY = process.argv.includes("--check");
 const MANIFEST_ONLY = process.argv.includes("--manifest-only");
 
 /**
@@ -147,7 +152,6 @@ async function main() {
 
   let anyMissing = false;
   let manifestWritten = false;
-  let staleManifest = false;
   const expectedManifest = manifestSource(usedKeys);
   let manifestStale = false;
   try {
@@ -157,7 +161,6 @@ async function main() {
   }
   if (manifestStale) {
     if (CHECK_ONLY) {
-      staleManifest = true;
       console.error("  manifest: lib/i18n/manifest.json is out of date.");
     } else {
       writeFileSync(MANIFEST_FILE, expectedManifest);
@@ -201,7 +204,7 @@ async function main() {
     console.log(`  ${locale}: written, now ${Object.keys(dict).length} keys.`);
   }
 
-  if (CHECK_ONLY && staleManifest) {
+  if (CHECK_ONLY && manifestStale) {
     console.error("\nLe manifeste lib/i18n/manifest.json est périmé. Lancez `npm run i18n:manifest`.");
     process.exit(1);
   }

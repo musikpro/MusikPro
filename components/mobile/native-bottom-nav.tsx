@@ -4,21 +4,25 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { splitLocalePrefix } from "@/lib/languages/locale-path";
+import { translate as t } from "@/lib/i18n/translate";
 import { NativeOnly } from "@/components/mobile/native-only";
 import { PremiumIcon, type PremiumIconName } from "@/components/ui/premium-icon";
 
-const defaultItems: Array<{ href: string; label: string; icon: PremiumIconName }> = [
-  { href: "/", label: "Accueil", icon: "home" },
-  { href: "/dashboard", label: "Dashboard", icon: "dashboard" },
-  { href: "/dashboard/billing", label: "Abonnement", icon: "billing" },
-  { href: "/dashboard/security", label: "Sécurité", icon: "security" },
+type NativeNavItem = { href: string; label: string; icon: PremiumIconName };
+
+// Libellés par défaut résolus au rendu (jamais t() au chargement du module).
+const getDefaultItems = (): NativeNavItem[] => [
+  { href: "/", label: t("Accueil"), icon: "home" },
+  { href: "/dashboard", label: t("Dashboard"), icon: "dashboard" },
+  { href: "/dashboard/billing", label: t("Abonnement"), icon: "billing" },
+  { href: "/dashboard/security", label: t("Sécurité"), icon: "security" },
 ];
 
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function NativeBottomNav({ items = defaultItems }: { items?: typeof defaultItems }) {
+export function NativeBottomNav({ items = getDefaultItems() }: { items?: NativeNavItem[] }) {
   const { locale, path: pathname } = splitLocalePrefix(usePathname());
   // Même règle que la navigation web : les pages MusikPro portent leur propre navigation.
   const musikPath = normalizeDashboardPath(pathname);
@@ -29,7 +33,7 @@ export function NativeBottomNav({ items = defaultItems }: { items?: typeof defau
   if (musik) return null;
   return (
     <NativeOnly>
-      <nav className="native-bottom-nav" aria-label="Navigation de l’application mobile">
+      <nav className="native-bottom-nav" aria-label={t("Navigation de l’application mobile")}>
         {items.map((item) => {
           const active = isActive(pathname, item.href);
           return (

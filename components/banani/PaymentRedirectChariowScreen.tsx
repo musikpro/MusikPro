@@ -148,7 +148,7 @@ export default function PaymentRedirectScreen() {
                     demo.currencies,
                   ),
                 })}
-                {demo.coupon ? translateTemplate(" (code {code} appliqué)", { code: demo.coupon.code }) : ""}
+                {demo.coupon ? ` ${translateTemplate("(code {code} appliqué)", { code: demo.coupon.code })}` : ""}
               </p>
             </div>
           </div>

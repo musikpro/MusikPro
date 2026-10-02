@@ -1,15 +1,11 @@
 import { Linter } from "eslint";
-import { createRequire } from "node:module";
-import path from "node:path";
+import nextTs from "eslint-config-next/typescript";
 import { describe, expect, it } from "vitest";
 import { i18nClientTextSelectors } from "../eslint/i18n-client-text.mjs";
 
-// @typescript-eslint/parser n'est pas hissé à la racine de node_modules : on le résout
-// depuis typescript-eslint, installé via eslint-config-next.
-const requireFromTsEslint = createRequire(
-  path.join(process.cwd(), "node_modules/eslint-config-next/node_modules/typescript-eslint/package.json"),
-);
-const tsParser = requireFromTsEslint("@typescript-eslint/parser") as Linter.Parser;
+// Parseur TypeScript exposé par eslint-config-next/typescript (indépendant de la disposition de node_modules).
+const tsParser = (nextTs as unknown as Array<{ languageOptions?: { parser?: Linter.Parser } }>)[0].languageOptions
+  ?.parser as Linter.Parser;
 
 const linter = new Linter({ configType: "flat" });
 const lint = (code: string) =>
