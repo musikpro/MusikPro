@@ -63,10 +63,16 @@ export async function setRole(_previous: AdminActionState, formData: FormData): 
       if (wouldRemoveLastSuperAdmin(Number(superAdminCount), target.role, nextRole))
         throw new Error("Impossible de retirer le dernier compte Super Admin.");
     }
-    // better-auth's admin plugin types setRole's role as "user" | "admin" regardless of the
-    // adminRoles config (its InferAdminRolesFromOption only reads a roles/access-control option we
-    // don't use) — the DB column is free-text and the plugin writes the string as-is at runtime.
-    await auth.api.setRole({ body: parsed as { userId: string; role: "user" | "admin" }, headers: await headers() });
+    // L'écriture passe par le rôle de service : le rôle applicatif des requêtes (musikpro_runtime) n'a pas le droit de
+    // modifier user.role (trigger user_role_column_guard). Toutes les vérifications d'accès (Super Admin, dernier
+    // Super Admin, auto-rétrogradation, rôle personnalisé existant) sont faites plus haut, comme avant ; la colonne est
+    // du texte libre ("user", rôles admin, "custom:<id>"), exactement ce qu'écrivait auth.api.setRole.
+    const updated = await getServiceDb()
+      .update(user)
+      .set({ role: parsed.role, updatedAt: new Date() })
+      .where(eq(user.id, parsed.userId))
+      .returning({ id: user.id });
+    if (updated.length === 0) throw new Error("Utilisateur introuvable.");
     await writeAuditLog({
       action: "user.role.changed",
       actorId: adminSession.user.id,
