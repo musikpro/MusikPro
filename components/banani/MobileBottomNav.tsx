@@ -12,7 +12,7 @@ export const shortDescription = "Fixed bottom navigation bar for mobile screens"
 // `key` is the canonical identifier shared with the desktop nav and lib/demo/navigation.ts's
 // demoDestination() lookup table; `label` is only what this bottom bar displays, so this tab can
 // read "Mes sons" here without touching routing or the label used anywhere else in the app.
-const items = [
+const getItems = () => [
   { icon: "home", key: "Accueil", label: t("Accueil"), active: true },
   { icon: "compass", key: "Découvrir", label: t("Découvrir"), active: false },
   { icon: "plus", key: "Créer", label: t("Créer"), active: false, isCenter: true },
@@ -21,6 +21,7 @@ const items = [
 ];
 
 export default function MobileBottomNav({ activeTab = "Accueil" }) {
+  const items = getItems();
   const demo = useDemo();
   const [launching, setLaunching] = useState(false);
   const pathname = demo.pathname;

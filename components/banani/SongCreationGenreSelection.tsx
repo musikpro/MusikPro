@@ -10,7 +10,7 @@ export const screenSize = "desktop";
 import Icon from "./Icon";
 import UserAvatar from "./UserAvatar";
 
-const navItems = [
+const getNavItems = () => [
   { icon: "home", label: t("Accueil"), active: false },
   { icon: "compass", label: t("Découvrir"), active: false },
   { icon: "plus-circle", label: t("Créer"), active: true },
@@ -18,7 +18,7 @@ const navItems = [
   { icon: "music", label: t("Mes chansons"), active: false },
 ];
 
-const secondaryNav = [
+const getSecondaryNav = () => [
   { icon: "download", label: t("Téléchargements"), active: false },
   { icon: "heart", label: t("Favoris"), active: false },
   { icon: "trophy", label: t("Concours"), active: false },
@@ -26,13 +26,16 @@ const secondaryNav = [
   { icon: "credit-card", label: t("Paiement"), active: false },
 ];
 
-const profileNav = [
+const getProfileNav = () => [
   { icon: "user", label: t("Profil"), active: false },
   { icon: "settings", label: t("Paramètres"), active: false },
   { icon: "bar-chart-2", label: t("Statistiques"), active: false },
 ];
 
 export default function SongCreationGenre({ genres }: { genres: MusicStyleOption[] }) {
+  const navItems = getNavItems();
+  const secondaryNav = getSecondaryNav();
+  const profileNav = getProfileNav();
   const demo = useDemo();
   const hasSelectedGenre = genres.some((genre) => genre.name === demo.choices.genre);
   return (

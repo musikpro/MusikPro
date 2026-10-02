@@ -11,7 +11,7 @@ import MobileBottomNav from "./MobileBottomNav";
 import UserAvatar from "./UserAvatar";
 import Icon from "./Icon";
 
-const menuItems = [
+const getMenuItems = () => [
   { icon: "user", label: t("Mon Profil"), sub: t("Gérer mes informations") },
   { icon: "file-text", label: t("Mes paroles"), sub: t("Paroles de vos chansons") },
   { icon: "heart", label: t("Mes Favoris"), sub: t("Chansons aimées") },
@@ -32,6 +32,7 @@ const menuItems = [
 ];
 
 export default function UserMenuMobile() {
+  const menuItems = getMenuItems();
   const demo = useDemo();
   return (
     <div className="bg-background flex flex-col">
