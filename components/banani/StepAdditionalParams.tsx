@@ -14,6 +14,7 @@ import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 import VoiceMicrophoneButton from "./VoiceMicrophoneButton";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { translateIssue } from "@/lib/validation/translate-issue";
 
 export default function StepAdditionalParams() {
   const demo = useDemo();
@@ -171,7 +172,7 @@ export default function StepAdditionalParams() {
             }
             const parsed = demoDetailSchema.safeParse(demo.fields.detail);
             if (!parsed.success) {
-              setDetailError(parsed.error.issues[0].message);
+              setDetailError(translateIssue(parsed.error.issues[0]));
               return;
             }
             demo.field("detail", parsed.data);

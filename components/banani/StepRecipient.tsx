@@ -13,6 +13,7 @@ import { translate as t, localizeField } from "@/lib/i18n/translate";
 import OccasionFieldsSection from "./OccasionFieldsSection";
 import { validateOccasionAnswers, buildOccasionDetails, type AnswerErrorCode } from "@/lib/occasion-fields/answers";
 import { clearHiddenBlockValues } from "@/lib/occasion-fields/client";
+import { translateIssue } from "@/lib/validation/translate-issue";
 
 export const displayName = "Étape 3 — Personnalisation de la chanson";
 export const screenSize = "mobile";
@@ -149,12 +150,12 @@ export default function StepRecipient() {
       for (const issue of recipientFailed ? parsedRecipient.error.issues : []) {
         const field = issue.path[0];
         if ((field === "name" || field === "pronunciation" || field === "relation") && !nextErrors[field]) {
-          nextErrors[field] = issue.message;
+          nextErrors[field] = translateIssue(issue);
         }
       }
       for (const issue of senderFailed ? parsedSender.error.issues : []) {
         const field = issue.path[0] === "name" ? "senderName" : issue.path[0] === "pronunciation" ? "senderPronunciation" : undefined;
-        if (field && !nextErrors[field]) nextErrors[field] = issue.message;
+        if (field && !nextErrors[field]) nextErrors[field] = translateIssue(issue);
       }
       setFieldErrors(nextErrors);
       setDetailErrors(details.ok ? {} : details.errors);

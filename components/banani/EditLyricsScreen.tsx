@@ -11,6 +11,7 @@ export const screenSize = "mobile";
 
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
+import { translateIssue } from "@/lib/validation/translate-issue";
 
 export default function EditLyricsScreen() {
   const demo = useDemo();
@@ -94,7 +95,7 @@ export default function EditLyricsScreen() {
             (() => {
               const parsed = demoLyricsSchema.safeParse(demo.fields.lyrics);
               if (!parsed.success) {
-                demo.notify(parsed.error.issues[0].message);
+                demo.notify(translateIssue(parsed.error.issues[0]));
                 return;
               }
               demo.field("lyrics", parsed.data);

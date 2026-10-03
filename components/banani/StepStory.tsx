@@ -10,6 +10,7 @@ import StepProgressBar from "./StepProgressBar";
 import VoiceMicrophoneButton from "./VoiceMicrophoneButton";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+import { translateIssue } from "@/lib/validation/translate-issue";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
 export const screenSize = "mobile";
@@ -28,7 +29,7 @@ export default function StepStory() {
   const continueToRecipient = () => {
     const parsed = demoStorySchema.safeParse(demo.fields.story);
     if (!parsed.success) {
-      setStoryError(parsed.error.issues[0].message);
+      setStoryError(translateIssue(parsed.error.issues[0]));
       return;
     }
     setStoryError("");

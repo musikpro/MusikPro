@@ -1,14 +1,15 @@
 import { z } from "zod";
+import { i18nKey } from "@/lib/i18n/key";
 
-export const emailSchema = z.string().trim().toLowerCase().email().max(254);
-export const passwordSchema = z.string().min(10).max(256);
+export const emailSchema = z.string().trim().toLowerCase().email(i18nKey("Saisis une adresse e-mail valide.")).max(254);
+export const passwordSchema = z.string().min(10, i18nKey("Le mot de passe doit contenir au moins 10 caractères.")).max(256);
 export const totpCodeSchema = z
   .string()
   .trim()
-  .regex(/^\d{6}$/);
+  .regex(/^\d{6}$/, i18nKey("Saisis le code à 6 chiffres."));
 
 export const loginSchema = z.object({ email: emailSchema, password: passwordSchema });
-export const registerSchema = loginSchema.extend({ name: z.string().trim().min(2).max(120) });
+export const registerSchema = loginSchema.extend({ name: z.string().trim().min(2, i18nKey("Indique ton nom (2 caractères minimum).")).max(120, i18nKey("Ton nom est trop long.")) });
 export const registerIdentitySchema = registerSchema.pick({ name: true, email: true });
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 export const resetPasswordSchema = z.object({ password: passwordSchema, token: z.string().min(1).max(4096) });
