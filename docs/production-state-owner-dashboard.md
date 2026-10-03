@@ -22,7 +22,16 @@ DOCTOR_ENV_FILE=~/musikpro-prod.env npm run doctor:production:online
 npm run deploy:production
 ```
 
-Le fichier s'ajoute **par-dessus** `.env.local` : ses valeurs l'emportent, les autres variables (Resend, Turnstile, Cloudinary…) restent celles de `.env.local`. Il suffit donc d'y mettre `DATABASE_URL`, `DATABASE_URL_DIRECT` et `APP_URL=https://…`. Un fichier introuvable ou vide fait échouer la commande (jamais de repli silencieux). Sans `DOCTOR_ENV_FILE`, le doctor lit `.env.local` comme avant. À refaire avant chaque déploiement, sinon la carte repasse à l'orange.
+Le fichier s'ajoute **par-dessus** `.env.local` : ses valeurs l'emportent, les autres variables (Resend, Turnstile, Cloudinary…) restent celles de `.env.local`. Il suffit donc d'y mettre ces quatre variables :
+
+```
+DATABASE_URL=postgresql://…-pooler…/neondb?sslmode=require
+DATABASE_URL_DIRECT=postgresql://…/neondb?sslmode=require
+APP_URL=https://musikpro.net
+NEXT_PUBLIC_APP_URL=https://musikpro.net
+```
+
+`NEXT_PUBLIC_APP_URL` est indispensable : le test réseau lit cette variable avant `APP_URL`, et `.env.local` contient `http://localhost:3000`. Sans elle, le doctor teste votre machine locale et signale de faux échecs « URL non HTTPS » et « Headers production : strict-transport-security manquant ». Utiliser les URL de la branche Neon `production` (jamais celles de `development`), garder le fichier hors du dépôt avec `chmod 600`, et le supprimer après le déploiement. Un fichier introuvable ou vide fait échouer la commande (jamais de repli silencieux). Sans `DOCTOR_ENV_FILE`, le doctor lit `.env.local` comme avant. À refaire avant chaque déploiement, sinon la carte repasse à l'orange.
 
 ## Contrôle de régression
 
