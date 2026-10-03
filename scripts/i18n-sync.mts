@@ -51,7 +51,7 @@ const SCAN_DIRS_WANTED = [
   "app/privacy",
   "app/opengraph-image.tsx",
   "components/i18n-bootstrap.tsx",
-  // À ajouter dans la tâche qui les crée : lib/email/auth-email-text.ts.
+  "lib/email/auth-email-text.ts",
 ];
 const CHECK_ONLY = process.argv.includes("--check");
 const SCAN_DIRS = SCAN_DIRS_WANTED.filter((entry) => {

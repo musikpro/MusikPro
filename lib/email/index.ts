@@ -28,6 +28,9 @@ export async function sendAuthEmail(input: {
   title: string;
   actionUrl: string;
   actionLabel: string;
+  /** Déjà traduits ; `{brand}` est remplacé par le nom de marque à l'envoi. */
+  intro?: string;
+  ignore?: string;
 }) {
   const resend = resendClient();
   if (!resend) {
@@ -44,11 +47,13 @@ export async function sendAuthEmail(input: {
   if (!from || /@example\.(com|org|net)$/i.test(from)) {
     if (process.env.NODE_ENV === "production") throw new Error("EMAIL_FROM is not configured with a verified sender");
   }
+  const intro = input.intro ?? "Cette demande concerne votre compte {brand}.";
+  const ignore = input.ignore ?? "Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.";
   const result = await resend.emails.send({
     from: formatSender(from ?? "noreply@example.com"),
     to: input.to,
     subject: input.subject,
-    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h1>${escapeHtml(input.title)}</h1><p>Cette demande concerne votre compte ${escapeHtml(brandName())}.</p><p><a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px">${escapeHtml(input.actionLabel)}</a></p><p>Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail.</p></div>`,
+    html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto"><h1>${escapeHtml(input.title)}</h1><p>${escapeHtml(intro.replaceAll("{brand}", brandName()))}</p><p><a href="${escapeHtml(input.actionUrl)}" style="display:inline-block;padding:12px 18px;background:#111;color:#fff;text-decoration:none;border-radius:8px">${escapeHtml(input.actionLabel)}</a></p><p>${escapeHtml(ignore)}</p></div>`,
   });
   if (result.error || !result.data?.id) {
     // Do not disclose provider payloads, recipients, or authentication links.

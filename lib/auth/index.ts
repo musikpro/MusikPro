@@ -5,6 +5,8 @@ import { nextCookies } from "better-auth/next-js";
 import { db } from "@/db";
 import * as schema from "@/db/schema";
 import { sendAuthEmail, sendTwoFactorEmail } from "@/lib/email";
+import { authEmailText, localeFromRequest, type AuthEmailKind } from "@/lib/email/auth-email-text";
+import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { ownerTwoFactor, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
 
@@ -16,6 +18,17 @@ const requireEmailVerification =
   (process.env.NODE_ENV === "production"
     ? process.env.AUTH_REQUIRE_EMAIL_VERIFICATION !== "false"
     : process.env.AUTH_REQUIRE_EMAIL_VERIFICATION === "true");
+
+/** Textes de l'e-mail dans la langue de la requête ; une panne de traduction ne doit jamais empêcher l'envoi. */
+async function localizedAuthEmail(kind: AuthEmailKind, request: Request | undefined) {
+  let locale = localeFromRequest(request);
+  try {
+    await primeOverlay(locale);
+  } catch {
+    locale = "fr";
+  }
+  return authEmailText(kind, locale);
+}
 
 export const auth = betterAuth({
   appName: process.env.APP_NAME ?? "Africa SaaS Kit",
@@ -47,27 +60,15 @@ export const auth = betterAuth({
     requireEmailVerification,
     minPasswordLength: 10,
     revokeSessionsOnPasswordReset: true,
-    sendResetPassword: async ({ user, url }) => {
-      await sendAuthEmail({
-        to: user.email,
-        subject: "Réinitialiser votre mot de passe",
-        title: "Réinitialisation du mot de passe",
-        actionUrl: url,
-        actionLabel: "Choisir un nouveau mot de passe",
-      });
+    sendResetPassword: async ({ user, url }, request) => {
+      await sendAuthEmail({ to: user.email, actionUrl: url, ...(await localizedAuthEmail("reset", request)) });
     },
   },
   emailVerification: {
     sendOnSignUp: requireEmailVerification,
     autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
-      await sendAuthEmail({
-        to: user.email,
-        subject: "Vérifiez votre adresse e-mail",
-        title: "Confirmez votre adresse e-mail",
-        actionUrl: url,
-        actionLabel: "Vérifier mon e-mail",
-      });
+    sendVerificationEmail: async ({ user, url }, request) => {
+      await sendAuthEmail({ to: user.email, actionUrl: url, ...(await localizedAuthEmail("verify", request)) });
     },
   },
   plugins: [
