@@ -7,14 +7,14 @@ import { translate as t } from "@/lib/i18n/translate";
  */
 export function authErrorMessage(code: string | undefined, fallback: string): string {
   switch (code) {
-    case "INVALID_EMAIL_OR_PASSWORD":
-      return t("E-mail ou mot de passe incorrect.");
     case "INVALID_EMAIL":
       return t("Adresse e-mail invalide.");
     case "INVALID_PASSWORD":
       return t("Mot de passe incorrect.");
+    // Anti-énumération : « compte introuvable » n'est jamais exposé distinctement, quel que soit l'appelant.
     case "USER_NOT_FOUND":
-      return t("Aucun compte ne correspond à cette adresse e-mail.");
+    case "INVALID_EMAIL_OR_PASSWORD":
+      return t("E-mail ou mot de passe incorrect.");
     case "USER_ALREADY_EXISTS":
     case "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL":
       return t("Un compte existe déjà avec cette adresse e-mail.");

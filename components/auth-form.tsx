@@ -133,9 +133,8 @@ export function AuthForm({
         fetchOptions,
       });
       if (r.error) {
-        // Anti-énumération : « compte introuvable » n'est jamais exposé distinctement à la connexion.
-        const code = r.error.code === "USER_NOT_FOUND" ? "INVALID_EMAIL_OR_PASSWORD" : r.error.code;
-        setError(authResultErrorMessage({ ...r.error, code }, t("Connexion impossible")));
+        // Anti-énumération : USER_NOT_FOUND est déjà rendu comme INVALID_EMAIL_OR_PASSWORD par la table.
+        setError(authResultErrorMessage(r.error, t("Connexion impossible")));
         setBusy(false);
         return;
       }

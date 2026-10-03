@@ -16,7 +16,11 @@ describe("authErrorMessage", () => {
   });
 });
 
-describe("authErrorMessage — codes propriétaire", () => {
+describe("authErrorMessage — anti-énumération et codes propriétaire", () => {
+  it("rend USER_NOT_FOUND comme le message générique d'identifiants invalides", () => {
+    expect(authErrorMessage("USER_NOT_FOUND", "Repli")).toBe("E-mail ou mot de passe incorrect.");
+    expect(authErrorMessage("USER_NOT_FOUND", "Repli")).toBe(authErrorMessage("INVALID_EMAIL_OR_PASSWORD", "Repli"));
+  });
   it("traduit les codes du plugin owner-two-factor avec le libellé serveur", () => {
     expect(authErrorMessage("OWNER_TWO_FACTOR_ONLY", "Repli")).toBe("Le double facteur est réservé aux propriétaires.");
     expect(authErrorMessage("OWNER_TWO_FACTOR_BOOTSTRAP_FAILED", "Repli")).toBe(
@@ -43,6 +47,9 @@ describe("authResultErrorMessage", () => {
     expect(authResultErrorMessage({ status: 400 }, "Repli")).toBe("Repli");
     expect(authResultErrorMessage({ status: 401, code: null }, "Repli")).toBe("Repli");
     expect(authResultErrorMessage(null, "Repli")).toBe("Repli");
+    expect(authResultErrorMessage({ status: 404, code: "USER_NOT_FOUND" }, "Repli")).toBe(
+      "E-mail ou mot de passe incorrect.",
+    );
   });
 });
 
