@@ -23,7 +23,7 @@ export default async function AdminEditOccasionFieldPage({
   if (!row) notFound();
   return (
     <AdminPage>
-      <AdminBackLink href={`/admin/occasion-fields/${occasionId}`} />
+      <AdminBackLink href={`/admin/occasion-fields/${occasionId}?tab=fields`} />
       <AdminPageHeader
         eyebrow="Détails par occasion"
         title={`Modifier ${row.label}`}

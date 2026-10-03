@@ -5,15 +5,27 @@ import AdminOccasionFieldAiPanel from "@/components/admin/AdminOccasionFieldAiPa
 import AdminOccasionBlocksForm from "@/components/admin/AdminOccasionBlocksForm";
 import AdminOccasionFieldSortableGrid from "@/components/admin/AdminOccasionFieldSortableGrid";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
-import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
+import { AdminTabPanel, AdminTabs, resolveAdminTab } from "@/components/admin/AdminTabs";
 import Icon from "@/components/banani/Icon";
 import { getServiceDb } from "@/db";
 import { occasionFields, occasions } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 
-export default async function AdminOccasionDetailsPage({ params }: { params: Promise<{ occasionId: string }> }) {
+const TABS = [
+  { id: "blocks", label: "Blocs intégrés" },
+  { id: "fields", label: "Champs" },
+];
+
+export default async function AdminOccasionDetailsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ occasionId: string }>;
+  searchParams: Promise<{ tab?: string | string[] }>;
+}) {
   await requireAdmin();
   const { occasionId } = await params;
+  const { tab } = await searchParams;
   const database = getServiceDb();
   const [occasion] = await database.select().from(occasions).where(eq(occasions.id, occasionId)).limit(1);
   if (!occasion) notFound();
@@ -35,10 +47,9 @@ export default async function AdminOccasionDetailsPage({ params }: { params: Pro
       />
       <AdminTabs
         ariaLabel="Détails de l’occasion"
-        tabs={[
-          { id: "blocks", label: "Blocs intégrés" },
-          { id: "fields", label: "Champs" },
-        ]}
+        tabs={TABS}
+        urlParam="tab"
+        defaultTab={resolveAdminTab(tab, TABS)}
       >
         <AdminTabPanel id="blocks">
           <AdminOccasionBlocksForm

@@ -85,6 +85,28 @@ export function proposalToFormInput(proposal: FieldProposal, occasionId: string,
   return input;
 }
 
+/**
+ * Les modèles joignent des bornes numériques hors sujet (« maxLength: 0 » sur une liste de choix,
+ * min > max…) qui faisaient rejeter toute la proposition. On ne garde que celles qui ont un sens pour
+ * le type ; les autres retombent sur les valeurs par défaut du schéma.
+ */
+function usableLimits(value: { type: OccasionFieldType; maxLength?: number; min?: number; max?: number }) {
+  const limits: Record<string, string> = {};
+  if (value.type === "short_text" || value.type === "long_text") {
+    const cap = value.type === "short_text" ? 200 : 600;
+    if (value.maxLength !== undefined && value.maxLength >= 1 && value.maxLength <= cap) limits.maxLength = String(value.maxLength);
+  }
+  if (value.type === "number") {
+    const inRange = (n?: number) => n !== undefined && Math.abs(n) <= 1_000_000;
+    const min = inRange(value.min) ? value.min : undefined;
+    const max = inRange(value.max) ? value.max : undefined;
+    if (min !== undefined && max !== undefined && min > max) return limits;
+    if (min !== undefined) limits.min = String(min);
+    if (max !== undefined) limits.max = String(max);
+  }
+  return limits;
+}
+
 function toProposal(candidate: unknown, occasionId: string): FieldProposal | null {
   const raw = rawProposalSchema.safeParse(candidate);
   if (!raw.success) return null;
@@ -94,6 +116,7 @@ function toProposal(candidate: unknown, occasionId: string): FieldProposal | nul
     icon: stripSparkleGlyphs(raw.data.icon),
     options: raw.data.options.map((option) => ({ ...option, emoji: stripSparkleGlyphs(option.emoji) })),
   };
+  const limits = usableLimits(value);
   const input = {
     occasionId,
     label: value.label,
@@ -107,9 +130,7 @@ function toProposal(candidate: unknown, occasionId: string): FieldProposal | nul
     aiHint: value.aiHint,
     active: "true",
     sortOrder: "100",
-    ...(value.maxLength !== undefined ? { maxLength: String(value.maxLength) } : {}),
-    ...(value.min !== undefined ? { min: String(value.min) } : {}),
-    ...(value.max !== undefined ? { max: String(value.max) } : {}),
+    ...limits,
   };
   const parsed = occasionFieldFormSchema.safeParse(input);
   if (!parsed.success) return null;

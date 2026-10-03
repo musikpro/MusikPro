@@ -10,6 +10,8 @@ import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { FIELD_ICON_OPTIONS, formatOptionsText } from "@/lib/occasion-fields/form-schema";
+import type { FieldProposal } from "@/lib/occasion-fields/ai-schema";
+import { hasFilledValues, proposalDifferences, type ProposalDifference } from "@/lib/occasion-fields/proposal-diff";
 import type { OccasionFieldDefinition } from "@/lib/occasion-fields/types";
 
 const TYPE_OPTIONS = [
@@ -47,30 +49,59 @@ export default function AdminOccasionFieldForm({
   const [completing, startComplete] = useTransition();
   const patch = (values: Partial<typeof draft>) => setDraft((current) => ({ ...current, ...values }));
 
+  const [pending, setPending] = useState<{ proposal: FieldProposal; differences: ProposalDifference[] } | null>(null);
+
+  const applyProposal = (p: FieldProposal) => {
+    setType(p.type);
+    patch({
+      label: p.label,
+      helpText: p.helpText,
+      placeholder: p.placeholder,
+      icon: p.icon || "📝",
+      optionsText: formatOptionsText(p.options),
+      display: p.config.display ?? "tiles",
+      required: String(p.required),
+      aiHint: p.aiHint,
+      min: p.config.min !== undefined ? String(p.config.min) : "",
+      max: p.config.max !== undefined ? String(p.config.max) : "",
+      maxLength: p.config.maxLength !== undefined ? String(p.config.maxLength) : "",
+    });
+  };
+
   const complete = () =>
     startComplete(async () => {
-      const result = await completeOccasionField({ occasionId, label: draft.label });
-      if (!result.ok) {
-        showToast({ message: result.message, tone: "error" });
-        return;
+      try {
+        const result = await completeOccasionField({ occasionId, label: draft.label });
+        if (!result.ok) {
+          showToast({ message: result.message, tone: "error" });
+          return;
+        }
+        const differences = proposalDifferences({ ...draft, type }, result.proposal, formatOptionsText(result.proposal.options));
+        if (!differences.length) {
+          showToast({ message: "L’IA propose les mêmes valeurs que celles déjà saisies.", tone: "info" });
+          return;
+        }
+        if (hasFilledValues(differences, Boolean(field))) {
+          setPending({ proposal: result.proposal, differences });
+          return;
+        }
+        applyProposal(result.proposal);
+        showToast({ message: "Champ prérempli par l’IA : relis puis enregistre.", tone: "success" });
+      } catch {
+        showToast({ message: "Impossible de joindre l’IA pour le moment. Réessaie dans un instant.", tone: "error" });
       }
-      const p = result.proposal;
-      setType(p.type);
-      patch({
-        label: p.label,
-        helpText: p.helpText,
-        placeholder: p.placeholder,
-        icon: p.icon || "📝",
-        optionsText: formatOptionsText(p.options),
-        display: p.config.display ?? "tiles",
-        required: String(p.required),
-        aiHint: p.aiHint,
-        min: p.config.min !== undefined ? String(p.config.min) : "",
-        max: p.config.max !== undefined ? String(p.config.max) : "",
-        maxLength: p.config.maxLength !== undefined ? String(p.config.maxLength) : "",
-      });
-      showToast({ message: "Champ prérempli par l’IA : relis puis enregistre.", tone: "success" });
     });
+
+  const acceptProposal = () => {
+    if (!pending) return;
+    applyProposal(pending.proposal);
+    setPending(null);
+    showToast({ message: "Version de l’IA appliquée : relis puis enregistre.", tone: "success" });
+  };
+  const keepCurrent = () => {
+    setPending(null);
+    showToast({ message: "Tes valeurs sont conservées.", tone: "info" });
+  };
 
   const text = type === "short_text" || type === "long_text";
   return (
@@ -85,6 +116,29 @@ export default function AdminOccasionFieldForm({
             <Icon i="bot" size={15} /> {completing ? "L’IA complète…" : "Compléter avec l’IA"}
           </button>
         </label>
+        {pending ? (
+          <div className="admin-editor-field is-wide admin-ai-compare" role="region" aria-label="Proposition de l’IA">
+            <strong>L’IA propose des valeurs différentes des tiennes. Que veux-tu garder ?</strong>
+            <table>
+              <thead>
+                <tr><th>Champ</th><th>Tes valeurs</th><th>Version de l’IA</th></tr>
+              </thead>
+              <tbody>
+                {pending.differences.map((row) => (
+                  <tr key={row.key}>
+                    <td>{row.label}</td>
+                    <td>{row.current || "—"}</td>
+                    <td>{row.proposed || "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="admin-editor-actions">
+              <button type="button" className="admin-secondary-action" onClick={keepCurrent}>Garder mes valeurs</button>
+              <button type="button" onClick={acceptProposal}>Utiliser la version de l’IA</button>
+            </div>
+          </div>
+        ) : null}
         <div className="admin-editor-field">
           <span>Type de champ</span>
           <AdminSelect name="type" ariaLabel="Type de champ" value={type} onValueChange={setType} options={TYPE_OPTIONS} />
@@ -174,7 +228,7 @@ export default function AdminOccasionFieldForm({
           />
         </div>
         <div className="admin-editor-actions is-wide">
-          <AdminBackLink href={`/admin/occasion-fields/${occasionId}`} label="Annuler" />
+          <AdminBackLink href={`/admin/occasion-fields/${occasionId}?tab=fields`} label="Annuler" />
           <button type="submit">
             <Icon i={field ? "save" : "plus"} size={17} />
             {field ? "Enregistrer les modifications" : "Créer le champ"}

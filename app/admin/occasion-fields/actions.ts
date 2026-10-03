@@ -149,7 +149,7 @@ export async function createOccasionField(_previous: AdminActionState, formData:
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de créer ce champ.") };
   }
-  redirect(withAdminNotice(`/admin/occasion-fields/${occasionId}`, "Champ créé."));
+  redirect(withAdminNotice(`/admin/occasion-fields/${occasionId}?tab=fields`, "Champ créé."));
 }
 
 export async function updateOccasionField(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {

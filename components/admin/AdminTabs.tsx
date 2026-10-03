@@ -1,5 +1,6 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
 export type AdminTabItem = {
@@ -8,6 +9,22 @@ export type AdminTabItem = {
 };
 
 const AdminTabsContext = createContext<{ active: string } | null>(null);
+
+function rememberTabInUrl(param: string, id: string) {
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set(param, id);
+    window.history.replaceState(window.history.state, "", url);
+  } catch {
+    // L'onglet reste actif localement ; seule la mémorisation dans l'URL est perdue.
+  }
+}
+
+/** Onglet demandé par l'URL s'il existe parmi `tabs`, sinon `undefined` (l'onglet par défaut s'applique). */
+export function resolveAdminTab(value: string | string[] | undefined, tabs: readonly AdminTabItem[]): string | undefined {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return tabs.some((tab) => tab.id === candidate) ? candidate : undefined;
+}
 
 /**
  * Horizontal tab switcher — the single shared mechanism for horizontal tabs across the admin
@@ -21,15 +38,25 @@ const AdminTabsContext = createContext<{ active: string } | null>(null);
 export function AdminTabs({
   tabs,
   defaultTab,
+  urlParam,
   ariaLabel,
   children,
 }: {
   tabs: AdminTabItem[];
   defaultTab?: string;
+  /**
+   * Opt-in : mémorise l'onglet actif dans le paramètre d'URL indiqué (ex. `?tab=fields`), sans nouvelle
+   * entrée d'historique, pour qu'un retour depuis une sous-page retombe sur le même onglet. La page lit
+   * ce paramètre (voir `resolveAdminTab`) et le passe en `defaultTab`.
+   */
+  urlParam?: string;
   ariaLabel: string;
   children: ReactNode;
 }) {
-  const [active, setActive] = useState(defaultTab ?? tabs[0]?.id ?? "");
+  const urlTab = useSearchParams().get(urlParam ?? "");
+  const [chosen, setChosen] = useState<string | null>(null);
+  // Choix de l'utilisateur > onglet de l'URL (retour arrière) > onglet par défaut.
+  const active = chosen ?? resolveAdminTab(urlParam ? urlTab ?? undefined : undefined, tabs) ?? defaultTab ?? tabs[0]?.id ?? "";
   return (
     <AdminTabsContext.Provider value={{ active }}>
       <div className="admin-tabs">
@@ -41,7 +68,10 @@ export function AdminTabs({
               role="tab"
               aria-selected={tab.id === active}
               className={`admin-tabs-trigger${tab.id === active ? " is-active" : ""}`}
-              onClick={() => setActive(tab.id)}
+              onClick={() => {
+                setChosen(tab.id);
+                if (urlParam) rememberTabInUrl(urlParam, tab.id);
+              }}
             >
               {tab.label}
             </button>

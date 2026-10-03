@@ -14,7 +14,7 @@ export default async function AdminNewOccasionFieldPage({ params }: { params: Pr
   if (!occasion) notFound();
   return (
     <AdminPage>
-      <AdminBackLink href={`/admin/occasion-fields/${occasionId}`} />
+      <AdminBackLink href={`/admin/occasion-fields/${occasionId}?tab=fields`} />
       <AdminPageHeader
         eyebrow={occasion.name}
         title="Nouveau champ"

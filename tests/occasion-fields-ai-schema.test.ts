@@ -131,3 +131,26 @@ describe("planProposalInserts", () => {
     expect(rows.map((r) => r.key)).toEqual(["prenom_2", "prenom_3"]);
   });
 });
+
+describe("sanitizeSingleProposal — indices numériques incohérents de l'IA", () => {
+  const one = (extra: Record<string, unknown>, base: Record<string, unknown> = good) =>
+    sanitizeSingleProposal(JSON.stringify({ ...base, ...extra }), { occasionId: "occ-1" });
+
+  it("ignore maxLength: 0 sur une liste de choix (cas réel qui faisait échouer « Compléter avec l'IA »)", () => {
+    expect(one({ maxLength: 0 })?.type).toBe("select");
+  });
+  it("ignore min/max sur un champ qui n'est pas un nombre", () => {
+    expect(one({ min: 5, max: 1 })?.type).toBe("select");
+  });
+  it("ignore un maxLength hors bornes ou trop grand pour un texte court", () => {
+    const text = { ...good, type: "short_text", options: [] };
+    expect(one({ maxLength: 0 }, text)?.config.maxLength).toBe(100);
+    expect(one({ maxLength: 900 }, text)?.config.maxLength).toBe(100);
+    expect(one({ maxLength: 500 }, text)?.config.maxLength).toBe(100);
+    expect(one({ maxLength: 150 }, text)?.config.maxLength).toBe(150);
+  });
+  it("ignore un min supérieur au max sur un nombre", () => {
+    const number = { ...good, type: "number", options: [] };
+    expect(one({ min: 10, max: 1 }, number)?.type).toBe("number");
+  });
+});
