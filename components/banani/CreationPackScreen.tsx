@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { apiFetch } from "@/lib/api/client";
+import { translateApiMessage } from "@/lib/api/error-messages";
 import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
 import MusikSelect from "./MusikSelect";
@@ -43,7 +44,7 @@ export default function CreationPackScreen() {
       });
       if (!result.valid || result.discountAmount == null) {
         demo.setCoupon(null);
-        setCouponError(result.reason || t("Code promo invalide."));
+        setCouponError(result.reason ? translateApiMessage(result.reason) : t("Code promo invalide."));
         return;
       }
       demo.setCoupon({

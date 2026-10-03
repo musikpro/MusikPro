@@ -45,6 +45,7 @@ const SCAN_DIRS_WANTED = [
   "lib/auth/oauth-error.ts",
   "lib/seo/metadata.ts",
   "lib/validation",
+  "lib/api/error-messages.ts",
   "app/terms",
   "app/privacy",
   "app/opengraph-image.tsx",

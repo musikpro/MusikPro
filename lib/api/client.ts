@@ -1,3 +1,5 @@
+import { translateApiMessage } from "@/lib/api/error-messages";
+
 export class ApiClientError extends Error {
   constructor(
     public status: number,
@@ -36,7 +38,7 @@ export async function apiFetch<T = unknown>(input: RequestInfo | URL, options: A
           if (typeof json.code === "string") code = json.code;
           if (typeof json.error === "string") message = json.error;
         } catch {}
-        throw new ApiClientError(response.status, message, code);
+        throw new ApiClientError(response.status, translateApiMessage(message), code);
       }
       if (response.status === 204 || method === "HEAD") return undefined as T;
       return (await response.json()) as T;

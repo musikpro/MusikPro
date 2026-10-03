@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { translateApiMessage } from "@/lib/api/error-messages";
 import { translate as t } from "@/lib/i18n/translate";
 
 export function CheckoutButton({ planId }: { planId: string }) {
@@ -21,7 +22,7 @@ export function CheckoutButton({ planId }: { planId: string }) {
     });
     const data = await r.json();
     if (!r.ok || !data.checkoutUrl) {
-      setError(data.error || t("Paiement indisponible"));
+      setError(typeof data.error === "string" && data.error ? translateApiMessage(data.error) : t("Paiement indisponible"));
       setBusy(false);
       return;
     }
