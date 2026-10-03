@@ -46,7 +46,7 @@ export function LegalPage({
         {locale !== "fr" ? (
           <p className="legal-notice" role="note">
             {t("Traduction automatique : en cas de divergence, la version française fait foi.")}{" "}
-            <Link href={`${path}?lang=fr`}>{t("Lire la version française")}</Link>
+            <Link href={`${path}?lang=fr`}>{t("Consulter la version française")}</Link>
           </p>
         ) : null}
         <p className="legal-eyebrow">{eyebrow}</p>

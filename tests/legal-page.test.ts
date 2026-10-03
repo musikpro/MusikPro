@@ -50,7 +50,7 @@ describe("LegalPage : manifeste et liens", () => {
     for (const key of [
       "Dernière mise à jour : {date}",
       "Traduction automatique : en cas de divergence, la version française fait foi.",
-      "Lire la version française",
+      "Consulter la version française",
       "Confidentialité",
       "Connexion",
     ]) {
