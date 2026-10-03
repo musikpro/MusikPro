@@ -7,12 +7,20 @@ const cfgPath = path.join(root, "africa-saas.config.json");
 if (!fs.existsSync(cfgPath)) throw new Error("Missing africa-saas.config.json. Run npm run setup first.");
 const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
 const m = cfg.mobileApp || {};
+const contract = JSON.parse(fs.readFileSync(path.join(root, "config/mobile-dependencies.json"), "utf8"));
+const [nodeMajor] = process.versions.node.split(".").map(Number);
+if (nodeMajor < contract.minimumNodeMajor)
+  throw new Error(
+    `Capacitor ${contract.capacitorVersion} requires Node.js ${contract.minimumNodeMajor}+ for native development. Active: ${process.versions.node}.`,
+  );
 if (!(cfg.mobileAppEnabled === true || m.enabled === true)) {
   console.log("○ PWA + Capacitor native pipeline disabled. The Web/PWA project remains unchanged.");
   process.exit(0);
 }
 if (m.strategy !== "pwa-capacitor")
-  throw new Error("Legacy mobile strategy detected. Run npm run mobile:app:migrate first.");
+  throw new Error(
+    'Unsupported mobile strategy. Africa SaaS Kit accepts only mobileApp.strategy="pwa-capacitor". Re-run npm run mobile:app:configure.',
+  );
 if (!/^https:\/\//.test(String(m.productionUrl || ""))) throw new Error("mobileApp.productionUrl must be HTTPS.");
 execFileSync(process.execPath, [path.join(root, "scripts/pwa-check.mjs")], { cwd: root, stdio: "inherit" });
 const pkgPath = path.join(root, "package.json");
@@ -48,9 +56,18 @@ cfg.mobileApp = {
   enabled: true,
   strategy: "pwa-capacitor",
   prepared: true,
+  preparedMode: "development-remote",
+  storeReady: false,
   preparedAt: new Date().toISOString(),
 };
 cfg.mobileAppEnabled = true;
 fs.writeFileSync(cfgPath, JSON.stringify(cfg, null, 2) + "\n", { mode: 0o600 });
-console.log("✓ PWA + Capacitor projects prepared. Next.js remains server-rendered; no static export was introduced.");
-console.log("Review docs/mobile/mobile-app-pipeline.md, then test Android/iOS on real native toolchains.");
+console.log(
+  "✓ PWA + Capacitor projects prepared for development/structural validation. Next.js remains server-rendered; no static export was introduced.",
+);
+console.warn(
+  "⚠ capacitor.config.ts uses server.url for the hosted SaaS. Capacitor documents this as a live-reload/development pattern, not a production-store configuration.",
+);
+console.log(
+  "Review docs/mobile/mobile-app-pipeline.md and run npm run mobile:store-check before any Play Store/App Store certification.",
+);

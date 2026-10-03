@@ -58,7 +58,9 @@ if (!lock || !modules) {
   } else {
     console.log("\n2/3 — Installation des dépendances");
     if (!run(process.execPath, ["scripts/npm-registry-check.mjs"], "vérification du registre npm")) process.exit(1);
-    if (!run("npm", ["install"], "npm install")) process.exit(1);
+    const installCommand = lock ? "ci" : "install";
+    const installLabel = lock ? "npm ci (lockfile détecté)" : "npm install (création du lockfile)";
+    if (!run("npm", [installCommand], installLabel)) process.exit(1);
   }
 } else {
   console.log("\n2/3 — Dépendances déjà présentes");

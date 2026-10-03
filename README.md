@@ -1,6 +1,10 @@
-# Africa SaaS Kit V0.11.1
+# Africa SaaS Kit V0.11.7
 
-> **Version : V0.11.1 — Refactorisation d’intégrité générale, PWA + Capacitor et CSP à nonce**
+> **Version : V0.11.7 — Refactorisation d’intégrité, RBAC + multi-tenant, seuils de sécurité Next.js 16.3.8, PWA + Capacitor et CSP à nonce**
+
+## V0.11.7 — Mise à jour du kit (0.11.2 → 0.11.7)
+
+Next.js 16.3.8, gates `access:check`, `dependencies:contract`, `agents:rules-check` et `mobile:store-check`, suppression de l’ancien pipeline WebView. Voir `CHANGELOG.md` et `docs/audit/full-integrity-refactor-v0.11.7.md`.
 
 ## V0.11.1 — Mise à jour PWA + Capacitor, CSP à nonce, registre npm
 

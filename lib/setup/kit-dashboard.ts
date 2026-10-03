@@ -98,6 +98,75 @@ function packageMap() {
   }
 }
 
+function numericVersion(value: string) {
+  const clean = String(value)
+    .trim()
+    .replace(/^[~^<>=v\s]+/, "");
+  const match = clean.match(/^(\d+)\.(\d+)\.(\d+)/);
+  return match ? match.slice(1).map(Number) : null;
+}
+
+function versionAtLeast(actual: string, minimum: string) {
+  const a = numericVersion(actual);
+  const b = numericVersion(minimum);
+  if (!a || !b) return false;
+  for (let i = 0; i < 3; i += 1) {
+    if (a[i] > b[i]) return true;
+    if (a[i] < b[i]) return false;
+  }
+  return true;
+}
+
+function dependencySecurityState() {
+  try {
+    const policy = JSON.parse(readText("config/security-dependency-floors.json")) as {
+      packages?: Record<string, { min: string; reason?: string }>;
+    };
+    const deps = packageMap();
+    const issues: string[] = [];
+    const entries = Object.entries(policy.packages || {});
+    for (const [name, rule] of entries) {
+      const version = deps[name];
+      if (!version) issues.push(`${name} manquant`);
+      else if (!versionAtLeast(version, rule.min)) issues.push(`${name}@${version} < ${rule.min}`);
+    }
+    return { ok: issues.length === 0 && entries.length > 0, issues, checked: entries.length };
+  } catch {
+    return { ok: false, issues: ["politique de versions de sécurité illisible"], checked: 0 };
+  }
+}
+
+function premiumIconUiState() {
+  const extensions = new Set([".js", ".jsx", ".ts", ".tsx"]);
+  const forbidden = new RegExp(
+    // Motifs écrits en échappements Unicode / fragments : ce fichier ne doit pas lui-même contenir de glyphe interdit.
+    "\\b(?:Spark" +
+      "les?|Spark" +
+      "lets?|Spart" +
+      "lets?|Spart" +
+      "lettes?|WandSpark" +
+      "les?)(?:Icon)?\\b|[\\u2728\\u2726-\\u2730\\u2605\\u2606]",
+    "gi",
+  );
+  let violations = 0;
+  const walk = (dir: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (["node_modules", ".next", "generated"].includes(entry.name)) continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (extensions.has(path.extname(entry.name))) {
+        const source = fs.readFileSync(full, "utf8");
+        if (forbidden.test(source)) violations += 1;
+        forbidden.lastIndex = 0;
+      }
+    }
+  };
+  walk(path.join(process.cwd(), "app"));
+  walk(path.join(process.cwd(), "components"));
+  return { clean: violations === 0, violations };
+}
+
 async function checkNeon(): Promise<KitCheck> {
   if (!hasEnv("DATABASE_URL")) {
     return {
@@ -410,6 +479,46 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     group: "Services",
   });
 
+  const permissionsText = readText("lib/auth/permissions.ts");
+  const sessionText = readText("lib/auth/session.ts");
+  const orgAccessText = readText("lib/auth/organization-access.ts");
+  const authIndexText = readText("lib/auth/index.ts");
+  const authSchemaText = readText("db/schema/auth.generated.ts");
+  const businessSchemaText = readText("db/schema/index.ts");
+  const rlsText = readText("db/security/rls-baseline.sql");
+  const rbacReady =
+    permissionsText.includes("hasAppRole") &&
+    permissionsText.includes("hasOrganizationRole") &&
+    sessionText.includes("requireAdmin") &&
+    orgAccessText.includes("requireOrganizationAccess");
+  checks.push({
+    id: "rbac",
+    label: "RBAC — rôles et permissions",
+    status: rbacReady ? "ok" : "missing",
+    detail: rbacReady
+      ? "Voyant vert : rôles user/admin et owner/admin/member centralisés avec garde serveur."
+      : "Voyant rouge : compléter les rôles/permissions serveur et le contrôle d’accès organisationnel.",
+    group: "Sécurité",
+  });
+  const multiTenantStructureReady =
+    authIndexText.includes("organization({") &&
+    /pgTable\(\s*"organization"/.test(authSchemaText) &&
+    /pgTable\(\s*"member"/.test(authSchemaText) &&
+    orgAccessText.includes("member.organizationId") &&
+    orgAccessText.includes("member.userId") &&
+    businessSchemaText.includes("organizationId") &&
+    rlsText.includes("app.organization_id") &&
+    rlsText.includes("tenant_isolation");
+  checks.push({
+    id: "multi-tenant",
+    label: "Multi-tenant — isolation organisations",
+    status: multiTenantStructureReady ? "warning" : "missing",
+    detail: multiTenantStructureReady
+      ? "Structure d’isolation présente. Lance npm run security:db-check avec Neon pour confirmer RLS/policies avant de passer au vert en production."
+      : "Voyant rouge : organisation, membership serveur ou baseline RLS multi-tenant incomplète.",
+    group: "Sécurité",
+  });
+
   checks.push(await checkNeon());
 
   const emailPasswordEnabled = config
@@ -581,6 +690,17 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     group: "Sécurité",
   });
 
+  const dependencySecurity = dependencySecurityState();
+  checks.push({
+    id: "dependency-security",
+    label: "Dépendances — seuils de sécurité",
+    status: dependencySecurity.ok ? "ok" : "missing",
+    detail: dependencySecurity.ok
+      ? `Voyant vert : ${dependencySecurity.checked} dépendance(s) sensible(s) respectent les versions minimales de sécurité du kit.`
+      : `Voyant rouge : ${dependencySecurity.issues.join(", ")}. Exécuter npm run security:versions puis mettre à jour avant production.`,
+    group: "Sécurité",
+  });
+
   const deps = packageMap();
   const playwrightPkg = Boolean(deps["@playwright/test"] || deps["playwright"] || deps["playwright-core"]);
   const playwrightConfig = [
@@ -658,6 +778,16 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     label: "Mobile-first",
     status: exists("scripts/mobile-first-check.mjs") && exists("components/mobile-bottom-nav.tsx") ? "ok" : "missing",
     detail: "Navigation et gates mobile-first présents.",
+    group: "Qualité",
+  });
+  const premiumIcons = premiumIconUiState();
+  checks.push({
+    id: "premium-icons",
+    label: "Règle UI — icônes décoratives interdites",
+    status: premiumIcons.clean ? "ok" : "missing",
+    detail: premiumIcons.clean
+      ? "Voyant vert : aucune icône décorative interdite détectée dans app/ ou components/."
+      : `Voyant rouge : ${premiumIcons.violations} fichier(s) UI contiennent une icône interdite. Exécuter npm run ui:icons-check et les remplacer immédiatement.`,
     group: "Qualité",
   });
   checks.push({

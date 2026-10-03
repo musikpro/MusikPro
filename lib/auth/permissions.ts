@@ -60,6 +60,14 @@ export function hasAppRole(role: string | null | undefined, expected: AppRole) {
   return roles.includes(expected);
 }
 
+/** Rôles d'organisation (plugin Better Auth Organization) — distincts des rôles admin globaux ci-dessus. */
+export type OrganizationRole = "owner" | "admin" | "member";
+
+export function hasOrganizationRole(role: string | null | undefined, expected: readonly OrganizationRole[]) {
+  const normalized = (role ?? "member").trim() as OrganizationRole;
+  return expected.includes(normalized);
+}
+
 /** True pour n'importe lequel des 5 rôles admin (ou un slug listé dans extraAdminSlugs, ex. un rôle
  * personnalisé "custom:<id>") — remplace hasAppRole(role, "admin") partout où la parité d'accès
  * /admin doit s'appliquer à tous les rôles admin, pas seulement au Super Admin. */

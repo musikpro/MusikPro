@@ -6,6 +6,8 @@ import { spawnSync } from "node:child_process";
 const root = process.cwd();
 const required = [
   "CLAUDE.md",
+  "AGENTS.md",
+  "scripts/agent-rules-sync-check.mjs",
   ".claude/settings.json",
   ".claude/commands/setup-saas.md",
   ".claude/commands/security-saas.md",
@@ -20,11 +22,18 @@ try {
   const settings = JSON.parse(fs.readFileSync(path.join(root, ".claude/settings.json"), "utf8"));
   settingsOk = Boolean(settings && typeof settings === "object");
 } catch {}
+const rulesSync = spawnSync(process.execPath, ["scripts/agent-rules-sync-check.mjs"], {
+  cwd: root,
+  encoding: "utf8",
+  timeout: 1800,
+});
+const rulesSyncOk = rulesSync.status === 0;
 const cli = spawnSync("claude", ["--version"], { encoding: "utf8", timeout: 1800 });
 const cliDetected = cli.status === 0;
 console.log("Africa SaaS Kit — Claude Code compatibility");
 console.log(`- Fichiers projet: ${missing.length ? "FAIL" : "PASS"}`);
 console.log(`- settings.json: ${settingsOk ? "PASS" : "FAIL"}`);
+console.log(`- Règles AGENTS → CLAUDE: ${rulesSyncOk ? "PASS" : "FAIL"}`);
 console.log(
   `- CLI claude: ${
     cliDetected
@@ -34,8 +43,9 @@ console.log(
       : "non détecté dans ce shell"
   }`,
 );
-if (missing.length || !settingsOk) {
+if (missing.length || !settingsOk || !rulesSyncOk) {
   for (const r of missing) console.error(`- missing: ${r}`);
+  if (!rulesSyncOk) console.error(String(rulesSync.stderr || rulesSync.stdout || "Agent rules sync failed").trim());
   process.exit(1);
 }
 if (!cliDetected)

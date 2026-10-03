@@ -22,7 +22,8 @@ for (const id of registry.setupDashboard || []) {
   }
 }
 for (const id of registry.productionDoctor || []) {
-  if (!doctorSource.includes(`add('${id}'`) && !doctorSource.includes(`add("${id}"`)) {
+  // Tolère le formatage Prettier multi-lignes : add(\n  "id", ...
+  if (!new RegExp(`add\\(\\s*['"]${id}['"]`).test(doctorSource)) {
     fail.push(`Carte production absente du diagnostic CLI: ${id}`);
   }
 }

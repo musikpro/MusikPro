@@ -17,13 +17,19 @@
 # Règle prioritaire — Mobile App Pipeline PWA + Capacitor
 
 - `.agents/skills/mobile-app-pwa-capacitor/SKILL.md` est la source de vérité permanente pour toute création, migration, mise à jour ou réparation mobile.
-- L’architecture officielle est **Next.js serveur + PWA + Capacitor → Android + iOS**. Le mode WebView simple est déprécié.
+- L’architecture officielle et unique est **Next.js serveur + PWA + Capacitor → Android + iOS**. L’ancienne stratégie WebView mobile est supprimée et ne doit pas être réintroduite.
 - Ne jamais ajouter `output: 'export'` ni déplacer le backend, Neon/Prisma/Drizzle, auth, paiements, webhooks, IA ou secrets dans l’app.
 - La Phase 21 native est optionnelle. `mobileAppEnabled=false` reste valide; la PWA Web peut rester disponible sans projets Android/iOS.
 - `mobile:check` valide le responsive Web, `mobile:pwa:check` valide la couche PWA et `mobile:app:*` gère le wrapper natif.
 - Isoler `web-desktop`, `web-mobile/PWA`, `android` et `ios`; ne jamais afficher les composants natifs sur desktop.
-- Les anciennes stratégies `webview-hosted`/`hosted-nextjs` doivent être migrées avec `npm run mobile:app:migrate`, pas réintroduites comme défaut.
+- Aucune stratégie mobile legacy ne doit être reconnue, proposée ou réintroduite; seule `pwa-capacitor` est valide.
 - Aucun build Android/iOS ni voyant store ne peut être déclaré PASS sans exécution réelle dans l’environnement correspondant.
+
+# Règle prioritaire — intégrité, CSP et installation
+- Conserver une **CSP à nonce pour `script-src`, sans `unsafe-inline`** ; `style-src` garde volontairement `'unsafe-inline'` dans MusikPro (usage généralisé de `style={{}}` React, voir `lib/security/headers.ts`). Toute évolution de script/style tiers doit passer `npm run security:csp-check`.
+- Ne jamais présenter lint/typecheck/tests/build/npm audit comme réussis si les dépendances ne sont pas réellement installées. Utiliser `PENDING` lorsque l’environnement ne permet pas leur exécution.
+- Avant `npm install`, `npm run first-run:install` doit vérifier l’accès au registre npm et fournir un diagnostic clair en cas de problème réseau.
+- Les exemples de providers dans `skills/providers/**/examples/**` sont de la documentation/intégration et ne doivent pas polluer le typecheck du runtime principal.
 
 ## Upstash optionnel
 
@@ -272,13 +278,14 @@ Avant de supprimer une feature optionnelle, lire `config/features.json`. Vérifi
 ## Premium Icon Gate — obligatoire et permanent
 
 - Avant toute livraison et après chaque ajout/refactorisation de page, exécuter `npm run ui:icons-check`.
-- Ne jamais utiliser `Sparkle`, `Sparkles`, `WandSparkles`, `WandSparkle`, `✨`, `✦`, `✧`, `★` ou des variantes décoratives équivalentes pour donner un aspect « IA » à l’interface.
+- Ne jamais utiliser `Sparkle`, `Sparkles`, `Sparklet`, `Sparklets`, `Spartlet`, `Spartlette`, `WandSparkles`, `WandSparkle`, leurs variantes `*Icon`, `✨`, `✦`, `✧`, `★`, `☆` ou des variantes décoratives équivalentes pour donner un aspect « IA » à l’interface.
 - Ne pas remplacer ces icônes par des glyphes Unicode génériques (`⌂`, `◫`, `◉`, `◇`, etc.).
 - Choisir une icône selon la fonction réelle. Pour le starter, préférer `components/ui/premium-icon.tsx`; toute bibliothèque externe doit conserver un style cohérent et accessible.
 - Ce contrôle concerne toutes les pages existantes **et les futures pages** : une occurrence interdite sous `app/` ou `components/` bloque `verify:code`, `verify:production` et la CI.
 - Après modification visuelle importante, compléter le contrôle statique par une vérification navigateur responsive lorsqu’un Browser Tool est disponible.
 
-Gate de livraison : une page contenant une icône Sparkle/Sparklet ou un substitut décoratif interdit est INCOMPLÈTE.
+- Le tableau **État de préparation** et **État production** doit conserver une carte avec voyant dédiée à cette règle afin qu’elle reste visible en permanence.
+Gate de livraison : une page contenant une icône Sparkle/Sparklet/Spartlet ou un substitut décoratif interdit est INCOMPLÈTE.
 
 ## Security Baseline Gate (obligatoire)
 
@@ -367,6 +374,17 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 - Le menu lui-même doit disposer d'un voyant vert lorsqu'il est correctement installé. L'absence du menu ou de la page est une régression et doit faire échouer `npm run kit:integrity`.
 - Le tableau de bord n'invente jamais son propre état : il lit le dernier rapport produit par `npm run doctor:production` ou `npm run doctor:production:online`; le CLI demeure la source de vérité.
 - Après toute modification du dashboard propriétaire, vérifier que le menu **État production** est toujours présent, puis exécuter `npm run kit:integrity` et `npm run doctor:production`.
+
+## Parité AGENTS.md → CLAUDE.md — obligatoire et permanente
+
+- `AGENTS.md` est la source de vérité des règles générales Codex/ChatGPT/Antigravity.
+- **Aucune règle, interdiction, gate ou exigence générale de `AGENTS.md` ne peut manquer dans `CLAUDE.md`.**
+- Après toute modification de `AGENTS.md`, exécuter `npm run agents:rules-sync` puis `npm run agents:rules-check` avant de considérer la refactorisation terminée.
+- `CLAUDE.md` peut contenir des compléments spécifiques à Claude Code, mais ils ne doivent jamais affaiblir, contourner ou contredire le bloc miroir issu de `AGENTS.md`.
+- Toute divergence AGENTS → CLAUDE est bloquante pour `claude-code:check`, `kit:integrity`, `verify:code`, `verify:production` et la CI.
+
+## Mobile Store Safety
+Pour PWA + Capacitor, ne jamais déclarer une application prête Play Store/App Store tant que `npm run mobile:store-check` ne passe pas. `server.url`/`allowNavigation` sont réservés au développement distant et ne constituent pas une configuration native de production. MusikPro utilise volontairement ce mode distant (wrapper vers `musikpro.net`) : `mobile:store-check` y échoue tant qu’un shell bundlé n’existe pas, ce qui est le comportement attendu et n’est pas une régression.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
