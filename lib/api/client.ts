@@ -1,4 +1,11 @@
 import { translateApiMessage } from "@/lib/api/error-messages";
+import { isAdminPathname } from "@/lib/i18n/page-locale";
+
+/** Sous /admin, le message serveur (français) est gardé tel quel : l'admin n'est pas traduit. */
+function displayApiMessage(message: string): string {
+  if (typeof window !== "undefined" && isAdminPathname(window.location?.pathname)) return message;
+  return translateApiMessage(message);
+}
 
 export class ApiClientError extends Error {
   constructor(
@@ -38,7 +45,7 @@ export async function apiFetch<T = unknown>(input: RequestInfo | URL, options: A
           if (typeof json.code === "string") code = json.code;
           if (typeof json.error === "string") message = json.error;
         } catch {}
-        throw new ApiClientError(response.status, translateApiMessage(message), code);
+        throw new ApiClientError(response.status, displayApiMessage(message), code);
       }
       if (response.status === 204 || method === "HEAD") return undefined as T;
       return (await response.json()) as T;

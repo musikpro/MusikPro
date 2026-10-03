@@ -25,6 +25,11 @@ export function readCookieValue(cookieHeader: string | null | undefined, name: s
   return undefined;
 }
 
+/** Vrai pour `/admin…` (avec ou sans préfixe de langue) : l'admin reste toujours en français. */
+export function isAdminPathname(pathname: string | null | undefined): boolean {
+  return typeof pathname === "string" && /^(?:\/(?:fr|en|es|pt))?\/admin(?:[/?#]|$)/.test(pathname);
+}
+
 /**
  * Langue d'une page : préfixe d'URL (supporté, sinon fr) > cookie `musikpro_lang` > Accept-Language > fr.
  * `/admin` est toujours en français (l'admin est hors du périmètre de traduction).
@@ -36,7 +41,7 @@ export function pickPageLocale(input: {
   cookie?: string | null;
   acceptLanguage?: string | null;
 }): Locale {
-  if (input.pathname && /^(?:\/(?:fr|en|es|pt))?\/admin(?:[/?#]|$)/.test(input.pathname)) return "fr";
+  if (isAdminPathname(input.pathname)) return "fr";
   if (input.urlCode) return isSupportedLocale(input.urlCode) ? input.urlCode : "fr";
   if (isSupportedLocale(input.cookie)) return input.cookie;
   return resolveLocaleFromAcceptLanguage(input.acceptLanguage ?? null);
