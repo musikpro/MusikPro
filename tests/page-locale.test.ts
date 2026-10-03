@@ -46,4 +46,11 @@ describe("readCookieValue", () => {
   it("ne se laisse pas tromper par un nom qui se termine pareil", () => {
     expect(readCookieValue("x_musikpro_lang=fr", "musikpro_lang")).toBeUndefined();
   });
+  it("ne lève pas sur un encodage pourcentage mal formé", () => {
+    expect(() => readCookieValue("musikpro_lang=%E0%A4%A", "musikpro_lang")).not.toThrow();
+    expect(isSupportedLocale(readCookieValue("musikpro_lang=%E0%A4%A", "musikpro_lang"))).toBe(false);
+  });
+  it("décode une valeur encodée valide", () => {
+    expect(readCookieValue("musikpro_lang=en%20", "musikpro_lang")).toBe("en ");
+  });
 });

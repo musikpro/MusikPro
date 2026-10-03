@@ -13,7 +13,14 @@ export function readCookieValue(cookieHeader: string | null | undefined, name: s
   for (const part of cookieHeader.split(";")) {
     const index = part.indexOf("=");
     if (index === -1) continue;
-    if (part.slice(0, index).trim() === name) return decodeURIComponent(part.slice(index + 1).trim());
+    if (part.slice(0, index).trim() !== name) continue;
+    const raw = part.slice(index + 1).trim();
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      // Encodage pourcentage mal formé : on garde la valeur brute plutôt que de faire échouer la requête.
+      return raw;
+    }
   }
   return undefined;
 }
