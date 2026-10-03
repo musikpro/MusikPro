@@ -1,11 +1,21 @@
 import { describe, expect, it, vi } from "vitest";
-import { scheduleI18nReady } from "@/lib/i18n/ready-schedule";
+import { READY_FALLBACK_MS, scheduleI18nReady } from "@/lib/i18n/ready-schedule";
 
 function fakeWindow() {
   const frames = new Map<number, () => void>();
   const listeners = new Map<string, Set<() => void>>();
+  const timers = new Map<number, { at: number; callback: () => void }>();
   let nextId = 1;
+  let now = 0;
   const win = {
+    setTimeout: vi.fn((callback: () => void, delay: number) => {
+      const id = nextId++;
+      timers.set(id, { at: now + delay, callback });
+      return id;
+    }),
+    clearTimeout: vi.fn((id: number) => {
+      timers.delete(id);
+    }),
     requestAnimationFrame: vi.fn((callback: () => void) => {
       const id = nextId++;
       frames.set(id, callback);
@@ -28,6 +38,15 @@ function fakeWindow() {
       const pending = [...frames.entries()];
       frames.clear();
       for (const [, callback] of pending) callback();
+    },
+    advance(ms: number) {
+      now += ms;
+      for (const [id, timer] of [...timers.entries()]) {
+        if (timer.at <= now) {
+          timers.delete(id);
+          timer.callback();
+        }
+      }
     },
     fire(type: string) {
       for (const listener of [...(listeners.get(type) ?? [])]) listener();
@@ -85,5 +104,31 @@ describe("scheduleI18nReady", () => {
     cancel();
     env.flushFrames();
     expect(onReady).not.toHaveBeenCalled();
+  });
+
+  it("si load ne vient jamais, le délai de repli déclenche quand même la traduction", () => {
+    const env = fakeWindow();
+    const onReady = vi.fn();
+    scheduleI18nReady(env.win, { readyState: "interactive" }, onReady);
+    env.advance(READY_FALLBACK_MS - 1);
+    env.flushFrames();
+    env.flushFrames();
+    expect(onReady).not.toHaveBeenCalled();
+    env.advance(1);
+    env.flushFrames();
+    env.flushFrames();
+    expect(onReady).toHaveBeenCalledTimes(1);
+  });
+
+  it("load puis délai de repli ne déclenchent qu'une seule fois", () => {
+    const env = fakeWindow();
+    const onReady = vi.fn();
+    scheduleI18nReady(env.win, { readyState: "interactive" }, onReady);
+    env.fire("load");
+    env.advance(READY_FALLBACK_MS);
+    env.flushFrames();
+    env.flushFrames();
+    env.flushFrames();
+    expect(onReady).toHaveBeenCalledTimes(1);
   });
 });
