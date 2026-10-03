@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { OCCASION_EMOJI_OPTIONS } from "@/lib/occasions/catalog";
+import { containsSparkleGlyph } from "./forbidden-glyphs";
 import {
   MAX_SELECT_OPTIONS,
   OCCASION_FIELD_TYPES,
@@ -65,6 +66,7 @@ export const occasionFieldFormSchema = z
       .trim()
       .max(16)
       .refine((value) => value === "" || EMOJI_ONLY.test(value), "Emoji invalide.")
+      .refine((value) => !containsSparkleGlyph(value), "Les pictogrammes étincelles ne sont pas autorisés.")
       .default(""),
     placeholder: z.string().trim().max(60).default(""),
     type: z.enum(OCCASION_FIELD_TYPES),
@@ -79,6 +81,13 @@ export const occasionFieldFormSchema = z
     sortOrder: z.coerce.number().int().min(0).max(999),
   })
   .superRefine((value, context) => {
+    if (containsSparkleGlyph(value.optionsText)) {
+      context.addIssue({
+        code: "custom",
+        path: ["optionsText"],
+        message: "Les pictogrammes étincelles ne sont pas autorisés.",
+      });
+    }
     if (value.type === "select") {
       const options = parseOptionsText(value.optionsText);
       const labels = options.map((option) => option.label);

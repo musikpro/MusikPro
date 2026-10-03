@@ -17,7 +17,8 @@ const SYSTEM_INSTRUCTIONS =
 const FIELD_SPEC =
   "Un champ est un objet JSON : {\"label\": libellé français court affiché au client (2 à 80 caractères), \"type\": \"short_text\" | \"long_text\" | \"select\" | \"number\" | \"date\", \"icon\": UN seul emoji, \"placeholder\": exemple court dans le champ (peut être vide), \"helpText\": aide courte (peut être vide), \"options\": [{\"label\": choix français, \"emoji\": un emoji}] (2 à 12 choix, uniquement pour select, sinon []), \"required\": booléen, \"aiHint\": consigne EN ANGLAIS de 200 caractères maximum qui explique au parolier IA comment utiliser la réponse, \"min\": entier et \"max\": entier (uniquement pour number), \"maxLength\": entier (uniquement pour les textes)}. " +
   "Choisis le type le plus adapté : short_text pour un nom ou une courte information, long_text pour une anecdote, select pour un choix fermé (mois, type, humeur…), number pour un âge ou un jour, date pour une date complète. " +
-  "Ne propose JAMAIS de champ demandant une donnée sensible : santé, pièce d'identité, numéro de téléphone, adresse, paiement, mot de passe, orientation ou opinion. Les champs doivent aider à personnaliser les paroles de la chanson.";
+  "Ne propose JAMAIS de champ demandant une donnée sensible : santé, pièce d'identité, numéro de téléphone, adresse, paiement, mot de passe, orientation ou opinion. Les champs doivent aider à personnaliser les paroles de la chanson. " +
+  "N'utilise JAMAIS d'emoji d'étincelles ni d'étoile brillante décorative : choisis un emoji qui illustre le sens du champ.";
 
 async function ask(prompt: string, audit: { actorId?: string; action: string; subject: string }) {
   const provider = await getLyricsProvider();

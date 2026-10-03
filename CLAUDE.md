@@ -34,6 +34,14 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Exception stricte : ne jamais traduire le titre des chansons, ni plus généralement le contenu généré ou saisi librement par l'utilisateur, sauf mécanisme dédié explicitement validé.
 - Les traductions proviennent uniquement du fournisseur IA déjà connecté (`lib/ai/provider.ts`) ; ne jamais écrire de traductions statiques à la main.
 
+## Règle obligatoire — aucune icône Sparkle / « étincelles » dans tout le SaaS
+
+- **Aucune icône ni aucun pictogramme d'étincelles (style « IA ») ne doit apparaître nulle part dans le SaaS — côté client comme dans l'admin, dans le code comme dans les données : `Sparkle`, `Sparkles`, `WandSparkles`, `WandSparkle`, le nom d'icône `"sparkles"` (ex. `<Icon i="sparkles" />`, `icon: "sparkles"`), les glyphes `✨ ✦ ✧ ✩ ✪ ✫ ✬ ✭ ✮ ✯ ✰ 🌟 💫`, ni l'étoile décorative `★ ☆`.**
+- Choisir à la place un pictogramme sémantique de l'action (ex. assistant IA → `bot`, traductions → `languages`, texte animé → `type`, état vide → `inbox`/`layout-grid`), via `components/banani/Icon.tsx` ou `components/ui/premium-icon.tsx`. Ne jamais contourner la règle en écrivant le nom de l'icône dans une variable ou un tableau de configuration.
+- Garde-fous déjà en place, à ne pas affaiblir : `npm run ui:icons-check` (`scripts/premium-icon-check.mjs`, dans `verify:production`) scanne `app/`, `components/`, `lib/` et `db/migrations/` (noms d'icônes compris) ; le formulaire des champs d'occasion refuse ces pictogrammes (`lib/occasion-fields/forbidden-glyphs.ts`) et nettoie les propositions de l'IA ; le prompt de suggestion de champs l'interdit.
+- Données : un emoji d'étincelles ne doit jamais être écrit dans un seed ni une migration (la 0062 est l'unique exception historique, corrigée par `db/migrations/0064_remove_sparkle_glyphs.sql`). Toute nouvelle migration qui insère des emojis choisit un emoji qui illustre le sens.
+- Toute page ou tout composant qui contient un de ces éléments est **incomplet** : le retirer avant de considérer le travail terminé, même si l'utilisateur ne l'a pas signalé.
+
 ## État production dans le dashboard propriétaire
 
 - Toujours conserver/ajouter le menu **État production** dans le tableau de bord propriétaire ou administrateur du SaaS, même sans demande explicite.

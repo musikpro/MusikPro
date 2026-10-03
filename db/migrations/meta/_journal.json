@@ -449,6 +449,13 @@
       "when": 1790871051773,
       "tag": "0063_ui_translations",
       "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1790871052773,
+      "tag": "0064_remove_sparkle_glyphs",
+      "breakpoints": true
     }
   ]
 }

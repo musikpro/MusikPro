@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { stripSparkleGlyphs } from "./forbidden-glyphs";
 import { formatOptionsText, occasionFieldFormSchema, slugifyFieldKey } from "./form-schema";
 import {
   OCCASION_FIELD_TYPES,
@@ -87,7 +88,12 @@ export function proposalToFormInput(proposal: FieldProposal, occasionId: string,
 function toProposal(candidate: unknown, occasionId: string): FieldProposal | null {
   const raw = rawProposalSchema.safeParse(candidate);
   if (!raw.success) return null;
-  const value = raw.data;
+  // Les modèles ajoutent volontiers un emoji d'étincelles : on le retire avant validation (pictogrammes étincelles interdits).
+  const value = {
+    ...raw.data,
+    icon: stripSparkleGlyphs(raw.data.icon),
+    options: raw.data.options.map((option) => ({ ...option, emoji: stripSparkleGlyphs(option.emoji) })),
+  };
   const input = {
     occasionId,
     label: value.label,
