@@ -60,18 +60,29 @@ export async function suggestFieldsForOccasion(
   });
 }
 
+const COMPLETE_FIELD_ATTEMPTS = 3;
+
 export async function completeFieldForOccasion(
   occasion: OccasionContext,
   label: string,
   actorId?: string,
 ): Promise<FieldProposal | null> {
-  const text = await ask(
+  const prompt =
     `Occasion d'une chanson personnalisée : « ${occasion.name} ». Description : « ${occasion.description || "aucune"} ».\n` +
-      `Le propriétaire veut un champ intitulé « ${label} ». Complète sa définition. ${FIELD_SPEC}\n` +
-      "Conserve le libellé fourni (tu peux seulement corriger l'orthographe). Réponds par UN objet JSON.",
-    { actorId, action: "ai.occasion_field.blocked", subject: `Champ "${label}" pour l'occasion "${occasion.name}"` },
-  );
-  return sanitizeSingleProposal(text, { occasionId: occasion.id });
+    `Le propriétaire veut un champ intitulé « ${label} ». Complète sa définition. ${FIELD_SPEC}\n` +
+    "Pour un type select, « options » contient OBLIGATOIREMENT de 2 à 12 choix. « aiHint » fait 200 caractères maximum. " +
+    "Conserve le libellé fourni (tu peux seulement corriger l'orthographe). Réponds par UN objet JSON.";
+  // Une réponse de LLM est parfois inutilisable (liste sans choix…) : une nouvelle tentative règle presque tous les cas.
+  for (let attempt = 0; attempt < COMPLETE_FIELD_ATTEMPTS; attempt += 1) {
+    const text = await ask(prompt, {
+      actorId,
+      action: "ai.occasion_field.blocked",
+      subject: `Champ "${label}" pour l'occasion "${occasion.name}"`,
+    });
+    const proposal = sanitizeSingleProposal(text, { occasionId: occasion.id });
+    if (proposal) return proposal;
+  }
+  return null;
 }
 
 export async function suggestBlocksForOccasion(

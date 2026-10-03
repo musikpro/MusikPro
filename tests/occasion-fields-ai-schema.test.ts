@@ -61,9 +61,10 @@ describe("sanitizeFieldProposals", () => {
     expect(sanitizeFieldProposals(JSON.stringify(many), { ...ctx, room: 0 })).toEqual([]);
   });
 
-  it("clamps an over-long AI hint to what the form schema accepts by rejecting the proposal", () => {
+  it("clips an over-long AI hint to what the form schema accepts instead of rejecting the proposal", () => {
     const result = sanitizeFieldProposals(JSON.stringify([{ ...good, aiHint: "x".repeat(250) }]), ctx);
-    expect(result).toEqual([]);
+    expect(result).toHaveLength(1);
+    expect(result[0].aiHint.length).toBe(200);
   });
 
   it("produces proposals that the admin form schema accepts as-is", () => {
@@ -152,5 +153,24 @@ describe("sanitizeSingleProposal — indices numériques incohérents de l'IA", 
   it("ignore un min supérieur au max sur un nombre", () => {
     const number = { ...good, type: "number", options: [] };
     expect(one({ min: 10, max: 1 }, number)?.type).toBe("number");
+  });
+});
+
+describe("sanitizeSingleProposal — réponses imparfaites de l'IA", () => {
+  const one = (extra: Record<string, unknown>) =>
+    sanitizeSingleProposal(JSON.stringify({ ...good, ...extra }), { occasionId: "occ-1" });
+
+  it("tronque une consigne IA ou une aide trop longue au lieu de tout rejeter", () => {
+    const result = one({ aiHint: "word ".repeat(80), helpText: "a ".repeat(120), placeholder: "x".repeat(90) });
+    expect(result).not.toBeNull();
+    expect(result!.aiHint.length).toBeLessThanOrEqual(200);
+    expect(result!.helpText.length).toBeLessThanOrEqual(160);
+    expect(result!.placeholder.length).toBeLessThanOrEqual(60);
+  });
+  it("accepte des null à la place des champs facultatifs", () => {
+    expect(one({ maxLength: null, min: null, max: null, display: null, helpText: null, placeholder: null, icon: null })).not.toBeNull();
+  });
+  it("renvoie null pour une liste sans choix (le serveur redemande)", () => {
+    expect(one({ options: [] })).toBeNull();
   });
 });

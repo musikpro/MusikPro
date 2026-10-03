@@ -5,10 +5,11 @@ import AdminOccasionFieldAiPanel from "@/components/admin/AdminOccasionFieldAiPa
 import AdminOccasionBlocksForm from "@/components/admin/AdminOccasionBlocksForm";
 import AdminOccasionFieldSortableGrid from "@/components/admin/AdminOccasionFieldSortableGrid";
 import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
-import { AdminTabPanel, AdminTabs, resolveAdminTab } from "@/components/admin/AdminTabs";
+import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
 import Icon from "@/components/banani/Icon";
 import { getServiceDb } from "@/db";
 import { occasionFields, occasions } from "@/db/schema";
+import { resolveAdminTab } from "@/lib/admin/tabs";
 import { requireAdmin } from "@/lib/auth/session";
 
 const TABS = [

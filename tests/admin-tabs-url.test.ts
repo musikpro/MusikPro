@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveAdminTab } from "@/components/admin/AdminTabs";
+import { resolveAdminTab } from "@/lib/admin/tabs";
 
 const tabs = [
   { id: "blocks", label: "Blocs intégrés" },

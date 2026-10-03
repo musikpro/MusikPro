@@ -3,10 +3,9 @@
 import { useSearchParams } from "next/navigation";
 import { createContext, useContext, useState, type ReactNode } from "react";
 
-export type AdminTabItem = {
-  id: string;
-  label: string;
-};
+import { resolveAdminTab, type AdminTabItem } from "@/lib/admin/tabs";
+
+export type { AdminTabItem };
 
 const AdminTabsContext = createContext<{ active: string } | null>(null);
 
@@ -18,12 +17,6 @@ function rememberTabInUrl(param: string, id: string) {
   } catch {
     // L'onglet reste actif localement ; seule la mémorisation dans l'URL est perdue.
   }
-}
-
-/** Onglet demandé par l'URL s'il existe parmi `tabs`, sinon `undefined` (l'onglet par défaut s'applique). */
-export function resolveAdminTab(value: string | string[] | undefined, tabs: readonly AdminTabItem[]): string | undefined {
-  const candidate = Array.isArray(value) ? value[0] : value;
-  return tabs.some((tab) => tab.id === candidate) ? candidate : undefined;
 }
 
 /**

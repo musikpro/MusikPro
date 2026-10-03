@@ -22,23 +22,37 @@ export type FieldProposal = {
   aiHint: string;
 };
 
+/** Les modèles renvoient volontiers `null` pour « sans valeur » : on le traite comme absent. */
+const nullable = <T extends z.ZodType>(schema: T) => z.preprocess((value) => (value === null ? undefined : value), schema);
+
 const rawProposalSchema = z.object({
   label: z.string(),
   type: z.enum(OCCASION_FIELD_TYPES),
-  icon: z.string().optional().default(""),
-  placeholder: z.string().optional().default(""),
-  helpText: z.string().optional().default(""),
-  options: z
-    .array(z.object({ label: z.string(), emoji: z.string().optional().default("") }))
-    .optional()
-    .default([]),
-  required: z.boolean().optional().default(false),
-  aiHint: z.string().optional().default(""),
-  display: z.enum(["dropdown", "tiles"]).optional(),
-  min: z.number().int().optional(),
-  max: z.number().int().optional(),
-  maxLength: z.number().int().optional(),
+  icon: nullable(z.string().optional().default("")),
+  placeholder: nullable(z.string().optional().default("")),
+  helpText: nullable(z.string().optional().default("")),
+  options: nullable(
+    z
+      .array(z.object({ label: z.string(), emoji: nullable(z.string().optional().default("")) }))
+      .optional()
+      .default([]),
+  ),
+  required: nullable(z.boolean().optional().default(false)),
+  aiHint: nullable(z.string().optional().default("")),
+  display: nullable(z.enum(["dropdown", "tiles"]).optional()),
+  min: nullable(z.number().int().optional()),
+  max: nullable(z.number().int().optional()),
+  maxLength: nullable(z.number().int().optional()),
 });
+
+/** Coupe proprement (sur un espace si possible) au nombre de caractères imposé par le formulaire. */
+function clip(text: string, max: number): string {
+  const value = text.trim();
+  if (value.length <= max) return value;
+  const cut = value.slice(0, max);
+  const space = cut.lastIndexOf(" ");
+  return (space > max * 0.6 ? cut.slice(0, space) : cut).trim();
+}
 
 /** Extrait le premier tableau ou objet JSON d'une réponse de LLM (balises Markdown ou texte autour tolérés). */
 function extractJson(text: string): unknown {
@@ -119,15 +133,15 @@ function toProposal(candidate: unknown, occasionId: string): FieldProposal | nul
   const limits = usableLimits(value);
   const input = {
     occasionId,
-    label: value.label,
-    helpText: value.helpText,
+    label: clip(value.label, 80),
+    helpText: clip(value.helpText, 160),
     icon: value.icon,
-    placeholder: value.placeholder,
+    placeholder: clip(value.placeholder, 60),
     type: value.type,
     optionsText: formatOptionsText(value.options),
     display: value.display ?? "tiles",
     required: String(value.required),
-    aiHint: value.aiHint,
+    aiHint: clip(value.aiHint, 200),
     active: "true",
     sortOrder: "100",
     ...limits,
