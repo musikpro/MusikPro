@@ -7,6 +7,9 @@ import type { Metadata, Viewport } from "next";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { I18nBootstrap } from "@/components/i18n-bootstrap";
+import { primeOverlay } from "@/lib/i18n/overlay-server";
+import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { NonceProvider } from "@/components/security/nonce-provider";
 
 export const metadata: Metadata = {
@@ -36,11 +39,14 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const locale = await resolvePageLocale();
+  await primeOverlay(locale);
   return (
-    <html lang={siteConfig.language}>
+    <html lang={locale}>
       <body suppressHydrationWarning>
         <NonceProvider nonce={nonce}>
           <ServiceWorkerRegister />
+          <I18nBootstrap />
           <div className="app-content">{children}</div>
         </NonceProvider>
       </body>
