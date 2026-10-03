@@ -38,6 +38,17 @@ export function translateForLocale(text: string, locale: Locale): string {
   return fixed ?? getOverlayEntry(locale, text) ?? text;
 }
 
+/**
+ * Langue d'affichage à utiliser pendant le RENDU d'un composant client (ex. toLocaleDateString) :
+ * "fr" tant que l'hydratation n'est pas terminée (HTML serveur), puis <html lang>. Ne jamais lire
+ * document.documentElement.lang directement au rendu (erreur d'hydratation #418).
+ */
+export function getDisplayLocale(): Locale {
+  if (typeof document === "undefined" || !isI18nReady()) return "fr";
+  const locale = document.documentElement.lang.split("-")[0];
+  return locale === "en" || locale === "es" || locale === "pt" ? locale : "fr";
+}
+
 export function translate(text: string): string {
   if (typeof document === "undefined" || !isI18nReady()) return text;
   const locale = document.documentElement.lang.split("-")[0] as Locale;

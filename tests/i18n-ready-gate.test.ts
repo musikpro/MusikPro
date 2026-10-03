@@ -7,7 +7,7 @@ import {
   setOverlay,
   getOverlayVersion,
 } from "@/lib/i18n/overlay";
-import { localizeField, translate, translateTemplate } from "@/lib/i18n/translate";
+import { getDisplayLocale, localizeField, translate, translateTemplate } from "@/lib/i18n/translate";
 
 function fakeDocument(lang: string) {
   (globalThis as unknown as { document: unknown }).document = { documentElement: { lang } };
@@ -45,9 +45,20 @@ describe("indicateur d'hydratation", () => {
     expect(getOverlayVersion()).toBe(before + 1);
   });
 
+  it("getDisplayLocale renvoie fr avant l'hydratation puis la langue de <html lang>", () => {
+    expect(getDisplayLocale()).toBe("fr");
+    markI18nReady();
+    expect(getDisplayLocale()).toBe("en");
+    fakeDocument("pt-BR");
+    expect(getDisplayLocale()).toBe("pt");
+    fakeDocument("de");
+    expect(getDisplayLocale()).toBe("fr");
+  });
+
   it("côté serveur (sans document), reste en français", () => {
     delete (globalThis as { document?: unknown }).document;
     markI18nReady();
     expect(translate("Se connecter")).toBe("Se connecter");
+    expect(getDisplayLocale()).toBe("fr");
   });
 });

@@ -1,5 +1,5 @@
 "use client";
-import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
+import { translate as t, translateTemplate, localizeField, getDisplayLocale } from "@/lib/i18n/translate";
 import Image from "next/image";
 import { formatDemoPackPrice } from "@/lib/demo/musikpro-data";
 import { useDemo } from "./DemoProvider";
@@ -42,14 +42,12 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
   const visibleHistory = demo.isDemo
     ? getTransactionHistory()
     : history.map((entry) => ({
-        date: new Date(entry.date).toLocaleDateString(
-          typeof document === "undefined" ? "fr" : document.documentElement.lang || "fr",
-          {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          },
-        ),
+        // getDisplayLocale() : "fr" tant que l'hydratation n'est pas terminée (même rendu que le HTML serveur).
+        date: new Date(entry.date).toLocaleDateString(getDisplayLocale(), {
+          day: "numeric",
+          month: "long",
+          year: "numeric",
+        }),
         action: translateTemplate("Achat de crédits {plan}", { plan: entry.planName }),
         credits: entry.credits,
         type: entry.type,
