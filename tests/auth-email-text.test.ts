@@ -33,6 +33,9 @@ describe("localeFromRequest", () => {
     expect(localeFromRequest(req({ "accept-language": "ja" }))).toBe("fr");
     expect(localeFromRequest(req({}))).toBe("fr");
   });
+  it("cookie mal encodé (%E0%A4%A) : fr sans lever d'erreur", () => {
+    expect(localeFromRequest(req({ cookie: "musikpro_lang=%E0%A4%A" }))).toBe("fr");
+  });
   it("renvoie fr sans requête", () => {
     expect(localeFromRequest(undefined)).toBe("fr");
   });

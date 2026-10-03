@@ -12,10 +12,10 @@ export default defineConfig([
     rules: { "no-restricted-syntax": ["error", ...i18nClientTextSelectors] },
   },
   {
-    // Écrans d'authentification : avertissement tant que les tâches 7 et 8 ne sont pas faites ; basculer en "error" à la tâche 11.
+    // Écrans d'authentification : même garde en erreur que le périmètre client.
     files: i18nAuthFiles,
     ignores: ["**/*.test.{ts,tsx}"],
-    rules: { "no-restricted-syntax": ["warn", ...i18nClientTextSelectors] },
+    rules: { "no-restricted-syntax": ["error", ...i18nClientTextSelectors] },
   },
   globalIgnores([".next/**", "out/**", "build/**", "generated/**", "next-env.d.ts", "skills/providers/**/examples/**"]),
 ]);
