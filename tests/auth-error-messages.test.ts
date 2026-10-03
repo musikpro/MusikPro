@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { authErrorMessage } from "@/lib/auth/auth-error-messages";
+import { authErrorMessage, authResultErrorMessage } from "@/lib/auth/auth-error-messages";
 import { getOAuthErrorMessage } from "@/lib/auth/oauth-error";
 
 describe("authErrorMessage", () => {
@@ -13,6 +13,36 @@ describe("authErrorMessage", () => {
   it("ne prend pas une clé héritée du prototype pour un code", () => {
     expect(authErrorMessage("constructor", "Repli")).toBe("Repli");
     expect(authErrorMessage("__proto__", "Repli")).toBe("Repli");
+  });
+});
+
+describe("authErrorMessage — codes propriétaire", () => {
+  it("traduit les codes du plugin owner-two-factor avec le libellé serveur", () => {
+    expect(authErrorMessage("OWNER_TWO_FACTOR_ONLY", "Repli")).toBe("Le double facteur est réservé aux propriétaires.");
+    expect(authErrorMessage("OWNER_TWO_FACTOR_BOOTSTRAP_FAILED", "Repli")).toBe(
+      "Impossible de préparer la vérification du propriétaire.",
+    );
+  });
+});
+
+describe("authResultErrorMessage", () => {
+  it("affiche « Trop de requêtes » pour un 429 sans code (limitation de débit better-auth)", () => {
+    expect(authResultErrorMessage({ status: 429 }, "Connexion impossible")).toBe(
+      "Trop de requêtes. Réessaie dans un instant.",
+    );
+    expect(authResultErrorMessage({ status: 429, code: "SOMETHING_NEW" }, "Repli")).toBe(
+      "Trop de requêtes. Réessaie dans un instant.",
+    );
+  });
+  it("garde le message du code connu, même en 429", () => {
+    expect(authResultErrorMessage({ status: 429, code: "TOO_MANY_ATTEMPTS_REQUEST_NEW_CODE" }, "Repli")).toBe(
+      "Trop de tentatives. Demandez un nouveau code.",
+    );
+  });
+  it("retombe sur le repli hors 429 ou sans erreur", () => {
+    expect(authResultErrorMessage({ status: 400 }, "Repli")).toBe("Repli");
+    expect(authResultErrorMessage({ status: 401, code: null }, "Repli")).toBe("Repli");
+    expect(authResultErrorMessage(null, "Repli")).toBe("Repli");
   });
 });
 

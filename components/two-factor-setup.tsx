@@ -6,7 +6,7 @@ import { twoFactorCodeSchema, twoFactorEnableSchema } from "@/lib/validation/aut
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
-import { authErrorMessage } from "@/lib/auth/auth-error-messages";
+import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
 
 export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
   useI18nOverlay();
@@ -29,7 +29,7 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
       method: "totp",
     });
     if (r.error) {
-      setMessage(authErrorMessage(r.error.code, t("Impossible d’activer le 2FA")));
+      setMessage(authResultErrorMessage(r.error, t("Impossible d’activer le 2FA")));
       return;
     }
     const d = r.data;
@@ -56,7 +56,7 @@ export function TwoFactorSetup({ enabled }: { enabled: boolean }) {
       trustDevice: false,
     });
     if (r.error) {
-      setMessage(authErrorMessage(r.error.code, t("Code invalide")));
+      setMessage(authResultErrorMessage(r.error, t("Code invalide")));
       return;
     }
     setMessage(t("2FA activé. Redirection vers votre espace…"));

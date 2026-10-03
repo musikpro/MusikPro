@@ -12,7 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
-import { authErrorMessage } from "@/lib/auth/auth-error-messages";
+import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
 
 type Method = "otp" | "totp";
 type Context = { email: string; expiresAt: string; methods: Method[] };
@@ -81,7 +81,7 @@ export function TwoFactorChallenge() {
         ? await authClient.twoFactor.verifyOtp({ code: parsed.data.code, trustDevice: false })
         : await authClient.twoFactor.verifyTotp({ code: parsed.data.code, trustDevice: false });
     if (result.error) {
-      setError(authErrorMessage(result.error.code, t("Code invalide. Vérifiez les chiffres et réessayez.")));
+      setError(authResultErrorMessage(result.error, t("Code invalide. Vérifiez les chiffres et réessayez.")));
       setBusy(false);
       return;
     }
@@ -95,7 +95,7 @@ export function TwoFactorChallenge() {
     setNotice("");
     const result = await authClient.twoFactor.sendOtp({ trustDevice: false });
     if (result.error) {
-      setError(authErrorMessage(result.error.code, t("Impossible d’envoyer un nouveau code.")));
+      setError(authResultErrorMessage(result.error, t("Impossible d’envoyer un nouveau code.")));
     } else {
       setSecondsLeft(300);
       setCode("");

@@ -13,7 +13,7 @@ import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
-import { authErrorMessage } from "@/lib/auth/auth-error-messages";
+import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
 import { getOAuthErrorMessage } from "@/lib/auth/oauth-error";
 
 export function AuthForm({
@@ -114,7 +114,7 @@ export function AuthForm({
         fetchOptions,
       });
       if (r.error) {
-        setError(authErrorMessage(r.error.code, t("Inscription impossible")));
+        setError(authResultErrorMessage(r.error, t("Inscription impossible")));
         setBusy(false);
         return;
       }
@@ -135,7 +135,7 @@ export function AuthForm({
       if (r.error) {
         // Anti-énumération : « compte introuvable » n'est jamais exposé distinctement à la connexion.
         const code = r.error.code === "USER_NOT_FOUND" ? "INVALID_EMAIL_OR_PASSWORD" : r.error.code;
-        setError(authErrorMessage(code, t("Connexion impossible")));
+        setError(authResultErrorMessage({ ...r.error, code }, t("Connexion impossible")));
         setBusy(false);
         return;
       }
@@ -162,7 +162,7 @@ export function AuthForm({
       try {
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
-        if (native?.error) throw new Error(authErrorMessage(native.error.code, t("Connexion Google impossible")));
+        if (native?.error) throw new Error(authResultErrorMessage(native.error, t("Connexion Google impossible")));
         goToAuthenticatedSpace();
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
@@ -177,7 +177,7 @@ export function AuthForm({
       errorCallbackURL: "/login",
     });
     if (r?.error) {
-      setError(authErrorMessage(r.error.code, t("Connexion Google impossible")));
+      setError(authResultErrorMessage(r.error, t("Connexion Google impossible")));
       setBusy(false);
     }
   }

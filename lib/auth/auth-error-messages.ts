@@ -61,7 +61,24 @@ export function authErrorMessage(code: string | undefined, fallback: string): st
       return t("Veuillez valider la vérification anti-robot.");
     case "SERVICE_UNAVAILABLE":
       return t("La vérification anti-robot est momentanément indisponible.");
+    case "OWNER_TWO_FACTOR_ONLY":
+      return t("Le double facteur est réservé aux propriétaires.");
+    case "OWNER_TWO_FACTOR_BOOTSTRAP_FAILED":
+      return t("Impossible de préparer la vérification du propriétaire.");
     default:
       return fallback;
   }
+}
+
+/**
+ * Message affichable pour l'erreur renvoyée par le client better-auth (`result.error`) : le code connu
+ * d'abord ; sinon une réponse 429 (limitation de débit de better-auth, sans code) affiche le message
+ * « Trop de requêtes » ; sinon le repli fourni.
+ */
+export function authResultErrorMessage(
+  error: { code?: string | null; status?: number | null } | null | undefined,
+  fallback: string,
+): string {
+  const rateLimited = error?.status === 429 ? t("Trop de requêtes. Réessaie dans un instant.") : fallback;
+  return authErrorMessage(error?.code ?? undefined, rateLimited);
 }

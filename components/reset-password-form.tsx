@@ -10,7 +10,7 @@ import { AuthHeroIcon, AuthLogo } from "@/components/auth/auth-ui";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
-import { authErrorMessage } from "@/lib/auth/auth-error-messages";
+import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
 
 export function ResetPasswordForm() {
   useI18nOverlay();
@@ -40,7 +40,7 @@ export function ResetPasswordForm() {
     setBusy(true);
     const result = await authClient.resetPassword({ newPassword: parsed.data.password, token: parsed.data.token });
     if (result.error) {
-      setError(authErrorMessage(result.error.code, t("Lien invalide ou expiré")));
+      setError(authResultErrorMessage(result.error, t("Lien invalide ou expiré")));
       setBusy(false);
       return;
     }
