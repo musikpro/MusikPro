@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { isSupportedLocale, pickPageLocale, readCookieValue } from "@/lib/i18n/page-locale";
+import { splitLocalePrefix } from "@/lib/languages/locale-path";
 
 describe("pickPageLocale", () => {
   it("le préfixe d'URL gagne sur le cookie et Accept-Language", () => {
@@ -59,5 +60,14 @@ describe("readCookieValue", () => {
   });
   it("décode une valeur encodée valide", () => {
     expect(readCookieValue("musikpro_lang=en%20", "musikpro_lang")).toBe("en ");
+  });
+});
+
+describe("pickPageLocale pages publiques /s et 404", () => {
+  it("/s n'a jamais de préfixe : cookie puis Accept-Language (même règle que <html lang>)", () => {
+    expect(splitLocalePrefix("/en/s/abc")).toEqual({ locale: null, path: "/en/s/abc" });
+    expect(pickPageLocale({ pathname: "/s/abc", cookie: "pt", acceptLanguage: "en-US" })).toBe("pt");
+    expect(pickPageLocale({ pathname: "/s/abc", acceptLanguage: "es-ES,es;q=0.9" })).toBe("es");
+    expect(pickPageLocale({ pathname: "/s/abc" })).toBe("fr");
   });
 });

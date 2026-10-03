@@ -27,9 +27,8 @@ const dictionaries: Record<Exclude<Locale, "fr">, Record<string, string>> = { en
 
 /**
  * Locale-driven core shared by translate() (client-side, reads document.documentElement.lang)
- * and request-locale.ts's Accept-Language-driven resolution for pages with no client-side
- * language detector mounted (e.g. app/s/[slug], which has no authenticated session or
- * DemoProvider to read a saved preference from).
+ * and server components that resolve the locale themselves (resolvePageLocale() for public/auth
+ * pages such as app/s/[slug], resolveDashboardLocale() for the dashboard).
  */
 export function translateForLocale(text: string, locale: Locale): string {
   if (locale === "fr") return text;

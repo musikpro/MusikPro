@@ -1,9 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { buildMetadata } from "@/lib/seo/metadata";
-import { headers } from "next/headers";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
-import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
+import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { translateForLocale } from "@/lib/i18n/translate";
 
 // Forced dynamic: without this, Next.js's built-in not-found boundary would be prerendered
@@ -12,7 +11,7 @@ import { translateForLocale } from "@/lib/i18n/translate";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const locale = await resolvePageLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   return buildMetadata({
@@ -24,7 +23,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function NotFound() {
-  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const locale = await resolvePageLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   return (
