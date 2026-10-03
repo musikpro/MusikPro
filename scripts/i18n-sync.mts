@@ -43,6 +43,7 @@ const SCAN_DIRS_WANTED = [
   "components/two-factor-challenge.tsx",
   "components/two-factor-setup.tsx",
   "lib/auth/oauth-error.ts",
+  "lib/auth/auth-error-messages.ts",
   "lib/seo/metadata.ts",
   "lib/validation",
   "lib/api/error-messages.ts",
@@ -50,7 +51,7 @@ const SCAN_DIRS_WANTED = [
   "app/privacy",
   "app/opengraph-image.tsx",
   "components/i18n-bootstrap.tsx",
-  // À ajouter dans la tâche qui les crée : lib/api/error-messages.ts, lib/auth/auth-error-messages.ts, lib/email/auth-email-text.ts.
+  // À ajouter dans la tâche qui les crée : lib/email/auth-email-text.ts.
 ];
 const CHECK_ONLY = process.argv.includes("--check");
 const SCAN_DIRS = SCAN_DIRS_WANTED.filter((entry) => {
