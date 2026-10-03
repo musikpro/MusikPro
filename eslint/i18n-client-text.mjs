@@ -4,6 +4,16 @@
  * n'est pas détecté. Cas légitime (valeur canonique stockée en français, etc.) : désactiver la
  * ligne avec `// eslint-disable-next-line no-restricted-syntax -- <raison>`.
  */
+export const i18nAuthFiles = [
+  "app/(auth)/**/*.{ts,tsx}",
+  "components/auth/**/*.{ts,tsx}",
+  "components/auth-form.tsx",
+  "components/forgot-password-form.tsx",
+  "components/reset-password-form.tsx",
+  "components/two-factor-challenge.tsx",
+  "components/two-factor-setup.tsx",
+];
+
 export const i18nClientFiles = [
   "app/dashboard/**/*.{ts,tsx}",
   "app/s/**/*.{ts,tsx}",
@@ -17,6 +27,7 @@ export const i18nClientFiles = [
   "components/checkout-button.tsx",
   "components/ui/**/*.{ts,tsx}",
   "components/pwa/**/*.{ts,tsx}",
+  ...i18nAuthFiles,
 ];
 
 const ACCENT = "[àâäçéèêëîïôöùûüÿœæÀÂÇÉÈÊËÎÏÔÙÛÜŒ]";
