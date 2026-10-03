@@ -824,6 +824,17 @@ button {
   color: #8a817c;
   margin: 0;
 }
+.legal-notice {
+  margin: 0.75rem 0 0;
+  padding: 0.65rem 0.9rem;
+  border-radius: 12px;
+  border: 1px solid #e8e1dc;
+  background: rgba(255, 255, 255, 0.96);
+  font-size: 0.9rem;
+}
+.legal-notice a {
+  text-decoration: underline;
+}
 .legal-card {
   background: rgba(255, 255, 255, 0.96);
   border: 1px solid #e8e1dc;

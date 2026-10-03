@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function PrivacyPage() {
   return (
     <LegalPage
+      locale="fr"
+      forcedFrench={false}
+      path="/privacy"
       eyebrow="Vie privée"
       title="Politique de confidentialité"
       introduction="Cette politique explique quelles données MusikPro traite, pourquoi elles sont utilisées et quels choix vous sont proposés."

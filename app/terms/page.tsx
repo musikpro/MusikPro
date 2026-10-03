@@ -26,6 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function TermsPage() {
   return (
     <LegalPage
+      locale="fr"
+      forcedFrench={false}
+      path="/terms"
       eyebrow="Cadre d’utilisation"
       title="Conditions d’utilisation"
       introduction="En utilisant MusikPro, vous acceptez les règles ci-dessous, conçues pour offrir un service fiable et respectueux à chacun."
