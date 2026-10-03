@@ -52,7 +52,7 @@ Ordre d'exécution : 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11.
 
 ---
 
-### Tâche 1 : résolveur de langue pur et serveur
+### Task 1: résolveur de langue pur et serveur
 
 **Fichiers :**
 - Créer : `lib/i18n/page-locale.ts`, `lib/i18n/page-locale-server.ts`, `tests/page-locale.test.ts`
@@ -188,7 +188,7 @@ Si `resolveLocaleFromAcceptLanguage` n'est pas à l'épreuve d'une valeur inconn
 
 ---
 
-### Tâche 2 : indicateur d'hydratation, bootstrap client et layout racine
+### Task 2: indicateur d'hydratation, bootstrap client et layout racine
 
 **Fichiers :**
 - Modifier : `lib/i18n/overlay.ts`, `lib/i18n/translate.ts`, `app/layout.tsx`
@@ -338,7 +338,7 @@ await primeOverlay(locale);
 
 ---
 
-### Tâche 3 : `i18nKey`, scanner et règle ESLint élargis (avertissement)
+### Task 3: `i18nKey`, scanner et règle ESLint élargis (avertissement)
 
 **Fichiers :**
 - Créer : `lib/i18n/key.ts`
@@ -370,7 +370,7 @@ export function i18nKey(text: string): string {
 
 ---
 
-### Tâche 4 : messages de validation Zod traduits à l'affichage
+### Task 4: messages de validation Zod traduits à l'affichage
 
 **Fichiers :**
 - Créer : `lib/validation/translate-issue.ts`, `tests/translate-issue.test.ts`
@@ -442,7 +442,7 @@ export function translateIssue(issue: { message: string }): string {
 
 ---
 
-### Tâche 5 : messages d'erreur d'API traduits côté client
+### Task 5: messages d'erreur d'API traduits côté client
 
 **Fichiers :**
 - Créer : `lib/api/error-messages.ts`, `tests/api-error-messages.test.ts`
@@ -532,7 +532,7 @@ La clé « Il faut {credits} crédits… » existe déjà (`DemoProvider`). Un m
 
 ---
 
-### Tâche 6 : codes d'erreur d'authentification et erreurs OAuth
+### Task 6: codes d'erreur d'authentification et erreurs OAuth
 
 **Fichiers :**
 - Créer : `lib/auth/auth-error-messages.ts`, `tests/auth-error-messages.test.ts`
@@ -586,7 +586,7 @@ describe("getOAuthErrorMessage", () => {
 
 ---
 
-### Tâche 7 : formulaire de connexion/inscription et pages `(auth)`
+### Task 7: formulaire de connexion/inscription et pages `(auth)`
 
 **Fichiers :**
 - Modifier : `components/auth-form.tsx`, `components/auth/auth-ui.tsx`, `app/(auth)/login/page.tsx`, `app/(auth)/register/page.tsx`, `app/(auth)/layout.tsx` (texte hors métadonnées), `app/(auth)/auth/continue/loading.tsx`, `scripts/i18n-sync.mts` (les chemins d'authentification déjà listés en tâche 3 sont scannés), `lib/i18n/manifest.json`
@@ -610,7 +610,7 @@ Règles : voir « Contraintes globales ». Spécifique :
 
 ---
 
-### Tâche 8 : mot de passe oublié/réinitialisé et double authentification
+### Task 8: mot de passe oublié/réinitialisé et double authentification
 
 **Fichiers :**
 - Modifier : `components/forgot-password-form.tsx`, `components/reset-password-form.tsx`, `components/two-factor-challenge.tsx`, `components/two-factor-setup.tsx`, `app/(auth)/forgot-password/page.tsx`, `app/(auth)/reset-password/page.tsx`, `app/(auth)/two-factor/page.tsx`, `lib/i18n/manifest.json`
@@ -627,7 +627,7 @@ Mêmes règles que la tâche 7. Spécifique :
 
 ---
 
-### Tâche 9 : e-mails de vérification et de réinitialisation
+### Task 9: e-mails de vérification et de réinitialisation
 
 **Fichiers :**
 - Créer : `lib/email/auth-email-text.ts`, `tests/auth-email-text.test.ts`
@@ -683,7 +683,7 @@ describe("localeFromRequest", () => {
 
 ---
 
-### Tâche 10 : titres de pages et image de partage
+### Task 10: titres de pages et image de partage
 
 **Fichiers :**
 - Modifier : `lib/seo/metadata.ts`, `app/(auth)/layout.tsx`, `app/dashboard/layout.tsx`, `app/setup/page.tsx` (seulement si elle utilise `privatePageMetadata`), `app/terms/page.tsx`, `app/privacy/page.tsx`, `app/opengraph-image.tsx`, `scripts/i18n-sync.mts` (chemins déjà prévus à la tâche 3), `lib/i18n/manifest.json`
@@ -699,7 +699,7 @@ describe("localeFromRequest", () => {
 
 ---
 
-### Tâche 11 : balayage final, garde en erreur, documentation et vérification navigateur
+### Task 11: balayage final, garde en erreur, documentation et vérification navigateur
 
 **Fichiers :** `eslint.config.mjs`, `CLAUDE.md`, `scripts/i18n-sync.mts` (vérifier la liste finale), éventuels correctifs du balayage, `lib/i18n/manifest.json`.
 
