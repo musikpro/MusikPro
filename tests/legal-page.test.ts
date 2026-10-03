@@ -22,6 +22,7 @@ describe("LegalPage", () => {
     const html = renderToStaticMarkup(createElement(LegalPage, { ...base, locale: "en", forcedFrench: false }));
     expect(html).toContain("legal-notice");
     expect(html).toContain("/terms?lang=fr");
+    expect(html).not.toContain('lang="fr"');
   });
   it("français forcé : pas de bandeau, lang=fr sur main", () => {
     const html = renderToStaticMarkup(createElement(LegalPage, { ...base, locale: "fr", forcedFrench: true }));
