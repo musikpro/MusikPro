@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.11.7 — Mise à jour du kit (0.11.2 → 0.11.7), refactorisation non régressive
+
+- Next.js et `eslint-config-next` passent en **16.3.8** (correctif de sécurité Active LTS du 30 septembre 2026) ; seuil `security:versions` relevé à 16.3.8.
+- Dépendances figées sur des versions exactes (contrat `dependencies:contract`, aligné sur les versions déjà installées) ; contrat Capacitor centralisé dans `config/mobile-dependencies.json` (8.5.1, version déjà installée).
+- RBAC + multi-tenant : `lib/auth/organization-access.ts`, types `OrganizationRole`/`hasOrganizationRole` dans `lib/auth/permissions.ts`, gate `access:check` (7 contrôles) et voyants dédiés dans État de préparation / État production.
+- Nouveaux voyants : « Dépendances — seuils de sécurité » et « Règle UI — icônes décoratives interdites » (libellé sans le mot interdit pour passer `ui:icons-check`).
+- Suppression de l'ancien pipeline mobile WebView (`mobile:app:migrate`) ; seul `pwa-capacitor` est accepté. Ajout de `mobile:store-check` (à la demande : échoue tant que le wrapper utilise `server.url`, ce qui est le choix de MusikPro).
+- Parité AGENTS.md → CLAUDE.md : `agents:rules-sync` (variante non destructive : seul le bloc miroir est régénéré, les règles propres à MusikPro de CLAUDE.md sont conservées) et `agents:rules-check`, branché dans `claude-code:check`.
+- `readiness:ui-check` tolère désormais le formatage Prettier multi-lignes.
+- Volontairement NON repris du kit : `proxy.ts`, `lib/security/csp.ts` (`style-src-attr 'none'` casserait les `style={{}}` React), `public/sw.js`, TypeScript 7.0.2, `next build` sans `--webpack`, page `/admin/subscriptions`.
+
 ## 0.11.1 — Mise à jour du kit (0.11.0 + 0.11.1), refactorisation non régressive
 
 - Next.js et `eslint-config-next` alignés sur 16.3.7 (correctifs de sécurité).

@@ -48,6 +48,18 @@ add(
   "Official mobile PWA + Capacitor skill present",
 );
 add(
+  "store-safety-gate",
+  fs.existsSync(path.join(root, "scripts/mobile-store-check.mjs")) &&
+    fs.existsSync(path.join(root, "config/mobile-dependencies.json")),
+  "Store safety gate and centralized Capacitor dependency contract present",
+);
+const pkgForLegacy = readJson("package.json") || {};
+add(
+  "legacy-webview-removed",
+  !fs.existsSync(path.join(root, "scripts/mobile-app-migrate.mjs")) && !pkgForLegacy.scripts?.["mobile:app:migrate"],
+  "Legacy WebView strategy and migration command are absent",
+);
+add(
   "native-runtime",
   fs.existsSync(path.join(root, "lib/mobile/native-runtime.ts")) &&
     /mobileRuntimeContext/.test(read("lib/mobile/native-runtime.ts")),
@@ -75,11 +87,14 @@ if (!enabled) {
 }
 const opt = [];
 const addOpt = (id, ok, detail) => opt.push({ id, ok, detail });
+const mobileContract = readJson("config/mobile-dependencies.json") || {};
+const [nodeMajor] = process.versions.node.split(".").map(Number);
 addOpt(
-  "strategy",
-  m.strategy === "pwa-capacitor",
-  "Official pwa-capacitor strategy selected; legacy WebView modes are deprecated",
+  "native-node",
+  nodeMajor >= (mobileContract.minimumNodeMajor || 22),
+  `Node.js ${mobileContract.minimumNodeMajor || 22}+ required for Capacitor native development`,
 );
+addOpt("strategy", m.strategy === "pwa-capacitor", "Only supported mobile strategy pwa-capacitor is selected");
 addOpt(
   "app-id",
   /^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z][a-zA-Z0-9_-]*){1,}$/.test(String(m.appId || "")),
@@ -103,9 +118,13 @@ if (capInstalled) {
   const cap = read("capacitor.config.ts");
   addOpt(
     "capacitor-config",
-    /webDir:\s*["']mobile-shell["']/.test(cap) && /server:\s*\{/.test(cap),
+    /webDir:\s*["']mobile-shell["']/.test(cap),
     "Capacitor wrapper config generated without static-export webDir",
   );
+  if (/server\s*:\s*\{[\s\S]*?url\s*:/m.test(cap))
+    console.warn(
+      "⚠ Development remote server.url detected: run npm run mobile:store-check before any store certification.",
+    );
 }
 for (const c of opt) console.log(`${c.ok ? "✓" : "✗"} ${c.id}: ${c.detail}`);
 const failed = opt.filter((c) => !c.ok);

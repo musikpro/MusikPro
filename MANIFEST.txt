@@ -269,7 +269,6 @@ scripts/local-payment-lab.mjs
 scripts/mobile-app-check.mjs
 scripts/mobile-app-configure.mjs
 scripts/mobile-app-install.mjs
-scripts/mobile-app-migrate.mjs
 scripts/mobile-app-prepare.mjs
 scripts/mobile-first-check.mjs
 scripts/npm-registry-check.mjs
@@ -334,3 +333,17 @@ tests/security/request-guards.test.ts
 tsconfig.json
 types/fedapay.d.ts
 vitest.config.ts
+scripts/access-control-check.mjs
+scripts/agent-rules-sync.mjs
+scripts/agent-rules-sync-check.mjs
+scripts/dependency-contract-check.mjs
+scripts/mobile-store-check.mjs
+config/mobile-dependencies.json
+lib/auth/organization-access.ts
+docs/security/access-control-multitenant.md
+docs/audit/agent-rules-parity-v0.11.4.md
+docs/audit/full-integrity-refactor-v0.11.3.md
+docs/audit/full-integrity-refactor-v0.11.5.md
+docs/audit/full-integrity-refactor-v0.11.7.md
+docs/audit/mobile-legacy-removal-v0.11.2.md
+docs/audit/rbac-multitenant-readiness-v0.11.6.md

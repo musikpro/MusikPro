@@ -84,6 +84,65 @@ add(
   "DATABASE_URL requis côté serveur",
   "database",
 );
+const accessFiles = [
+  "lib/auth/permissions.ts",
+  "lib/auth/session.ts",
+  "lib/auth/organization-access.ts",
+  "lib/auth/index.ts",
+  "db/schema/auth.generated.ts",
+  "db/schema/index.ts",
+  "db/security/rls-baseline.sql",
+];
+const accessText = Object.fromEntries(
+  accessFiles.map((file) => [file, exists(file) ? fs.readFileSync(path.join(root, file), "utf8") : ""]),
+);
+const rbacReady =
+  /hasAppRole/.test(accessText["lib/auth/permissions.ts"]) &&
+  /hasOrganizationRole/.test(accessText["lib/auth/permissions.ts"]) &&
+  /requireAdmin/.test(accessText["lib/auth/session.ts"]) &&
+  /requireOrganizationAccess/.test(accessText["lib/auth/organization-access.ts"]);
+add(
+  "rbac",
+  "RBAC — rôles et permissions",
+  rbacReady ? "PASS" : "FAIL",
+  rbacReady
+    ? "Rôles application + organisation et gardes serveur détectés"
+    : "RBAC incomplet : rôles ou garde organisationnelle manquants",
+  "security",
+);
+const multiTenantStatic =
+  /organization\(\{/.test(accessText["lib/auth/index.ts"]) &&
+  /pgTable\(\s*"organization"/.test(accessText["db/schema/auth.generated.ts"]) &&
+  /pgTable\(\s*"member"/.test(accessText["db/schema/auth.generated.ts"]) &&
+  /member\.organizationId/.test(accessText["lib/auth/organization-access.ts"]) &&
+  /member\.userId/.test(accessText["lib/auth/organization-access.ts"]) &&
+  /organizationId:/.test(accessText["db/schema/index.ts"]) &&
+  /app\.organization_id/.test(accessText["db/security/rls-baseline.sql"]) &&
+  /tenant_isolation/.test(accessText["db/security/rls-baseline.sql"]);
+let tenantDbVerified = false;
+if (online && multiTenantStatic) {
+  try {
+    execFileSync(process.execPath, ["scripts/security-db-check.mjs"], {
+      cwd: root,
+      stdio: "ignore",
+      env: { ...process.env, ...env },
+    });
+    tenantDbVerified = true;
+  } catch {}
+}
+add(
+  "multi-tenant",
+  "Multi-tenant — isolation organisations",
+  !multiTenantStatic ? "FAIL" : online ? (tenantDbVerified ? "PASS" : "FAIL") : "WARN",
+  !multiTenantStatic
+    ? "Organisation/membership/RLS incomplets"
+    : online
+      ? tenantDbVerified
+        ? "RLS + policies Neon vérifiées sur les tables tenant"
+        : "La vérification online RLS/policies Neon a échoué"
+      : "Structure présente; relancer doctor:production:online pour vérifier réellement RLS/policies Neon",
+  "security",
+);
 const emailPasswordEnabled = cfg
   ? cfg.emailPasswordEnabled !== false
   : (env.AUTH_EMAIL_PASSWORD_ENABLED ?? process.env.AUTH_EMAIL_PASSWORD_ENABLED) !== "false";
@@ -367,6 +426,24 @@ add(
   "Exécuter npm run mobile:check et valider visuellement les viewports avant production",
   "design",
 );
+try {
+  execFileSync(process.execPath, ["scripts/premium-icon-check.mjs"], { cwd: root, stdio: "ignore" });
+  add(
+    "premium-icons",
+    "Règle UI — icônes décoratives interdites",
+    "PASS",
+    "Aucune icône décorative interdite détectée dans app/ ou components/",
+    "quality",
+  );
+} catch {
+  add(
+    "premium-icons",
+    "Règle UI — icônes décoratives interdites",
+    "FAIL",
+    "Icône interdite détectée : exécuter npm run ui:icons-check et la remplacer immédiatement",
+    "quality",
+  );
+}
 add(
   "banani-plan",
   "Plan implémentation Banani",
@@ -423,6 +500,25 @@ add(
     : "CSP compatible Next.js mais encore permissive : supprimer unsafe-inline et passer à une stratégie de nonces avant le niveau maximum",
   "security",
 );
+
+try {
+  execFileSync(process.execPath, ["scripts/dependency-security-floor.mjs"], { cwd: root, stdio: "ignore" });
+  add(
+    "dependency-security",
+    "Dépendances — seuils de sécurité",
+    "PASS",
+    "Les dépendances sensibles respectent les versions minimales revues par le kit",
+    "security",
+  );
+} catch {
+  add(
+    "dependency-security",
+    "Dépendances — seuils de sécurité",
+    "FAIL",
+    "Une dépendance sensible est sous le seuil de sécurité; exécuter npm run security:versions",
+    "security",
+  );
+}
 
 let playwrightPkg = false;
 try {

@@ -124,6 +124,7 @@ try {
     `GOOGLE_SEARCH_CONSOLE_ENABLED=${searchConsole ? "true" : "false"}`,
     `SECURITY_LEVEL=${securityLevel}`,
     `CRON_SECRET=${cronSecret}`,
+    "PAYMENT_RECONCILE_CRON=",
     "",
     "# Cloudinary is intentionally NOT configured during the core setup.",
     "# If this SaaS needs image uploads, run `npm run cloudinary:setup` in Phase 19.",
