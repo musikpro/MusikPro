@@ -6706,6 +6706,14 @@ body:has(.admin-app),
   position: relative;
 }
 
+/* La carte qui contient le menu de suggestions doit passer au-dessus des cartes suivantes : son animation d'entrée
+ (admin-card-enter, fill-mode both) crée un contexte d'empilement par carte, donc le z-index du menu ne suffit pas et
+ la carte suivante (« Soldes enregistrés ») se peignait par-dessus les dernières suggestions. */
+.admin-panel:has(.admin-combobox-menu) {
+  position: relative;
+  z-index: 5;
+}
+
 .admin-combobox-menu {
   position: absolute;
   z-index: 40;
