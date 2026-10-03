@@ -63,6 +63,8 @@ export default function SongPlayerScreen() {
     if (!audio || !audioUrl) return;
     if (demo.playing) audio.play().catch(() => demo.setPlaying(false));
     else audio.pause();
+    // Volontaire : ne relancer la lecture que si l'état de lecture ou la piste change (pas à chaque rendu du provider démo).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demo.playing, audioUrl]);
 
   // Progress bar scrubbing: mouse, finger (touch/pen share pointer events) and keyboard.

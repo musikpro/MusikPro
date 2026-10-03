@@ -60,7 +60,6 @@ const configOk = Boolean(config);
 const envOk = exists(".env.local");
 const lockOk = exists("package-lock.json");
 const dbOk = configured(env.DATABASE_URL);
-const authOk = configured(env.BETTER_AUTH_SECRET) && configured(env.BETTER_AUTH_URL);
 const emailPasswordSelected = config
   ? config.emailPasswordEnabled !== false
   : env.AUTH_EMAIL_PASSWORD_ENABLED !== "false";
@@ -105,7 +104,6 @@ const doctorReady = doctorReport?.verdict === "READY";
 const computerUseState = readJson(path.join(root, ".africa-saas/computer-use.json"));
 const computerUseVerified = computerUseState?.status === "verified";
 
-const ngrokInstalledHint = false; // cannot reliably prove from pure JS without spawning; workflow will test it.
 
 const providerChecks = enabledProviders.map((id) => {
   const p = providers[id];
@@ -122,7 +120,6 @@ const providerChecks = enabledProviders.map((id) => {
     env: names,
   };
 });
-const paymentsOk = enabledProviders.length > 0 && providerChecks.every((p) => p.ok);
 
 const phases = [
   {

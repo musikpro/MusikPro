@@ -42,6 +42,8 @@ export function TurnstileWidget({ onToken }: { onToken: (token: string) => void 
     return () => {
       if (widgetId.current && window.turnstile?.remove) window.turnstile.remove(widgetId.current);
     };
+    // Volontaire : le widget ne se (re)monte que si la clé de site change ; renderWidget est recréé à chaque rendu.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [siteKey]);
 
   if (!siteKey) return null;

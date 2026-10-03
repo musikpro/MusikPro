@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray } from "drizzle-orm";
+import { and, desc, gte, inArray } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { payments } from "@/db/schema";
 import { reconcilePayment } from "@/lib/billing/reconcile";

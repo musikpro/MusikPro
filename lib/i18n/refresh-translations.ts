@@ -17,7 +17,7 @@ import {
 import { creditPlanFeaturesSchema } from "@/lib/credit-plans/catalog";
 import { fieldTranslationInput } from "@/lib/occasion-fields/types";
 import { TranslationParseError, translateBatch } from "./ai-translate";
-import { TRANSLATION_LOCALES, type TranslationLocale } from "./incremental";
+import { type TranslationLocale } from "./incremental";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";

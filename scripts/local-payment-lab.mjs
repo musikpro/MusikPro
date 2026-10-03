@@ -7,17 +7,6 @@ const root = process.cwd();
 const args = new Set(process.argv.slice(2));
 const port = Number(process.env.PORT || 3000);
 const localBase = `http://127.0.0.1:${port}`;
-const providers = [
-  "fedapay",
-  "paydunya",
-  "chariow",
-  "flutterwave",
-  "moneroo",
-  "paytech",
-  "bictorys",
-  "djomy",
-  "stripe",
-];
 const configPath = path.join(root, "africa-saas.config.json");
 let config = { providers: [], defaultProvider: null };
 if (fs.existsSync(configPath)) {

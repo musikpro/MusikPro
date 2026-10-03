@@ -337,9 +337,7 @@ if (!pkgJson.devDependencies?.vitest || !pkgJson.devDependencies?.eslint || !pkg
 const runtimeCheckText = fs.readFileSync("scripts/runtime-check.mjs", "utf8");
 if (!runtimeCheckText.includes('runtime = "nodejs"') && !runtimeCheckText.includes("nodejs"))
   errors.push("Runtime enforcement gate missing");
-for (const route of fs.readdirSync("app/api", { withFileTypes: true })) {
-  /* recursive gate is handled by runtime:check */
-}
+// Le contrôle récursif des routes API est assuré par runtime:check.
 const featureManifest = JSON.parse(fs.readFileSync("config/features.json", "utf8"));
 if (!featureManifest.features?.["observability-core"] || !featureManifest.features?.["api-client"])
   errors.push("Feature manifest missing observability/api-client ownership");
