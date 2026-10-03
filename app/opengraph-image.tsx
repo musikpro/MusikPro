@@ -1,17 +1,11 @@
 import { ImageResponse } from "next/og";
 import { siteConfig } from "@/lib/seo/site";
-import { primeOverlay } from "@/lib/i18n/overlay-server";
-import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
-import { translateForLocale } from "@/lib/i18n/translate";
 
 export const alt = `${siteConfig.name} — aperçu du site`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-// `alt` reste statique (export de métadonnée de fichier) ; seul le contenu de l'image suit la langue.
-export default async function OpenGraphImage() {
-  const locale = await resolvePageLocale();
-  await primeOverlay(locale);
+export default function OpenGraphImage() {
   return new ImageResponse(
     <div
       style={{
@@ -32,7 +26,7 @@ export default async function OpenGraphImage() {
         {siteConfig.description}
       </div>
       <div style={{ display: "flex", marginTop: 46, fontSize: 25, opacity: 0.75 }}>
-        {translateForLocale("Next.js • Afrique • Mobile Money • Sécurité • SEO", locale)}
+        Next.js • Afrique • Mobile Money • Sécurité • SEO
       </div>
     </div>,
     size,
