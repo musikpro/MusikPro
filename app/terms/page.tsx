@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
-import { LegalPage } from "@/components/legal-page";
+import { LegalEmail, LegalPage } from "@/components/legal-page";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { pickLegalLocale } from "@/lib/i18n/legal-locale";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { translateForLocale } from "@/lib/i18n/translate";
@@ -10,9 +11,20 @@ import { translateForLocale } from "@/lib/i18n/translate";
 // own hydration scripts would be blocked by script-src.
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata(): Promise<Metadata> {
-  const locale = await resolvePageLocale();
+type PageProps = { searchParams: Promise<{ lang?: string | string[] }> };
+
+const CONTACT_EMAIL = "musikpro2026@gmail.com";
+
+async function legalLocale(searchParams: PageProps["searchParams"]) {
+  const { lang } = await searchParams;
+  const pageLocale = await resolvePageLocale();
+  const locale = pickLegalLocale(pageLocale, lang);
   await primeOverlay(locale);
+  return { locale, forcedFrench: lang === "fr" };
+}
+
+export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
+  const { locale } = await legalLocale(searchParams);
   const t = (text: string) => translateForLocale(text, locale);
   return buildMetadata({
     title: t("Conditions d’utilisation"),
@@ -23,81 +35,74 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-export default function TermsPage() {
+export default async function TermsPage({ searchParams }: PageProps) {
+  const { locale, forcedFrench } = await legalLocale(searchParams);
+  const t = (text: string) => translateForLocale(text, locale);
   return (
     <LegalPage
-      locale="fr"
-      forcedFrench={false}
+      locale={locale}
+      forcedFrench={forcedFrench}
       path="/terms"
-      eyebrow="Cadre d’utilisation"
-      title="Conditions d’utilisation"
-      introduction="En utilisant MusikPro, vous acceptez les règles ci-dessous, conçues pour offrir un service fiable et respectueux à chacun."
+      eyebrow={t("Cadre d’utilisation")}
+      title={t("Conditions d’utilisation")}
+      introduction={t("En utilisant MusikPro, vous acceptez les règles ci-dessous, conçues pour offrir un service fiable et respectueux à chacun.")}
       sections={[
         {
-          title: "Le service MusikPro",
+          title: t("Le service MusikPro"),
           content: (
             <p>
-              MusikPro permet de préparer et gérer des créations musicales personnalisées. Les fonctions disponibles
-              peuvent évoluer afin d’améliorer le service ou de tenir compte de contraintes techniques.
+              {t("MusikPro permet de préparer et gérer des créations musicales personnalisées. Les fonctions disponibles peuvent évoluer afin d’améliorer le service ou de tenir compte de contraintes techniques.")}
             </p>
           ),
         },
         {
-          title: "Votre compte",
+          title: t("Votre compte"),
           content: (
             <p>
-              Vous devez fournir des informations exactes, protéger l’accès à votre compte et nous prévenir en cas
-              d’utilisation non autorisée. Vous êtes responsable des actions réalisées depuis votre compte, sauf
-              lorsqu’elles résultent d’une défaillance imputable à MusikPro.
+              {t("Vous devez fournir des informations exactes, protéger l’accès à votre compte et nous prévenir en cas d’utilisation non autorisée. Vous êtes responsable des actions réalisées depuis votre compte, sauf lorsqu’elles résultent d’une défaillance imputable à MusikPro.")}
             </p>
           ),
         },
         {
-          title: "Contenus et droits",
+          title: t("Contenus et droits"),
           content: (
             <p>
-              Vous conservez vos droits sur les textes, indications et contenus que vous transmettez. Vous accordez à
-              MusikPro l’autorisation limitée de les traiter pour fournir les fonctions demandées. Vous devez disposer
-              des droits nécessaires sur tout contenu envoyé au service.
+              {t("Vous conservez vos droits sur les textes, indications et contenus que vous transmettez. Vous accordez à MusikPro l’autorisation limitée de les traiter pour fournir les fonctions demandées. Vous devez disposer des droits nécessaires sur tout contenu envoyé au service.")}
             </p>
           ),
         },
         {
-          title: "Utilisation acceptable",
+          title: t("Utilisation acceptable"),
           content: (
             <p>
-              Il est interdit d’utiliser MusikPro pour enfreindre la loi, porter atteinte aux droits d’autrui,
-              contourner les protections du service, diffuser un programme malveillant ou perturber son fonctionnement.
-              Un accès peut être limité lorsqu’une activité présente un risque pour les utilisateurs ou la plateforme.
+              {t("Il est interdit d’utiliser MusikPro pour enfreindre la loi, porter atteinte aux droits d’autrui, contourner les protections du service, diffuser un programme malveillant ou perturber son fonctionnement. Un accès peut être limité lorsqu’une activité présente un risque pour les utilisateurs ou la plateforme.")}
             </p>
           ),
         },
         {
-          title: "Disponibilité",
+          title: t("Disponibilité"),
           content: (
             <p>
-              Nous cherchons à maintenir MusikPro disponible et fiable. Des opérations de maintenance, incidents
-              techniques ou événements indépendants de notre volonté peuvent toutefois interrompre temporairement
-              certaines fonctions.
+              {t("Nous cherchons à maintenir MusikPro disponible et fiable. Des opérations de maintenance, incidents techniques ou événements indépendants de notre volonté peuvent toutefois interrompre temporairement certaines fonctions.")}
             </p>
           ),
         },
         {
-          title: "Responsabilité",
+          title: t("Responsabilité"),
           content: (
             <p>
-              MusikPro est fourni dans les limites autorisées par la loi applicable. Chaque utilisateur reste
-              responsable de l’usage de ses créations et de leur conformité aux droits de tiers. Aucune disposition de
-              ces conditions ne limite un droit qui ne peut légalement être exclu.
+              {t("MusikPro est fourni dans les limites autorisées par la loi applicable. Chaque utilisateur reste responsable de l’usage de ses créations et de leur conformité aux droits de tiers. Aucune disposition de ces conditions ne limite un droit qui ne peut légalement être exclu.")}
             </p>
           ),
         },
         {
-          title: "Contact",
+          title: t("Contact"),
           content: (
             <p>
-              Pour toute question concernant le service ou ces conditions, écrivez à{" "}
-              <a href="mailto:musikpro2026@gmail.com">musikpro2026@gmail.com</a>.
+              <LegalEmail
+                text={t("Pour toute question concernant le service ou ces conditions, écrivez à {email}.")}
+                email={CONTACT_EMAIL}
+              />
             </p>
           ),
         },
