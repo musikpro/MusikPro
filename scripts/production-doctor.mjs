@@ -14,8 +14,7 @@ if (customEnvFile && !fs.existsSync(envPath)) {
   console.error(`DOCTOR_ENV_FILE introuvable : ${envPath}`);
   process.exit(1);
 }
-if (customEnvFile)
-  console.error(`Doctor : variables lues depuis DOCTOR_ENV_FILE (${path.basename(envPath)}).`);
+if (customEnvFile) console.error(`Doctor : variables lues depuis DOCTOR_ENV_FILE (${path.basename(envPath)}).`);
 const envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
 const env = Object.fromEntries(
   envText
