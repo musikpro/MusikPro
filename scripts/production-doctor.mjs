@@ -4,11 +4,17 @@ import path from "node:path";
 import dns from "node:dns/promises";
 import { execFileSync } from "node:child_process";
 import { kitVersion, kitVersionLabel } from "./lib/version.mjs";
+import { resolveDoctorEnvPath } from "./lib/doctor-env-path.mjs";
 
 const root = process.cwd();
 const online = process.argv.includes("--online");
 const jsonMode = process.argv.includes("--json");
-const envPath = path.join(root, ".env.local");
+const { envPath, custom: customEnvFile } = resolveDoctorEnvPath(root);
+if (customEnvFile && !fs.existsSync(envPath)) {
+  console.error(`DOCTOR_ENV_FILE introuvable : ${envPath}`);
+  process.exit(1);
+}
+if (customEnvFile) console.error(`Doctor : variables lues depuis DOCTOR_ENV_FILE (${path.basename(envPath)}).`);
 const envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
 const env = Object.fromEntries(
   envText
