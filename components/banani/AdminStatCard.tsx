@@ -1,4 +1,3 @@
-import { translate as t } from "@/lib/i18n/translate";
 import Icon from "./Icon";
 
 export const displayName = "Admin Stat Card";

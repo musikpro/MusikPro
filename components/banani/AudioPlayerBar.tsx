@@ -4,7 +4,7 @@ import Icon from "./Icon";
 export const displayName = "Audio Player Bar";
 export const shortDescription = "Inline audio player with waveform visualization";
 
-export default function AudioPlayerBar({ title = "Pour toi Mariam", duration = "3:24", version = 1 }) {
+export default function AudioPlayerBar({ title: _title = "Pour toi Mariam", duration = "3:24", version = 1 }) {
   const bars = [3, 5, 8, 6, 9, 7, 4, 10, 8, 6, 5, 9, 7, 4, 6, 8, 5, 7, 9, 6, 4, 8, 7, 5];
   return (
     <div className="bg-card rounded-lg border border-border p-4">

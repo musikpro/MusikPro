@@ -14,6 +14,7 @@ export default function Image({ ar, prompt, className = "" }: { ar: string; prom
             ? t("Artiste dans un univers musical")
             : t("Illustration musicale MusikPro");
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- illustrations locales pré-générées (assets.json), dimensionnées par aspect-ratio
     <img
       src={src}
       alt={description}

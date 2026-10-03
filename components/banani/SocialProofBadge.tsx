@@ -24,6 +24,7 @@ export default function SocialProofBadge({ className = "" }: { className?: strin
       </div>
       <div className="flex items-center">
         {socialProofAvatarKeys.map((key, idx) => (
+          // eslint-disable-next-line @next/next/no-img-element -- miniatures d'avatars locales, petite taille fixe
           <img
             key={key}
             src={assetMap[key]}

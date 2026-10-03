@@ -351,7 +351,6 @@ export default function StepRecipient() {
               <input
                 type="text"
                 value={demo.fields.senderPronunciation}
-                // eslint-disable-next-line no-restricted-syntax -- exemples de prénoms découpés en syllabes, non traduits
                 placeholder="Mou-ssa"
                 aria-labelledby="sender-pronunciation-label"
                 aria-readonly="true"

@@ -33,6 +33,7 @@ export default function UserAvatar({
     (assets as Record<string, string>)[`/banani-avatars/avatar/${gender}/${ageGroup}/${heritage}/${index}`] ??
     (assets as Record<string, string>)[`/avatar/${gender}/${ageGroup}/${heritage}/${index}`];
   return (
+    // eslint-disable-next-line @next/next/no-img-element -- avatars locaux pré-générés (assets.json), petite taille fixe
     <img
       src={src}
       alt={t("Photo de profil MusikPro")}

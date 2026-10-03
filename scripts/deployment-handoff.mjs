@@ -27,7 +27,6 @@ const readEnv = (p) => {
 };
 
 const env = readEnv(".env.local");
-const example = readEnv(".env.example");
 const deployment = readJson("config/deployment-env.json", { groups: [], reserved: [] });
 const providers = readJson("config/providers.json", {});
 const appCfg = readJson("africa-saas.config.json", {});

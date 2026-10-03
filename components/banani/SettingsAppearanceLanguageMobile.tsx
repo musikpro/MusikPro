@@ -3,7 +3,6 @@ import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import DemoToggle from "./DemoToggle";
-import { demoDestination } from "@/lib/demo/navigation";
 
 export const displayName = "Paramètres - Apparence et Langue";
 export const screenSize = "mobile";

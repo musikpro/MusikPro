@@ -7,7 +7,6 @@ const failures = [];
 let serverActions = 0,
   apiRoutes = 0,
   clientForms = 0;
-const read = (f) => fs.readFileSync(path.join(root, f), "utf8");
 const walk = (dir) =>
   fs.existsSync(dir)
     ? fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
