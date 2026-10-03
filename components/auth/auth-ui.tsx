@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Icon from "@/components/banani/Icon";
+import { translate as t } from "@/lib/i18n/translate";
 
 export function AuthLogo() {
   return (
-    <Link className="auth-logo" href="/" aria-label="MusikPro — accueil">
+    <Link className="auth-logo" href="/" aria-label={t("MusikPro — accueil")}>
       <span className="auth-logo-mark">
         <Icon i="music-2" size={23} />
       </span>
@@ -35,11 +36,11 @@ export function GoogleLogo() {
   );
 }
 
-export function AuthBackLink({ href = "/login", label = "Retour à la connexion" }) {
+export function AuthBackLink({ href = "/login", label }: { href?: string; label?: string }) {
   return (
     <Link className="auth-back" href={href}>
       <Icon i="arrow-left" size={18} />
-      {label}
+      {label ?? t("Retour à la connexion")}
     </Link>
   );
 }
