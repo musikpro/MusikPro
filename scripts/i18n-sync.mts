@@ -50,7 +50,6 @@ const SCAN_DIRS_WANTED = [
   "app/terms",
   "app/privacy",
   "app/opengraph-image.tsx",
-  "components/i18n-bootstrap.tsx",
   "lib/email/auth-email-text.ts",
 ];
 const CHECK_ONLY = process.argv.includes("--check");
