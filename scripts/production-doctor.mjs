@@ -4,36 +4,29 @@ import path from "node:path";
 import dns from "node:dns/promises";
 import { execFileSync } from "node:child_process";
 import { kitVersion, kitVersionLabel } from "./lib/version.mjs";
-import { resolveDoctorEnvPath } from "./lib/doctor-env-path.mjs";
+import { mergeEnv, parseEnvText, resolveDoctorEnvPaths } from "./lib/doctor-env-path.mjs";
 
 const root = process.cwd();
 const online = process.argv.includes("--online");
 const jsonMode = process.argv.includes("--json");
-const { envPath, custom: customEnvFile } = resolveDoctorEnvPath(root);
-if (customEnvFile && !fs.existsSync(envPath)) {
-  console.error(`DOCTOR_ENV_FILE introuvable : ${envPath}`);
-  process.exit(1);
+const { baseEnvPath, overlayEnvPath } = resolveDoctorEnvPaths(root);
+const baseEnv = parseEnvText(fs.existsSync(baseEnvPath) ? fs.readFileSync(baseEnvPath, "utf8") : "");
+let overlayEnv = {};
+if (overlayEnvPath) {
+  if (!fs.existsSync(overlayEnvPath)) {
+    console.error(`DOCTOR_ENV_FILE introuvable : ${overlayEnvPath}`);
+    process.exit(1);
+  }
+  overlayEnv = parseEnvText(fs.readFileSync(overlayEnvPath, "utf8"));
+  if (!Object.keys(overlayEnv).length) {
+    console.error(`DOCTOR_ENV_FILE est vide ou sans variable NOM=valeur : ${overlayEnvPath}`);
+    process.exit(1);
+  }
+  console.error(
+    `Doctor : .env.local surchargé par ${path.basename(overlayEnvPath)} (${Object.keys(overlayEnv).join(", ")}).`,
+  );
 }
-if (customEnvFile) console.error(`Doctor : variables lues depuis DOCTOR_ENV_FILE (${path.basename(envPath)}).`);
-const envText = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf8") : "";
-const env = Object.fromEntries(
-  envText
-    .split(/\r?\n/)
-    .filter(Boolean)
-    .filter((l) => !l.trim().startsWith("#"))
-    .map((l) => {
-      const i = l.indexOf("=");
-      return i < 0
-        ? [l.trim(), ""]
-        : [
-            l.slice(0, i).trim(),
-            l
-              .slice(i + 1)
-              .trim()
-              .replace(/^['"]|['"]$/g, ""),
-          ];
-    }),
-);
+const env = mergeEnv(baseEnv, overlayEnv);
 const readJSON = (p) => JSON.parse(fs.readFileSync(path.join(root, p), "utf8"));
 const results = [];
 const add = (id, label, status, detail, category = "core", optional = false) =>
