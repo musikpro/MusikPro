@@ -7,8 +7,12 @@ const LEGAL_UPDATED_AT = Date.UTC(2026, 8, 19);
  * Langue d'une page légale : `?lang=fr` force la version française (celle qui fait foi) ;
  * toute autre valeur (casse différente, inconnue, tableau, absence) est ignorée.
  */
+export function isFrenchForced(langParam: string | string[] | undefined): boolean {
+  return langParam === "fr";
+}
+
 export function pickLegalLocale(pageLocale: Locale, langParam: string | string[] | undefined): Locale {
-  return langParam === "fr" ? "fr" : pageLocale;
+  return isFrenchForced(langParam) ? "fr" : pageLocale;
 }
 
 /** « 19 septembre 2026 » en français ; formaté pour la langue demandée sinon (UTC : pas de décalage de jour). */

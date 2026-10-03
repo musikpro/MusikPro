@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatLegalDate, pickLegalLocale, splitEmailTemplate } from "@/lib/i18n/legal-locale";
+import { formatLegalDate, isFrenchForced, pickLegalLocale, splitEmailTemplate } from "@/lib/i18n/legal-locale";
 
 describe("pickLegalLocale", () => {
   it("force le français quand lang vaut exactement fr", () => {
@@ -35,5 +35,14 @@ describe("splitEmailTemplate", () => {
   });
   it("ne découpe qu'au premier marqueur", () => {
     expect(splitEmailTemplate("a {email} b {email} c")).toEqual(["a ", " b {email} c"]);
+  });
+});
+
+describe("isFrenchForced", () => {
+  it("n'accepte que la chaîne exacte fr", () => {
+    expect(isFrenchForced("fr")).toBe(true);
+    expect(isFrenchForced("FR")).toBe(false);
+    expect(isFrenchForced(["fr"])).toBe(false);
+    expect(isFrenchForced(undefined)).toBe(false);
   });
 });

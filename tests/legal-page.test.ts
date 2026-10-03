@@ -1,5 +1,6 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LegalEmail, LegalPage } from "@/components/legal-page";
 
@@ -39,5 +40,28 @@ describe("LegalEmail", () => {
   it("ajoute le lien en fin si la traduction a perdu le marqueur", () => {
     const html = renderToStaticMarkup(createElement(LegalEmail, { text: "write to us", email: "a@b.c" }));
     expect(html).toBe('write to us <a href="mailto:a@b.c">a@b.c</a>');
+  });
+});
+
+describe("LegalPage : manifeste et liens", () => {
+  it("les textes du cadre sont dans le manifeste i18n (donc traduits par « Actualiser les traductions »)", () => {
+    const manifest = JSON.parse(readFileSync("lib/i18n/manifest.json", "utf8")) as string[] | Record<string, unknown>;
+    const keys = Array.isArray(manifest) ? manifest : Object.keys(manifest);
+    for (const key of [
+      "Dernière mise à jour : {date}",
+      "Traduction automatique : en cas de divergence, la version française fait foi.",
+      "Lire la version française",
+      "Confidentialité",
+      "Connexion",
+    ]) {
+      expect(keys).toContain(key);
+    }
+  });
+  it("le pied de page garde la version française forcée", () => {
+    const html = renderToStaticMarkup(createElement(LegalPage, { ...base, locale: "fr", forcedFrench: true }));
+    expect(html).toContain('href="/privacy?lang=fr"');
+    expect(html).toContain('href="/terms?lang=fr"');
+    const normal = renderToStaticMarkup(createElement(LegalPage, { ...base, locale: "fr", forcedFrench: false }));
+    expect(normal).toContain('href="/privacy"');
   });
 });

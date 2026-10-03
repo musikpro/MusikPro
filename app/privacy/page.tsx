@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalEmail, LegalPage } from "@/components/legal-page";
 import { buildMetadata } from "@/lib/seo/metadata";
-import { pickLegalLocale } from "@/lib/i18n/legal-locale";
+import { isFrenchForced, pickLegalLocale } from "@/lib/i18n/legal-locale";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { translateForLocale } from "@/lib/i18n/translate";
@@ -20,7 +20,7 @@ async function legalLocale(searchParams: PageProps["searchParams"]) {
   const pageLocale = await resolvePageLocale();
   const locale = pickLegalLocale(pageLocale, lang);
   await primeOverlay(locale);
-  return { locale, forcedFrench: lang === "fr" };
+  return { locale, forcedFrench: isFrenchForced(lang) };
 }
 
 export async function generateMetadata({ searchParams }: PageProps): Promise<Metadata> {
