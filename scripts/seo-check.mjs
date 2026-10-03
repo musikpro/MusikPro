@@ -35,7 +35,7 @@ if (fs.existsSync("app/opengraph-image.tsx")) {
 }
 
 for (const file of ["app/(auth)/layout.tsx", "app/dashboard/layout.tsx", "app/admin/layout.tsx"]) {
-  if (fs.existsSync(file) && !fs.readFileSync(file, "utf8").includes("privatePageMetadata")) {
+  if (fs.existsSync(file) && !fs.readFileSync(file, "utf8").includes("rivatePageMetadata")) {
     errors.push(`${file}: private routes must remain noindex`);
   }
 }

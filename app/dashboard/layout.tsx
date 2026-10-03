@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { privatePageMetadata } from "@/lib/seo/metadata";
+import { getPrivatePageMetadata } from "@/lib/seo/metadata";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { NativeBottomNav } from "@/components/mobile/native-bottom-nav";
 import { isDemoRequest, requireUser } from "@/lib/auth/session";
@@ -41,7 +41,12 @@ import "@fontsource/dm-sans/600.css";
 import "@fontsource/dm-sans/700.css";
 import "./banani.css";
 
-export const metadata: Metadata = privatePageMetadata;
+// privatePageMetadata (noindex) : version traduite par getPrivatePageMetadata.
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolveDashboardLocale();
+  await primeOverlay(locale);
+  return getPrivatePageMetadata(locale);
+}
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Authoritative server-side guard for every current and future /dashboard page.

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { translateForLocale, type Locale } from "@/lib/i18n/translate";
 import { absoluteUrl, siteConfig } from "./site";
 
 type SeoInput = {
@@ -52,3 +53,13 @@ export const privatePageMetadata = buildMetadata({
   description: "Espace privé du SaaS.",
   noIndex: true,
 });
+
+/** Version traduisible de privatePageMetadata (locale résolue par l'appelant, après primeOverlay). */
+export function getPrivatePageMetadata(locale: Locale): Metadata {
+  const t = (text: string) => translateForLocale(text, locale);
+  return buildMetadata({
+    title: t("Espace privé"),
+    description: t("Espace privé du SaaS."),
+    noIndex: true,
+  });
+}
