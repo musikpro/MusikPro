@@ -34,6 +34,13 @@ describe("pickPageLocale", () => {
   });
 });
 
+describe("pickPageLocale /en/admin", () => {
+  it("force fr aussi pour un chemin admin préfixé par une langue", () => {
+    expect(pickPageLocale({ pathname: "/en/admin/languages", cookie: "en" })).toBe("fr");
+    expect(pickPageLocale({ pathname: "/en/administration", cookie: "en" })).toBe("en");
+  });
+});
+
 describe("readCookieValue", () => {
   it("lit une valeur parmi plusieurs cookies", () => {
     expect(readCookieValue("a=1; musikpro_lang=en; b=2", "musikpro_lang")).toBe("en");

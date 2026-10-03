@@ -36,7 +36,7 @@ export function pickPageLocale(input: {
   cookie?: string | null;
   acceptLanguage?: string | null;
 }): Locale {
-  if (input.pathname && /^\/admin(?:[/?#]|$)/.test(input.pathname)) return "fr";
+  if (input.pathname && /^(?:\/(?:fr|en|es|pt))?\/admin(?:[/?#]|$)/.test(input.pathname)) return "fr";
   if (input.urlCode) return isSupportedLocale(input.urlCode) ? input.urlCode : "fr";
   if (isSupportedLocale(input.cookie)) return input.cookie;
   return resolveLocaleFromAcceptLanguage(input.acceptLanguage ?? null);
