@@ -20,7 +20,7 @@ export const ADMIN_ROLE_META = {
   admin_content: {
     label: "Admin Contenu",
     description: "Gestion des modèles IA et contenus.",
-    icon: "sparkles",
+    icon: "file-pen-line",
   },
   admin_payments: {
     label: "Admin Paiements",

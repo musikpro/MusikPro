@@ -78,7 +78,7 @@ export default function AdminOccasionBlocksForm({
         </div>
         <div className="admin-editor-actions is-wide admin-occasion-fields-actions">
           <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
-            <Icon i="sparkles" size={15} /> {suggesting ? "L’IA réfléchit…" : "Suggérer avec l’IA"}
+            <Icon i="bot" size={15} /> {suggesting ? "L’IA réfléchit…" : "Suggérer avec l’IA"}
           </button>
           <button type="submit">
             <Icon i="save" size={17} /> Enregistrer les blocs

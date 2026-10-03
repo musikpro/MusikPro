@@ -62,7 +62,7 @@ export default function AdminMusicStyleDescriptionFields({
             onClick={(event) => generate("client", event.currentTarget.form)}
             disabled={pending !== null}
           >
-            <Icon i="sparkles" size={13} />
+            <Icon i="bot" size={13} />
             {pending === "client" ? "Génération…" : clientDescription.trim() ? "Régénérer" : "Générer avec l’IA"}
           </button>
         </div>
@@ -86,7 +86,7 @@ export default function AdminMusicStyleDescriptionFields({
             onClick={(event) => generate("ai", event.currentTarget.form)}
             disabled={pending !== null}
           >
-            <Icon i="sparkles" size={13} />
+            <Icon i="bot" size={13} />
             {pending === "ai" ? "Génération…" : aiDescription.trim() ? "Régénérer" : "Suggérer la consigne"}
           </button>
         </div>

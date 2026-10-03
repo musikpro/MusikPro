@@ -23,7 +23,7 @@ export default function HeroAnimationSettingsPanel({
     <section className="admin-panel">
       <div className="admin-provider-heading">
         <span className="admin-catalog-icon">
-          <Icon i="sparkles" size={20} />
+          <Icon i="type" size={20} />
         </span>
         <div>
           <h2>Animation des textes défilants</h2>

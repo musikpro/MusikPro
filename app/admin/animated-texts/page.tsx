@@ -66,7 +66,7 @@ export default async function AdminAnimatedTextsPage({
             <AdminHeroAnimatedTextSortableGrid texts={rows} />
           ) : (
             <div className="admin-empty-state admin-catalog-empty">
-              <Icon i="sparkles" size={24} />
+              <Icon i="type" size={24} />
               <strong>Aucun texte animé enregistré</strong>
               <p>Ajoute un mot ou une courte phrase à faire défiler sous le titre du Hero.</p>
               <Link className="admin-primary-action" href="/admin/animated-texts/new">

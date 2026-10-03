@@ -82,7 +82,7 @@ export default async function PublicSongPage({ params }: Params) {
       <div className="psp-cta">
         <p className="psp-cta-text">{t("Toi aussi, offre une chanson unique à tes proches.")}</p>
         <Link href="/register" className="psp-cta-button">
-          <Icon i="sparkles" size={17} />
+          <Icon i="music-2" size={17} />
           {t("Créer ma musique avec MusikPro")}
         </Link>
       </div>

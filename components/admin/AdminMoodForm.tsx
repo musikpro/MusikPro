@@ -102,7 +102,7 @@ export default function AdminMoodForm({
             {aiHint.length}/{MOOD_AI_HINT_MAX_LENGTH}
           </small>
           <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
-            <Icon i="sparkles" size={15} />
+            <Icon i="bot" size={15} />
             {suggesting ? "Suggestion…" : "Suggérer la consigne"}
           </button>
         </label>

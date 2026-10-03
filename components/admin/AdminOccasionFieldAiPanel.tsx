@@ -54,7 +54,7 @@ export default function AdminOccasionFieldAiPanel({
     <section className="admin-panel admin-editor-card">
       <div className="admin-occasion-fields-toolbar">
         <button type="button" className="admin-secondary-action" onClick={propose} disabled={loading}>
-          <Icon i="sparkles" size={16} /> {loading ? "L’IA réfléchit…" : "Proposer des champs avec l’IA"}
+          <Icon i="bot" size={16} /> {loading ? "L’IA réfléchit…" : "Proposer des champs avec l’IA"}
         </button>
         {extraAction}
       </div>

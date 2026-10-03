@@ -75,7 +75,7 @@ export default function RefreshCatalogTranslationsButton() {
   return (
     <div className="admin-language-detection-actions">
       <button type="button" className="admin-secondary-action" onClick={handleClick} disabled={pending}>
-        <Icon i="sparkles" size={16} />
+        <Icon i="languages" size={16} />
         {pending ? "Actualisation en cours…" : "Actualiser les traductions"}
       </button>
       {pending && progress ? <p className="admin-language-detection-hint">{progress}</p> : null}

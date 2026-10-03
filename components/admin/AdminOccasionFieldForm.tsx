@@ -82,7 +82,7 @@ export default function AdminOccasionFieldForm({
           <span>Libellé affiché au client</span>
           <input name="label" required minLength={2} maxLength={80} value={draft.label} onChange={(event) => patch({ label: event.target.value })} placeholder="Ex. Jour de naissance" />
           <button type="button" className="admin-secondary-action" onClick={complete} disabled={completing || draft.label.trim().length < 2}>
-            <Icon i="sparkles" size={15} /> {completing ? "L’IA complète…" : "Compléter avec l’IA"}
+            <Icon i="bot" size={15} /> {completing ? "L’IA complète…" : "Compléter avec l’IA"}
           </button>
         </label>
         <div className="admin-editor-field">

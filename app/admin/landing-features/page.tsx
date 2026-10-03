@@ -82,7 +82,7 @@ export default async function AdminLandingFeaturesPage({
                 <AdminLandingSongFeatureSortableGrid section={section} rows={rows} />
               ) : (
                 <div className="admin-empty-state admin-catalog-empty">
-                  <Icon i="sparkles" size={24} />
+                  <Icon i="layout-grid" size={24} />
                   <strong>Aucune carte assignée dans « {label} »</strong>
                   <p>Ajoute une chanson ci-dessus pour qu’elle apparaisse dans cette section.</p>
                 </div>
