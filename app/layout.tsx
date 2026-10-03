@@ -7,6 +7,8 @@ import type { Metadata, Viewport } from "next";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import { I18nBootstrap } from "@/components/i18n-bootstrap";
+import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { NonceProvider } from "@/components/security/nonce-provider";
 
 export const metadata: Metadata = {
@@ -36,11 +38,15 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const nonce = (await headers()).get("x-nonce") ?? undefined;
+  // Langue de <html lang> seulement : le layout racine n'affiche aucun texte traduit côté serveur ;
+  // chaque composant serveur qui traduit appelle lui-même primeOverlay (pages, layouts, métadonnées, e-mails).
+  const locale = await resolvePageLocale();
   return (
-    <html lang={siteConfig.language}>
+    <html lang={locale}>
       <body suppressHydrationWarning>
         <NonceProvider nonce={nonce}>
           <ServiceWorkerRegister />
+          <I18nBootstrap />
           <div className="app-content">{children}</div>
         </NonceProvider>
       </body>

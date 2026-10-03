@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { LYRICS_MAX_WORDS } from "@/lib/ai/lyrics-policy";
+import { i18nKey } from "@/lib/i18n/key";
 
 const words = (limit: number) => (value: string) => value.trim().split(/\s+/).filter(Boolean).length <= limit;
 export const DEMO_LYRICS_MAX_WORDS = LYRICS_MAX_WORDS;
@@ -43,15 +44,15 @@ export function buildDemoPaymentSchema(prefixes: PhoneRule[]) {
   const rules = new Map(prefixes.map((p) => [p.countryCode, p]));
   return z
     .object({
-      name: z.string().trim().min(2, "Indique ton nom complet.").max(100),
-      email: z.email("Saisis une adresse e-mail valide.").max(254),
+      name: z.string().trim().min(2, i18nKey("Indique ton nom complet.")).max(100),
+      email: z.email(i18nKey("Saisis une adresse e-mail valide.")).max(254),
       phoneCountry: z.string().min(2).max(4),
-      phone: z.string().regex(/^\d*$/, "Utilise uniquement des chiffres."),
+      phone: z.string().regex(/^\d*$/, i18nKey("Utilise uniquement des chiffres.")),
     })
     .superRefine(({ phoneCountry, phone }, context) => {
       const rule = rules.get(phoneCountry);
       if (!rule) {
-        context.addIssue({ code: "custom", path: ["phoneCountry"], message: "Indicatif téléphonique invalide." });
+        context.addIssue({ code: "custom", path: ["phoneCountry"], message: i18nKey("Indicatif téléphonique invalide.") });
         return;
       }
       if (phone.length !== rule.digits) {
@@ -66,23 +67,23 @@ export function buildDemoPaymentSchema(prefixes: PhoneRule[]) {
 export const demoStorySchema = z
   .string()
   .trim()
-  .min(10, "Raconte ton histoire en au moins 10 caractères.")
+  .min(10, i18nKey("Raconte ton histoire en au moins 10 caractères."))
   .max(DEMO_STORY_MAX_CHARACTERS, `Maximum ${DEMO_STORY_MAX_CHARACTERS} caractères.`);
 export const demoRecipientSchema = z.object({
-  name: z.string().trim().min(2, "Indique le nom de la personne concernée.").max(100),
-  pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
+  name: z.string().trim().min(2, i18nKey("Indique le nom de la personne concernée.")).max(100),
+  pronunciation: z.string().trim().min(2, i18nKey("Vérifie la prononciation suggérée.")).max(160),
   // The set of valid values is admin-managed (see lib/recipient-relations) rather than fixed here,
   // so this only bounds length/emptiness — the select already constrains the choice client-side.
-  relation: z.string().trim().min(1, "Choisis à qui la chanson est destinée.").max(100),
+  relation: z.string().trim().min(1, i18nKey("Choisis à qui la chanson est destinée.")).max(100),
 });
 export const demoSenderSchema = z.object({
-  name: z.string().trim().min(2, "Indique ton nom (l'expéditeur de la chanson).").max(100),
-  pronunciation: z.string().trim().min(2, "Vérifie la prononciation suggérée.").max(160),
+  name: z.string().trim().min(2, i18nKey("Indique ton nom (l'expéditeur de la chanson).")).max(100),
+  pronunciation: z.string().trim().min(2, i18nKey("Vérifie la prononciation suggérée.")).max(160),
 });
 export const demoLyricsSchema = z
   .string()
   .trim()
-  .min(1, "Ajoute des paroles.")
+  .min(1, i18nKey("Ajoute des paroles."))
   .max(DEMO_LYRICS_MAX_CHARACTERS)
   .refine(words(DEMO_LYRICS_MAX_WORDS), `Maximum ${DEMO_LYRICS_MAX_WORDS} mots.`);
 export const demoDetailSchema = z
@@ -99,7 +100,7 @@ export const demoSupportSchema = z.object({
     .trim()
     .min(2)
     .max(150)
-    .refine((value) => !/[\r\n]/.test(value), "Sujet invalide."),
+    .refine((value) => !/[\r\n]/.test(value), i18nKey("Sujet invalide.")),
   category: z.enum(["Problème technique", "Compte", "Crédits"]),
   message: z.string().trim().min(10).max(5000),
   email: z.email().max(254),

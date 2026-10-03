@@ -10,21 +10,35 @@ import { TurnstileWidget } from "@/components/turnstile-widget";
 import { emailSchema, loginSchema, registerIdentitySchema, registerSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
 import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
+import { translate as t } from "@/lib/i18n/translate";
+import { useI18nOverlay } from "@/lib/i18n/use-overlay";
+import { translateIssue } from "@/lib/validation/translate-issue";
+import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
+import { getOAuthErrorMessage } from "@/lib/auth/oauth-error";
 
 export function AuthForm({
   mode,
   googleEnabled = false,
   googleWebClientId,
-  initialError = "",
+  initialErrorCode,
 }: {
   mode: "login" | "register";
   googleEnabled?: boolean;
   /** Identifiant client Google « Web » (public) : requis par la connexion Google native de l'application. */
   googleWebClientId?: string;
-  initialError?: string;
+  /** Code d'erreur OAuth renvoyé par la page serveur (?error=…) : le texte est calculé au rendu, dans la langue courante. */
+  initialErrorCode?: string;
 }) {
+  useI18nOverlay();
   const router = useRouter();
-  const [error, setError] = useState(initialError);
+  const [error, setErrorMessage] = useState("");
+  const [oauthCode, setOauthCode] = useState(initialErrorCode);
+  // Toute action de l'utilisateur qui efface l'erreur efface aussi l'erreur OAuth initiale (comportement d'origine).
+  const setError = (message: string) => {
+    setErrorMessage(message);
+    setOauthCode(undefined);
+  };
+  const displayedError = error || getOAuthErrorMessage(oauthCode);
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
   const [captchaToken, setCaptchaToken] = useState("");
@@ -47,7 +61,8 @@ export function AuthForm({
       if (mode === "register") {
         const parsedIdentity = registerIdentitySchema.safeParse({ name: submittedName, email: submittedEmail });
         if (!parsedIdentity.success) {
-          setError(parsedIdentity.error.issues[0]?.message || "Données invalides");
+          const issue = parsedIdentity.error.issues[0];
+          setError(issue ? translateIssue(issue) : t("Données invalides"));
           return;
         }
         setIdentityName(parsedIdentity.data.name);
@@ -55,7 +70,8 @@ export function AuthForm({
       } else {
         const parsedEmail = emailSchema.safeParse(submittedEmail);
         if (!parsedEmail.success) {
-          setError(parsedEmail.error.issues[0]?.message || "E-mail invalide");
+          const issue = parsedEmail.error.issues[0];
+          setError(issue ? translateIssue(issue) : t("E-mail invalide"));
           return;
         }
         setIdentityEmail(parsedEmail.data);
@@ -66,7 +82,7 @@ export function AuthForm({
 
     setBusy(true);
     if (captchaEnabled && !captchaToken) {
-      setError("Veuillez terminer la vérification anti-bot.");
+      setError(t("Veuillez terminer la vérification anti-bot."));
       setBusy(false);
       return;
     }
@@ -77,7 +93,8 @@ export function AuthForm({
     };
     const validated = (mode === "register" ? registerSchema : loginSchema).safeParse(raw);
     if (!validated.success) {
-      setError(validated.error.issues[0]?.message || "Données invalides");
+      const issue = validated.error.issues[0];
+      setError(issue ? translateIssue(issue) : t("Données invalides"));
       setBusy(false);
       return;
     }
@@ -85,7 +102,7 @@ export function AuthForm({
     const fetchOptions = captchaToken ? { headers: { "x-captcha-response": captchaToken } } : undefined;
     if (mode === "register") {
       if (!("name" in validated.data) || typeof validated.data.name !== "string") {
-        setError("Nom invalide");
+        setError(t("Nom invalide"));
         setBusy(false);
         return;
       }
@@ -97,14 +114,14 @@ export function AuthForm({
         fetchOptions,
       });
       if (r.error) {
-        setError(r.error.message || "Inscription impossible");
+        setError(authResultErrorMessage(r.error, t("Inscription impossible")));
         setBusy(false);
         return;
       }
       // Vérification d'e-mail exigée : le compte est créé mais aucune session n'est ouverte. On l'explique au lieu
       // de renvoyer silencieusement vers la page de connexion.
       if (!r.data?.token) {
-        setNotice("Compte créé. Vérifiez votre e-mail pour l’activer, puis connectez-vous.");
+        setNotice(t("Compte créé. Vérifiez votre e-mail pour l’activer, puis connectez-vous."));
         setBusy(false);
         return;
       }
@@ -116,7 +133,8 @@ export function AuthForm({
         fetchOptions,
       });
       if (r.error) {
-        setError(r.error.message || "Connexion impossible");
+        // Anti-énumération : USER_NOT_FOUND est déjà rendu comme INVALID_EMAIL_OR_PASSWORD par la table.
+        setError(authResultErrorMessage(r.error, t("Connexion impossible")));
         setBusy(false);
         return;
       }
@@ -143,11 +161,11 @@ export function AuthForm({
       try {
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
-        if (native?.error) throw new Error(native.error.message || "Connexion Google impossible");
+        if (native?.error) throw new Error(authResultErrorMessage(native.error, t("Connexion Google impossible")));
         goToAuthenticatedSpace();
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
-        if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || "Connexion Google impossible");
+        if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || t("Connexion Google impossible"));
         setBusy(false);
       }
       return;
@@ -158,7 +176,7 @@ export function AuthForm({
       errorCallbackURL: "/login",
     });
     if (r?.error) {
-      setError(r.error.message || "Connexion Google impossible");
+      setError(authResultErrorMessage(r.error, t("Connexion Google impossible")));
       setBusy(false);
     }
   }
@@ -182,37 +200,37 @@ export function AuthForm({
                   setError("");
                 }}
               >
-                <Icon i="arrow-left" size={17} /> Retour
+                <Icon i="arrow-left" size={17} /> {t("Retour")}
               </button>
             )}
-            <h1>{isPasswordStep ? "Votre mot de passe" : isLogin ? "Connexion" : "Créer un compte"}</h1>
+            <h1>{isPasswordStep ? t("Votre mot de passe") : isLogin ? t("Connexion") : t("Créer un compte")}</h1>
             <p className="auth-subtitle">
               {isPasswordStep
-                ? "Saisissez votre mot de passe pour continuer"
+                ? t("Saisissez votre mot de passe pour continuer")
                 : isLogin
-                  ? "Renseignez votre adresse email pour accéder à votre compte"
-                  : "Rejoignez MusikPro et créez votre première chanson"}
+                  ? t("Renseignez votre adresse email pour accéder à votre compte")
+                  : t("Rejoignez MusikPro et créez votre première chanson")}
             </p>
             {googleEnabled && !isPasswordStep && (
               <>
                 <button className="auth-google" type="button" disabled={busy} onClick={googleSignIn}>
                   <GoogleLogo />
-                  {isLogin ? "Connectez-vous avec Google" : "Créez votre compte avec Google"}
+                  {isLogin ? t("Connectez-vous avec Google") : t("Créez votre compte avec Google")}
                 </button>
                 <div className="auth-divider">
-                  <span>OU</span>
+                  <span>{t("OU")}</span>
                 </div>
               </>
             )}
             {mode === "register" && isIdentityStep && (
               <label className="auth-field">
-                <span>Nom complet</span>
+                <span>{t("Nom complet")}</span>
                 <span className="auth-input">
                   <Icon i="user" size={17} />
                   <input
                     name="name"
                     autoComplete="name"
-                    placeholder="Votre nom complet"
+                    placeholder={t("Votre nom complet")}
                     value={identityName}
                     onChange={(event) => setIdentityName(event.target.value)}
                     autoFocus
@@ -224,14 +242,14 @@ export function AuthForm({
             )}
             {isIdentityStep && (
               <label className="auth-field">
-                <span>Adresse email</span>
+                <span>{t("Adresse email")}</span>
                 <span className="auth-input">
                   <Icon i="mail" size={17} />
                   <input
                     name="email"
                     type="email"
                     autoComplete="email"
-                    placeholder="votre@email.com"
+                    placeholder={t("votre@email.com")}
                     value={identityEmail}
                     onChange={(event) => setIdentityEmail(event.target.value)}
                     autoFocus={isLogin}
@@ -244,19 +262,19 @@ export function AuthForm({
               <button className="auth-email-summary" type="button" onClick={() => setStep("identity")}>
                 <Icon i="mail" size={17} />
                 <span>{identityEmail}</span>
-                <span>Modifier</span>
+                <span>{t("Modifier")}</span>
               </button>
             )}
             {isPasswordStep && (
               <label className="auth-field">
-                <span>Mot de passe</span>
+                <span>{t("Mot de passe")}</span>
                 <span className="auth-input">
                   <Icon i="lock" size={17} />
                   <input
                     name="password"
                     type={passwordVisible ? "text" : "password"}
                     autoComplete={isLogin ? "current-password" : "new-password"}
-                    placeholder="Votre mot de passe"
+                    placeholder={t("Votre mot de passe")}
                     autoFocus
                     required
                     minLength={10}
@@ -265,43 +283,51 @@ export function AuthForm({
                     type="button"
                     className="auth-eye"
                     onClick={() => setPasswordVisible((value) => !value)}
-                    aria-label={passwordVisible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    aria-label={passwordVisible ? t("Masquer le mot de passe") : t("Afficher le mot de passe")}
                   >
                     <Icon i={passwordVisible ? "eye-off" : "eye"} size={18} />
                   </button>
                 </span>
-                {!isLogin && <small>Minimum 10 caractères</small>}
+                {!isLogin && <small>{t("Minimum 10 caractères")}</small>}
               </label>
             )}
             {isLogin && isPasswordStep && (
               <div className="auth-options">
                 <label className="auth-check">
                   <input type="checkbox" defaultChecked />
-                  <span>Se souvenir de moi</span>
+                  <span>{t("Se souvenir de moi")}</span>
                 </label>
-                <Link href="/forgot-password">Mot de passe oublié ?</Link>
+                <Link href="/forgot-password">{t("Mot de passe oublié ?")}</Link>
               </div>
             )}
             {isPasswordStep && <TurnstileWidget onToken={setCaptchaToken} />}
             {notice && <InlineNotice tone="success">{notice}</InlineNotice>}
-            {error && (
+            {displayedError && (
               <p className="auth-alert auth-alert-error" role="alert">
-                {error}
+                {displayedError}
               </p>
             )}
             <button className="auth-submit" disabled={busy}>
-              {busy ? "Traitement…" : isIdentityStep ? "Continuer" : mode === "login" ? "Se connecter" : "Continuer"}
+              {busy
+                ? t("Traitement…")
+                : isIdentityStep
+                  ? t("Continuer")
+                  : mode === "login"
+                    ? t("Se connecter")
+                    : t("Continuer")}
             </button>
             {!isLogin && isPasswordStep && (
               <p className="auth-legal">
-                En créant un compte, vous acceptez nos <Link href="/terms">conditions d’utilisation</Link> et notre{" "}
-                <Link href="/privacy">politique de confidentialité</Link>.
+                {t("En créant un compte, vous acceptez nos")} <Link href="/terms">{t("conditions d’utilisation")}</Link>{" "}
+                {t("et notre")} <Link href="/privacy">{t("politique de confidentialité")}</Link>.
               </p>
             )}
             {!isPasswordStep && (
               <p className="auth-switch">
-                {isLogin ? "Pas de compte ? " : "Vous avez déjà un compte ? "}
-                <Link href={isLogin ? "/register" : "/login"}>{isLogin ? "Créer un compte" : "Se connecter"}</Link>
+                {isLogin ? t("Pas de compte ?") : t("Vous avez déjà un compte ?")}{" "}
+                <Link href={isLogin ? "/register" : "/login"}>
+                  {isLogin ? t("Créer un compte") : t("Se connecter")}
+                </Link>
               </p>
             )}
           </div>

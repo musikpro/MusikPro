@@ -34,8 +34,10 @@ if (fs.existsSync("app/opengraph-image.tsx")) {
   }
 }
 
+// Helpers acceptés : version statique (noindex) et version traduisible (noindex conservé).
+const privateMetadataHelpers = ["privatePageMetadata", "getPrivatePageMetadata"];
 for (const file of ["app/(auth)/layout.tsx", "app/dashboard/layout.tsx", "app/admin/layout.tsx"]) {
-  if (fs.existsSync(file) && !fs.readFileSync(file, "utf8").includes("privatePageMetadata")) {
+  if (fs.existsSync(file) && !privateMetadataHelpers.some((name) => fs.readFileSync(file, "utf8").includes(name))) {
     errors.push(`${file}: private routes must remain noindex`);
   }
 }

@@ -1,5 +1,4 @@
 import { AuthForm } from "@/components/auth-form";
-import { getOAuthErrorMessage } from "@/lib/auth/oauth-error";
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const { error } = await searchParams;
@@ -10,7 +9,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ e
       mode="login"
       googleEnabled={googleEnabled}
       googleWebClientId={process.env.GOOGLE_CLIENT_ID}
-      initialError={getOAuthErrorMessage(error)}
+      initialErrorCode={error}
     />
   );
 }

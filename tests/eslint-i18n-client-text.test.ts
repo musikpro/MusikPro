@@ -26,6 +26,7 @@ describe("i18n client text rule", () => {
     ["aria-label expression literal", "const A = () => <button aria-label={\"Créer une chanson\"} />;"],
     ["notify literal", 'notify("Chanson retirée.");'],
     ["demo.notify literal", 'demo.notify("Chanson retirée.");'],
+    ["auth form JSX text", 'export function AuthForm() { return <label>Adresse e-mail déjà utilisée</label>; }'],
     ["notify template", "notify(`Il faut ${n} crédits pour générer.`);"],
   ])("flags %s", (_name, code) => {
     expect(lint(code).length).toBeGreaterThan(0);

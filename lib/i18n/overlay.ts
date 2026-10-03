@@ -8,6 +8,24 @@ export type OverlayLocale = "en" | "es" | "pt";
 const overlays: Partial<Record<OverlayLocale, Record<string, string>>> = {};
 const listeners = new Set<() => void>();
 let version = 0;
+let ready = false;
+
+/** Vrai quand l'hydratation est terminée côté client : avant, translate() reste en français (HTML serveur). */
+export function isI18nReady(): boolean {
+  return ready;
+}
+
+/** Pose l'indicateur et notifie les abonnés (re-rendu traduit). Idempotent. */
+export function markI18nReady(): void {
+  if (ready) return;
+  ready = true;
+  version += 1;
+  for (const listener of listeners) listener();
+}
+
+export function resetI18nReadyForTests(): void {
+  ready = false;
+}
 
 export function getOverlayEntry(locale: string, text: string): string | undefined {
   const dictionary = overlays[locale as OverlayLocale];

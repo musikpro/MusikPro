@@ -26,20 +26,20 @@ export async function POST(request: Request) {
   if (typeFailure) return typeFailure;
 
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user) return Response.json({ error: "Authentication required" }, { status: 401 });
+  if (!session?.user) return Response.json({ error: "Authentification requise." }, { status: 401 });
   const level = getSecurityLevel();
   const ip = clientIp(request);
   const limit = await rateLimit(`coupon-apply:${session.user.id}:${ip}`, securityPolicy[level].apiPerMinute);
   if (limit.backend === "unavailable")
-    return Response.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
-  if (!limit.success) return Response.json({ error: "Too many requests" }, { status: 429 });
+    return Response.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
+  if (!limit.success) return Response.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
-    return Response.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
+    return Response.json({ error: "Requête invalide.", details: parsed.error.flatten() }, { status: 400 });
 
   const [plan] = await db.select().from(plans).where(eq(plans.id, parsed.data.planId)).limit(1);
-  if (!plan?.active) return Response.json({ error: "Plan unavailable" }, { status: 404 });
+  if (!plan?.active) return Response.json({ error: "Offre indisponible." }, { status: 404 });
 
   const coupon = await findActiveCouponByCode(parsed.data.code);
   if (!coupon)

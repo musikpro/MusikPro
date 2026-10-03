@@ -30,7 +30,7 @@ describe("Public song page /s/[slug]", () => {
 
   it("resolves the visitor's locale from the request and wraps fixed UI strings for translation", async () => {
     const pageSource = await fs.readFile("app/s/[slug]/page.tsx", "utf8");
-    expect(pageSource).toContain("resolveLocaleFromAcceptLanguage");
+    expect(pageSource).toContain("resolvePageLocale");
     expect(pageSource).toContain("t(");
     expect(pageSource).toContain("translateTemplate(");
     // song.title (user-generated content) must never be passed through t()/translateTemplate().
@@ -38,7 +38,7 @@ describe("Public song page /s/[slug]", () => {
     expect(pageSource).not.toContain("translateTemplate(song.title");
 
     const notFoundSource = await fs.readFile("app/s/[slug]/not-found.tsx", "utf8");
-    expect(notFoundSource).toContain("resolveLocaleFromAcceptLanguage");
+    expect(notFoundSource).toContain("resolvePageLocale");
     expect(notFoundSource).toContain("t(");
   });
 

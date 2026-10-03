@@ -1,6 +1,6 @@
 #!/usr/bin/env -S npx tsx
 /**
- * Scans the client-facing UI source for t("...") calls and writes (or, with --check, verifies)
+ * Scans the client-facing UI source for t("...") / translateTemplate("...") / i18nKey("...") calls (i18nKey = identity marker, lib/i18n/key.ts) and writes (or, with --check, verifies)
  * lib/i18n/manifest.json: the sorted list of the French keys found in the code. The manifest is
  * what the admin "Actualiser les traductions" button translates from.
  *
@@ -35,6 +35,22 @@ const SCAN_DIRS_WANTED = [
   "components/checkout-button.tsx",
   "components/ui",
   "components/pwa",
+  "app/(auth)",
+  "components/auth",
+  "components/auth-form.tsx",
+  "components/forgot-password-form.tsx",
+  "components/reset-password-form.tsx",
+  "components/two-factor-challenge.tsx",
+  "components/two-factor-setup.tsx",
+  "lib/auth/oauth-error.ts",
+  "lib/auth/auth-error-messages.ts",
+  "lib/seo/metadata.ts",
+  "lib/validation",
+  "lib/api/error-messages.ts",
+  "app/terms",
+  "app/privacy",
+  "app/opengraph-image.tsx",
+  "lib/email/auth-email-text.ts",
 ];
 const CHECK_ONLY = process.argv.includes("--check");
 const SCAN_DIRS = SCAN_DIRS_WANTED.filter((entry) => {
@@ -91,7 +107,7 @@ function walk(entry: string): string[] {
  * content (translateTemplate's first argument is the key; its {param} placeholders are filled in
  * after translation, at render time, so the key itself is a plain literal like a t() call).
  */
-const T_CALL = /\b(?:t|translateTemplate)\(\s*(["'`])((?:\\.|(?!\1)[^\\])*)\1/g;
+const T_CALL = /\b(?:t|translateTemplate|i18nKey)\(\s*(["'`])((?:\\.|(?!\1)[^\\])*)\1/g;
 
 function unescape(literal: string): string {
   return literal.replace(/\\(.)/g, "$1");

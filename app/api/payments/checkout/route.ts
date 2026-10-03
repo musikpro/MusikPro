@@ -62,29 +62,29 @@ export async function POST(request: Request) {
   if (typeFailure) return typeFailure;
 
   const session = await auth.api.getSession({ headers: request.headers });
-  if (!session?.user) return Response.json({ error: "Authentication required" }, { status: 401 });
+  if (!session?.user) return Response.json({ error: "Authentification requise." }, { status: 401 });
   const db = getServiceDb();
   const level = getSecurityLevel();
   const ip = clientIp(request);
   const limit = await rateLimit(`checkout:${session.user.id}:${ip}`, securityPolicy[level].apiPerMinute);
   if (limit.backend === "unavailable")
-    return Response.json({ error: "Security rate-limit backend unavailable" }, { status: 503 });
-  if (!limit.success) return Response.json({ error: "Too many requests" }, { status: 429 });
+    return Response.json({ error: "Le contrôle de débit est indisponible." }, { status: 503 });
+  if (!limit.success) return Response.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
 
   const parsed = schema.safeParse(await request.json().catch(() => null));
   if (!parsed.success)
-    return Response.json({ error: "Invalid request", details: parsed.error.flatten() }, { status: 400 });
+    return Response.json({ error: "Requête invalide.", details: parsed.error.flatten() }, { status: 400 });
   const body = parsed.data;
   const country = body.country ?? process.env.DEFAULT_COUNTRY?.toUpperCase();
   const configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL;
   if (process.env.NODE_ENV === "production" && !configuredAppUrl)
-    return Response.json({ error: "Application URL is not configured" }, { status: 503 });
+    return Response.json({ error: "L’adresse de l’application n’est pas configurée." }, { status: 503 });
   const appOrigin = new URL(configuredAppUrl || "http://localhost:3000").origin;
   if (new URL(body.successUrl).origin !== appOrigin || new URL(body.cancelUrl).origin !== appOrigin)
-    return Response.json({ error: "Redirect URLs must use the application origin" }, { status: 400 });
+    return Response.json({ error: "Les adresses de redirection doivent appartenir à l’application." }, { status: 400 });
 
   const [plan] = await db.select().from(plans).where(eq(plans.id, body.planId)).limit(1);
-  if (!plan?.active) return Response.json({ error: "Plan unavailable" }, { status: 404 });
+  if (!plan?.active) return Response.json({ error: "Offre indisponible." }, { status: 404 });
 
   // Never trust a client-supplied discount: the coupon is re-resolved and re-validated here,
   // from scratch, against the plan's real amount — exactly like reconcilePayment re-pulls
@@ -107,7 +107,7 @@ export async function POST(request: Request) {
   if (body.provider) ranked = ranked.filter((x) => x.provider === body.provider);
   ranked = ranked.filter((x) => !x.degraded);
   if (!ranked.length)
-    return Response.json({ error: "No healthy compatible payment provider available" }, { status: 503 });
+    return Response.json({ error: "Aucun moyen de paiement compatible n’est disponible pour le moment." }, { status: 503 });
 
   const paymentId = randomUUID();
   const reference = `ask_${randomUUID()}`;
@@ -271,8 +271,8 @@ export async function POST(request: Request) {
         return Response.json(
           {
             error: safeFallback
-              ? "Payment provider rejected checkout"
-              : "Payment provider response is uncertain; automatic fallback was stopped to prevent duplicate checkout creation",
+              ? "Le prestataire de paiement a refusé la transaction."
+              : "La réponse du prestataire de paiement est incertaine : le paiement n’a pas été relancé automatiquement pour éviter un doublon.",
             provider: providerId,
             retryable: safeFallback,
           },
@@ -297,7 +297,7 @@ export async function POST(request: Request) {
     .where(eq(payments.id, paymentId));
   return Response.json(
     {
-      error: "All compatible payment providers safely rejected checkout",
+      error: "Tous les prestataires de paiement compatibles ont refusé la transaction.",
       providersTried: failures.map((f) => f.provider),
     },
     { status: 502 },

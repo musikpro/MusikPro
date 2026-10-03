@@ -1,17 +1,27 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { primeOverlay } from "@/lib/i18n/overlay-server";
+import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
+import { translateForLocale } from "@/lib/i18n/translate";
 
 // Forced dynamic: the CSP nonce (lib/security/headers.ts, set per request in proxy.ts) only
 // exists at request time, so a statically prerendered page would ship without one and Next's
 // own hydration scripts would be blocked by script-src.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Conditions d’utilisation",
-  description: "Consultez les règles qui encadrent l’accès au service de création musicale MusikPro.",
-  path: "/terms",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolvePageLocale();
+  await primeOverlay(locale);
+  const t = (text: string) => translateForLocale(text, locale);
+  return buildMetadata({
+    title: t("Conditions d’utilisation"),
+    description: t(
+      "Consultez les règles qui encadrent l’accès au service de création musicale MusikPro.",
+    ),
+    path: "/terms",
+  });
+}
 
 export default function TermsPage() {
   return (

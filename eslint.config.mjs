@@ -7,6 +7,7 @@ import { i18nClientFiles, i18nClientTextSelectors } from "./eslint/i18n-client-t
 export default defineConfig([
   ...fixupConfigRules([...nextVitals, ...nextTs]),
   {
+    // Inclut les écrans d'authentification (i18nAuthFiles, déjà intégrés à i18nClientFiles).
     files: i18nClientFiles,
     ignores: ["**/*.test.{ts,tsx}"],
     rules: { "no-restricted-syntax": ["error", ...i18nClientTextSelectors] },

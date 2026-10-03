@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
 import { LegalPage } from "@/components/legal-page";
 import { buildMetadata } from "@/lib/seo/metadata";
+import { primeOverlay } from "@/lib/i18n/overlay-server";
+import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
+import { translateForLocale } from "@/lib/i18n/translate";
 
 // Forced dynamic: the CSP nonce (lib/security/headers.ts, set per request in proxy.ts) only
 // exists at request time, so a statically prerendered page would ship without one and Next's
 // own hydration scripts would be blocked by script-src.
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  title: "Politique de confidentialité",
-  description:
-    "Découvrez comment MusikPro collecte, utilise et protège les données nécessaires à son service de création musicale.",
-  path: "/privacy",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await resolvePageLocale();
+  await primeOverlay(locale);
+  const t = (text: string) => translateForLocale(text, locale);
+  return buildMetadata({
+    title: t("Politique de confidentialité"),
+    description: t(
+      "Découvrez comment MusikPro collecte, utilise et protège les données nécessaires à son service de création musicale.",
+    ),
+    path: "/privacy",
+  });
+}
 
 export default function PrivacyPage() {
   return (

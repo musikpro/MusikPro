@@ -1,7 +1,7 @@
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";
-import { getOverlayEntry } from "./overlay";
+import { getOverlayEntry, isI18nReady } from "./overlay";
 
 export type Locale = "fr" | "en" | "es" | "pt";
 
@@ -27,9 +27,8 @@ const dictionaries: Record<Exclude<Locale, "fr">, Record<string, string>> = { en
 
 /**
  * Locale-driven core shared by translate() (client-side, reads document.documentElement.lang)
- * and request-locale.ts's Accept-Language-driven resolution for pages with no client-side
- * language detector mounted (e.g. app/s/[slug], which has no authenticated session or
- * DemoProvider to read a saved preference from).
+ * and server components that resolve the locale themselves (resolvePageLocale() for public/auth
+ * pages such as app/s/[slug], resolveDashboardLocale() for the dashboard).
  */
 export function translateForLocale(text: string, locale: Locale): string {
   if (locale === "fr") return text;
@@ -38,8 +37,19 @@ export function translateForLocale(text: string, locale: Locale): string {
   return fixed ?? getOverlayEntry(locale, text) ?? text;
 }
 
+/**
+ * Langue d'affichage à utiliser pendant le RENDU d'un composant client (ex. toLocaleDateString) :
+ * "fr" tant que l'hydratation n'est pas terminée (HTML serveur), puis <html lang>. Ne jamais lire
+ * document.documentElement.lang directement au rendu (erreur d'hydratation #418).
+ */
+export function getDisplayLocale(): Locale {
+  if (typeof document === "undefined" || !isI18nReady()) return "fr";
+  const locale = document.documentElement.lang.split("-")[0];
+  return locale === "en" || locale === "es" || locale === "pt" ? locale : "fr";
+}
+
 export function translate(text: string): string {
-  if (typeof document === "undefined") return text;
+  if (typeof document === "undefined" || !isI18nReady()) return text;
   const locale = document.documentElement.lang.split("-")[0] as Locale;
   return translateForLocale(text, locale);
 }
@@ -63,7 +73,7 @@ export function translateTemplateForLocale(
 }
 
 export function translateTemplate(text: string, params: Record<string, string | number>): string {
-  if (typeof document === "undefined") return translateTemplateForLocale(text, params, "fr");
+  if (typeof document === "undefined" || !isI18nReady()) return translateTemplateForLocale(text, params, "fr");
   const locale = document.documentElement.lang.split("-")[0] as Locale;
   return translateTemplateForLocale(text, params, locale);
 }
@@ -81,7 +91,7 @@ export function localizeField(
   translations: CatalogTranslations | null | undefined,
   field: string,
 ): string {
-  if (typeof document === "undefined") return base;
+  if (typeof document === "undefined" || !isI18nReady()) return base;
   const locale = document.documentElement.lang.split("-")[0] as Locale;
   if (locale === "fr") return base;
   return translations?.[locale]?.[field] || base;

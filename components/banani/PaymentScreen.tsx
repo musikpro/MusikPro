@@ -16,6 +16,7 @@ export const displayName = "Vos informations";
 export const screenSize = "mobile";
 
 import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
+import { translateIssue } from "@/lib/validation/translate-issue";
 
 export default function PaymentScreen() {
   const demo = useDemo();
@@ -62,7 +63,7 @@ export default function PaymentScreen() {
         const rawField = issue.path[0];
         const field = rawField === "phoneCountry" ? "phone" : rawField;
         if ((field === "name" || field === "email" || field === "phone") && !nextErrors[field]) {
-          nextErrors[field] = issue.message;
+          nextErrors[field] = translateIssue(issue);
         }
       }
       setFieldErrors(nextErrors);

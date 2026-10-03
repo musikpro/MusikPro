@@ -1,11 +1,10 @@
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { getPublicSongBySlug } from "@/lib/ai/songs";
-import { resolveLocaleFromAcceptLanguage } from "@/lib/i18n/request-locale";
+import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { translateForLocale, translateTemplateForLocale } from "@/lib/i18n/translate";
 import Icon from "@/components/banani/Icon";
 import PublicSongPlayer from "./PublicSongPlayer";
@@ -16,7 +15,7 @@ type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { slug } = await params;
-  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const locale = await resolvePageLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
   const translateTemplate = (text: string, values: Record<string, string | number>) =>
@@ -36,7 +35,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function PublicSongPage({ params }: Params) {
   const { slug } = await params;
-  const locale = resolveLocaleFromAcceptLanguage((await headers()).get("accept-language"));
+  const locale = await resolvePageLocale();
   await primeOverlay(locale);
   const t = (text: string) => translateForLocale(text, locale);
 
