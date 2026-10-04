@@ -7,6 +7,7 @@ import { CheckoutButton } from "@/components/checkout-button";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolveDashboardLocale } from "@/lib/i18n/dashboard-locale";
 import { translateForLocale } from "@/lib/i18n/translate";
+import { currencyDisplayLabel } from "@/lib/credit-plans/currency";
 export default async function Page() {
   const locale = await resolveDashboardLocale();
   await primeOverlay(locale);
@@ -27,7 +28,8 @@ export default async function Page() {
             <h2>{p.name}</h2>
             <p>{p.description}</p>
             <h3>
-              {p.amount.toLocaleString("fr-FR")} {p.currency}/{p.interval === "year" ? t("an") : t("mois")}
+              {p.amount.toLocaleString("fr-FR")} {currencyDisplayLabel(p.currency)}/
+              {p.interval === "year" ? t("an") : t("mois")}
             </h3>
             <CheckoutButton planId={p.id} />
           </div>
@@ -48,7 +50,7 @@ export default async function Page() {
             <tr key={p.id}>
               <td>{p.reference.slice(0, 18)}…</td>
               <td>
-                {p.amount.toLocaleString("fr-FR")} {p.currency}
+                {p.amount.toLocaleString("fr-FR")} {currencyDisplayLabel(p.currency)}
               </td>
               <td>{p.provider}</td>
               <td>

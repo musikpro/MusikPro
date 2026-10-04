@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { creditCurrencies, convertFromXof, formatCreditPrice, resolveCurrencyForCountry } from "@/lib/credit-plans/currency";
+import {
+  creditCurrencies,
+  convertFromXof,
+  currencyDisplayLabel,
+  formatCreditPrice,
+  resolveCurrencyForCountry,
+} from "@/lib/credit-plans/currency";
 
 describe("creditCurrencies", () => {
   it("includes the 8 newly supported local currencies", () => {
@@ -50,5 +56,34 @@ describe("resolveCurrencyForCountry", () => {
 
   it("returns null when the stored currency code isn't a supported currency (corrupted data)", () => {
     expect(resolveCurrencyForCountry("CI", { CI: "ZZZ" })).toBeNull();
+  });
+});
+
+describe("affichage du franc CFA (identique mobile et ordinateur)", () => {
+  it("écrit toujours « FCFA » pour XOF, jamais le code ni « F CFA »", () => {
+    const formatted = formatCreditPrice(578, "XOF");
+    expect(formatted).toBe("578 FCFA");
+    expect(formatted).not.toContain("XOF");
+  });
+
+  it("fait de même pour XAF", () => {
+    const formatted = formatCreditPrice(578, "XAF");
+    expect(formatted).toBe("578 FCFA");
+    expect(formatted).not.toContain("XAF");
+  });
+
+  it("garde le séparateur de milliers français et ne fabrique pas de décimales", () => {
+    expect(formatCreditPrice(1500, "XOF").replace(/\s/g, " ")).toBe("1 500 FCFA");
+  });
+
+  it("n'applique pas ce libellé aux autres devises", () => {
+    expect(formatCreditPrice(1000, "EUR")).toContain("€");
+    expect(formatCreditPrice(1000, "EUR")).not.toContain("FCFA");
+  });
+
+  it("expose le libellé court pour les écrans qui affichent le code brut", () => {
+    expect(currencyDisplayLabel("XOF")).toBe("FCFA");
+    expect(currencyDisplayLabel("XAF")).toBe("FCFA");
+    expect(currencyDisplayLabel("EUR")).toBe("EUR");
   });
 });
