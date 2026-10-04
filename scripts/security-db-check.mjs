@@ -31,11 +31,27 @@ for (const table of inspected) {
     if (!row.has_policy) errors.push(`${table}: no RLS policy found`);
   }
 }
+function writeReport(status) {
+  // Rapport sans secret (aucune URL) lu par la carte « Multi-tenant » de l'état de préparation.
+  try {
+    fs.mkdirSync("generated", { recursive: true });
+    fs.writeFileSync(
+      "generated/security-db-check.json",
+      JSON.stringify(
+        { status, checkedAt: new Date().toISOString(), requiredTables: required.length, errors },
+        null,
+        2,
+      ) + "\n",
+    );
+  } catch {}
+}
 if (errors.length) {
+  writeReport("fail");
   console.error("Security DB check: FAIL");
   for (const e of errors) console.error(`- ${e}`);
   process.exit(1);
 }
+writeReport("pass");
 console.log(
   `Security DB check: PASS — RLS verified on ${required.length} required table(s); ${conditional.length} conditional table(s) checked when present.`,
 );
