@@ -510,6 +510,28 @@ export const paymentBypassSettings = pgTable("payment_bypass_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/**
+ * Brouillon du parcours de création de chanson (un seul par utilisateur) : permet de reprendre là où l'on s'est
+ * arrêté depuis un autre appareil, l'application ou le site. Jamais lu directement par le client : accès serveur
+ * uniquement (lib/creation-draft/server.ts), filtré par user_id. Expire 30 jours après la dernière sauvegarde.
+ */
+export const creationDrafts = pgTable(
+  "creation_drafts",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .unique()
+      .references(() => user.id, { onDelete: "cascade" }),
+    step: text("step").notNull(),
+    data: jsonb("data").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+  },
+  (table) => [index("creation_drafts_expires_at_idx").on(table.expiresAt)],
+);
+
 /** Réglage global unique : lecture exclusive des chansons (une seule à la fois sur une page). Absence de ligne = activé. */
 export const playbackSettings = pgTable("playback_settings", {
   id: text("id").primaryKey().default("global"),

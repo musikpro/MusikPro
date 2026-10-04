@@ -27,6 +27,7 @@ import type { WorkspaceSong } from "@/lib/demo/song-types";
 import type { OccasionFieldClientDefinition } from "@/lib/occasion-fields/types";
 import { blockVisibility } from "@/lib/occasion-fields/client";
 import { buildOccasionDetails } from "@/lib/occasion-fields/answers";
+import type { CreationDraftData } from "@/lib/validation/creation-draft";
 
 export type SongGroupResponse = {
   songGroupId: string;
@@ -529,6 +530,51 @@ function useDemoState(
       // A blocked or full browser storage must not interrupt song creation.
     }
   };
+  /**
+   * Reprise d'un brouillon de création (écran « Reprendre ou recommencer ») : applique d'un seul coup les choix, les
+   * champs et les détails d'occasion. Ne passe volontairement pas par `choose()` : appelé plusieurs fois de suite,
+   * celui-ci repart à chaque fois de l'état précédent et écraserait les valeurs déjà appliquées.
+   */
+  const restoreCreationDraft = (draft: CreationDraftData) => {
+    setChoices((prev) => ({ ...prev, ...draft.choices }));
+    setFields((prev) => ({ ...prev, ...draft.fields }));
+    setDetails(draft.details);
+    setPackIndex(draft.packIndex);
+    try {
+      window.localStorage.setItem(creationDraftKey, JSON.stringify(draft.choices));
+    } catch {
+      // A blocked or full browser storage must not interrupt song creation.
+    }
+  };
+  /** « Recommencer de zéro » : vide le parcours de création (état en mémoire + repli local), sans toucher au reste. */
+  const resetCreationDraft = () => {
+    setChoices((prev) => ({
+      ...prev,
+      occasion: "",
+      genre: "",
+      mood: "",
+      language: "",
+      voice: "",
+      recipientRelation: "",
+    }));
+    setFields((prev) => ({
+      ...prev,
+      story: "",
+      recipientName: "",
+      recipientPronunciation: "",
+      senderName: "",
+      senderPronunciation: "",
+      lyrics: "",
+      detail: "",
+    }));
+    setDetails({});
+    setPackIndex(-1);
+    try {
+      window.localStorage.removeItem(creationDraftKey);
+    } catch {
+      // Nothing to clean when storage is unavailable.
+    }
+  };
   const toggle = (key: string) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   const toggleFavorite = (id: string | number) =>
     setFavorites((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
@@ -844,6 +890,8 @@ function useDemoState(
     field,
     choices,
     choose,
+    restoreCreationDraft,
+    resetCreationDraft,
     profile,
     setProfile,
     songs,
