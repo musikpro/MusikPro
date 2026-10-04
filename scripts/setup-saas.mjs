@@ -104,7 +104,6 @@ const doctorReady = doctorReport?.verdict === "READY";
 const computerUseState = readJson(path.join(root, ".africa-saas/computer-use.json"));
 const computerUseVerified = computerUseState?.status === "verified";
 
-
 const providerChecks = enabledProviders.map((id) => {
   const p = providers[id];
   if (!p) return { id, label: id, ok: false, readiness: "unknown", present: 0, total: 0, env: [] };
@@ -253,6 +252,11 @@ const phases = [
     benefit:
       "Elle apporte une couche d’identité sécurisée sans devoir construire soi-même la gestion des mots de passe et sessions.",
     checks: [
+      {
+        label: "Neon connecté (prérequis)",
+        ok: dbOk,
+        detail: dbOk ? "DATABASE_URL configurée" : "Phase 5 requise avant de déclarer l’auth prête",
+      },
       {
         label: "BETTER_AUTH_SECRET",
         ok: configured(env.BETTER_AUTH_SECRET),
