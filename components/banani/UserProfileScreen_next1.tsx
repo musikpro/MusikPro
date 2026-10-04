@@ -133,16 +133,18 @@ export default function UserProfileScreen() {
           </button>
         </div>
 
-        {/* Logout */}
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => void demo.exitAccount()}
-          className="profile-logout w-full bg-card border border-border/50 rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-destructive mt-4"
-        >
-          <Icon i="log-out" size={16} />
-          <span className="text-sm font-semibold">{t("Se déconnecter")}</span>
-        </button>
+        {/* Logout — sur desktop : ligne séparée, alignée à droite, sous les sections Compte et Support */}
+        <div className="profile-logout-row">
+          <button
+            type="button"
+            data-demo-ready="true"
+            onClick={() => void demo.exitAccount()}
+            className="profile-logout w-full bg-card border border-border/50 rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-destructive mt-4"
+          >
+            <Icon i="log-out" size={16} />
+            <span className="text-sm font-semibold">{t("Se déconnecter")}</span>
+          </button>
+        </div>
       </div>
 
       <MobileBottomNav activeTab={t("Profil")} />

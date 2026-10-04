@@ -2107,6 +2107,22 @@
     grid-column: 1 / -1;
   }
 
+  /* Déconnexion : ligne dédiée sous Compte/Support, filet de séparation, bouton aligné à droite. */
+  .workspace-profile-grid > .profile-logout-row {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px !important;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .profile-logout-row > .profile-logout {
+    width: auto !important;
+    min-width: 220px;
+    margin-top: 0 !important;
+  }
+
   .workspace-favorites-grid {
     display: grid !important;
     grid-template-columns: repeat(2, minmax(0, 1fr));
