@@ -8,7 +8,7 @@ import { getServiceDb } from "@/db";
 import { occasions } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { isOccasionEmoji, OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
-import { generateOccasionAiHint } from "@/lib/ai/catalog-ai-hint";
+import { generateOccasionAiHint, generateOccasionDescription } from "@/lib/ai/catalog-ai-hint";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 
@@ -198,5 +198,27 @@ export async function suggestOccasionAiHint(input: {
       };
     }
     return { ok: false, message: actionErrorMessage(error, "Impossible de suggérer une consigne pour le moment.") };
+  }
+}
+
+/** Bouton « Suggérer la description » du formulaire : propose la description (français) d'après le nom ; ne modifie rien en base. */
+export async function suggestOccasionDescription(input: {
+  name: string;
+}): Promise<{ ok: true; description: string } | { ok: false; message: string }> {
+  const session = await requireAdmin();
+  try {
+    const parsed = z.object({ name: z.string().trim().min(2).max(60) }).parse(input);
+    return { ok: true, description: await generateOccasionDescription(parsed, session.user.id) };
+  } catch (error) {
+    if (error instanceof Error && error.message === "AI_PROVIDER_NOT_CONFIGURED") {
+      return {
+        ok: false,
+        message: "Aucun fournisseur IA n’est configuré. Enregistrez sa clé dans Fournisseurs IA, puis réessayez.",
+      };
+    }
+    if (error instanceof Error && error.message === "CONTENT_BLOCKED_RESULT") {
+      return { ok: false, message: "La suggestion a été bloquée par la modération. Reformule le nom de l’occasion." };
+    }
+    return { ok: false, message: actionErrorMessage(error, "Impossible de suggérer une description pour le moment.") };
   }
 }

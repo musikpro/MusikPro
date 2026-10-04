@@ -6,7 +6,11 @@ import AdminOccasionEmojiPicker from "@/components/admin/AdminOccasionEmojiPicke
 import { AdminBackLink } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { useAdminActionToast } from "@/components/admin/useAdminActionToast";
-import { suggestOccasionAiHint, type OccasionActionState } from "@/app/admin/occasions/actions";
+import {
+  suggestOccasionAiHint,
+  suggestOccasionDescription,
+  type OccasionActionState,
+} from "@/app/admin/occasions/actions";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
 import { OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
 
@@ -35,6 +39,23 @@ export default function AdminOccasionForm({
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [aiHint, setAiHint] = useState(values.aiHint ?? "");
   const [suggesting, startSuggest] = useTransition();
+  const [suggestingDescription, startSuggestDescription] = useTransition();
+  const suggestDescription = () => {
+    const name = nameRef.current?.value.trim() ?? "";
+    if (name.length < 2) {
+      showToast({ message: "Saisis d’abord le nom de l’occasion.", tone: "error" });
+      return;
+    }
+    startSuggestDescription(async () => {
+      const result = await suggestOccasionDescription({ name });
+      if (result.ok) {
+        if (descriptionRef.current) descriptionRef.current.value = result.description;
+        showToast({ message: "Description suggérée : relis-la puis enregistre.", tone: "success" });
+      } else {
+        showToast({ message: result.message, tone: "error" });
+      }
+    });
+  };
   const suggest = () => {
     const name = nameRef.current?.value.trim() ?? "";
     if (name.length < 2) {
@@ -81,6 +102,15 @@ export default function AdminOccasionForm({
             defaultValue={values.description}
             placeholder="Décris quand cette occasion est proposée au client"
           />
+          <button
+            type="button"
+            className="admin-secondary-action"
+            onClick={suggestDescription}
+            disabled={suggestingDescription}
+          >
+            <Icon i="bot" size={15} />
+            {suggestingDescription ? "Suggestion…" : "Suggérer la description"}
+          </button>
         </label>
         <AdminOccasionEmojiPicker defaultEmoji={values.emoji} />
         <label className="admin-editor-field is-wide">
