@@ -130,7 +130,18 @@
     "agents:rules-sync": "node scripts/agent-rules-sync.mjs",
     "agents:rules-check": "node scripts/agent-rules-sync-check.mjs",
     "install:preflight": "npm run install:check && npm run dependencies:network-check",
-    "access:check": "node scripts/access-control-check.mjs"
+    "access:check": "node scripts/access-control-check.mjs",
+    "feature:plan": "node scripts/feature-plan.mjs",
+    "feature:plan-check": "node scripts/feature-plan-check.mjs",
+    "docs:freshness-check": "node scripts/documentation-freshness-check.mjs",
+    "context:handoff": "node scripts/project-handoff.mjs",
+    "context:check": "node scripts/project-handoff-check.mjs",
+    "agent:safety-check": "node scripts/agent-safety-check.mjs",
+    "security:input-check": "node scripts/untrusted-input-check.mjs",
+    "critical-flows:check": "node scripts/critical-flow-check.mjs",
+    "critical-flows:test": "node scripts/critical-flow-check.mjs --execute",
+    "accessibility:check": "node scripts/accessibility-ux-check.mjs",
+    "quality:ai-check": "npm run feature:plan-check && npm run docs:freshness-check && npm run context:check && npm run agent:safety-check && npm run security:input-check && npm run critical-flows:check && npm run accessibility:check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.127.0",

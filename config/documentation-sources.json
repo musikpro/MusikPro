@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "policy": "Les dépendances structurantes doivent être liées à leur documentation officielle et revues après toute montée de version. Une entrée devient périmée après maxAgeDays ou dès que la version installée diffère de reviewedVersion.",
+  "defaultMaxAgeDays": 180,
+  "sources": [
+    {
+      "id": "nextjs",
+      "label": "Next.js",
+      "url": "https://nextjs.org/docs",
+      "package": "next",
+      "reviewedVersion": "16.3.8",
+      "reviewedAt": "2026-10-03",
+      "maxAgeDays": 120
+    },
+    {
+      "id": "better-auth",
+      "label": "Better Auth",
+      "url": "https://better-auth.com/docs/introduction",
+      "package": "better-auth",
+      "reviewedVersion": "1.7.7",
+      "reviewedAt": "2026-10-04",
+      "maxAgeDays": 180
+    },
+    {
+      "id": "better-auth-cli",
+      "label": "Better Auth CLI",
+      "url": "https://better-auth.com/docs/concepts/cli",
+      "package": "auth",
+      "reviewedVersion": "1.7.7",
+      "reviewedAt": "2026-10-04",
+      "maxAgeDays": 180
+    },
+    {
+      "id": "drizzle",
+      "label": "Drizzle ORM",
+      "url": "https://orm.drizzle.team/docs/overview",
+      "package": "drizzle-orm",
+      "reviewedVersion": "0.45.2",
+      "reviewedAt": "2026-10-03",
+      "maxAgeDays": 180
+    },
+    {
+      "id": "zod",
+      "label": "Zod",
+      "url": "https://zod.dev/",
+      "package": "zod",
+      "reviewedVersion": "4.5.4",
+      "reviewedAt": "2026-10-03",
+      "maxAgeDays": 180
+    },
+    {
+      "id": "neon",
+      "label": "Neon",
+      "url": "https://neon.com/docs",
+      "reviewedAt": "2026-10-03",
+      "maxAgeDays": 180
+    },
+    {
+      "id": "capacitor",
+      "label": "Capacitor",
+      "url": "https://capacitorjs.com/docs",
+      "package": "@capacitor/core",
+      "expectedMajor": 8,
+      "optional": true,
+      "reviewedAt": "2026-10-03",
+      "maxAgeDays": 180
+    }
+  ]
+}

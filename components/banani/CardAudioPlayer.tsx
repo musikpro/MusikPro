@@ -81,6 +81,7 @@ export default function CardAudioPlayer({
     <div
       className="absolute inset-0 z-10 flex flex-col justify-between bg-black/90 p-3 text-white"
       role="region"
+      tabIndex={-1}
       aria-label={t("Lecteur de tendance")}
       onClick={(event) => event.stopPropagation()}
       onKeyDown={(event) => event.stopPropagation()}

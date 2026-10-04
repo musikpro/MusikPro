@@ -496,6 +496,70 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 ## Mobile Store Safety
 Pour PWA + Capacitor, ne jamais déclarer une application prête Play Store/App Store tant que `npm run mobile:store-check` ne passe pas. `server.url`/`allowNavigation` sont réservés au développement distant et ne constituent pas une configuration native de production. MusikPro utilise volontairement ce mode distant (wrapper vers `musikpro.net`) : `mobile:store-check` y échoue tant qu’un shell bundlé n’existe pas, ce qui est le comportement attendu et n’est pas une régression.
 
+## AI Development Quality Gate — PLAN → SPEC → TEST → CODE
+
+- Pour toute nouvelle fonctionnalité importante (API, base/migration, auth, permissions, paiement, upload, sécurité, multi-tenant, fournisseur, mobile ou changement transversal), **ne pas commencer directement par le code**.
+- Suivre le workflow permanent **PLAN → SPEC → TEST → CODE → VERIFY**.
+- Avant l'implémentation, lire `config/features.json` pour réutiliser l'existant et éviter les doublons, puis créer/compléter un plan avec `npm run feature:plan -- nom-feature`.
+- Le plan doit couvrir au minimum : objectif, périmètre/hors périmètre, données/migrations, API/contrats, auth/rôles/tenant, entrées non fiables, sécurité/rate limiting, tests prévus, critères d'acceptation et rollback.
+- Les petits correctifs locaux peuvent rester légers, mais ne dispensent jamais des gates/tests existants.
+- Exécuter `npm run feature:plan-check` avant de considérer un chantier majeur prêt à coder ou à livrer.
+
+## Documentation Freshness Gate — documentation officielle/version réelle
+
+- Ne jamais coder une intégration importante à partir d'une documentation supposée ou mémorisée lorsqu'une version précise est installée.
+- `config/documentation-sources.json` relie les dépendances structurantes à leur documentation officielle, à la version revue et à la date de revue.
+- Après toute montée de version de Next.js, Better Auth, Drizzle, Zod, Capacitor ou autre brique structurante enregistrée, revoir la documentation correspondante puis mettre à jour le registre.
+- Exécuter `npm run docs:freshness-check`; une version différente de celle revue ou une documentation devenue trop ancienne bloque le gate.
+- Ne jamais remplacer une API actuelle par une ancienne syntaxe simplement parce qu'un agent la connaît de mémoire.
+
+## Project Handoff — continuité de contexte entre sessions/agents
+
+- `AGENTS.md` / `CLAUDE.md` conservent les règles permanentes ; `generated/project-handoff.md` conserve l'état courant du travail sans secret.
+- Au début d'une reprise de projet, lire `generated/project-handoff.md` s'il existe avant de proposer une architecture ou une nouvelle dépendance.
+- Après une modification importante, avant de changer d'agent/session ou avant un handoff, exécuter `npm run context:handoff`.
+- Le handoff doit rappeler version, feature en cours, plan, dernier état des tests, fichiers modifiés et prochaines actions sans lire ni afficher les valeurs de `.env.local`.
+- Ne jamais introduire un second ORM, un second système d'auth, une seconde couche de paiement ou une convention contradictoire parce qu'une nouvelle session a oublié les choix précédents.
+
+## Agent Safety Gate — commandes/modifications dangereuses
+
+- Une capacité terminal, Git, base de données ou dashboard **n'est jamais une autorisation implicite** pour effectuer une opération destructive.
+- Avant toute opération difficilement réversible : inspecter, expliquer l'impact, faire un dry-run/sauvegarde lorsque possible, demander l'accord explicite de l'utilisateur, puis vérifier le résultat.
+- Sans accord explicite, ne jamais exécuter `git reset --hard`, `git clean -f*`, `git push --force`, `rm -rf /`, `DROP DATABASE`, `DROP TABLE`, `TRUNCATE TABLE`, reset destructif de migrations/base, suppression de projet Vercel/Neon, modification DNS critique, rotation/suppression de secrets, passage sandbox → live ou déploiement production déclenché par l'agent.
+- Ne jamais supprimer une migration existante, une table ou des fichiers en masse pour « résoudre » un bug.
+- Ne jamais désactiver Zod, RBAC, RLS, CSP, rate limiting, vérification de signature, tests ou autres protections pour obtenir un build vert.
+- Ne jamais éditer `.env.local` de façon ad hoc. Seuls les scripts de setup dédiés peuvent écrire des clés attendues après action explicite de l'utilisateur, sans afficher les secrets.
+- Exécuter `npm run agent:safety-check` avant toute livraison importante.
+
+## Untrusted Input / HTML Safety Gate
+
+- Toute entrée utilisateur ou externe est non fiable : nom, email, recherche, URL, ID, texte libre, JSON API, paramètres URL, fichiers uploadés et payloads fournisseurs.
+- Zod côté serveur reste obligatoire pour les entrées structurées first-party ; la validation client ne remplace jamais la validation serveur.
+- Ne jamais construire une requête SQL par concaténation de données utilisateur et ne jamais utiliser `$queryRawUnsafe`, `$executeRawUnsafe` ou équivalent dans le runtime du starter.
+- Le HTML utilisateur est interdit par défaut. `dangerouslySetInnerHTML` n'est permis que pour une exception sûre, documentée et contrôlée ; le starter n'autorise actuellement que le JSON-LD sérialisé/échappé.
+- Les uploads doivent conserver limites de taille/type, auth et rate limiting.
+- Exécuter `npm run security:input-check` après toute nouvelle route, formulaire, upload ou traitement de contenu utilisateur.
+
+## Critical Flow Tests — sécurité fonctionnelle avant production
+
+- Le fait qu'une page « fonctionne » visuellement n'est jamais une preuve suffisante.
+- Les parcours critiques doivent rester couverts : validation API, auth/session, reset/vérification email, routes privées/admin, RBAC, isolation multi-tenant, rate limiting, mutations cross-site, paiements et uploads.
+- `config/critical-flows.json` est le registre de couverture ; exécuter `npm run critical-flows:check` après toute évolution sensible.
+- Quand `node_modules` est disponible, exécuter aussi `npm run critical-flows:test`; les scénarios nécessitant navigateur, base Neon réelle ou fournisseur sandbox restent NON VÉRIFIÉS tant qu'ils n'ont pas été réellement testés.
+- Ne jamais transformer un test non exécuté en PASS.
+
+## Accessibility & UX Quality Gate
+
+- Une interface fonctionnelle mais inaccessible ou générique n'est pas considérée terminée.
+- Conserver les règles Mobile First, SEO, Design System et Premium Icon Gate, puis compléter avec `npm run accessibility:check`.
+- Interdire les images sans texte alternatif, les `tabIndex` positifs, les éléments non interactifs cliquables sans rôle/clavier, la suppression du focus sans `focus-visible`, et le HTML direct non contrôlé.
+- Vérifier au navigateur, lorsque disponible : navigation clavier, focus visible, contraste, cibles tactiles, reflow/zoom, modales, `prefers-reduced-motion` et viewports 320/360/390/430/768/1024/1440.
+- Si le navigateur n'a pas été utilisé, marquer les contrôles visuels **NON VÉRIFIÉS** plutôt que PASS.
+
+## Intégrations optionnelles — jamais de faux rouge
+
+- Un service explicitement optionnel et non sélectionné (ex. Upstash, Banani MCP, Playwright, Cloudflare, paiements, mobile natif) doit être signalé `SKIPPED`/orange et **jamais FAIL/rouge**. Une configuration partielle ou un service explicitement activé mais incomplet reste FAIL.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

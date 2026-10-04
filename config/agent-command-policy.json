@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "policy": "Une IA ne doit jamais exécuter automatiquement une opération destructive ou irréversible. Inspection, sauvegarde/dry-run, explication et accord explicite sont requis avant toute action sensible.",
+  "forbiddenExecutablePatterns": [
+    "rm\\s+-rf\\s+/(?:\\s|$)",
+    "git\\s+reset\\s+--hard",
+    "git\\s+clean\\s+-[^\\n]*f",
+    "git\\s+push\\s+[^\\n]*--force",
+    "DROP\\s+DATABASE",
+    "DROP\\s+TABLE",
+    "TRUNCATE\\s+TABLE",
+    "prisma\\s+migrate\\s+reset[^\\n]*--force"
+  ],
+  "humanApprovalRequired": [
+    "suppression massive de fichiers ou migrations",
+    "réécriture destructive de l'historique Git",
+    "suppression ou reset de base de données",
+    "modification DNS critique",
+    "suppression de projet Vercel/Neon",
+    "rotation/suppression de secrets",
+    "passage sandbox vers live",
+    "déploiement production déclenché par l'agent"
+  ],
+  "envPolicy": "Ne jamais éditer .env.local de façon ad hoc. Seuls les scripts de setup dédiés peuvent écrire des clés attendues, après action explicite de l'utilisateur, sans afficher les valeurs secrètes."
+}
