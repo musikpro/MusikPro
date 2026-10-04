@@ -104,6 +104,7 @@
     "clients:crud:setup": "node scripts/clients-crud-check.mjs --require-banani && node scripts/prisma-clients.mjs generate && node scripts/clients-crud-check.mjs",
     "staging:check": "node scripts/staging-check.mjs",
     "staging:deploy": "node scripts/staging-deploy.mjs",
+    "staging:alias": "node scripts/staging-alias.mjs",
     "staging:test": "node scripts/staging-test.mjs",
     "staging:approve": "node scripts/staging-test.mjs --approve",
     "deploy:production:check": "node scripts/production-release-gate.mjs",
