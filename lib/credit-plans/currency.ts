@@ -70,6 +70,19 @@ export function convertFromXof(valueInXof: number, currency: string, catalog: Cr
   return valueInUsd * target.unitsPerUsd;
 }
 
+/** Les deux francs CFA (XOF, XAF) s'affichent toujours « FCFA » : seul le libellé change, la valeur reste identique. */
+const CFA_CURRENCY_CODES = new Set(["XOF", "XAF"]);
+export const CFA_DISPLAY_SYMBOL = "FCFA";
+
+export function isCfaCurrency(code: string) {
+  return CFA_CURRENCY_CODES.has(code);
+}
+
+/** Libellé court d'une devise pour l'affichage (« FCFA » pour XOF/XAF, sinon le code tel quel). */
+export function currencyDisplayLabel(code: string) {
+  return isCfaCurrency(code) ? CFA_DISPLAY_SYMBOL : code;
+}
+
 export function formatCreditPrice(
   valueInXof: number,
   currency: string,
@@ -79,8 +92,15 @@ export function formatCreditPrice(
   const entry = findCurrency(catalog, code) ?? findCurrency(DEFAULT_CURRENCIES, BASE_CURRENCY_CODE)!;
   const value = convertFromXof(valueInXof, code, catalog);
   const digits = Math.max(0, Math.min(entry.decimals, 6));
+  if (isCfaCurrency(code)) {
+    // Le style « currency » d'Intl écrit « F CFA » sur certains appareils et seulement le code (« XOF ») sur
+    // d'autres selon les données de langue installées : on formate le nombre seul et on ajoute le libellé,
+    // pour un affichage identique sur mobile et sur ordinateur.
+    const amount = new Intl.NumberFormat("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    return `${amount.format(value)}\u00a0${CFA_DISPLAY_SYMBOL}`;
+  }
   try {
-    return new Intl.NumberFormat(code === "XOF" || code === "XAF" ? "fr-FR" : "en", {
+    return new Intl.NumberFormat("en", {
       style: "currency",
       currency: code,
       minimumFractionDigits: digits,
