@@ -22,12 +22,13 @@ if (fs.existsSync(envPath))
     env[line.slice(0, i).trim()] = line
       .slice(i + 1)
       .trim()
-      .replace(/^['"]|['"]$/g, "");
+      .replace(/^["']|["']$/g, "");
   }
 const url = (env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL || "").trim();
 const token = (env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
 const enabled = cfg?.upstashEnabled === true;
 const disabled = cfg?.upstashEnabled === false;
+
 if (!url && !token) {
   if (enabled) {
     console.error("Upstash check: FAIL — module activé mais REST URL/token absents");
@@ -37,14 +38,20 @@ if (!url && !token) {
   process.exit(0);
 }
 if (!url || !token) {
-  console.error("Upstash check: FAIL — REST URL/token incomplete");
+  console.error(
+    "Upstash check: FAIL — configuration partielle; renseignez REST URL + token ou désactivez explicitement le module",
+  );
   process.exit(1);
 }
 if (!/^https:\/\//i.test(url)) {
   console.error("Upstash check: FAIL — REST URL must use HTTPS");
   process.exit(1);
 }
-console.log("Upstash config: PASS — credentials present (token hidden)");
+if (disabled)
+  console.log(
+    "Upstash config: WARN — credentials present while the module is marked disabled; remove them or re-enable Upstash intentionally.",
+  );
+else console.log("Upstash config: PASS — credentials present (token hidden)");
 if (!online) process.exit(0);
 try {
   const response = await fetch(url.replace(/\/$/, ""), {
