@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const getSession = vi.hoisted(() => vi.fn());
 const rateLimit = vi.hoisted(() => vi.fn());
@@ -44,10 +44,15 @@ const put = (body: unknown) =>
 
 describe("/api/creation-draft", () => {
   beforeEach(() => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://musikpro.net");
     getSession.mockReset().mockResolvedValue({ user: { id: "user-1" } });
     rateLimit.mockReset().mockResolvedValue({ success: true, backend: "memory" });
     saveCreationDraft.mockReset().mockResolvedValue(undefined);
     deleteCreationDraft.mockReset().mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   it("saves the draft for the authenticated user only", async () => {
