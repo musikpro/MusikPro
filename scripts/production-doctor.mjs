@@ -32,6 +32,14 @@ const results = [];
 const add = (id, label, status, detail, category = "core", optional = false) =>
   results.push({ id, label, status, detail, category, optional });
 const exists = (p) => fs.existsSync(path.join(root, p));
+const gate = (script, args = []) => {
+  try {
+    execFileSync(process.execPath, [script, ...args], { cwd: root, stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 let cfg = null;
 try {
@@ -213,17 +221,19 @@ add(
     : "À configurer complètement pour protéger inscription et formulaires publics (widget + vérification serveur + 2 clés)",
   "security",
 );
-const upstashReady = Boolean(
-  (env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL) &&
-  (env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN),
-);
+const upstashUrl = Boolean(env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL);
+const upstashToken = Boolean(env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN);
+const upstashReady = upstashUrl && upstashToken;
+const upstashPartial = upstashUrl !== upstashToken;
 add(
   "upstash",
   "Cache / rate limiting distribué (optionnel)",
-  upstashReady ? "PASS" : "FAIL",
+  upstashReady ? "PASS" : upstashPartial ? "FAIL" : "WARN",
   upstashReady
     ? "Upstash configuré"
-    : "Optionnel : Neon reste la source de vérité; sans Upstash, le cache distribué est désactivé",
+    : upstashPartial
+      ? "Configuration Upstash partielle : renseigner l’URL ET le token REST, ou retirer les deux"
+      : "Optionnel : Neon reste la source de vérité; sans Upstash, le cache distribué est désactivé",
   "performance",
   true,
 );
@@ -519,6 +529,89 @@ try {
   );
 }
 
+const featurePlanOk = gate("scripts/feature-plan-check.mjs");
+add(
+  "feature-plan-spec",
+  "Workflow IA — PLAN → SPEC → TEST → CODE",
+  featurePlanOk ? "PASS" : "FAIL",
+  featurePlanOk
+    ? "Gate plan/spécifications/tests actif pour les fonctionnalités importantes"
+    : "Exécuter npm run feature:plan-check et corriger le workflow",
+  "quality",
+);
+
+const docsFresh = gate("scripts/documentation-freshness-check.mjs");
+add(
+  "docs-freshness",
+  "Documentation — fraîcheur / versions",
+  docsFresh ? "PASS" : "FAIL",
+  docsFresh
+    ? "Versions structurantes alignées avec les documentations revues"
+    : "Documentation/version périmée ou incohérente; exécuter npm run docs:freshness-check",
+  "quality",
+);
+
+const contextGate = gate("scripts/project-handoff-check.mjs");
+const contextPresent = exists("generated/project-handoff.md");
+add(
+  "ai-context-handoff",
+  "Contexte IA — handoff de projet",
+  !contextGate ? "FAIL" : contextPresent ? "PASS" : "WARN",
+  !contextGate
+    ? "Gate handoff incomplet"
+    : contextPresent
+      ? "Handoff local sans secrets présent"
+      : "Structure prête; lancer npm run context:handoff avant changement de session/agent",
+  "quality",
+  true,
+);
+
+const agentSafety = gate("scripts/agent-safety-check.mjs");
+add(
+  "agent-safety",
+  "Agent Safety — commandes dangereuses",
+  agentSafety ? "PASS" : "FAIL",
+  agentSafety
+    ? "Règles destructives + scan des scripts exécutables conformes"
+    : "Exécuter npm run agent:safety-check et corriger toute opération dangereuse",
+  "security",
+);
+
+const inputSafety = gate("scripts/untrusted-input-check.mjs");
+add(
+  "untrusted-input",
+  "Entrées non fiables — Zod / SQL / HTML",
+  inputSafety ? "PASS" : "FAIL",
+  inputSafety ? "Validation serveur, SQL unsafe et HTML direct contrôlés" : "Exécuter npm run security:input-check",
+  "security",
+);
+
+const criticalStatic = gate("scripts/critical-flow-check.mjs");
+const criticalDynamic = exists("node_modules") ? gate("scripts/critical-flow-check.mjs", ["--execute"]) : false;
+add(
+  "critical-flows",
+  "Tests — parcours critiques",
+  !criticalStatic ? "FAIL" : criticalDynamic ? "PASS" : "WARN",
+  !criticalStatic
+    ? "Registre/couverture critique incomplet"
+    : criticalDynamic
+      ? "Sous-ensemble critique Vitest exécuté"
+      : "Couverture structurée présente; tests dynamiques/live encore à exécuter",
+  "quality",
+);
+
+const a11yStatic = gate("scripts/accessibility-ux-check.mjs");
+add(
+  "accessibility-ux",
+  "Accessibilité / UX",
+  a11yStatic ? "WARN" : "FAIL",
+  a11yStatic
+    ? "Statique PASS; clavier/contraste/reflow restent NON VÉRIFIÉS sans navigateur"
+    : "Exécuter npm run accessibility:check et corriger les anti-patterns",
+  "quality",
+  true,
+);
+
 let playwrightPkg = false;
 try {
   const pkg = readJSON("package.json");
@@ -541,7 +634,7 @@ const playwrightReady = playwrightPkg || playwrightConfig || playwrightMcp;
 add(
   "playwright",
   "Playwright — tests navigateur / MCP (optionnel)",
-  playwrightReady ? "PASS" : "FAIL",
+  playwrightReady ? "PASS" : "WARN",
   playwrightReady
     ? "Playwright détecté dans le projet ou une configuration MCP"
     : "Optionnel mais recommandé : Playwright non détecté dans le projet ni dans les configurations MCP connues",

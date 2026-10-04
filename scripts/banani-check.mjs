@@ -5,6 +5,16 @@ import { execFileSync } from "node:child_process";
 const root = process.cwd();
 const file = path.join(root, ".codex", "config.toml");
 const gitignore = path.join(root, ".gitignore");
+const configFile = path.join(root, "africa-saas.config.json");
+const config = (() => {
+  try {
+    return JSON.parse(fs.readFileSync(configFile, "utf8"));
+  } catch {
+    return null;
+  }
+})();
+const requested = config?.banani === true;
+const explicitlyDisabled = config?.banani === false;
 let failed = false;
 let configured = false;
 
@@ -20,12 +30,14 @@ function warn(msg) {
 }
 
 if (!fs.existsSync(file)) {
-  fail(".codex/config.toml is missing. Run: npm run banani:prepare");
+  if (requested) fail("Banani est activé dans africa-saas.config.json mais .codex/config.toml manque. Lancez: npm run banani:prepare");
+  else warn("Banani MCP: SKIPPED — module non configuré à ce stade. Lancez npm run banani:prepare seulement si vous souhaitez l’utiliser.");
 } else {
   pass(".codex/config.toml exists");
   const text = fs.readFileSync(file, "utf8");
   if (!text.trim()) {
-    fail("Banani MCP is not configured yet. Open .codex/config.toml and paste your own Banani MCP configuration.");
+    if (requested) fail("Banani est activé mais le fichier MCP est vide. Collez votre configuration Banani dans .codex/config.toml.");
+    else warn(`Banani MCP: SKIPPED — configuration vide${explicitlyDisabled ? " et module désactivé" : " avant choix dans /setup-saas"}.`);
   } else {
     const hasServer = /\[\s*mcp_servers\.banani\s*\]/i.test(text);
     const urlMatch = text.match(/^\s*url\s*=\s*["']([^"']+)["']/im);
@@ -73,4 +85,8 @@ try {
 }
 
 if (failed) process.exit(1);
+if (!configured) {
+  console.log("Banani MCP preflight: SKIPPED (optional / not configured yet)");
+  process.exit(0);
+}
 console.log("Banani MCP preflight: CONFIGURED");

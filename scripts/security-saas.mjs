@@ -132,6 +132,15 @@ add(
   zod.text ? [zod.text.slice(0, 1600)] : [],
 );
 
+const inputSafety = runNode("scripts/untrusted-input-check.mjs");
+add("untrusted-input", "Entrées non fiables / SQL / HTML", inputSafety.ok ? "pass" : "fail", inputSafety.ok ? "Le gate Zod est complété par l'interdiction SQL raw unsafe, HTML direct et les gardes upload." : "Le gate des entrées non fiables échoue.", inputSafety.text ? [inputSafety.text.slice(0, 1600)] : []);
+
+const agentSafety = runNode("scripts/agent-safety-check.mjs");
+add("agent-safety", "Agent Safety — opérations destructrices", agentSafety.ok ? "pass" : "fail", agentSafety.ok ? "Les règles AGENTS/CLAUDE et scripts exécutables respectent la politique anti-destruction." : "Le gate Agent Safety échoue.", agentSafety.text ? [agentSafety.text.slice(0, 1600)] : []);
+
+const criticalFlows = runNode("scripts/critical-flow-check.mjs");
+add("critical-flows", "Parcours critiques — couverture", criticalFlows.ok ? "pass" : "fail", criticalFlows.ok ? "Les parcours sensibles ont une couverture structurelle enregistrée; l'exécution live reste distincte." : "Le registre/couverture des parcours critiques est incomplet.", criticalFlows.text ? [criticalFlows.text.slice(0, 1600)] : []);
+
 const security = runNode("scripts/security-check.mjs");
 add(
   "security-preflight",

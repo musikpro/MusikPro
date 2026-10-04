@@ -10,7 +10,14 @@
     "turnstile",
     "upstash",
     "playwright",
-    "premium-icons"
+    "premium-icons",
+    "feature-plan-spec",
+    "docs-freshness",
+    "ai-context-handoff",
+    "agent-safety",
+    "untrusted-input",
+    "critical-flows",
+    "accessibility-ux"
   ],
   "productionDoctor": [
     "owner-production-state",
@@ -21,6 +28,13 @@
     "turnstile",
     "upstash",
     "playwright",
-    "premium-icons"
+    "premium-icons",
+    "feature-plan-spec",
+    "docs-freshness",
+    "ai-context-handoff",
+    "agent-safety",
+    "untrusted-input",
+    "critical-flows",
+    "accessibility-ux"
   ]
 }

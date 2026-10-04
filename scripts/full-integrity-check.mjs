@@ -24,6 +24,7 @@ const staticChecks = [
   ["Staging Gate", process.execPath, ["scripts/staging-check.mjs"]],
   ["Claude Code", process.execPath, ["scripts/claude-code-check.mjs"]],
   ["Readiness UI / voyants", process.execPath, ["scripts/readiness-ui-check.mjs"]],
+  ["Audit /security-saas", process.execPath, ["scripts/security-saas.mjs"]],
   ["Préparation installation", process.execPath, ["scripts/installation-readiness-check.mjs"]],
 ];
 
