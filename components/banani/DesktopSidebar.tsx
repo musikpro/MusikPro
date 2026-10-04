@@ -17,7 +17,6 @@ const groups = [
   ],
   [
     ["coins", "Crédits", "/credits"],
-    ["receipt", "Paiements", "/payment-preview"],
     ["bell", "Notifications", "/notifications"],
   ],
   [
@@ -64,7 +63,10 @@ export default function DesktopSidebar() {
           <div className="workspace-nav-group" key={index}>
             {group.map(([icon, label, suffix]) => {
               const href = `/dashboard${suffix}`;
-              const active = suffix ? pathname === href || pathname.startsWith(href + "/") : pathname === href;
+              const active =
+                (suffix ? pathname === href || pathname.startsWith(href + "/") : pathname === href) ||
+                // L'achat de crédits passe par /payment-preview : le menu Crédits reste actif pendant ce parcours.
+                (suffix === "/credits" && pathname.startsWith("/dashboard/payment-preview"));
               return (
                 <Link key={href} href={demo.href(href)} prefetch={false} aria-current={active ? "page" : undefined}>
                   <Icon i={icon} size={18} />
