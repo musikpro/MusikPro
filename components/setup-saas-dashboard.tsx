@@ -57,18 +57,16 @@ export function SetupSaasDashboard({
       <section className="card kit-next">
         <h2>Agents IA & Computer Use</h2>
         <p className="muted">
-          Le kit est compatible avec ChatGPT/Codex/Antigravity et Claude Code. Les deux voyants Computer Use sont
-          indépendants : ils deviennent verts uniquement après un test réel enregistré, pas sur simple présence d’un
-          fichier.
+          Le kit est piloté par Claude Code. Le voyant Computer Use devient vert uniquement après un test réel
+          enregistré, pas sur simple présence d’un fichier.
         </p>
         <div className="kit-actions">
-          <code>npm run computer-use:openai:check</code>
           <code>npm run claude-code:check</code>
           <code>npm run computer-use:claude:check</code>
         </div>
         <p className="muted">
           Pour Claude Code, les instructions projet sont dans <code>CLAUDE.md</code> et les raccourcis dans{" "}
-          <code>.claude/commands/</code>. Les workflows métier restent centralisés dans <code>.agents/skills/</code>{" "}
+          <code>.claude/commands/</code>. Les workflows métier restent centralisés dans <code>.claude/skills/</code>{" "}
           afin d’éviter deux versions contradictoires du kit.
         </p>
       </section>
@@ -213,7 +211,7 @@ export function SetupSaasDashboard({
           </>
         ) : (
           <div className="notice">
-            Aucun rapport généré. Lancez <code>/security-saas</code> dans Antigravity ou{" "}
+            Aucun rapport généré. Lancez <code>/security-saas</code> dans Claude Code ou{" "}
             <code>npm run security-saas</code> dans le terminal pour obtenir le score et le rang.
           </div>
         )}

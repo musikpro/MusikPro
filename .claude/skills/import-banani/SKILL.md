@@ -9,7 +9,7 @@ Toujours répondre à l’utilisateur en **français**. Conserver seulement les 
 
 # /import-banani — Import design Banani → comparaison starter → plan d’implémentation
 
-Cette skill s’utilise **après** `npm run banani:check` et seulement si Banani MCP est réellement connecté via `.codex/config.toml`.
+Cette skill s’utilise **après** `npm run banani:check` et seulement si Banani MCP est réellement connecté via Claude Code (`claude mcp add --transport http banani --scope local`).
 
 ## Règle de refactorisation
 
@@ -21,7 +21,7 @@ Ne jamais passer directement du design Banani au code. La skill doit d’abord v
 
 ## Étapes obligatoires
 
-1. Lire `AGENTS.md`, `DESIGN.md`, `config/features.json`, `design/banani/import-schema.json` et `docs/design/import-banani.md`.
+1. Lire `CLAUDE.md`, `DESIGN.md`, `config/features.json`, `design/banani/import-schema.json` et `docs/design/import-banani.md`.
 2. Exécuter `npm run banani:check`.
 3. Inspecter les outils MCP Banani réellement disponibles dans la session. Ne jamais inventer un nom d’outil MCP.
 4. Utiliser les outils Banani disponibles pour récupérer la vue la plus complète possible du projet : pages/screens, noms, états/variantes, structure visuelle, interactions visibles et flows lorsque le MCP les expose.

@@ -10,8 +10,8 @@ const required = [
   ".claude/commands/security-saas.md",
   ".claude/commands/import-banani.md",
   ".claude/commands/computer-use-claude.md",
-  ".agents/skills/claude-code/SKILL.md",
-  ".agents/skills/computer-use-claude/SKILL.md",
+  ".claude/skills/claude-code/SKILL.md",
+  ".claude/skills/computer-use-claude/SKILL.md",
 ];
 const missing = required.filter((r) => !fs.existsSync(path.join(root, r)));
 if (missing.length) {

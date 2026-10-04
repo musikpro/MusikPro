@@ -1,3 +1,12 @@
+# Reprise du kit 0.12.4 — architecture Claude-only (MusikPro)
+
+- `CLAUDE.md` devient la source de vérité unique : `AGENTS.md`, le miroir et les scripts `agents:rules-*` sont supprimés.
+- Skills déplacés vers `.claude/skills/` (providers : `.claude/skills/providers/`) ; `.agents/`, `.codex/` et le dossier racine `skills/` supprimés.
+- Computer Use / Banani : Claude Code uniquement (`computer-use:claude:*`, `claude mcp add --scope local`).
+- `claude-code:check` refuse tout retour des chemins legacy suivis par Git.
+- `/setup-saas` Phase 6 exige Neon ; `upstash-check` sans faux rouge.
+- Non repris : bootstrap pré-Neon, Node >= 22.12, TypeScript 7, `next build` sans `--webpack`.
+
 # Changelog
 
 ## 0.11.7 — Mise à jour du kit (0.11.2 → 0.11.7), refactorisation non régressive

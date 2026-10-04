@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { kitVersion } from "./lib/version.mjs";
 
@@ -73,14 +74,41 @@ const upstashOk = all([configured(env.UPSTASH_REDIS_REST_URL), configured(env.UP
 const turnstileConfigured = all([configured(env.TURNSTILE_SECRET_KEY), configured(env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)]);
 const cronOk = configured(env.CRON_SECRET);
 const webhookBaseOk = configured(env.PAYMENT_WEBHOOK_BASE_URL);
-const codexConfigPath = path.join(root, ".codex/config.toml");
-const codexConfigExists = fs.existsSync(codexConfigPath);
-const codexConfigText = codexConfigExists ? fs.readFileSync(codexConfigPath, "utf8") : "";
-const bananiMcpConfigured =
-  /\[\s*mcp_servers\.banani\s*\]/i.test(codexConfigText) &&
-  /^\s*url\s*=\s*["'][^"']+["']/im.test(codexConfigText) &&
-  /Authorization/i.test(codexConfigText) &&
-  /Bearer\s+[^"'\s}]+/i.test(codexConfigText);
+function sameProject(a, b) {
+  try {
+    return fs.realpathSync(a) === fs.realpathSync(b);
+  } catch {
+    return path.resolve(a) === path.resolve(b);
+  }
+}
+function claudeLocalBananiConfigured() {
+  const data = readJson(path.join(os.homedir(), ".claude.json"));
+  const projects = data?.projects && typeof data.projects === "object" ? data.projects : {};
+  for (const [projectPath, projectConfig] of Object.entries(projects)) {
+    if (!sameProject(projectPath, root)) continue;
+    const server = projectConfig?.mcpServers?.banani;
+    if (!server || typeof server !== "object") return false;
+    const url = typeof server.url === "string" ? server.url : "";
+    let urlOk = false;
+    try {
+      const u = new URL(url);
+      urlOk = u.protocol === "https:" && u.hostname === "app.banani.co";
+    } catch {}
+    const headers = server.headers && typeof server.headers === "object" ? server.headers : {};
+    const auth =
+      typeof headers.Authorization === "string"
+        ? headers.Authorization
+        : typeof headers.authorization === "string"
+          ? headers.authorization
+          : "";
+    const authOk =
+      /^Bearer\s+\S+/i.test(auth) ||
+      (typeof server.headersHelper === "string" && server.headersHelper.trim().length > 0);
+    return urlOk && authOk && (server.type === "http" || server.type == null);
+  }
+  return false;
+}
+const bananiMcpConfigured = claudeLocalBananiConfigured();
 const screens = readJson(path.join(root, "design/banani/screens.json"));
 const screensText = exists("design/banani/screens.json")
   ? fs.readFileSync(path.join(root, "design/banani/screens.json"), "utf8")
@@ -101,7 +129,7 @@ const handoffGenerated = exists("generated/deployment-handoff.md");
 const doctorReport = readJson(path.join(root, "generated/production-doctor.json"));
 const doctorGenerated = Boolean(doctorReport) || exists("generated/production-doctor.md");
 const doctorReady = doctorReport?.verdict === "READY";
-const computerUseState = readJson(path.join(root, ".africa-saas/computer-use.json"));
+const computerUseState = readJson(path.join(root, ".africa-saas/computer-use-claude.json"));
 const computerUseVerified = computerUseState?.status === "verified";
 
 const providerChecks = enabledProviders.map((id) => {
@@ -125,59 +153,59 @@ const phases = [
     n: 1,
     title: "Prendre connaissance du kit et de l’outillage",
     goal: "Vérifier que l’environnement local peut exécuter le starter et que l’IA a lu les règles du kit.",
-    role: "Cette phase vérifie que ton Mac, Antigravity et le kit disposent des fichiers/règles nécessaires pour travailler proprement.",
+    role: "Cette phase vérifie que ton Mac, Claude Code et le kit disposent des fichiers/règles nécessaires pour travailler proprement.",
     benefit:
       "Elle évite de commencer le projet avec un environnement incomplet ou une IA qui n’a pas lu les règles du starter.",
     checks: [
       { label: "Node.js >= 20", ok: nodeOk, detail: `Node ${process.versions.node}` },
-      { label: "AGENTS.md", ok: exists("AGENTS.md"), detail: "Règles IA du kit" },
+      { label: "CLAUDE.md", ok: exists("CLAUDE.md"), detail: "Source de vérité des règles IA du kit" },
       { label: "SECURITY.md", ok: exists("SECURITY.md"), detail: "Règles sécurité" },
       { label: "DESIGN.md", ok: exists("DESIGN.md"), detail: "Workflow Banani / design" },
     ],
     actions: [
-      "Ouvrir le dossier du kit dans Antigravity.",
-      "Dans l’Agent Antigravity, lancer `/setup-saas`.",
-      "L’IA doit lire AGENTS.md, SECURITY.md, DESIGN.md et README.md avant toute modification.",
+      "Ouvrir le dossier du kit dans Claude Code.",
+      "Dans Claude Code, lancer `/setup-saas`.",
+      "Claude Code doit lire CLAUDE.md, SECURITY.md, DESIGN.md et README.md avant toute modification.",
       "Exécuter `npm run features:list` pour connaître les fonctionnalités déjà présentes et éviter les doublons avant de coder.",
     ],
     validate: "Relancer `npm run setup-saas` et vérifier que la Phase 1 est verte.",
   },
   {
     n: 2,
-    title: "Activer et vérifier Computer Use / Browser Tools",
-    goal: "S’assurer qu’Antigravity peut réellement ouvrir et manipuler le navigateur pour assister les tests visuels tout au long du projet.",
-    role: "Antigravity intègre un Browser Subagent capable d’ouvrir, lire et manipuler Chrome. Cette phase vérifie son activation réelle; il n’existe pas de package npm computer-use à installer dans le SaaS.",
+    title: "Activer et vérifier Computer Use / Browser Claude Code",
+    goal: "S’assurer que Claude Code peut réellement ouvrir et manipuler un navigateur pour assister les tests visuels tout au long du projet.",
+    role: "Cette phase vérifie la capacité navigateur/Computer Use de Claude Code ou un serveur MCP navigateur explicitement autorisé; il n’existe pas de package npm computer-use à installer dans le SaaS.",
     benefit:
-      "Elle permet à l’IA de vérifier visuellement les pages, responsive, formulaires, OAuth, uploads, paiements sandbox, previews Vercel, SEO et domaine final au lieu de se limiter au code.",
+      "Elle permet à Claude Code de vérifier visuellement les pages, responsive, formulaires, OAuth, uploads, paiements sandbox, previews Vercel, SEO et domaine final au lieu de se limiter au code.",
     checks: [
       {
-        label: "Skill /computer-use",
-        ok: exists(".agents/skills/computer-use/SKILL.md"),
-        detail: "Workflow navigateur du kit",
+        label: "Skill Computer Use Claude",
+        ok: exists(".claude/skills/computer-use-claude/SKILL.md"),
+        detail: "Workflow navigateur Claude Code",
       },
       {
-        label: "Guide Browser Tools",
-        ok: exists("docs/computer-use/antigravity-browser.md"),
+        label: "Guide Browser Claude",
+        ok: exists("docs/ai/claude-computer-use.md"),
         detail: "Activation et règles de sécurité",
       },
       {
-        label: "Browser Subagent vérifié",
+        label: "Computer Use Claude vérifié",
         ok: computerUseVerified,
         detail: computerUseVerified
           ? `Preuve locale: ${computerUseState?.evidence || "test navigateur réussi"}`
-          : "NON VÉRIFIÉ — un vrai test navigateur est requis",
+          : "NON VÉRIFIÉ — un vrai test navigateur Claude Code est requis",
       },
     ],
     actions: [
-      "Exécuter `npm run computer-use:check`.",
-      "Dans Antigravity, ouvrir Settings → Browser et vérifier que Browser Tools ne sont pas désactivés. Aucun package npm supplémentaire n’est requis.",
-      "Conserver une politique de Request Review pour les actions navigateur sensibles et n’autoriser que les domaines nécessaires dans l’Allowlist.",
-      "Demander à l’agent d’utiliser réellement le Browser Subagent pour ouvrir `https://www.antigravity.google/docs/browser` et lire le titre de la page. Cette preuve ne dépend pas encore de `npm install`.",
-      'Après succès réel seulement, exécuter `npm run computer-use:mark -- --status=verified --evidence="Browser Subagent: documentation Antigravity ouverte et lue"`.',
-      "Relancer `npm run computer-use:check` puis `/setup-saas`.",
+      "Exécuter `npm run computer-use:claude:check`.",
+      "Utiliser le navigateur/Computer Use de Claude Code ou un serveur MCP navigateur autorisé.",
+      "Conserver une validation humaine pour les actions sensibles et n’autoriser que les domaines nécessaires.",
+      "Effectuer un vrai test navigateur sur une page utile du projet ou une documentation officielle.",
+      'Après succès réel seulement, exécuter `npm run computer-use:claude:mark -- --status=verified --evidence="test navigateur Claude Code réussi"`.',
+      "Relancer `npm run computer-use:claude:check` puis `/setup-saas`.",
     ],
     validate:
-      "La phase passe uniquement après une vraie action Browser Subagent observée. Hors Antigravity, utiliser un outil navigateur équivalent ou marquer cette phase `skipped` avec justification.",
+      "La phase passe uniquement après une vraie action navigateur Claude Code observée; sinon la laisser NON VÉRIFIÉE ou skipped avec justification.",
   },
   {
     n: 3,
@@ -191,7 +219,7 @@ const phases = [
       { label: "package.json", ok: exists("package.json"), detail: "Manifeste npm" },
     ],
     actions: [
-      "Dans le terminal Antigravity, exécuter `npm install`.",
+      "Dans le terminal de Claude Code, exécuter `npm install`.",
       "Ne pas supprimer `package-lock.json` après l’installation.",
       "Exécuter ensuite `npm run security:check` pour un premier contrôle.",
     ],
@@ -366,13 +394,11 @@ const phases = [
     checks: [
       { label: "DESIGN.md", ok: exists("DESIGN.md"), detail: "Règles design" },
       {
-        label: "Banani MCP via .codex/config.toml",
+        label: "Banani MCP via Claude Code (local)",
         ok: bananiMcpConfigured,
         detail: bananiMcpConfigured
-          ? "Configuré localement (token non affiché)"
-          : codexConfigExists
-            ? "Fichier présent mais Banani MCP non configuré"
-            : "À créer avec npm run banani:prepare",
+          ? "Connecté dans Claude Code; token non affiché"
+          : "Exécuter npm run banani:prepare puis connecter Banani avec Claude Code --scope local",
       },
       {
         label: "Écrans Banani réellement importés",
@@ -390,11 +416,10 @@ const phases = [
       },
     ],
     actions: [
-      "Exécuter `npm run banani:prepare`. Cette commande crée seulement `.codex/config.toml` vide si nécessaire et ne l’écrase jamais.",
-      "Ouvrir `.codex/config.toml` et coller MANUELLEMENT la configuration MCP Banani obtenue depuis ton compte Banani. Ne jamais coller le token dans le chat.",
-      "Exécuter `npm run banani:check` pour vérifier la structure et la protection Git sans afficher le token.",
-      "Redémarrer/recharger Codex ou Antigravity si nécessaire afin qu’il relise la configuration MCP.",
-      "Dans Antigravity/Codex, lancer `/import-banani` afin que l’agent parcoure le design via MCP et crée `design/banani/imported-design.json` sans secret.",
+      "Exécuter `npm run banani:prepare`. Cette commande vérifie Claude Code et affiche la commande de connexion locale sans écrire le token.",
+      "Dans un terminal, exécuter MANUELLEMENT la commande `claude mcp add --transport http banani --scope local ...` affichée, avec le token Banani. Ne jamais coller le token dans le chat ou Git.",
+      "Exécuter `npm run banani:check` pour vérifier la connexion locale Claude Code, l’URL officielle et le scope local, sans afficher le token.",
+      "Dans Claude Code, ouvrir `/mcp`, confirmer que `banani` est connecté puis lancer `/import-banani` afin de créer `design/banani/imported-design.json` sans secret.",
       "Exécuter `npm run import-banani:check` puis `npm run import-banani:analyze` pour comparer Banani au starter et synchroniser `design/banani/screens.json`.",
       "Lire `generated/banani-gap-analysis.md` : RÉUTILISER / ADAPTER / CRÉER / À CONFIRMER avant toute implémentation.",
       "Ne pas demander à Banani de décider des règles métier, des permissions ou de la sécurité.",
@@ -844,7 +869,7 @@ const phases = [
 
 const computerUseAssistByPhase = {
   1: "Ouvrir le dashboard local du kit et vérifier visuellement qu’il se charge sans erreur bloquante.",
-  2: "Utiliser réellement le Browser Subagent pour ouvrir la documentation Browser d’Antigravity; après la Phase 3, les preuves basculent sur localhost et /api/health.",
+  2: "Utiliser réellement Computer Use/Browser Claude Code; après la Phase 3, les preuves basculent sur localhost et /api/health.",
   3: "Après npm install, rafraîchir le dashboard local et vérifier que package-lock.json passe au vert.",
   4: "Après le wizard, rafraîchir le dashboard et vérifier que l’identité/configuration affichée correspond aux choix effectués.",
   5: "Le Browser Subagent peut guider dans Neon; après configuration, ouvrir /api/readyz et confirmer que la DB est healthy.",

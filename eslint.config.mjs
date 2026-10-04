@@ -35,7 +35,7 @@ export default defineConfig([
     "build/**",
     "generated/**",
     "next-env.d.ts",
-    "skills/providers/**/examples/**",
+    ".claude/skills/providers/**/examples/**",
     // Artefacts natifs générés par Capacitor / Gradle / Xcode.
     "android/**",
     "ios/**",

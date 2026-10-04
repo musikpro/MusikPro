@@ -44,7 +44,7 @@ add(
 );
 add(
   "official-skill",
-  fs.existsSync(path.join(root, ".agents/skills/mobile-app-pwa-capacitor/SKILL.md")),
+  fs.existsSync(path.join(root, ".claude/skills/mobile-app-pwa-capacitor/SKILL.md")),
   "Official mobile PWA + Capacitor skill present",
 );
 add(

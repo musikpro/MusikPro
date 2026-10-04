@@ -85,11 +85,11 @@ La V0.8.1 impose le modèle « webhook authentifié + relecture provider + compa
 
 Vitest est fixé à **4.1.11** pour rester compatible avec Better Auth 1.7.3. Une montée vers Vitest 5 doit être précédée d’une vérification des peer-dependencies et d’un `npm install` propre.
 
-## Banani MCP / Codex config
+## Banani MCP / Claude Code
 
-`.codex/config.toml` peut contenir un bearer token Banani et doit rester local. Il est ignoré par Git. Le kit ne doit jamais générer ni écrire automatiquement une valeur de token dans ce fichier.
+Banani se connecte avec Claude Code en scope local (`claude mcp add --scope local`, stocké dans `~/.claude.json`). Le token ne doit jamais entrer dans le dépôt, `.mcp.json` suivi par Git ou un chat. Le kit ne doit jamais générer ni écrire automatiquement une valeur de token.
 
-Avant de connecter Banani :
+Avant de connecter Banani (affiche la commande, n’écrit aucun secret) :
 
 ```bash
 npm run banani:prepare
@@ -101,7 +101,7 @@ Après configuration manuelle :
 npm run banani:check
 ```
 
-Si `.codex/config.toml` est déjà suivi par Git, retirer le fichier de l'index et **révoquer/régénérer** le token. Un token visible dans une capture, un chat ou un commit doit être considéré comme compromis.
+Si un fichier contenant le token Banani (`.mcp.json`, ancien `.codex/config.toml`) est suivi par Git, retirer le fichier de l'index et **révoquer/régénérer** le token. Un token visible dans une capture, un chat ou un commit doit être considéré comme compromis.
 
 ## V0.8.26 — garde-fou permanent de checklist sécurité
 

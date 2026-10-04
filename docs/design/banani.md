@@ -1,78 +1,53 @@
-# Banani — connexion MCP locale via `.codex/config.toml`
+# Banani — connexion MCP via Claude Code uniquement
 
-## Méthode officielle du kit
+## Règle officielle
 
-Africa SaaS Kit utilise désormais **`.codex/config.toml`** comme point de connexion local Banani pour Codex/Antigravity, car cette méthode s'est révélée la plus directe et la plus fiable dans le workflow utilisateur.
+Africa SaaS Kit connecte **Banani MCP / Implementation Planner uniquement à Claude Code (Anthropic)**.
 
-Le fichier est livré **vide** et le kit ne doit jamais y écrire automatiquement une URL, un token ou un exemple de secret.
+La connexion officielle utilise le **scope local Claude Code**, stocké par Claude Code dans `~/.claude.json` pour le projet courant. Aucun token Banani n'est écrit dans le dépôt.
 
-Préparer le fichier :
+## Préparation
 
 ```bash
 npm run banani:prepare
 ```
 
 Cette commande :
+- vérifie que Claude Code est disponible ;
+- n'écrit jamais de token ;
+- affiche la commande Claude Code à exécuter manuellement.
 
-- crée `.codex/config.toml` uniquement s'il n'existe pas ;
-- crée un fichier vide ;
-- ne remplace jamais un fichier déjà configuré ;
-- essaie d'appliquer des permissions locales restrictives ;
-- n'écrit aucun token.
+## Connexion Claude Code
 
-Ensuite, ouvre `.codex/config.toml` et colle **manuellement** la configuration MCP fournie par ton propre compte Banani. La forme attendue est de ce type, avec ton token local à la place du placeholder :
+Depuis un terminal ouvert à la racine du projet, exécute manuellement :
 
-```toml
-[mcp_servers.banani]
-url = "https://app.banani.co/api/mcp/mcp"
-http_headers = { "Authorization" = "Bearer <TON_TOKEN_BANANI>" }
+```bash
+claude mcp add --transport http banani --scope local https://app.banani.co/api/mcp/mcp --header "Authorization: Bearer <TON_TOKEN_BANANI>"
 ```
 
-> Ne copie jamais une vraie valeur de token dans une documentation, un chat, une capture publique ou Git.
+Remplace le placeholder uniquement dans ton terminal local. Ne colle jamais le token dans le chat, Git, `.mcp.json`, une capture ou un rapport.
 
-Vérifier sans afficher le token :
+Ensuite, dans Claude Code, ouvre `/mcp` et confirme que `banani` est connecté.
+
+## Vérification
 
 ```bash
 npm run banani:check
 ```
 
-Le contrôle vérifie :
+Le contrôle vérifie sans afficher le token :
+- qu'aucune entrée Banani project-scope n'est committée dans `.mcp.json` ;
+- qu'un serveur `banani` existe dans le scope local Claude Code du projet ;
+- que l'URL est HTTPS et utilise `app.banani.co` ;
+- qu'une authentification Bearer ou un `headersHelper` est présent.
 
-- présence de `.codex/config.toml` ;
-- présence de la section Banani MCP ;
-- présence de l'URL et d'un bearer token, sans imprimer sa valeur ;
-- couverture par `.gitignore` ;
-- absence du fichier dans les fichiers suivis par Git.
+## Import et Implementation Planner
 
-## Sécurité Git
+Après connexion réussie :
+1. lance `/import-banani` **dans Claude Code** ;
+2. laisse Claude Code observer les écrans via Banani MCP ;
+3. génère `design/banani/imported-design.json` sans secret ;
+4. exécute `npm run import-banani:check` puis `npm run import-banani:analyze` ;
+5. lis le gap analysis et `generated/implementation-plan.md` avant de coder.
 
-`.codex/config.toml` est explicitement ignoré par Git. Il peut contenir un bearer token et doit rester **strictement local**.
-
-Si un token apparaît dans :
-
-- une capture d'écran ;
-- une issue ;
-- un commit ;
-- un chat ;
-- un fichier partagé ;
-
-considère-le comme compromis et **révoque/régénère-le immédiatement** dans Banani.
-
-## Import des écrans
-
-Une fois MCP connecté :
-
-1. demande à Codex/Antigravity d'accéder aux écrans Banani ;
-2. inventorie les écrans réellement importés dans `design/banani/screens.json` ;
-3. conserve les décisions visuelles dans `DESIGN.md` ;
-4. lance `npm run design:check` ;
-5. lance `npm run design:plan` avant le développement massif.
-
-Banani ne décide jamais automatiquement :
-
-- des permissions ;
-- de l'authentification ;
-- des règles métier ;
-- des paiements ;
-- des secrets ;
-- de la validation serveur.
+Les artefacts générés sont ensuite utilisés directement dans la même session/progression Claude Code.

@@ -10,10 +10,10 @@ if (!fs.existsSync(policyPath)) {
 }
 const policy = JSON.parse(fs.readFileSync(policyPath, "utf8"));
 const failures = [];
-for (const file of ["AGENTS.md", "CLAUDE.md", "docs/security/agent-safety.md"]) {
+for (const file of ["CLAUDE.md", "docs/security/agent-safety.md"]) {
   if (!fs.existsSync(path.join(root, file))) failures.push(`${file} manquant`);
 }
-for (const file of ["AGENTS.md", "CLAUDE.md"]) {
+for (const file of ["CLAUDE.md"]) {
   if (!fs.existsSync(path.join(root, file))) continue;
   const source = fs.readFileSync(path.join(root, file), "utf8");
   for (const marker of ["Agent Safety Gate", "git reset --hard", "DROP TABLE", "sandbox → live", ".env.local"]) {
@@ -32,7 +32,9 @@ const walk = (dir) => {
 };
 walk(path.join(root, "scripts"));
 const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
-const sources = executable.filter((file) => path.relative(root, file).replaceAll("\\", "/") !== "scripts/agent-safety-check.mjs").map((file) => [path.relative(root, file), fs.readFileSync(file, "utf8")]);
+const sources = executable
+  .filter((file) => path.relative(root, file).replaceAll("\\", "/") !== "scripts/agent-safety-check.mjs")
+  .map((file) => [path.relative(root, file), fs.readFileSync(file, "utf8")]);
 sources.push(["package.json#scripts", Object.values(pkg.scripts || {}).join("\n")]);
 for (const raw of policy.forbiddenExecutablePatterns || []) {
   const re = new RegExp(raw, "i");

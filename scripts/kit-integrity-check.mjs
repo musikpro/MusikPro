@@ -5,11 +5,10 @@ import path from "node:path";
 const root = process.cwd();
 
 const requiredFiles = [
-  ".agents/skills/setup-saas/SKILL.md",
-  ".agents/skills/security-saas/SKILL.md",
-  ".agents/skills/claude-code/SKILL.md",
-  ".agents/skills/computer-use-claude/SKILL.md",
-  "AGENTS.md",
+  ".claude/skills/setup-saas/SKILL.md",
+  ".claude/skills/security-saas/SKILL.md",
+  ".claude/skills/claude-code/SKILL.md",
+  ".claude/skills/computer-use-claude/SKILL.md",
   "README.md",
   "SECURITY.md",
   "DESIGN.md",
@@ -21,8 +20,6 @@ const requiredFiles = [
   "scripts/mobile-store-check.mjs",
   "config/mobile-dependencies.json",
   "scripts/dependency-contract-check.mjs",
-  "scripts/agent-rules-sync.mjs",
-  "scripts/agent-rules-sync-check.mjs",
   "scripts/access-control-check.mjs",
   "lib/auth/organization-access.ts",
   "docs/security/access-control-multitenant.md",
@@ -86,7 +83,7 @@ const requiredFiles = [
 
 const failures = [];
 
-const frenchInstructionFiles = ["AGENTS.md", "CLAUDE.md", ".claude/README.md", ".codex/README.md"];
+const frenchInstructionFiles = ["CLAUDE.md", ".claude/README.md"];
 for (const rel of frenchInstructionFiles) {
   const abs = path.join(root, rel);
   if (!fs.existsSync(abs)) continue;
@@ -96,7 +93,7 @@ for (const rel of frenchInstructionFiles) {
   }
 }
 
-const refactorInstructionFiles = ["AGENTS.md", "CLAUDE.md", ".claude/README.md", ".codex/README.md"];
+const refactorInstructionFiles = ["CLAUDE.md", ".claude/README.md"];
 for (const rel of refactorInstructionFiles) {
   const abs = path.join(root, rel);
   if (!fs.existsSync(abs)) continue;
@@ -109,7 +106,7 @@ for (const rel of refactorInstructionFiles) {
   }
 }
 
-const skillsRoot = path.join(root, ".agents/skills");
+const skillsRoot = path.join(root, ".claude/skills");
 if (fs.existsSync(skillsRoot)) {
   for (const entry of fs.readdirSync(skillsRoot, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
@@ -117,10 +114,10 @@ if (fs.existsSync(skillsRoot)) {
     if (!fs.existsSync(abs)) continue;
     const content = fs.readFileSync(abs, "utf8");
     if (!/Langue de réponse/i.test(content) || !/français/i.test(content)) {
-      failures.push(`.agents/skills/${entry.name}/SKILL.md — règle de langue française absente`);
+      failures.push(`.claude/skills/${entry.name}/SKILL.md — règle de langue française absente`);
     }
     if (!/Règle de refactorisation/i.test(content) || !/refactorisation[^\n]*(propre|professionnelle)/i.test(content)) {
-      failures.push(`.agents/skills/${entry.name}/SKILL.md — règle de refactorisation non régressive absente`);
+      failures.push(`.claude/skills/${entry.name}/SKILL.md — règle de refactorisation non régressive absente`);
     }
   }
 }
@@ -134,27 +131,27 @@ for (const rel of requiredFiles) {
   if (!stat.isFile() || stat.size === 0) failures.push(`${rel} — empty or invalid`);
 }
 
-const skillPath = path.join(root, ".agents/skills/setup-saas/SKILL.md");
+const skillPath = path.join(root, ".claude/skills/setup-saas/SKILL.md");
 if (fs.existsSync(skillPath)) {
   const text = fs.readFileSync(skillPath, "utf8");
   if (!/^name:\s*setup-saas\s*$/m.test(text))
-    failures.push(".agents/skills/setup-saas/SKILL.md — invalid skill metadata");
-  if (!/\/setup-saas/.test(text)) failures.push(".agents/skills/setup-saas/SKILL.md — setup-saas instructions missing");
+    failures.push(".claude/skills/setup-saas/SKILL.md — invalid skill metadata");
+  if (!/\/setup-saas/.test(text)) failures.push(".claude/skills/setup-saas/SKILL.md — setup-saas instructions missing");
   if (!/PWA \+ Capacitor/i.test(text) || !/Phase 21/.test(text))
-    failures.push(".agents/skills/setup-saas/SKILL.md — Phase 21 PWA + Capacitor guidance missing");
+    failures.push(".claude/skills/setup-saas/SKILL.md — Phase 21 PWA + Capacitor guidance missing");
   if (!/CRUD Clients/i.test(text) || !/post-Banani/i.test(text))
-    failures.push(".agents/skills/setup-saas/SKILL.md — post-Banani CRUD Clients guidance missing");
+    failures.push(".claude/skills/setup-saas/SKILL.md — post-Banani CRUD Clients guidance missing");
   if (!/Staging Gate obligatoire/i.test(text) || !/staging:approve/.test(text))
-    failures.push(".agents/skills/setup-saas/SKILL.md — mandatory staging guidance missing");
+    failures.push(".claude/skills/setup-saas/SKILL.md — mandatory staging guidance missing");
 }
 
-const securitySkillPath = path.join(root, ".agents/skills/security-saas/SKILL.md");
+const securitySkillPath = path.join(root, ".claude/skills/security-saas/SKILL.md");
 if (fs.existsSync(securitySkillPath)) {
   const text = fs.readFileSync(securitySkillPath, "utf8");
   if (!/^name:\s*security-saas\s*$/m.test(text))
-    failures.push(".agents/skills/security-saas/SKILL.md — invalid skill metadata");
+    failures.push(".claude/skills/security-saas/SKILL.md — invalid skill metadata");
   if (!/\/security-saas/.test(text) || !/Zod/i.test(text) || !/RLS/i.test(text))
-    failures.push(".agents/skills/security-saas/SKILL.md — security audit guidance incomplete");
+    failures.push(".claude/skills/security-saas/SKILL.md — security audit guidance incomplete");
 }
 
 const adminLayoutPath = path.join(root, "app/admin/layout.tsx");
@@ -207,4 +204,4 @@ if (failures.length) {
 }
 
 console.log(`Kit integrity: PASS — ${requiredFiles.length} critical files verified.`);
-console.log("Critical skills: .agents/skills/setup-saas/SKILL.md + .agents/skills/security-saas/SKILL.md");
+console.log("Critical skills: .claude/skills/setup-saas/SKILL.md + .claude/skills/security-saas/SKILL.md");

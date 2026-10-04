@@ -1,6 +1,6 @@
 # Africa SaaS Kit — instructions Claude Code
 
-Claude Code est un agent officiellement supporté par ce kit, au même titre que Codex/Antigravity.
+Claude Code est l’unique agent de développement officiellement supporté par ce kit. `CLAUDE.md` est la source de vérité unique des règles ; les skills sont centralisés dans `.claude/skills/` (providers : `.claude/skills/providers/`).
 
 ## Langue obligatoire
 
@@ -71,8 +71,8 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 
 ## Sources de vérité
 
-- Lire `AGENTS.md`, `README.md`, `SECURITY.md`, `DESIGN.md` avant une refactorisation importante.
-- Réutiliser les workflows de `.agents/skills/` au lieu de créer une deuxième logique divergente.
+- Lire `README.md`, `SECURITY.md`, `DESIGN.md` avant une refactorisation importante.
+- Réutiliser les workflows de `.claude/skills/` au lieu de créer une deuxième logique divergente.
 - Les commandes Claude Code dans `.claude/commands/` pointent vers les mêmes scripts npm que le reste du kit.
 
 ## Règles de travail
@@ -83,11 +83,10 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Toute entrée non fiable doit être validée côté serveur avec Zod.
 - Avant production: `npm run kit:verify`, `npm run security-saas`, staging Vercel approuvé, puis `npm run deploy:production:check`.
 - Pour le CRUD Clients, respecter l’ordre Banani → plan → Prisma Client → `/api/clients/*`.
-- La partie Android/iOS reste optionnelle et suit `.agents/skills/mobile-app-pwa-capacitor/SKILL.md` : **Next.js serveur + PWA + Capacitor**. Le mode WebView simple est déprécié et `output: export` est interdit.
+- La partie Android/iOS reste optionnelle et suit `.claude/skills/mobile-app-pwa-capacitor/SKILL.md` : **Next.js serveur + PWA + Capacitor**. Le mode WebView simple est déprécié et `output: export` est interdit.
 
 ## Computer Use / Browser
 
-- Vérifier séparément OpenAI et Claude Code sur la page État de préparation.
 - Pour Claude Code, exécuter `npm run computer-use:claude:check`. Après un vrai test navigateur/computer réussi, enregistrer la preuve avec `npm run computer-use:claude:mark -- --status=verified --evidence="..."`.
 - Ne jamais afficher le voyant vert sur simple présence d’un fichier de configuration: un test réel doit avoir été marqué `verified`.
 - Computer Use complète les tests de code; il ne remplace pas lint, typecheck, tests, build, sécurité, Zod ou staging.
@@ -97,21 +96,12 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - `/setup-saas` : parcours guidé 21 phases.
 - `/security-saas` : audit de sécurité.
 - `/import-banani` : import et analyse des écrans Banani.
-- `/computer-use` : vérification Computer Use OpenAI/Antigravity.
 - `/computer-use-claude` : vérification Computer Use / Browser pour Claude Code.
 
-## Synchronisation obligatoire avec AGENTS.md
-
-- **Aucune règle générale présente dans `AGENTS.md` ne peut manquer dans `CLAUDE.md`.**
-- Le bloc ci-dessous est un miroir intégral de `AGENTS.md`; il doit rester strictement synchronisé. Ne pas le modifier à la main.
-- Après toute modification de `AGENTS.md`, exécuter `npm run agents:rules-sync` puis `npm run agents:rules-check`.
-- Les règles propres à ce projet, écrites hors du bloc miroir, priment en cas de doute et ne doivent jamais être affaiblies par lui.
-
-<!-- AGENTS_MIRROR_START -->
 # Règle prioritaire — langue de réponse
 
 - **Toujours répondre à l’utilisateur en français.**
-- Les explications, diagnostics, résumés, demandes de confirmation et recommandations doivent être rédigés en français, quel que soit l’agent utilisé (ChatGPT/Codex/Antigravity ou Claude Code).
+- Les explications, diagnostics, résumés, demandes de confirmation et recommandations doivent être rédigés en français, quel que soit l’agent utilisé (Claude Code).
 - Les commandes, noms de fichiers, identifiants de code, noms d’API et messages techniques peuvent rester dans leur forme originale quand cela évite de casser ou d’altérer le code.
 - Ne changer de langue que si l’utilisateur demande explicitement une autre langue pour une réponse précise.
 
@@ -126,7 +116,7 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 
 # Règle prioritaire — Mobile App Pipeline PWA + Capacitor
 
-- `.agents/skills/mobile-app-pwa-capacitor/SKILL.md` est la source de vérité permanente pour toute création, migration, mise à jour ou réparation mobile.
+- `.claude/skills/mobile-app-pwa-capacitor/SKILL.md` est la source de vérité permanente pour toute création, migration, mise à jour ou réparation mobile.
 - L’architecture officielle et unique est **Next.js serveur + PWA + Capacitor → Android + iOS**. L’ancienne stratégie WebView mobile est supprimée et ne doit pas être réintroduite.
 - Ne jamais ajouter `output: 'export'` ni déplacer le backend, Neon/Prisma/Drizzle, auth, paiements, webhooks, IA ou secrets dans l’app.
 - La Phase 21 native est optionnelle. `mobileAppEnabled=false` reste valide; la PWA Web peut rester disponible sans projets Android/iOS.
@@ -139,7 +129,7 @@ Claude Code est un agent officiellement supporté par ce kit, au même titre que
 - Conserver une **CSP à nonce pour `script-src`, sans `unsafe-inline`** ; `style-src` garde volontairement `'unsafe-inline'` dans MusikPro (usage généralisé de `style={{}}` React, voir `lib/security/headers.ts`). Toute évolution de script/style tiers doit passer `npm run security:csp-check`.
 - Ne jamais présenter lint/typecheck/tests/build/npm audit comme réussis si les dépendances ne sont pas réellement installées. Utiliser `PENDING` lorsque l’environnement ne permet pas leur exécution.
 - Avant `npm install`, `npm run first-run:install` doit vérifier l’accès au registre npm et fournir un diagnostic clair en cas de problème réseau.
-- Les exemples de providers dans `skills/providers/**/examples/**` sont de la documentation/intégration et ne doivent pas polluer le typecheck du runtime principal.
+- Les exemples de providers dans `.claude/skills/providers/**/examples/**` sont de la documentation/intégration et ne doivent pas polluer le typecheck du runtime principal.
 
 ## Upstash optionnel
 
@@ -169,9 +159,9 @@ Les providers de paiement ne sont **jamais obligatoires** pour utiliser, constru
 
 # /setup-saas — point d’entrée officiel du kit
 
-Quand l’utilisateur écrit exactement `/setup-saas` dans Antigravity/Codex :
+Quand l’utilisateur écrit exactement `/setup-saas` dans Claude Code :
 
-1. Lire `.agents/skills/setup-saas/SKILL.md`.
+1. Lire `.claude/skills/setup-saas/SKILL.md`.
 2. Exécuter `npm run setup-saas`.
 3. Lire `generated/setup-saas-report.md` et `generated/setup-saas-report.json`.
 4. Présenter la roadmap complète des **21 phases** avec 🟢 / 🟡 / 🔴 / ⚪ et une courte explication du rôle de chaque phase.
@@ -196,13 +186,13 @@ Avant toute action dans une phase `/setup-saas`, expliquer en langage simple :
 
 ## Banani / Design
 
-Pour connecter Banani dans Codex/Antigravity :
+Pour connecter Banani dans Claude Code (scope local uniquement) :
 
-1. Exécute `npm run banani:prepare`. Cette commande doit seulement créer `.codex/config.toml` vide s’il manque et ne jamais écraser une configuration existante.
-2. Demande à l’utilisateur d’ouvrir `.codex/config.toml` et d’y coller lui-même la configuration MCP fournie par Banani.
+1. Exécute `npm run banani:prepare` : il affiche la commande `claude mcp add --transport http banani --scope local ...` sans écrire de secret.
+2. Demande à l’utilisateur d’exécuter lui-même cette commande dans son terminal avec son token Banani.
 3. Ne demande jamais le token Banani dans le chat et ne l’écris jamais automatiquement dans un fichier.
-4. Exécute `npm run banani:check` après configuration. Le contrôle ne doit jamais afficher la valeur du token.
-5. `.codex/config.toml` doit rester ignoré par Git. Si le fichier est suivi par Git ou si un token a été exposé, demander une rotation/révocation du token avant de continuer.
+4. Exécute `npm run banani:check` après configuration. Le contrôle valide `~/.claude.json` pour le projet courant sans jamais afficher la valeur du token.
+5. Banani ne doit jamais être configuré dans `.mcp.json` ni dans un fichier suivi par Git. Si un token a été exposé, demander une rotation/révocation du token avant de continuer.
 
 Quand des écrans Banani, Figma ou captures sont importés :
 
@@ -219,7 +209,7 @@ Quand des écrans Banani, Figma ou captures sont importés :
 
 Quand l’utilisateur saisit `/import-banani` après avoir connecté Banani :
 
-1. Lire `.agents/skills/import-banani/SKILL.md`.
+1. Lire `.claude/skills/import-banani/SKILL.md`.
 2. Exécuter `npm run banani:check`.
 3. Utiliser les outils MCP Banani réellement disponibles pour parcourir le projet et observer **tous les écrans accessibles** ; ne jamais inventer un nom d’outil MCP.
 4. Écrire le snapshot sans secret dans `design/banani/imported-design.json` selon `design/banani/import-schema.json`.
@@ -319,16 +309,14 @@ Quand l'utilisateur demande de mettre le SaaS en ligne, de connecter GitHub/Verc
 
 Gate de livraison : une mise en ligne sans `generated/deployment-handoff.md` actualisé est INCOMPLÈTE.
 
-## Computer Use / Browser Tools — vérification continue obligatoire dans Antigravity
+## Computer Use / Browser Tools — vérification continue obligatoire dans Claude Code
 
-- Dans Antigravity, la capacité navigateur est fournie par le **Browser Subagent / Browser Tools**; ne jamais inventer un package npm `computer-use`.
-- La Phase 2 doit vérifier cette capacité par une vraie action navigateur avant de poursuivre. Utiliser `npm run computer-use:check`, puis marquer une preuve réelle avec `npm run computer-use:mark`.
-- Si Browser Tools sont désactivés : guider vers **Settings → Browser → Browser Tools** et demander leur activation.
-- Pour les actions sensibles, recommander **Request Review** et respecter l’Allowlist/Denylist; ne jamais désactiver les garde-fous pour gagner du temps.
+- La capacité navigateur est fournie par Claude Code (Chrome/Computer Use) ou un serveur MCP navigateur explicitement autorisé; ne jamais inventer un package npm `computer-use`.
+- La Phase 2 doit vérifier cette capacité par une vraie action navigateur avant de poursuivre. Utiliser `npm run computer-use:claude:check`, puis marquer une preuve réelle avec `npm run computer-use:claude:mark`.
 - Pendant toutes les phases suivantes, utiliser Computer Use lorsqu’une surface web/visuelle doit être vérifiée : pages Banani, responsive, loading/empty/error, auth/OAuth, uploads, checkout sandbox, health/readiness, Vercel Preview, domaine final, SEO et Search Console.
 - Une observation navigateur ne remplace jamais `test`, `typecheck`, `build`, `security:audit`, signature webhook ou `conformity:check`.
 - L’utilisateur garde le contrôle des identifiants, MFA, achats, DNS critiques et passage sandbox → live.
-- Si Computer Use est indisponible hors Antigravity, marquer la vérification `NON VÉRIFIÉE` ou `skipped` avec justification et fournir un test manuel équivalent.
+- Si Computer Use est indisponible, marquer la vérification `NON VÉRIFIÉE` ou `skipped` avec justification et fournir un test manuel équivalent.
 
 ## Mémoire de progression locale
 
@@ -362,7 +350,7 @@ Les migrations sont Drizzle et doivent être versionnées dans `db/migrations/`.
 
 ## Commande provider — obligatoire
 
-Quand l'utilisateur saisit `/provider`, utilise `.agents/skills/provider/SKILL.md` comme workflow officiel.
+Quand l'utilisateur saisit `/provider`, utilise `.claude/skills/provider/SKILL.md` comme workflow officiel.
 
 - `/provider` ou `/provider list` : énumérer tous les providers, la commande à utiliser, le statut du skill et la maturité de l'adaptateur.
 - `/provider <nom>` : lire `config/provider-skills.json`, puis charger uniquement les fichiers indiqués pour ce provider.
@@ -470,10 +458,9 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 ## Claude Code — agent officiellement supporté
 
 - Lire `CLAUDE.md` lorsqu’une session est exécutée avec Claude Code.
-- Les commandes `.claude/commands/` doivent réutiliser les scripts npm et les skills `.agents/skills/`; ne pas créer une deuxième logique métier.
+- Les commandes `.claude/commands/` doivent réutiliser les scripts npm et les skills `.claude/skills/`; ne pas créer une deuxième logique métier.
 - Exécuter `npm run claude-code:check` après installation/mise à jour de Claude Code.
 - Pour Computer Use/Browser Claude Code, exécuter `npm run computer-use:claude:check`; le voyant ne devient vert qu’après un vrai test enregistré via `npm run computer-use:claude:mark -- --status=verified --evidence="..."`.
-- Le statut OpenAI et le statut Claude Code sont indépendants. Ne jamais copier automatiquement la preuve de l’un vers l’autre.
 
 ## État production propriétaire — obligatoire et permanent
 
@@ -485,13 +472,10 @@ Toutes les pages métier du tableau de bord du propriétaire du SaaS et toutes l
 - Le tableau de bord n'invente jamais son propre état : il lit le dernier rapport produit par `npm run doctor:production` ou `npm run doctor:production:online`; le CLI demeure la source de vérité.
 - Après toute modification du dashboard propriétaire, vérifier que le menu **État production** est toujours présent, puis exécuter `npm run kit:integrity` et `npm run doctor:production`.
 
-## Parité AGENTS.md → CLAUDE.md — obligatoire et permanente
+## Source de vérité unique — CLAUDE.md
 
-- `AGENTS.md` est la source de vérité des règles générales Codex/ChatGPT/Antigravity.
-- **Aucune règle, interdiction, gate ou exigence générale de `AGENTS.md` ne peut manquer dans `CLAUDE.md`.**
-- Après toute modification de `AGENTS.md`, exécuter `npm run agents:rules-sync` puis `npm run agents:rules-check` avant de considérer la refactorisation terminée.
-- `CLAUDE.md` peut contenir des compléments spécifiques à Claude Code, mais ils ne doivent jamais affaiblir, contourner ou contredire le bloc miroir issu de `AGENTS.md`.
-- Toute divergence AGENTS → CLAUDE est bloquante pour `claude-code:check`, `kit:integrity`, `verify:code`, `verify:production` et la CI.
+- `CLAUDE.md` est la seule source de vérité des règles de l’agent. Aucun `AGENTS.md`, `.codex/`, `.agents/` ni dossier racine `skills/` ne doit être réintroduit : `claude-code:check` le refuse.
+- Les skills officiels vivent dans `.claude/skills/` ; les skills providers dans `.claude/skills/providers/`.
 
 ## Mobile Store Safety
 Pour PWA + Capacitor, ne jamais déclarer une application prête Play Store/App Store tant que `npm run mobile:store-check` ne passe pas. `server.url`/`allowNavigation` sont réservés au développement distant et ne constituent pas une configuration native de production. MusikPro utilise volontairement ce mode distant (wrapper vers `musikpro.net`) : `mobile:store-check` y échoue tant qu’un shell bundlé n’existe pas, ce qui est le comportement attendu et n’est pas une régression.
@@ -515,7 +499,7 @@ Pour PWA + Capacitor, ne jamais déclarer une application prête Play Store/App 
 
 ## Project Handoff — continuité de contexte entre sessions/agents
 
-- `AGENTS.md` / `CLAUDE.md` conservent les règles permanentes ; `generated/project-handoff.md` conserve l'état courant du travail sans secret.
+- `CLAUDE.md` conserve les règles permanentes ; `generated/project-handoff.md` conserve l'état courant du travail sans secret.
 - Au début d'une reprise de projet, lire `generated/project-handoff.md` s'il existe avant de proposer une architecture ou une nouvelle dépendance.
 - Après une modification importante, avant de changer d'agent/session ou avant un handoff, exécuter `npm run context:handoff`.
 - Le handoff doit rappeler version, feature en cours, plan, dernier état des tests, fichiers modifiés et prochaines actions sans lire ni afficher les valeurs de `.env.local`.
@@ -569,4 +553,3 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
-<!-- AGENTS_MIRROR_END -->

@@ -1,5 +1,5 @@
 .next
 node_modules
 generated
-skills/providers/**/examples
+.claude/skills/providers/**/examples
 package-lock.json

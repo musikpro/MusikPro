@@ -345,7 +345,7 @@
         "DESIGN.md",
         "design/banani/screens.json",
         "scripts/generate-implementation-plan.mjs",
-        ".agents/skills/import-banani/SKILL.md",
+        ".claude/skills/import-banani/SKILL.md",
         "design/banani/import-schema.json",
         "scripts/import-banani-analyze.mjs",
         "scripts/import-banani-check.mjs",
@@ -410,19 +410,19 @@
       "dependsOn": []
     },
     "computer-use": {
-      "description": "Assistance navigateur/Computer Use Antigravity pour vérification continue du SaaS",
+      "description": "Assistance navigateur/Computer Use Claude Code pour vérification continue du SaaS",
       "optional": "environment-conditional",
       "env": [],
       "files": [
-        ".agents/skills/computer-use/SKILL.md",
-        "scripts/computer-use-check.mjs",
-        "scripts/computer-use-mark.mjs",
-        "docs/computer-use/antigravity-browser.md"
+        ".claude/skills/computer-use-claude/SKILL.md",
+        "scripts/computer-use-claude-check.mjs",
+        "scripts/computer-use-claude-mark.mjs",
+        "docs/ai/claude-computer-use.md"
       ],
       "routes": [],
-      "removalComplexity": "safe-outside-antigravity",
+      "removalComplexity": "safe",
       "dependsOn": [],
-      "disableBehavior": "Hors Antigravity, utiliser un outil navigateur équivalent ou marquer la phase Computer Use skipped avec justification. Dans Antigravity, Browser Tools doivent être vérifiés avant de poursuivre."
+      "disableBehavior": "Sans navigateur Claude Code, utiliser un outil navigateur équivalent ou marquer la phase Computer Use skipped avec justification."
     },
     "upstash": {
       "description": "Upstash Redis optionnel pour cache TTL, rate limiting distribué et états temporaires",
@@ -543,7 +543,7 @@
       "optional": false,
       "env": [],
       "files": [
-        ".agents/skills/security-saas/SKILL.md",
+        ".claude/skills/security-saas/SKILL.md",
         "scripts/security-saas.mjs",
         "lib/security/security-saas-report.ts",
         "docs/security/security-saas-command.md"
@@ -588,7 +588,7 @@
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": [],
-      "disableBehavior": "Le SaaS et les workflows OpenAI/Codex restent utilisables sans Claude Code."
+      "disableBehavior": "Le SaaS reste utilisable sans Claude Code ; seul le pilotage par agent est concerné."
     },
     "musikpro-demo": {
       "description": "Parcours public /demo sans mot de passe, isolé du tableau de bord authentifié : fixtures, contexte client en mémoire, formulaires Zod UX, aucune API métier ni mutation Neon.",
@@ -889,7 +889,7 @@
         "app/api/music/generate/route.ts",
         "app/api/music/jobs/[id]/route.ts",
         "app/api/music/jobs/[id]/wav/route.ts",
-        ".agents/skills/Musicful-v2-MP3-Only-SKILL.md"
+        ".claude/skills/Musicful-v2-MP3-Only-SKILL.md"
       ],
       "routes": [
         "/api/music/generate",
@@ -1198,7 +1198,7 @@
         "continuous-refactor-gate"
       ],
       "notes": [
-        "Ne crée pas un second système de règles : AGENTS.md reste la source de vérité et CLAUDE.md son miroir.",
+        "Ne crée pas un second système de règles : CLAUDE.md est la source de vérité unique.",
         "Le handoff généré ne lit ni n’affiche les secrets de .env.local."
       ]
     },

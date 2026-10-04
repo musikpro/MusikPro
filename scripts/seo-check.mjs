@@ -49,9 +49,9 @@ if (fs.existsSync("app/robots.ts")) {
   }
 }
 
-if (fs.existsSync("AGENTS.md")) {
-  const text = fs.readFileSync("AGENTS.md", "utf8");
-  if (!text.includes("SEO Gate") || !text.includes("npm run seo:check")) errors.push("AGENTS.md SEO Gate missing");
+if (fs.existsSync("CLAUDE.md")) {
+  const text = fs.readFileSync("CLAUDE.md", "utf8");
+  if (!text.includes("SEO Gate") || !text.includes("npm run seo:check")) errors.push("CLAUDE.md SEO Gate missing");
 }
 
 if (errors.length) {

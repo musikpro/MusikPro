@@ -7,18 +7,29 @@ const exists = (rel) => fs.existsSync(path.join(root, rel));
 const read = (rel) => fs.readFileSync(path.join(root, rel), "utf8");
 const failures = [];
 
-for (const file of ["docs/quality/ai-development-quality.md", "docs/plans/README.md", "scripts/feature-plan.mjs", "config/features.json", "AGENTS.md", "CLAUDE.md"]) {
+for (const file of [
+  "docs/quality/ai-development-quality.md",
+  "docs/plans/README.md",
+  "scripts/feature-plan.mjs",
+  "config/features.json",
+  "CLAUDE.md",
+]) {
   if (!exists(file)) failures.push(`${file} manquant`);
 }
 
-if (exists("AGENTS.md") && !/PLAN\s*→\s*SPEC\s*→\s*TEST\s*→\s*CODE/i.test(read("AGENTS.md"))) failures.push("AGENTS.md ne contient pas la règle PLAN → SPEC → TEST → CODE");
-if (exists("CLAUDE.md") && !/PLAN\s*→\s*SPEC\s*→\s*TEST\s*→\s*CODE/i.test(read("CLAUDE.md"))) failures.push("CLAUDE.md ne contient pas la règle PLAN → SPEC → TEST → CODE");
+if (exists("CLAUDE.md") && !/PLAN\s*→\s*SPEC\s*→\s*TEST\s*→\s*CODE/i.test(read("CLAUDE.md")))
+  failures.push("CLAUDE.md ne contient pas la règle PLAN → SPEC → TEST → CODE");
+if (exists("CLAUDE.md") && !/PLAN\s*→\s*SPEC\s*→\s*TEST\s*→\s*CODE/i.test(read("CLAUDE.md")))
+  failures.push("CLAUDE.md ne contient pas la règle PLAN → SPEC → TEST → CODE");
 
 const statePath = ".africa-saas/current-feature.json";
 let active = null;
 if (exists(statePath)) {
-  try { active = JSON.parse(read(statePath)); }
-  catch { failures.push(`${statePath} illisible`); }
+  try {
+    active = JSON.parse(read(statePath));
+  } catch {
+    failures.push(`${statePath} illisible`);
+  }
 }
 
 if (active?.plan) {
@@ -39,7 +50,8 @@ if (active?.plan) {
       "## Plan d'implémentation",
       "## Rollback / réversibilité",
     ];
-    for (const marker of required) if (!plan.includes(marker)) failures.push(`${active.plan}: section manquante ${marker}`);
+    for (const marker of required)
+      if (!plan.includes(marker)) failures.push(`${active.plan}: section manquante ${marker}`);
   }
 }
 
@@ -48,4 +60,6 @@ if (failures.length) {
   for (const failure of failures) console.error(`- ${failure}`);
   process.exit(1);
 }
-console.log(`Feature Plan/SPEC Gate — PASS${active?.plan ? ` — plan actif ${active.plan}` : " — aucun chantier majeur actif"}.`);
+console.log(
+  `Feature Plan/SPEC Gate — PASS${active?.plan ? ` — plan actif ${active.plan}` : " — aucun chantier majeur actif"}.`,
+);

@@ -1,8 +1,47 @@
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { neon } from "@neondatabase/serverless";
 import providersCatalog from "@/config/providers.json";
+
+/** Banani MCP est valide s'il est configuré en scope local Claude Code (~/.claude.json) pour ce projet ; le token n'est jamais lu hors de ce test de présence. */
+function bananiLocalMcpConfigured(root: string): boolean {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(os.homedir(), ".claude.json"), "utf8")) as {
+      projects?: Record<
+        string,
+        {
+          mcpServers?: Record<
+            string,
+            { url?: string; type?: string; headers?: Record<string, string>; headersHelper?: string }
+          >;
+        }
+      >;
+    };
+    for (const [projectPath, projectConfig] of Object.entries(data.projects ?? {})) {
+      let same = false;
+      try {
+        same = fs.realpathSync(projectPath) === fs.realpathSync(root);
+      } catch {
+        same = path.resolve(projectPath) === path.resolve(root);
+      }
+      if (!same) continue;
+      const server = projectConfig?.mcpServers?.banani;
+      if (!server) return false;
+      const url = new URL(server.url ?? "");
+      const auth = server.headers?.Authorization ?? server.headers?.authorization ?? "";
+      const authOk = /^Bearer\s+\S+/i.test(auth) || Boolean(server.headersHelper?.trim());
+      return (
+        url.protocol === "https:" &&
+        url.hostname === "app.banani.co" &&
+        authOk &&
+        (server.type === "http" || server.type == null)
+      );
+    }
+  } catch {}
+  return false;
+}
 
 export type KitStatus = "ok" | "missing" | "warning";
 
@@ -408,14 +447,7 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
       : "Lance /setup-saas ou npm run setup pour créer la configuration.",
     group: "Base",
   });
-  let openAiComputerUseVerified = false;
   let claudeComputerUseVerified = false;
-  try {
-    const state = JSON.parse(fs.readFileSync(path.join(process.cwd(), ".africa-saas/computer-use.json"), "utf8")) as {
-      status?: string;
-    };
-    openAiComputerUseVerified = state.status === "verified";
-  } catch {}
   try {
     const state = JSON.parse(
       fs.readFileSync(path.join(process.cwd(), ".africa-saas/computer-use-claude.json"), "utf8"),
@@ -425,15 +457,6 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   const claudeCli = spawnSync("claude", ["--version"], { encoding: "utf8", timeout: 1200 });
   const claudeInstalled = claudeCli.status === 0;
   const claudeProjectReady = exists("CLAUDE.md") && exists(".claude/settings.json");
-  checks.push({
-    id: "computer-use-openai",
-    label: "Computer Use — ChatGPT / OpenAI",
-    status: openAiComputerUseVerified ? "ok" : "missing",
-    detail: openAiComputerUseVerified
-      ? "Voyant vert : Browser/Computer Use vérifié par un test réel."
-      : "NON VÉRIFIÉ — exécute /computer-use ou npm run computer-use:openai:check, puis marque la preuve après un vrai test.",
-    group: "Base",
-  });
   checks.push({
     id: "claude-code",
     label: "Claude Code — compatibilité du kit",
@@ -818,8 +841,7 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     "playwright.config.js",
     "playwright.config.mjs",
   ].some(exists);
-  const claudeMcpText =
-    readText(".claude/settings.json") + "\n" + readText(".codex/config.toml") + "\n" + readText(".mcp.json");
+  const claudeMcpText = readText(".claude/settings.json") + "\n" + readText(".mcp.json");
   const playwrightMcp = /playwright/i.test(claudeMcpText);
   checks.push({
     id: "playwright",
@@ -917,16 +939,14 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     group: "Qualité",
   });
   {
-    const codexPath = path.join(root, ".codex/config.toml");
-    const codexText = fs.existsSync(codexPath) ? fs.readFileSync(codexPath, "utf8") : "";
-    const mcpOk = /\[\s*mcp_servers\.banani\s*\]/i.test(codexText) && /Authorization/i.test(codexText);
+    const mcpOk = bananiLocalMcpConfigured(root);
     checks.push({
       id: "banani",
       label: "Banani MCP / Implementation Planner",
       status: mcpOk && exists("DESIGN.md") && exists("scripts/generate-implementation-plan.mjs") ? "ok" : "missing",
       detail: mcpOk
-        ? "MCP Banani configuré localement; token non affiché."
-        : "Exécute npm run banani:prepare puis complète .codex/config.toml manuellement.",
+        ? "MCP Banani connecté dans Claude Code (scope local); token non affiché."
+        : "Exécute npm run banani:prepare puis connecte Banani avec Claude Code (--scope local).",
       group: "Qualité",
     });
   }
