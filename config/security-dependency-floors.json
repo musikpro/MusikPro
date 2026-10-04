@@ -19,8 +19,8 @@
       "reason": "Fixes CVE-2026-39356 / GHSA-gpj5-g38j-94v9"
     },
     "better-auth": {
-      "min": "1.7.3",
-      "reason": "Kit-reviewed Better Auth release; project policy follows the currently supported release line"
+      "min": "1.7.7",
+      "reason": "Better Auth v1.7.7 security release (2026-09-30); fixes critical Magic Link/OAuth-state account takeover issue and related auth fixes. Older Better Auth versions are not supported by upstream."
     }
   }
 }
