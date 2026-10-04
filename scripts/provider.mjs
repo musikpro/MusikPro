@@ -24,7 +24,7 @@ if (arg === "list" || arg === "--list") {
       `${item.label.padEnd(13)}  ${item.call.padEnd(23)}  ${skillLabel(item.skillStatus).padEnd(29)}  ${maturity}`,
     );
   }
-  console.log("\nDans Antigravity : /provider <nom>");
+  console.log("\nDans Claude Code : /provider <nom>");
   console.log("Dans le terminal : npm run provider -- <nom>\n");
   process.exit(0);
 }
@@ -37,11 +37,11 @@ if (!item) {
 }
 const maturity = providers[arg]?.readiness ?? "inconnu";
 console.log(`\n${item.label}`);
-console.log(`Commande Antigravity : ${item.call}`);
+console.log(`Commande Claude Code : ${item.call}`);
 console.log(`Skill : ${skillLabel(item.skillStatus)}`);
 console.log(`Maturité adaptateur : ${maturity}`);
 if (item.skill) console.log(`Skill file : ${item.skill}`);
 for (const ref of item.references || []) console.log(`Reference : ${ref}`);
 console.log(
-  "\nDemande à l’Agent Antigravity d’exécuter la commande ci-dessus pour charger et expliquer les sources.\n",
+  "\nDemande à Claude Code d’exécuter la commande ci-dessus pour charger et expliquer les sources.\n",
 );

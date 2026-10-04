@@ -6,7 +6,7 @@ const req = [
   "docs/deployment/staging-vercel.md",
   "scripts/staging-check.mjs",
   "scripts/production-release-gate.mjs",
-  "AGENTS.md",
+  "CLAUDE.md",
   ".env.example",
 ];
 let failed = false;
@@ -16,10 +16,10 @@ for (const f of req) {
     failed = true;
   } else console.log("PASS", f);
 }
-const agents = fs.readFileSync("AGENTS.md", "utf8");
+const agents = fs.readFileSync("CLAUDE.md", "utf8");
 for (const marker of ["Deployment Handoff Gate", "deploy:handoff", "Ne demande jamais"]) {
   if (!agents.includes(marker)) {
-    console.error("FAIL AGENTS marker:", marker);
+    console.error("FAIL CLAUDE marker:", marker);
     failed = true;
   }
 }

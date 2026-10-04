@@ -626,7 +626,6 @@ const playwrightConfig = [
 ].some(exists);
 const mcpText = [
   exists(".claude/settings.json") ? fs.readFileSync(path.join(root, ".claude/settings.json"), "utf8") : "",
-  exists(".codex/config.toml") ? fs.readFileSync(path.join(root, ".codex/config.toml"), "utf8") : "",
   exists(".mcp.json") ? fs.readFileSync(path.join(root, ".mcp.json"), "utf8") : "",
 ].join("\n");
 const playwrightMcp = /playwright/i.test(mcpText);

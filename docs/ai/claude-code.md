@@ -1,25 +1,19 @@
-# Claude Code dans Africa SaaS Kit
+# Claude Code — Africa SaaS Kit
 
-Africa SaaS Kit supporte Claude Code comme agent de développement en plus de l’environnement OpenAI/Codex/Antigravity.
+Claude Code (Anthropic) est l’unique agent de développement officiellement supporté par cette distribution du kit.
 
-## Installation / détection
+## Source de vérité
 
-Exécutez `npm run claude-code:check`. Le contrôle valide les fichiers d’intégration du projet et tente de détecter la commande `claude` dans le shell courant. L’absence du CLI sur une machine de CI ne casse pas la compatibilité du starter tant que les fichiers projet sont valides.
+- `CLAUDE.md` contient les règles générales et interdictions permanentes.
+- `.claude/commands/` contient les commandes projet.
+- `.claude/skills/` contient les workflows officiels.
+- `npm run claude-code:prepare` vérifie les fichiers nécessaires.
+- `npm run claude-code:check` vérifie la cohérence de l’intégration et la présence éventuelle du CLI Claude.
 
-## Instructions projet
+## Computer Use
 
-Claude Code doit lire `CLAUDE.md`, puis `AGENTS.md`, `SECURITY.md`, `DESIGN.md` et les skills existants dans `.agents/skills/`. Les commandes `.claude/commands/` ne dupliquent pas la logique : elles renvoient vers les mêmes scripts npm.
+Utiliser `npm run computer-use:claude:check` puis enregistrer une preuve réelle avec `npm run computer-use:claude:mark -- --status=verified --evidence="..."`.
 
-## Computer Use / Browser
+## Banani
 
-Le voyant Claude Code est séparé du voyant OpenAI. Pour le rendre vert :
-
-1. lancer `npm run computer-use:claude:check`;
-2. effectuer un vrai test navigateur/computer avec Claude Code (outil intégré disponible dans votre environnement/modèle, ou MCP navigateur autorisé);
-3. après succès uniquement, enregistrer `npm run computer-use:claude:mark -- --status=verified --evidence="description du test"`.
-
-Le statut est local dans `.africa-saas/computer-use-claude.json` et n’est pas commité. Un test OpenAI ne valide jamais automatiquement Claude, et inversement.
-
-## Sécurité
-
-Ne stockez jamais de token Anthropic, clé API ou secret MCP dans `CLAUDE.md`, `.claude/settings.json`, Git ou une capture. Utilisez les mécanismes locaux/variables d’environnement fournis par Claude Code.
+Banani MCP / Implementation Planner est connecté uniquement via Claude Code en scope local. Utiliser `npm run banani:prepare`, puis `npm run banani:check`.

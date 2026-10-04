@@ -4,7 +4,7 @@
 
 ## Commandes
 
-- Antigravity : `/security-saas`
+- Claude Code : `/security-saas`
 - Terminal : `npm run security-saas`
 - Avec vérification réelle Neon/Postgres : `npm run security-saas:online`
 - JSON console : `npm run security-saas:json`

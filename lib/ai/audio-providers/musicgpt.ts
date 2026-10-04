@@ -9,7 +9,7 @@ import {
 } from "./types";
 
 /**
- * MusicGPT adapter (skill: .agents/skills/musicgpt-saas-integration-SKILL.md).
+ * MusicGPT adapter (skill: .claude/skills/musicgpt-saas-integration-SKILL.md).
  * Generation goes through Music AI V2 (`POST /v2/MusicAI`), which returns two variants
  * (`conversion_id_1/2`); each variant is followed as its own task through `GET /v1/byId`.
  * Only the MP3 (`conversion_path`) is ever used: `conversion_path_wav` is ignored.

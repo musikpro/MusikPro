@@ -2,36 +2,36 @@
   "chariow": {
     "label": "Chariow",
     "skillStatus": "dedicated",
-    "skill": "skills/providers/chariow/SKILL.md",
+    "skill": ".claude/skills/providers/chariow/SKILL.md",
     "references": [],
     "call": "/provider chariow"
   },
   "moneroo": {
     "label": "Moneroo",
     "skillStatus": "shared",
-    "skill": "skills/providers/izisaas-mobile-money/SKILL.md",
-    "references": ["skills/providers/izisaas-mobile-money/references/moneroo.md"],
+    "skill": ".claude/skills/providers/izisaas-mobile-money/SKILL.md",
+    "references": [".claude/skills/providers/izisaas-mobile-money/references/moneroo.md"],
     "call": "/provider moneroo"
   },
   "paytech": {
     "label": "PayTech",
     "skillStatus": "shared",
-    "skill": "skills/providers/izisaas-mobile-money/SKILL.md",
-    "references": ["skills/providers/izisaas-mobile-money/references/paytech.md"],
+    "skill": ".claude/skills/providers/izisaas-mobile-money/SKILL.md",
+    "references": [".claude/skills/providers/izisaas-mobile-money/references/paytech.md"],
     "call": "/provider paytech"
   },
   "bictorys": {
     "label": "Bictorys",
     "skillStatus": "shared",
-    "skill": "skills/providers/izisaas-mobile-money/SKILL.md",
-    "references": ["skills/providers/izisaas-mobile-money/references/bictorys.md"],
+    "skill": ".claude/skills/providers/izisaas-mobile-money/SKILL.md",
+    "references": [".claude/skills/providers/izisaas-mobile-money/references/bictorys.md"],
     "call": "/provider bictorys"
   },
   "stripe": {
     "label": "Stripe",
     "skillStatus": "shared",
-    "skill": "skills/providers/izisaas-mobile-money/SKILL.md",
-    "references": ["skills/providers/izisaas-mobile-money/references/stripe.md"],
+    "skill": ".claude/skills/providers/izisaas-mobile-money/SKILL.md",
+    "references": [".claude/skills/providers/izisaas-mobile-money/references/stripe.md"],
     "call": "/provider stripe"
   },
   "paydunya": {

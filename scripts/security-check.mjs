@@ -35,7 +35,7 @@ for (const f of [
   "lib/setup/kit-dashboard.ts",
   "scripts/setup-saas.mjs",
   "scripts/setup-saas-mark.mjs",
-  ".agents/skills/setup-saas/SKILL.md",
+  ".claude/skills/setup-saas/SKILL.md",
   "docs/setup-saas.md",
   "scripts/security-audit.sh",
   "docs/security/audit-vibe-code.md",
@@ -54,7 +54,6 @@ for (const f of [
   "app/api/cron/reconcile-payments/route.ts",
   "docs/payments/reconciliation.md",
   "app/admin/integrations/google/page.tsx",
-  "AGENTS.md",
   "docs/design/implementation-planner.md",
   "design/banani/screens.json",
   "scripts/generate-implementation-plan.mjs",
@@ -118,7 +117,6 @@ for (const f of [
   "docs/operations/smoke-tests.md",
   "docs/operations/cron.md",
   "docs/architecture/izikit-selective-review.md",
-  ".codex/README.md",
   "scripts/banani-prepare.mjs",
   "scripts/banani-check.mjs",
   "scripts/security-baseline-check.mjs",
@@ -192,11 +190,19 @@ const dashboardLayoutSecurity = fs
 if (!/\bawait\s+requireUser\(\);/.test(dashboardLayoutSecurity))
   errors.push("Dashboard layout must enforce authoritative server-side authentication");
 const bananiPrepareText = fs.readFileSync("scripts/banani-prepare.mjs", "utf8");
-if (!bananiPrepareText.includes('fs.writeFileSync(file, ""') || bananiPrepareText.includes("Bearer <"))
-  errors.push("banani:prepare must only create an empty config.toml and never inject a token/template secret");
+if (
+  !bananiPrepareText.includes("claude mcp add") ||
+  !bananiPrepareText.includes("--scope local") ||
+  bananiPrepareText.includes('fs.writeFileSync(file, ""')
+)
+  errors.push("banani:prepare must use Claude Code local scope and must not write a token/config file");
 const bananiCheckText = fs.readFileSync("scripts/banani-check.mjs", "utf8");
-if (!bananiCheckText.includes("token value not displayed") || !bananiCheckText.includes("gitignore"))
-  errors.push("banani:check must validate Git protection without printing the token");
+if (
+  !bananiCheckText.includes(".claude.json") ||
+  !bananiCheckText.includes("CONFIGURED_IN_CLAUDE_CODE") ||
+  !bananiCheckText.includes("scope local")
+)
+  errors.push("banani:check must validate Claude Code local MCP without printing the token");
 if (!gitignoreText.split(/\r?\n/).includes(".codex/config.toml"))
   errors.push(".codex/config.toml must be ignored by Git");
 if (!fs.existsSync("package-lock.json"))
@@ -276,7 +282,7 @@ if (/console\.(?:info|log)\([^\n]*input\)/.test(emailText)) errors.push("Auth em
 const setupPageText = fs.readFileSync("app/setup/page.tsx", "utf8");
 if (!setupPageText.includes('process.env.NODE_ENV === "production"') || !setupPageText.includes("notFound()"))
   errors.push("Kit readiness dashboard (app/setup) must not be exposed by default in production");
-const agentsText = fs.readFileSync("AGENTS.md", "utf8");
+const agentsText = fs.readFileSync("CLAUDE.md", "utf8");
 if (!agentsText.includes("/setup-saas") || !pkgJson.scripts?.["setup-saas"])
   errors.push("/setup-saas IA entry point and npm fallback are required");
 const setupText = fs.readFileSync("scripts/setup.mjs", "utf8");
@@ -296,7 +302,7 @@ if (!cloudflareSetup.includes("--none") || !cloudflareSetup.includes("phase=18")
   errors.push("Optional Cloudflare setup/skip flow missing");
 const phaseMarkText = fs.readFileSync("scripts/setup-saas-mark.mjs", "utf8");
 if (!phaseMarkText.includes("phase > 21")) errors.push("setup-saas progress marker must support 21 phases");
-const workflowText = fs.readFileSync(".agents/skills/setup-saas/SKILL.md", "utf8");
+const workflowText = fs.readFileSync(".claude/skills/setup-saas/SKILL.md", "utf8");
 if (
   !workflowText.includes("21 phases") ||
   !workflowText.includes("Cloudflare domaine/DNS") ||
@@ -363,9 +369,9 @@ if (!setupText.includes("emailPasswordEnabled") || !setupText.includes("googleAu
   errors.push("Setup must prevent an auth configuration with neither email/password nor Google OAuth");
 
 if (
-  !fs.existsSync(".agents/skills/computer-use/SKILL.md") ||
-  !pkgJson.scripts?.["computer-use:check"] ||
-  !pkgJson.scripts?.["computer-use:mark"]
+  !fs.existsSync(".claude/skills/computer-use-claude/SKILL.md") ||
+  !pkgJson.scripts?.["computer-use:claude:check"] ||
+  !pkgJson.scripts?.["computer-use:claude:mark"]
 )
   errors.push("Computer Use / Browser Tools workflow missing");
 // Inspect actual Next.js deployment traces after a build, rather than relying

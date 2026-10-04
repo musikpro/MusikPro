@@ -698,7 +698,7 @@ export const audioProviderConfigs = pgTable("audio_provider_configs", {
    * @deprecated Musicful v2 — MP3 Only: no code reads or writes this column anymore (MP4
    * generation was removed — it was already unreachable from any UI). Kept as a nullable-effect
    * legacy column instead of a destructive DROP COLUMN migration; see
-   * .agents/skills/Musicful-v2-MP3-Only-SKILL.md section 24.
+   * .claude/skills/Musicful-v2-MP3-Only-SKILL.md section 24.
    */
   allowMp4Conversion: boolean("allow_mp4_conversion").notNull().default(true),
   /**

@@ -34,7 +34,7 @@ const report = {
   nextActions: [
     currentFeature?.plan ? `Lire et respecter ${currentFeature.plan}` : "Aucun chantier majeur actif déclaré.",
     integrity?.status ? `Dernier test d'intégrité : ${integrity.status}` : "Relancer npm run kit:full-test après installation des dépendances.",
-    "Lire AGENTS.md / CLAUDE.md avant modification et config/features.json avant toute feature transversale.",
+    "Lire CLAUDE.md avant modification et config/features.json avant toute feature transversale.",
   ],
 };
 
@@ -58,7 +58,7 @@ const lines = [
   `## Prochaines actions`,
   ...report.nextActions.map((item) => `- ${item}`),
   ``,
-  `> Ce handoff ne lit ni n'affiche les valeurs de .env.local. Il complète AGENTS.md/CLAUDE.md; il ne remplace pas les règles permanentes.`,
+  `> Ce handoff ne lit ni n'affiche les valeurs de .env.local. Il complète CLAUDE.md; il ne remplace pas les règles permanentes.`,
   ``,
 ];
 fs.writeFileSync(path.join(generated, "project-handoff.json"), JSON.stringify(report, null, 2) + "\n");

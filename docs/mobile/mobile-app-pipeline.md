@@ -1,6 +1,6 @@
 # Mobile App Pipeline — PWA + Capacitor (Android/iOS)
 
-La source de vérité de cette couche est `.agents/skills/mobile-app-pwa-capacitor/SKILL.md`. L’architecture officielle est **Next.js serveur + PWA + Capacitor → Android + iOS**. L’ancienne stratégie WebView mobile a été supprimée du kit. **PWA + Capacitor est l’unique pipeline natif pris en charge.**
+La source de vérité de cette couche est `.claude/skills/mobile-app-pwa-capacitor/SKILL.md`. L’architecture officielle est **Next.js serveur + PWA + Capacitor → Android + iOS**. L’ancienne stratégie WebView mobile a été supprimée du kit. **PWA + Capacitor est l’unique pipeline natif pris en charge.**
 
 ## Architecture cible
 

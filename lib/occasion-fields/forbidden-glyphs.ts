@@ -1,6 +1,6 @@
 /**
  * Pictogrammes « étincelles » (style IA) interdits partout dans l'interface : ✨ ✦ ✧ ✩-✰ 🌟 💫.
- * Règle générale du kit (CLAUDE.md, AGENTS.md, `npm run ui:icons-check`). Le formulaire des champs
+ * Règle générale du kit (CLAUDE.md, `npm run ui:icons-check`). Le formulaire des champs
  * d'occasion les refuse et les propositions de l'IA en sont nettoyées.
  */
 const SPARKLE_GLYPHS = /[✨✦✧✩✪✫✬✭✮✯✰🌟💫]/u;

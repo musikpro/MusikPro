@@ -14,10 +14,10 @@ for (const file of required) {
   console.log(`${ok ? "✓" : "✗"} ${file}`);
   if (!ok) failed = true;
 }
-const agents = fs.readFileSync(path.join(root, "AGENTS.md"), "utf8");
+const agents = fs.readFileSync(path.join(root, "CLAUDE.md"), "utf8");
 for (const rule of ["Skeleton Loader Gate", "loading.tsx", "prefers-reduced-motion"]) {
   const ok = agents.includes(rule);
-  console.log(`${ok ? "✓" : "✗"} AGENTS: ${rule}`);
+  console.log(`${ok ? "✓" : "✗"} CLAUDE.md: ${rule}`);
   if (!ok) failed = true;
 }
 if (failed) {

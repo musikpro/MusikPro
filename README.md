@@ -38,11 +38,11 @@ Cette version rend explicite une règle commune à tous les agents et skills : *
 
 ## V0.10.3 — Réponses IA toujours en français
 
-Cette version ajoute une règle de langue commune à tous les agents supportés par le kit : **ChatGPT/Codex/Antigravity et Claude Code doivent répondre en français**. La règle est protégée par `npm run kit:integrity` et propagée dans `AGENTS.md`, `CLAUDE.md`, `.claude/README.md` et les skills officiels. Les commandes, chemins, identifiants et extraits de code conservent leur syntaxe technique d’origine.
+Cette version ajoute une règle de langue commune à tous les agents supportés par le kit : **Claude Code doit répondre en français**. La règle est protégée par `npm run kit:integrity` et propagée dans `CLAUDE.md`, `.claude/README.md` et les skills officiels. Les commandes, chemins, identifiants et extraits de code conservent leur syntaxe technique d’origine.
 
 ## V0.10.2 — Claude Code + Computer Use multi-agent
 
-Cette version adapte le kit à **Claude Code (Anthropic)** sans remplacer le workflow OpenAI existant. La page État de préparation affiche désormais deux voyants indépendants pour **Computer Use — ChatGPT/OpenAI** et **Computer Use — Claude Code/Anthropic**. Un voyant devient vert uniquement après un test réel marqué `verified`.
+Cette version adapte le kit à **Claude Code (Anthropic)** (historique : depuis la V0.12.3, Claude Code est l’unique agent supporté). La page État de préparation affiche le voyant **Computer Use — Claude Code/Anthropic**, qui devient vert uniquement après un test réel marqué `verified`.
 
 Commandes : `npm run claude-code:check`, `npm run computer-use:openai:check`, `npm run computer-use:claude:check`.
 
@@ -85,11 +85,11 @@ Commande complémentaire simple : `npm run kit:audit`. Elle contrôle l’intég
 - Le dashboard affiche sous **Qualité** une section Android/iPhone optionnelle avec progression distincte du score Web.
 - La section rappelle Capacitor, Android Studio/SDK/JDK, Xcode, les étapes de préparation et les assets (logo, icône, splash, captures Android/iPhone).
 - `mobile:app:check` valide explicitement la stratégie WebView hébergée.
-- `.agents/skills/setup-saas/SKILL.md` est présent et son guidage Phase 21 WebView est vérifié par `npm run kit:integrity`.
+- `.claude/skills/setup-saas/SKILL.md` est présent et son guidage Phase 21 WebView est vérifié par `npm run kit:integrity`.
 
 ## /security-saas — audit sécurité à la demande
 
-Dans Antigravity, utilisez **`/security-saas`** à tout moment pour auditer les fichiers du SaaS. L'équivalent terminal est `npm run security-saas`; `npm run security-saas:online` ajoute la vérification réelle RLS/policies dans Neon/Postgres quand la connexion locale est disponible. Le rapport donne un **score**, un **rang**, le nombre de fichiers scannés et le détail PASS / À VÉRIFIER / FAIL.
+Dans Claude Code, utilisez **`/security-saas`** à tout moment pour auditer les fichiers du SaaS. L'équivalent terminal est `npm run security-saas`; `npm run security-saas:online` ajoute la vérification réelle RLS/policies dans Neon/Postgres quand la connexion locale est disponible. Le rapport donne un **score**, un **rang**, le nombre de fichiers scannés et le détail PASS / À VÉRIFIER / FAIL.
 
 Le contrôle couvre notamment `.env.local`/Git, secrets et clés API, RLS/policies, validation côté serveur, Zod, middleware/auth, vérification email, rate limiting, webhooks, planchers de versions sensibles et `npm audit`. Le dashboard local affiche le dernier rapport généré.
 
@@ -128,18 +128,18 @@ Le kit applique désormais un contrôle visuel permanent : les composants/pages 
 
 Commande dédiée : `npm run ui:icons-check`. Le gate fait partie de `verify:code`, `verify:production` et `ci:check`, donc les nouvelles pages sont contrôlées elles aussi. Voir `docs/ui/premium-icons.md`.
 
-## Computer Use / Browser Tools (Antigravity)
+## Computer Use / Browser Tools (Claude Code)
 
-Dans Antigravity, le kit utilise le **Browser Subagent / Browser Tools** comme couche de vérification visuelle continue. Il n’existe aucun package npm `computer-use` à installer. La Phase 2 de `/setup-saas` vérifie l’activation réelle en demandant au Browser Subagent d’ouvrir une page web; après `npm install`, l’agent teste ensuite le SaaS local, les viewports mobile, les formulaires, OAuth, uploads, paiements sandbox, previews Vercel et le domaine final.
+Le kit utilise le navigateur/Computer Use de **Claude Code** comme couche de vérification visuelle continue. Il n’existe aucun package npm `computer-use` à installer. La Phase 2 de `/setup-saas` vérifie l’activation réelle par un vrai test navigateur.
 
 Commandes :
 
 ```bash
-npm run computer-use:check
-npm run computer-use:mark -- --status=verified --evidence="preuve navigateur réelle"
+npm run computer-use:claude:check
+npm run computer-use:claude:mark -- --status=verified --evidence="preuve navigateur réelle"
 ```
 
-Le statut local est stocké dans `.africa-saas/` (ignoré par Git). Une preuve Browser ne remplace jamais les tests CLI, le build ou l’audit sécurité. Voir `docs/computer-use/antigravity-browser.md`.
+Le statut local est stocké dans `.africa-saas/` (ignoré par Git). Une preuve Browser ne remplace jamais les tests CLI, le build ou l’audit sécurité. Voir `docs/ai/claude-computer-use.md`.
 
 Starter Next.js + Neon + Better Auth conçu pour construire des SaaS adaptés aux réalités africaines : Mobile Money, XOF/XAF, paiements asynchrones, sécurité intégrée et routage multi-gateway.
 
@@ -453,13 +453,13 @@ L'écran admin `/admin/integrations/google` affiche uniquement l'état de config
 
 ## Banani
 
-La connexion Banani/Codex utilise désormais `.codex/config.toml`. Le fichier est volontairement vide dans le starter et ignoré par Git.
+La connexion Banani MCP se fait avec **Claude Code** en scope local (`~/.claude.json`), sans écrire de token dans le dépôt.
 
 ```bash
 npm run banani:prepare
 ```
 
-Ensuite, ouvre `.codex/config.toml` et colle manuellement la configuration MCP obtenue depuis ton compte Banani. Le kit n’écrit jamais automatiquement l’URL ou le bearer token.
+Ensuite, exécute manuellement dans ton terminal la commande `claude mcp add --transport http banani --scope local ...` affichée, avec ton token Banani. Le kit n’écrit jamais automatiquement le bearer token.
 
 Vérification sans afficher le token :
 
@@ -496,7 +496,7 @@ Après import des écrans Banani, ne commencez pas directement à coder tout le 
 npm run design:plan
 ```
 
-Le kit génère `generated/implementation-plan.md`. Les agents IA doivent lire `AGENTS.md` et suivre le plan phase par phase, avec critères de validation avant de continuer.
+Le kit génère `generated/implementation-plan.md`. Claude Code doit lire `CLAUDE.md` et suivre le plan phase par phase, avec critères de validation avant de continuer.
 
 Avant production :
 
@@ -595,7 +595,7 @@ npm run payments:setup -- --none
 
 Si aucun paiement n’est nécessaire, FedaPay, PayDunya, Chariow, Flutterwave, Moneroo, etc. ne sont jamais requis.
 
-## /setup-saas — démarrage guidé dans Antigravity
+## /setup-saas — démarrage guidé dans Claude Code
 
 Dans le chat de l’agent, écris simplement :
 
@@ -603,7 +603,7 @@ Dans le chat de l’agent, écris simplement :
 /setup-saas
 ```
 
-L’agent doit lire `.agents/skills/setup-saas/SKILL.md`, exécuter `npm run setup-saas`, présenter les voyants rouges/verts et guider la configuration gate par gate. Aucun compte n’est requis pour accéder au kit.
+L’agent doit lire `.claude/skills/setup-saas/SKILL.md`, exécuter `npm run setup-saas`, présenter les voyants rouges/verts et guider la configuration gate par gate. Aucun compte n’est requis pour accéder au kit.
 
 Équivalent terminal :
 
@@ -621,7 +621,7 @@ Les uploads d’images peuvent être activés tardivement en Phase 19 avec `npm 
 
 ## Commande `/provider`
 
-Dans l'Agent Antigravity, utilise :
+Dans Claude Code, utilise :
 
 ```text
 /provider
@@ -649,15 +649,15 @@ npm run provider
 npm run provider -- chariow
 ```
 
-## Commandes Antigravity (`/setup-saas` et `/provider`)
+## Commandes Claude Code (`/setup-saas` et `/provider`)
 
-Les commandes personnalisées du kit sont désormais de vrais **Agent Skills Antigravity** dans `.agents/skills/` :
+Les commandes personnalisées du kit sont désormais de vrais **Skills Claude Code** dans `.claude/skills/` :
 
-- `/setup-saas` → `.agents/skills/setup-saas/SKILL.md`
-- `/provider` → `.agents/skills/provider/SKILL.md`
+- `/setup-saas` → `.claude/skills/setup-saas/SKILL.md`
+- `/provider` → `.claude/skills/provider/SKILL.md`
 - `/provider chariow`, `/provider fedapay`, etc. pour cibler un fournisseur.
 
-Si une session Antigravity était déjà ouverte avant l'ajout des skills, rouvrir/recharger le projet ou démarrer une nouvelle conversation afin que l'index des skills soit rafraîchi.
+Si une session Claude Code était déjà ouverte avant l'ajout des skills, rouvrir/recharger le projet ou démarrer une nouvelle conversation afin que l'index des skills soit rafraîchi.
 
 Fallback terminal :
 
@@ -683,7 +683,7 @@ npm run ui:hydration-check
 
 ## Import Banani après connexion MCP
 
-Après `npm run banani:check`, utilise `/import-banani` dans Antigravity/Codex. L’agent récupère les écrans accessibles via Banani MCP, écrit un snapshot sans secret, compare avec les routes/composants/features du starter puis génère un gap analysis et le plan d’implémentation avant le code. Voir `docs/design/import-banani.md`.
+Après `npm run banani:check`, utilise `/import-banani` dans Claude Code. L’agent récupère les écrans accessibles via Banani MCP, écrit un snapshot sans secret, compare avec les routes/composants/features du starter puis génère un gap analysis et le plan d’implémentation avant le code. Voir `docs/design/import-banani.md`.
 
 ## Upstash Redis (optionnel)
 

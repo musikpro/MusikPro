@@ -1,20 +1,13 @@
+#!/usr/bin/env node
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const file = path.join(root, ".codex", "config.toml");
-const gitignore = path.join(root, ".gitignore");
 const configFile = path.join(root, "africa-saas.config.json");
-const config = (() => {
-  try {
-    return JSON.parse(fs.readFileSync(configFile, "utf8"));
-  } catch {
-    return null;
-  }
-})();
-const requested = config?.banani === true;
-const explicitlyDisabled = config?.banani === false;
+const projectMcp = path.join(root, ".mcp.json");
+const claudeFile = path.join(os.homedir(), ".claude.json");
 let failed = false;
 let configured = false;
 
@@ -28,65 +21,94 @@ function pass(msg) {
 function warn(msg) {
   console.log(`⚠ ${msg}`);
 }
+function readJson(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+function sameProject(a, b) {
+  try {
+    return fs.realpathSync(a) === fs.realpathSync(b);
+  } catch {
+    return path.resolve(a) === path.resolve(b);
+  }
+}
+function localBananiServer() {
+  const data = readJson(claudeFile);
+  const projects = data?.projects && typeof data.projects === "object" ? data.projects : {};
+  for (const [projectPath, projectConfig] of Object.entries(projects)) {
+    if (!sameProject(projectPath, root)) continue;
+    const server = projectConfig?.mcpServers?.banani;
+    if (server && typeof server === "object") return server;
+  }
+  return null;
+}
 
-if (!fs.existsSync(file)) {
-  if (requested) fail("Banani est activé dans africa-saas.config.json mais .codex/config.toml manque. Lancez: npm run banani:prepare");
-  else warn("Banani MCP: SKIPPED — module non configuré à ce stade. Lancez npm run banani:prepare seulement si vous souhaitez l’utiliser.");
-} else {
-  pass(".codex/config.toml exists");
-  const text = fs.readFileSync(file, "utf8");
-  if (!text.trim()) {
-    if (requested) fail("Banani est activé mais le fichier MCP est vide. Collez votre configuration Banani dans .codex/config.toml.");
-    else warn(`Banani MCP: SKIPPED — configuration vide${explicitlyDisabled ? " et module désactivé" : " avant choix dans /setup-saas"}.`);
-  } else {
-    const hasServer = /\[\s*mcp_servers\.banani\s*\]/i.test(text);
-    const urlMatch = text.match(/^\s*url\s*=\s*["']([^"']+)["']/im);
-    const hasUrl = Boolean(urlMatch);
-    const hasAuth = /Authorization/i.test(text) && /Bearer\s+[^"'\s}]+/i.test(text);
-    let secureUrl = false;
-    if (urlMatch) {
-      try {
-        const parsed = new URL(urlMatch[1]);
-        secureUrl = parsed.protocol === "https:";
-        if (!secureUrl) fail("Banani MCP url must use HTTPS");
-        else if (parsed.hostname !== "app.banani.co")
-          warn("Banani MCP host is not app.banani.co; verify this endpoint came from Banani before using it");
-      } catch {
-        fail("Banani MCP url is invalid");
-      }
-    }
-    if (!hasServer) fail("Banani MCP section [mcp_servers.banani] not found");
-    if (!hasUrl) fail("Banani MCP url is missing");
-    if (!hasAuth) fail("Banani Authorization bearer token is missing");
-    configured = hasServer && hasUrl && secureUrl && hasAuth;
-    if (configured) pass("Banani MCP configuration shape is present (token value not displayed)");
+const config = readJson(configFile);
+const requested = config?.banani === true;
+const explicitlyDisabled = config?.banani === false;
+
+// Official workflow: local Claude Code scope only. Do not commit the Banani token in project MCP files.
+if (fs.existsSync(projectMcp)) {
+  const data = readJson(projectMcp);
+  if (data?.mcpServers?.banani) {
+    // MusikPro : `.mcp.json` est ignoré par Git. Un fichier suivi par Git expose le token (bloquant) ; un fichier
+    // local ignoré reste toléré (avertissement) pour ne pas casser une connexion Banani déjà en place.
+    const tracked = spawnSync("git", ["ls-files", "--error-unmatch", ".mcp.json"], { cwd: root, stdio: "ignore" });
+    if (tracked.status === 0)
+      fail("Banani est présent dans .mcp.json SUIVI par Git : retire-le de l'index et révoque le token.");
+    else
+      warn(
+        "Banani est présent dans .mcp.json (ignoré par Git). Préfère le scope local : claude mcp add --scope local.",
+      );
   }
 }
 
-if (!fs.existsSync(gitignore)) fail(".gitignore is missing");
-else {
-  const gi = fs.readFileSync(gitignore, "utf8");
-  if (/(^|\n)\.codex\/config\.toml\s*(\n|$)/.test(gi) || /(^|\n)\.codex\/\s*(\n|$)/.test(gi)) {
-    pass(".codex/config.toml is covered by .gitignore");
-  } else fail(".codex/config.toml is NOT ignored by Git");
-}
-
-try {
-  const tracked = execFileSync("git", ["ls-files", "--error-unmatch", ".codex/config.toml"], {
-    cwd: root,
-    stdio: ["ignore", "pipe", "ignore"],
-  })
-    .toString()
-    .trim();
-  if (tracked)
-    fail(".codex/config.toml is already tracked by Git. Remove it from the index and rotate any exposed token.");
-} catch {
-  pass(".codex/config.toml is not tracked by Git (or repository not initialized yet)");
+const server = localBananiServer();
+if (!server) {
+  if (requested)
+    fail(
+      "Banani est activé mais aucune connexion locale Claude Code n'a été trouvée dans ~/.claude.json pour ce projet. Exécute npm run banani:prepare.",
+    );
+  else
+    warn(
+      `Banani MCP: SKIPPED — connexion Claude Code locale absente${explicitlyDisabled ? " et module désactivé" : " avant choix dans /setup-saas"}.`,
+    );
+} else {
+  const url = typeof server.url === "string" ? server.url : "";
+  let secureUrl = false;
+  if (!url) fail("Banani Claude Code: URL MCP manquante");
+  else {
+    try {
+      const parsed = new URL(url);
+      secureUrl = parsed.protocol === "https:";
+      if (!secureUrl) fail("Banani MCP doit utiliser HTTPS");
+      if (parsed.hostname !== "app.banani.co") fail("Banani MCP doit utiliser l'hôte officiel app.banani.co");
+    } catch {
+      fail("Banani Claude Code: URL MCP invalide");
+    }
+  }
+  const typeOk = server.type === "http" || server.type == null;
+  if (!typeOk) fail("Banani Claude Code doit utiliser le transport HTTP");
+  const headers = server.headers && typeof server.headers === "object" ? server.headers : {};
+  const auth =
+    typeof headers.Authorization === "string"
+      ? headers.Authorization
+      : typeof headers.authorization === "string"
+        ? headers.authorization
+        : "";
+  const hasAuth =
+    /^Bearer\s+\S+/i.test(auth) || (typeof server.headersHelper === "string" && server.headersHelper.trim().length > 0);
+  if (!hasAuth) fail("Banani Claude Code: authentification Bearer/headersHelper manquante");
+  configured = secureUrl && typeOk && hasAuth && !failed;
+  if (configured) pass("Banani MCP configuré dans Claude Code (scope local, token non affiché)");
 }
 
 if (failed) process.exit(1);
 if (!configured) {
-  console.log("Banani MCP preflight: SKIPPED (optional / not configured yet)");
+  console.log("Banani MCP preflight: SKIPPED (Claude Code uniquement / optionnel / non configuré)");
   process.exit(0);
 }
-console.log("Banani MCP preflight: CONFIGURED");
+console.log("Banani MCP preflight: CONFIGURED_IN_CLAUDE_CODE");

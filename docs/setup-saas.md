@@ -19,17 +19,17 @@ Après extraction, `npm run kit:verify` est la commande recommandée : elle exé
 
 ## Computer Use en Phase 2
 
-Dans Antigravity, Browser Tools sont une capacité intégrée, pas une dépendance npm. La Phase 2 doit prouver leur fonctionnement par un vrai test Browser Subagent sur la documentation officielle Antigravity, sans dépendre de npm. Après l’installation des dépendances, l’agent réutilise cette capacité sur la homepage locale, `/api/health`, puis comme vérification visuelle continue durant les phases UI, OAuth, paiements sandbox, staging et production. Voir `docs/computer-use/antigravity-browser.md`.
+Dans Claude Code, le navigateur/Computer Use est une capacité intégrée, pas une dépendance npm. La Phase 2 doit prouver son fonctionnement par un vrai test navigateur (`npm run computer-use:claude:check`, puis `npm run computer-use:claude:mark`).
 
 ## Banani MCP en Phase 9
 
-La connexion Banani passe par le fichier local **`.codex/config.toml`**. Le kit le fournit vide et ne doit jamais y écrire automatiquement un token.
+La connexion Banani passe par Claude Code en scope local (`claude mcp add --transport http banani --scope local ...`). Le kit n’écrit jamais le token.
 
 ```bash
 npm run banani:prepare
 ```
 
-Puis l’utilisateur colle manuellement sa configuration MCP Banani dans `.codex/config.toml` et vérifie :
+Puis l’utilisateur exécute lui-même la commande affichée et vérifie :
 
 ```bash
 npm run banani:check
@@ -99,7 +99,7 @@ Cette commande ne fait rien si aucun provider n'est activé.
 
 ## Mobile App PWA + Capacitor optionnelle en Phase 21
 
-Après déploiement et conformité du Web, le projet peut rester Web/PWA uniquement ou activer `mobileAppEnabled`. Le mode officiel est **Next.js serveur + PWA + Capacitor**. Le mode WebView simple est déprécié. Aucune dépendance Capacitor n’est installée tant que le wrapper natif n’est pas activé. Voir `docs/mobile/mobile-app-pipeline.md` et `.agents/skills/mobile-app-pwa-capacitor/SKILL.md`.
+Après déploiement et conformité du Web, le projet peut rester Web/PWA uniquement ou activer `mobileAppEnabled`. Le mode officiel est **Next.js serveur + PWA + Capacitor**. Le mode WebView simple est déprécié. Aucune dépendance Capacitor n’est installée tant que le wrapper natif n’est pas activé. Voir `docs/mobile/mobile-app-pipeline.md` et `.claude/skills/mobile-app-pwa-capacitor/SKILL.md`.
 
 ```bash
 npm run mobile:pwa:check

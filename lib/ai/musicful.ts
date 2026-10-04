@@ -168,7 +168,7 @@ export class MusicfulClient {
   }
 
   // Musicful v2 — MP3 Only: the MP4/video conversion method is intentionally not implemented —
-  // MusikPro never exposes video output; see .agents/skills/Musicful-v2-MP3-Only-SKILL.md.
+  // MusikPro never exposes video output; see .claude/skills/Musicful-v2-MP3-Only-SKILL.md.
 }
 
 function extractConversionUrl(response: unknown): string | null {

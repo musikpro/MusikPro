@@ -46,7 +46,7 @@ Une version installée différente de `reviewedVersion`, une URL invalide ou une
 
 ## Handoff de contexte entre agents/sessions
 
-Les règles permanentes vivent dans `AGENTS.md` et `CLAUDE.md`. L'état courant du travail est séparé et peut être régénéré sans secrets :
+Les règles permanentes vivent dans `CLAUDE.md`. L'état courant du travail est séparé et peut être régénéré sans secrets :
 
 ```bash
 npm run context:handoff

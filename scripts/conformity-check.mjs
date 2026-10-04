@@ -10,7 +10,6 @@ const warnings = [];
 const passes = [];
 
 const requiredFiles = [
-  "AGENTS.md",
   "README.md",
   "SECURITY.md",
   "DESIGN.md",
@@ -22,16 +21,12 @@ const requiredFiles = [
   "drizzle.config.ts",
   "tsconfig.json",
   "next.config.ts",
-  ".agents/skills/setup-saas/SKILL.md",
-  ".agents/skills/security-saas/SKILL.md",
-  ".agents/skills/claude-code/SKILL.md",
-  ".agents/skills/computer-use-claude/SKILL.md",
+  ".claude/skills/setup-saas/SKILL.md",
+  ".claude/skills/security-saas/SKILL.md",
+  ".claude/skills/claude-code/SKILL.md",
+  ".claude/skills/computer-use-claude/SKILL.md",
   "docs/setup-saas.md",
-  ".agents/skills/computer-use/SKILL.md",
-  "docs/computer-use/antigravity-browser.md",
-  "scripts/computer-use-check.mjs",
-  "scripts/computer-use-mark.mjs",
-  ".agents/skills/provider/SKILL.md",
+  ".claude/skills/provider/SKILL.md",
   "config/provider-skills.json",
   "scripts/provider.mjs",
   "scripts/setup-saas.mjs",
@@ -107,10 +102,9 @@ const requiredFiles = [
   "docs/operations/cron.md",
   "docs/architecture/izikit-selective-review.md",
   "docs/architecture/feature-ownership.md",
-  ".codex/README.md",
   "scripts/banani-prepare.mjs",
   "scripts/banani-check.mjs",
-  ".agents/skills/import-banani/SKILL.md",
+  ".claude/skills/import-banani/SKILL.md",
   "design/banani/import-schema.json",
   "scripts/import-banani-analyze.mjs",
   "scripts/import-banani-check.mjs",
@@ -259,10 +253,6 @@ if (exists("package.json")) {
     "quality:ai-check",
     "smoke:system",
     "cron:generate",
-    "computer-use:check",
-    "computer-use:mark",
-    "computer-use:openai:check",
-    "computer-use:openai:mark",
     "claude-code:prepare",
     "claude-code:check",
     "computer-use:claude:check",
@@ -336,8 +326,8 @@ if (staleChangelog.length) fail(`Anciens changelogs versionnés à la racine: ${
 else ok("Changelog racine consolidé");
 
 // Core AI workflow coherence
-if (exists(".agents/skills/setup-saas/SKILL.md")) {
-  const wf = read(".agents/skills/setup-saas/SKILL.md");
+if (exists(".claude/skills/setup-saas/SKILL.md")) {
+  const wf = read(".claude/skills/setup-saas/SKILL.md");
   for (const phrase of [
     "21 phases",
     "Computer Use",
@@ -348,7 +338,7 @@ if (exists(".agents/skills/setup-saas/SKILL.md")) {
     "Cloudinary",
     "conformity:check",
     "banani:prepare",
-    ".codex/config.toml",
+    "--scope local",
   ]) {
     wf.includes(phrase) ? ok(`Workflow contient: ${phrase}`) : fail(`Workflow /setup-saas incomplet: ${phrase}`);
   }
@@ -373,9 +363,15 @@ if (exists(".gitignore")) {
 }
 if (exists("scripts/banani-prepare.mjs")) {
   const txt = read("scripts/banani-prepare.mjs");
-  txt.includes('fs.writeFileSync(file, ""')
-    ? ok("Banani prepare crée un fichier vide")
-    : fail("Banani prepare ne doit pas préremplir config.toml");
+  txt.includes("claude mcp add") && txt.includes("--scope local") && !txt.includes('fs.writeFileSync(file, ""')
+    ? ok("Banani prepare utilise Claude Code local scope sans écrire de secret")
+    : fail("Banani prepare doit utiliser Claude Code --scope local sans écrire de secret dans le dépôt");
+}
+if (exists("scripts/banani-check.mjs")) {
+  const txt = read("scripts/banani-check.mjs");
+  txt.includes(".claude.json") && txt.includes("CONFIGURED_IN_CLAUDE_CODE") && txt.includes("scope local")
+    ? ok("Banani check valide la connexion locale Claude Code")
+    : fail("Banani check doit lire la configuration locale Claude Code sans exposer le token");
 }
 
 // Auth/email invariants

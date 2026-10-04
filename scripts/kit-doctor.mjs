@@ -8,7 +8,7 @@ const checks = [];
 const add = (label, status, detail = "") => checks.push({ label, status, detail });
 const exists = (rel) => fs.existsSync(path.join(root, rel));
 
-add("Skill officiel /setup-saas", exists(".agents/skills/setup-saas/SKILL.md"), ".agents/skills/setup-saas/SKILL.md");
+add("Skill officiel /setup-saas", exists(".claude/skills/setup-saas/SKILL.md"), ".claude/skills/setup-saas/SKILL.md");
 add("Configuration exemple", exists("africa-saas.config.example.json"));
 add("Variables d’environnement exemple", exists(".env.example"));
 add(
