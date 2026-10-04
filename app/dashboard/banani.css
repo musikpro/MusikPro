@@ -476,6 +476,25 @@
   transform: scaleX(1);
 }
 
+/* Très petits écrans (320 px) : langue + Connexion + menu dépassaient de 15 px — on resserre les marges. */
+@media (max-width: 359px) {
+  .landing-page .landing-nav {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 8px;
+  }
+  .landing-page .landing-nav-cta {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+}
+/* En dessous de 340 px il ne reste plus la place pour le mot « MusikPro » : l'icône suffit (le lien garde son aria-label). */
+@media (max-width: 339px) {
+  .landing-page .landing-nav > a span {
+    display: none;
+  }
+}
+
 /* Nav "Connexion" button: a bit of lift + glow on hover instead of a flat, static button */
 .landing-page .landing-nav-cta {
   transition:
