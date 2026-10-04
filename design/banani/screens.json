@@ -1,7 +1,7 @@
 {
   "project": "MusikPro",
   "source": "banani-mcp",
-  "importedAt": "2026-09-23T07:18:40.717Z",
+  "importedAt": "2026-10-04T21:09:37.230349Z",
   "screens": [
     {
       "id": "QMj5OQRWpKXU/screens/ContactSupportScreen.jsx",
@@ -2687,6 +2687,41 @@
         "Google Play / App Store — badges visuels déjà couverts par mobileAppPipeline et StoreDownloadCard existants ; aucune preuve de publication",
         "Mobile Money — mention visuelle du mode de paiement ; fournisseur réel NON VÉRIFIÉ ici (voir paiements existants)"
       ]
+    },
+    {
+      "id": "QMj5OQRWpKXU/screens/ResumeOrRestartCreation.jsx",
+      "name": "Reprendre ou recommencer la création",
+      "route": "TBD",
+      "auth": "authenticated",
+      "purpose": "Proposer de continuer une création de chanson déjà commencée ou de repartir de zéro ; la route et le déclencheur ne sont pas dans le design.",
+      "states": [
+        "default"
+      ],
+      "notes": "NON VÉRIFIÉ / À CONFIRMER : route, moment d'affichage, durée de conservation de la session, stockage serveur ou local, suppression des paroles déjà générées (impact crédits). Le produit sauvegarde déjà un brouillon local (localStorage) mais n'affiche aucun écran de choix.",
+      "viewport": "mobile",
+      "keyElements": [
+        "Logo MusikPro",
+        "Bouton fermer",
+        "Création de chanson",
+        "Tu avais déjà commencé une chanson",
+        "Carte Session en cours (Il y a 2h)",
+        "Étapes : Histoire sélectionnée, Style musical choisi, Paroles générées, Finalisation & paiement (étape courante)",
+        "Aperçu des paroles générées",
+        "Bouton principal Continuer ma chanson",
+        "Bouton secondaire Recommencer de zéro",
+        "Avertissement : la session précédente et les paroles générées seront supprimées définitivement"
+      ],
+      "interactions": [
+        "Continuer ma chanson (reprise de la session)",
+        "Recommencer de zéro (suppression de la session précédente)",
+        "Fermer"
+      ],
+      "dataNeeds": [
+        "session de création en cours (étapes terminées, résumé histoire/style)",
+        "date de dernière activité",
+        "extrait des paroles générées"
+      ],
+      "integrations": []
     }
   ]
 }
