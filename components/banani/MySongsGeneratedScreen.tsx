@@ -215,6 +215,7 @@ export default function MySongsGenerated() {
     <div className="bg-background flex flex-col font-body">
       <audio
         ref={audioRef}
+        onPause={() => setPlayingVersion(null)}
         onEnded={() => setPlayingVersion(null)}
         onError={() => {
           setPlayingVersion(null);

@@ -1,11 +1,12 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { paymentBypassSettings, localizationSettings } from "@/db/schema";
+import { paymentBypassSettings, localizationSettings, playbackSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
+import { PLAYBACK_SETTINGS_TAG } from "@/lib/settings/playback";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 const paymentBypassSchema = z.object({ enabled: z.boolean() });
@@ -119,5 +120,46 @@ export async function testCountryIsConnectivity(): Promise<CountryIsTestResult> 
       message: error instanceof Error ? error.message : "Erreur réseau inconnue.",
       timeMs: Date.now() - start,
     };
+  }
+}
+
+const playbackSettingsSchema = z.object({
+  exclusivePlaybackEnabled: z.enum(["true", "false"]).transform((value) => value === "true"),
+});
+
+/** Réglage global « une seule chanson à la fois » : appliqué à la landing, aux tableaux de bord et à la page publique. */
+export async function setExclusivePlayback(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = playbackSettingsSchema.parse({
+      exclusivePlaybackEnabled: formData.get("exclusivePlaybackEnabled") === "true" ? "true" : "false",
+    });
+    const fields = {
+      exclusivePlaybackEnabled: parsed.exclusivePlaybackEnabled,
+      updatedBy: session.user.id,
+      updatedAt: new Date(),
+    };
+    await getServiceDb()
+      .insert(playbackSettings)
+      .values({ id: "global", ...fields })
+      .onConflictDoUpdate({ target: playbackSettings.id, set: fields });
+    await writeAuditLog({
+      action: "playback.exclusive.updated",
+      actorId: session.user.id,
+      targetType: "playback_settings",
+      targetId: "global",
+      metadata: { exclusivePlaybackEnabled: parsed.exclusivePlaybackEnabled },
+    });
+    revalidateTag(PLAYBACK_SETTINGS_TAG, { expire: 0 });
+    revalidatePath("/admin/settings");
+    revalidatePath("/", "layout");
+    return {
+      ok: true,
+      message: parsed.exclusivePlaybackEnabled
+        ? "Lecture exclusive activée : une seule chanson à la fois."
+        : "Lecture exclusive désactivée : plusieurs chansons peuvent jouer ensemble.",
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
   }
 }

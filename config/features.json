@@ -1251,6 +1251,29 @@
       "notes": [
         "Les contrôles visuels clavier/contraste/reflow restent NON VÉRIFIÉS sans test navigateur réel."
       ]
+    },
+    "exclusive-song-playback": {
+      "description": "Lecture exclusive des chansons : une seule à la fois sur une page (landing, tableau de bord client, page publique, aperçus admin), réglable depuis /admin/settings.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "lib/audio/exclusive-playback.ts",
+        "lib/settings/playback.ts",
+        "components/banani/ExclusiveAudioPlayback.tsx",
+        "app/admin/settings/PlaybackPanel.tsx",
+        "db/migrations/0065_playback_settings.sql",
+        "tests/audio/exclusive-playback.test.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": [
+        "database"
+      ],
+      "disableBehavior": "Désactiver le réglage dans /admin/settings (ou ne pas appliquer la migration 0065 : l'absence de ligne vaut « activé »). La musique d'ambiance (data-audio-role=\"ambient\") est exclue car AmbientPlayerContext la gère.",
+      "notes": [
+        "Un seul écouteur global `play` monté dans app/layout.tsx : ne pas dupliquer ce mécanisme dans chaque lecteur.",
+        "Chaque lecteur doit rester synchronisé avec onPause pour que son bouton reflète une pause forcée."
+      ]
     }
   },
   "removalProtocol": [

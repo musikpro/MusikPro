@@ -142,6 +142,7 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
       <audio
         ref={audioRef}
         className="sr-only"
+        onPause={() => setPlayingSongId(null)}
         onEnded={() => setPlayingSongId(null)}
         onError={() => {
           setPlayingSongId(null);

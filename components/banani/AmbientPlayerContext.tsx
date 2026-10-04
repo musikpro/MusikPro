@@ -155,6 +155,7 @@ export function AmbientPlayerProvider({
           ref={audioRef}
           src={status.audioUrl as string}
           loop
+          data-audio-role="ambient"
           onPlaying={() => setIsPlaying(true)}
           onPause={() => setIsPlaying(false)}
           onError={() => {

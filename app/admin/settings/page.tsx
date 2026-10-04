@@ -9,13 +9,16 @@ import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
 import PaymentBypassPanel from "./PaymentBypassPanel";
 import CountryDetectionPanel from "./CountryDetectionPanel";
 import SchedulerPanel from "./SchedulerPanel";
+import PlaybackPanel from "./PlaybackPanel";
+import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
-  const [bypassStatus, localizationRows, schedulerStatus] = await Promise.all([
+  const [bypassStatus, localizationRows, schedulerStatus, exclusivePlaybackEnabled] = await Promise.all([
     getPaymentBypassStatus(),
     getServiceDb().select().from(localizationSettings).limit(1),
     getSchedulerStatus(),
+    isExclusivePlaybackEnabled(),
   ]);
   const localization = localizationRows[0];
 
@@ -36,6 +39,7 @@ export default async function AdminSettingsPage() {
         <AdminTabPanel id="general">
           <div className="admin-settings-grid">
             <PaymentBypassPanel status={bypassStatus} />
+            <PlaybackPanel exclusivePlaybackEnabled={exclusivePlaybackEnabled} />
             <CountryDetectionPanel
               automaticDetectionEnabled={localization?.automaticDetectionEnabled ?? true}
               cacheTtlHours={Math.round((localization?.countryCacheTtlSeconds ?? 604800) / 3600)}
