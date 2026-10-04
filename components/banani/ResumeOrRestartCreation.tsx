@@ -18,6 +18,7 @@ export type ResumableCreationDraft = {
 
 function relativeTime(iso: string, language: string): string {
   const seconds = Math.round((new Date(iso).getTime() - Date.now()) / 1000);
+  if (Math.abs(seconds) < 60) return t("À l'instant");
   const formatter = new Intl.RelativeTimeFormat(language, { numeric: "auto" });
   const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
     ["day", 86_400],
@@ -27,7 +28,7 @@ function relativeTime(iso: string, language: string): string {
   for (const [unit, size] of units) {
     if (Math.abs(seconds) >= size) return formatter.format(Math.round(seconds / size), unit);
   }
-  return formatter.format(0, "minute");
+  return formatter.format(-1, "minute");
 }
 
 /**
