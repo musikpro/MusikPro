@@ -141,7 +141,7 @@ export function TwoFactorChallenge() {
             </p>
             <form className="auth-code-card" onSubmit={submit}>
               <label htmlFor="owner-2fa-code">{t("Entrez le code à 6 chiffres")}</label>
-              <div className="auth-code-boxes" onClick={() => inputRef.current?.focus()}>
+              <div className="auth-code-boxes">
                 {Array.from({ length: 6 }, (_, index) => (
                   <span className={index < code.length ? "filled" : index === code.length ? "active" : ""} key={index}>
                     {code[index] || ""}

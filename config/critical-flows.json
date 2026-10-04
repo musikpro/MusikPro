@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "policy": "Les parcours critiques doivent avoir une protection structurelle et, avant production, une preuve d'exécution réelle quand le scénario nécessite navigateur, base ou fournisseur externe.",
+  "flows": [
+    { "id": "validation", "label": "Payload/API invalide rejeté", "evidence": ["scripts/zod-validation-check.mjs", "tests/security/request-guards.test.ts"] },
+    { "id": "auth-config", "label": "Auth éprouvée et routes privées protégées", "evidence": ["lib/auth/index.ts", "lib/auth/session.ts", "scripts/security-baseline-check.mjs"] },
+    { "id": "rbac", "label": "Utilisateur non admin refusé", "evidence": ["lib/auth/permissions.ts", "lib/auth/session.ts", "tests/quality/access-control.test.ts"] },
+    { "id": "tenant-isolation", "label": "Organisation A isolée de B", "evidence": ["lib/auth/organization-access.ts", "db/security/rls-baseline.sql", "scripts/security-db-check.mjs"] },
+    { "id": "rate-limit", "label": "Abus/répétition limitée", "evidence": ["lib/security/rate-limit.ts", "lib/auth/index.ts"] },
+    { "id": "cross-site", "label": "Mutation cross-site rejetée", "evidence": ["lib/security/request-guards.ts", "tests/security/request-guards.test.ts"] },
+    { "id": "payments", "label": "Paiement ambigu sans double création", "evidence": ["tests/payments/provider-base.test.ts", "tests/security/public-checkout-result.test.ts"] },
+    { "id": "uploads", "label": "Upload invalide refusé", "evidence": ["tests/cloudinary-image-validation.test.ts", "app/api/uploads/images/route.ts"] }
+  ],
+  "liveFlows": ["signup", "login", "logout", "email-verification", "password-reset", "admin-access", "tenant-isolation", "rate-limit"]
+}
