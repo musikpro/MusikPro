@@ -520,12 +520,23 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     businessSchemaText.includes("organizationId") &&
     rlsText.includes("app.organization_id") &&
     rlsText.includes("tenant_isolation");
+  let rlsLiveVerified = false;
+  try {
+    const dbCheck = JSON.parse(fs.readFileSync(path.join(root, "generated/security-db-check.json"), "utf8")) as {
+      status?: string;
+      checkedAt?: string;
+    };
+    const ageMs = Date.now() - Date.parse(dbCheck.checkedAt ?? "");
+    rlsLiveVerified = dbCheck.status === "pass" && Number.isFinite(ageMs) && ageMs < 30 * 24 * 60 * 60 * 1000;
+  } catch {}
   checks.push({
     id: "multi-tenant",
     label: "Multi-tenant — isolation organisations",
-    status: multiTenantStructureReady ? "warning" : "missing",
+    status: multiTenantStructureReady ? (rlsLiveVerified ? "ok" : "warning") : "missing",
     detail: multiTenantStructureReady
-      ? "Structure d’isolation présente. Lance npm run security:db-check avec Neon pour confirmer RLS/policies avant de passer au vert en production."
+      ? rlsLiveVerified
+        ? "Voyant vert : structure d’isolation présente et RLS/policies confirmées par npm run security:db-check (moins de 30 jours)."
+        : "Structure d’isolation présente. Lance npm run security:db-check avec Neon pour confirmer RLS/policies avant de passer au vert en production."
       : "Voyant rouge : organisation, membership serveur ou baseline RLS multi-tenant incomplète.",
     group: "Sécurité",
   });
