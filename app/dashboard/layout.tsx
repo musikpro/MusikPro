@@ -5,6 +5,7 @@ import { NativeBottomNav } from "@/components/mobile/native-bottom-nav";
 import { isDemoRequest, requireUser } from "@/lib/auth/session";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { DemoProvider } from "@/components/banani/DemoProvider";
+import CreationDraftSync from "@/components/banani/CreationDraftSync";
 import { eq } from "drizzle-orm";
 import { db, userQuery } from "@/db";
 import { credits } from "@/db/schema";
@@ -146,6 +147,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       }}
     >
       {children}
+      <CreationDraftSync />
       <MobileBottomNav />
       <NativeBottomNav />
     </DemoProvider>

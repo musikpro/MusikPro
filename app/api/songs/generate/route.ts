@@ -12,6 +12,7 @@ import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
 import { recordSongGroupCharge } from "@/lib/credits/generation-refund";
 import { deductCredits, refundCredits } from "@/lib/credits/service";
+import { deleteCreationDraft } from "@/lib/creation-draft/server";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
@@ -173,6 +174,8 @@ export async function POST(request: Request) {
       targetId: songGroupId,
       metadata: { occasion: input.occasion, style, versionsSubmitted: succeeded },
     });
+    // La chanson est lancée : le brouillon de création n'a plus lieu d'être (ne lève jamais).
+    await deleteCreationDraft(session.user.id);
     return NextResponse.json({ songGroupId, newBalance });
   } catch (error) {
     const refunded = bypassActive ? newBalance : await refundCredits(session.user.id, CREDITS_PER_GENERATION);

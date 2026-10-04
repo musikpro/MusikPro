@@ -957,6 +957,34 @@
         "La page « Mes chansons » et le lecteur affichent un badge « En cours de génération » et sondent /api/songs/[groupId] tant qu’une version n’est pas terminée, au lieu d’afficher une durée fictive."
       ]
     },
+    "creation-draft-resume": {
+      "description": "Reprise du parcours de création de chanson : brouillon enregistré en base pour le compte (expire 30 jours après la dernière sauvegarde) et écran « Reprendre ou recommencer » à l'entrée de la création, depuis l'application, le site ou un autre appareil. Supprimé dès que la chanson est lancée.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0066_creation_drafts.sql",
+        "lib/validation/creation-draft.ts",
+        "lib/creation-draft/server.ts",
+        "lib/creation-draft/summary.ts",
+        "app/api/creation-draft/route.ts",
+        "app/api/songs/generate/route.ts",
+        "app/dashboard/create/page.tsx",
+        "app/dashboard/layout.tsx",
+        "components/banani/CreationDraftSync.tsx",
+        "components/banani/ResumeOrRestartCreation.tsx",
+        "components/banani/DemoProvider.tsx"
+      ],
+      "routes": ["/api/creation-draft"],
+      "dependsOn": ["database", "auth", "real-song-generation-journey"],
+      "removalComplexity": "low",
+      "disableBehavior": "Retirer <CreationDraftSync /> du layout dashboard et le branchement de ResumeOrRestartCreation dans app/dashboard/create/page.tsx : le parcours revient au brouillon local (localStorage). La table creation_drafts peut rester inutilisée.",
+      "notes": [
+        "Aucun brouillon serveur en démonstration (/demo) : le repli reste le localStorage de DemoProvider.",
+        "La table creation_drafts n'est jamais lue par le client : accès serveur uniquement, filtré par user_id (lib/creation-draft/server.ts). La lecture est tolérante : table absente (migration non appliquée) = aucun brouillon, le parcours reste utilisable.",
+        "Les paroles sont facturées au propriétaire par le fournisseur IA : le brouillon les conserve pour qu'une reprise ne les régénère jamais."
+      ]
+    },
     "song-public-link-sharing": {
       "description": "Rangée Partager/Publier/Télécharger/Changer la pochette sous chaque carte chanson : lien public /s/[slug] lisible sans compte (sans option de téléchargement), pochette modifiable via upload Cloudinary restreint (isTrustedImageUrl).",
       "optional": true,
