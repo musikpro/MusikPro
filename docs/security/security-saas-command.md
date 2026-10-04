@@ -11,7 +11,7 @@
 
 ## Ce qui est vérifié
 
-Le scanner parcourt les fichiers source et orchestre les garde-fous existants du kit : secrets et clés API, `.env.local` et Git, variables `NEXT_PUBLIC_*`, classification des routes API, validation serveur, Zod, RLS/policies déclarées, RLS/policies réellement actives en mode online, middleware/proxy, gardes serveur, vérification email, rate limiting, webhooks, planchers de versions sensibles et `npm audit` quand un lockfile existe.
+Le scanner parcourt les fichiers source et orchestre les garde-fous existants du kit : secrets et clés API, `.env.local` et Git, variables `NEXT_PUBLIC_*`, classification des routes API, validation serveur, Zod, entrées non fiables/SQL/HTML, Agent Safety, couverture des parcours critiques, RLS/policies déclarées, RLS/policies réellement actives en mode online, middleware/proxy, gardes serveur, vérification email, rate limiting, webhooks, planchers de versions sensibles et `npm audit` quand un lockfile existe.
 
 ## Score et rang
 

@@ -1175,6 +1175,82 @@
         "auth"
       ],
       "disableBehavior": "Sans cette feature, le menu Médias disparaît; les formulaires qui uploadent déjà leur propre image (ex. Chansons mises en avant) continuent de fonctionner via /api/uploads/images, désormais toujours compressé en AVIF sous 2 Mo."
+    },
+    "ai-development-quality-gate": {
+      "description": "Workflow IA permanent PLAN → SPEC → TEST → CODE → VERIFY, fraîcheur documentaire, handoff de contexte et blocage des opérations destructrices.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "docs/quality/ai-development-quality.md",
+        "scripts/feature-plan.mjs",
+        "scripts/feature-plan-check.mjs",
+        "config/documentation-sources.json",
+        "scripts/documentation-freshness-check.mjs",
+        "scripts/project-handoff.mjs",
+        "scripts/project-handoff-check.mjs",
+        "config/agent-command-policy.json",
+        "scripts/agent-safety-check.mjs",
+        "docs/security/agent-safety.md"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": [
+        "continuous-refactor-gate"
+      ],
+      "notes": [
+        "Ne crée pas un second système de règles : AGENTS.md reste la source de vérité et CLAUDE.md son miroir.",
+        "Le handoff généré ne lit ni n’affiche les secrets de .env.local."
+      ]
+    },
+    "untrusted-input-safety": {
+      "description": "Renforcement des entrées non fiables : Zod serveur, interdiction SQL raw unsafe, HTML utilisateur interdit par défaut et uploads gardés.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "scripts/untrusted-input-check.mjs",
+        "docs/security/untrusted-input.md",
+        "config/zod-validation.json",
+        "scripts/zod-validation-check.mjs",
+        "lib/security/request-guards.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": [
+        "zod-validation-gate",
+        "security-baseline-gate"
+      ]
+    },
+    "critical-flow-quality": {
+      "description": "Registre de parcours critiques et tests ciblés pour auth, validation, RBAC, multi-tenant, rate limiting, mutations, paiements et uploads.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "config/critical-flows.json",
+        "scripts/critical-flow-check.mjs",
+        "docs/quality/critical-flows.md",
+        "tests/quality/access-control.test.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "never",
+      "dependsOn": [
+        "auth",
+        "zod-validation-gate"
+      ]
+    },
+    "accessibility-ux-quality": {
+      "description": "Gate statique accessibilité/UX complétant Mobile First, SEO, Design et Premium Icon Gate sans imposer de nouvelle dépendance.",
+      "optional": false,
+      "env": [],
+      "files": [
+        "scripts/accessibility-ux-check.mjs",
+        "docs/quality/accessibility-ux.md"
+      ],
+      "routes": [],
+      "removalComplexity": "safe",
+      "dependsOn": [],
+      "notes": [
+        "Les contrôles visuels clavier/contraste/reflow restent NON VÉRIFIÉS sans test navigateur réel."
+      ]
     }
   },
   "removalProtocol": [

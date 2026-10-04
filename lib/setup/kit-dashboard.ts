@@ -86,6 +86,17 @@ function readText(rel: string) {
   }
 }
 
+function nodeGate(script: string, args: string[] = []) {
+  const result = spawnSync(process.execPath, [script, ...args], {
+    cwd: process.cwd(),
+    encoding: "utf8",
+    timeout: 5000,
+  });
+  const output =
+    `${result.stdout ?? ""}\n${result.stderr ?? ""}`.trim().split(/\r?\n/).filter(Boolean).slice(-1)[0] ?? "";
+  return { ok: result.status === 0, status: result.status, output };
+}
+
 function packageMap() {
   try {
     const pkg = JSON.parse(readText("package.json")) as {
@@ -544,12 +555,12 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   checks.push({
     id: "upstash",
     label: "Cache / rate limiting distribué — Upstash (optionnel)",
-    status: upstashParts.every(Boolean) ? "ok" : "missing",
+    status: upstashParts.every(Boolean) ? "ok" : upstashParts.some(Boolean) ? "missing" : "warning",
     detail: upstashParts.every(Boolean)
       ? "Voyant vert : Upstash est configuré pour cache TTL / rate limiting distribué; Neon reste la source de vérité."
       : upstashParts.some(Boolean)
         ? "Voyant rouge : configuration Upstash incomplète. Renseigne URL + token ou désactive ce module optionnel."
-        : "Voyant rouge : non installé/configuré. Optionnel — le SaaS continue avec Neon comme source de vérité et sans cache distribué.",
+        : "Voyant orange : non configuré. Optionnel — le SaaS continue avec Neon comme source de vérité et sans cache distribué.",
     group: "Performance",
     optional: true,
   });
@@ -701,6 +712,93 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
     group: "Sécurité",
   });
 
+  const featurePlanGate = nodeGate("scripts/feature-plan-check.mjs");
+  checks.push({
+    id: "feature-plan-spec",
+    label: "Workflow IA — PLAN → SPEC → TEST → CODE",
+    status: featurePlanGate.ok ? "ok" : "missing",
+    detail: featurePlanGate.ok
+      ? "Voyant vert : le gate de plan/spécifications/tests avant code est actif pour les fonctionnalités importantes."
+      : `Voyant rouge : ${featurePlanGate.output || "gate PLAN/SPEC incomplet"}`,
+    group: "Qualité",
+  });
+
+  const docsFreshnessGate = nodeGate("scripts/documentation-freshness-check.mjs");
+  checks.push({
+    id: "docs-freshness",
+    label: "Documentation — fraîcheur / versions",
+    status: docsFreshnessGate.ok ? "ok" : "missing",
+    detail: docsFreshnessGate.ok
+      ? "Voyant vert : les dépendances structurantes correspondent aux versions de documentation revues."
+      : `Voyant rouge : ${docsFreshnessGate.output || "documentation/version à revoir"}`,
+    group: "Qualité",
+  });
+
+  const handoffStructure = nodeGate("scripts/project-handoff-check.mjs");
+  const handoffPresent = exists("generated/project-handoff.md");
+  checks.push({
+    id: "ai-context-handoff",
+    label: "Contexte IA — handoff de projet",
+    status: !handoffStructure.ok ? "missing" : handoffPresent ? "ok" : "warning",
+    detail: !handoffStructure.ok
+      ? `Voyant rouge : ${handoffStructure.output || "gate handoff incomplet"}`
+      : handoffPresent
+        ? "Voyant vert : un handoff local sans secrets est disponible pour la reprise entre sessions/agents."
+        : "Voyant orange : structure prête mais aucun handoff courant. Lancer npm run context:handoff avant un changement de session/agent.",
+    group: "Qualité",
+    optional: true,
+  });
+
+  const agentSafetyGate = nodeGate("scripts/agent-safety-check.mjs");
+  checks.push({
+    id: "agent-safety",
+    label: "Agent Safety — commandes dangereuses",
+    status: agentSafetyGate.ok ? "ok" : "missing",
+    detail: agentSafetyGate.ok
+      ? "Voyant vert : opérations destructrices bloquées par règles persistantes et scan des scripts exécutables."
+      : `Voyant rouge : ${agentSafetyGate.output || "règles Agent Safety incomplètes"}`,
+    group: "Sécurité",
+  });
+
+  const inputSafetyGate = nodeGate("scripts/untrusted-input-check.mjs");
+  checks.push({
+    id: "untrusted-input",
+    label: "Entrées non fiables — Zod / SQL / HTML",
+    status: inputSafetyGate.ok ? "ok" : "missing",
+    detail: inputSafetyGate.ok
+      ? "Voyant vert : validation serveur + interdiction SQL raw unsafe/HTML direct contrôlées."
+      : `Voyant rouge : ${inputSafetyGate.output || "protection des entrées incomplète"}`,
+    group: "Sécurité",
+  });
+
+  const criticalStructure = nodeGate("scripts/critical-flow-check.mjs");
+  const criticalExecuted = exists("node_modules")
+    ? nodeGate("scripts/critical-flow-check.mjs", ["--execute"])
+    : { ok: false, status: 2, output: "node_modules absent" };
+  checks.push({
+    id: "critical-flows",
+    label: "Tests — parcours critiques",
+    status: !criticalStructure.ok ? "missing" : criticalExecuted.ok ? "ok" : "warning",
+    detail: !criticalStructure.ok
+      ? `Voyant rouge : ${criticalStructure.output || "couverture critique incomplète"}`
+      : criticalExecuted.ok
+        ? "Voyant vert : couverture structurelle et sous-ensemble critique Vitest exécutés."
+        : "Voyant orange : couverture structurelle présente; tests dynamiques à exécuter après installation des dépendances et scénarios live à valider avant production.",
+    group: "Qualité",
+  });
+
+  const a11yGate = nodeGate("scripts/accessibility-ux-check.mjs");
+  checks.push({
+    id: "accessibility-ux",
+    label: "Accessibilité / UX",
+    status: a11yGate.ok ? "warning" : "missing",
+    detail: a11yGate.ok
+      ? "Voyant orange : contrôles statiques PASS; clavier, contraste, reflow et viewports restent NON VÉRIFIÉS sans test navigateur réel."
+      : `Voyant rouge : ${a11yGate.output || "contrôle accessibilité/UX incomplet"}`,
+    group: "Qualité",
+    optional: true,
+  });
+
   const deps = packageMap();
   const playwrightPkg = Boolean(deps["@playwright/test"] || deps["playwright"] || deps["playwright-core"]);
   const playwrightConfig = [
@@ -715,11 +813,11 @@ export async function getKitDashboardChecks(): Promise<KitCheck[]> {
   checks.push({
     id: "playwright",
     label: "Playwright — tests navigateur / MCP",
-    status: playwrightPkg || playwrightConfig || playwrightMcp ? "ok" : "missing",
+    status: playwrightPkg || playwrightConfig || playwrightMcp ? "ok" : "warning",
     detail:
       playwrightPkg || playwrightConfig || playwrightMcp
         ? `Voyant vert : Playwright détecté${playwrightMcp ? " via configuration MCP" : playwrightConfig ? " via configuration du projet" : " dans les dépendances"}.`
-        : "Voyant rouge : Playwright non détecté dans le projet ni dans les configurations MCP connues. Optionnel mais recommandé pour les tests E2E/browser.",
+        : "Voyant orange : Playwright non détecté dans le projet ni dans les configurations MCP connues. Optionnel mais recommandé pour les tests E2E/browser.",
     group: "Qualité",
     optional: true,
   });

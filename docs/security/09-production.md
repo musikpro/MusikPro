@@ -6,7 +6,7 @@
 - [ ] Neon production séparé + sauvegarde testée
 - [ ] admin 2FA
 - [ ] email verification
-- [ ] Upstash rate limiting
+- [ ] Upstash rate limiting distribué (optionnel; requis seulement si cette brique est activée)
 - [ ] Turnstile
 - [ ] CSP/headers vérifiés
 - [ ] webhooks signatures vérifiées

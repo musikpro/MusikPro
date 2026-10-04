@@ -26,8 +26,14 @@ if (fs.existsSync(envPath))
   }
 const url = (env.UPSTASH_REDIS_REST_URL || process.env.UPSTASH_REDIS_REST_URL || "").trim();
 const token = (env.UPSTASH_REDIS_REST_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
-if (cfg?.upstashEnabled === false && !url && !token) {
-  console.log("Upstash check: SKIPPED (optional / disabled)");
+const enabled = cfg?.upstashEnabled === true;
+const disabled = cfg?.upstashEnabled === false;
+if (!url && !token) {
+  if (enabled) {
+    console.error("Upstash check: FAIL — module activé mais REST URL/token absents");
+    process.exit(1);
+  }
+  console.log(`Upstash check: SKIPPED (optional / ${disabled ? "disabled" : "not configured yet"})`);
   process.exit(0);
 }
 if (!url || !token) {
