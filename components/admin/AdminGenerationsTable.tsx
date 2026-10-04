@@ -102,7 +102,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
 
   return (
     <section className="admin-panel admin-table-panel">
-      <audio ref={audioRef} onEnded={() => setPlayingId(null)} className="sr-only" />
+      <audio ref={audioRef} onPause={() => setPlayingId(null)} onEnded={() => setPlayingId(null)} className="sr-only" />
       <div className="admin-catalog-toolbar admin-table-toolbar">
         <label className="admin-search-field">
           <Icon i="search" size={17} />

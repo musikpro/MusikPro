@@ -456,6 +456,13 @@
       "when": 1790871052773,
       "tag": "0064_remove_sparkle_glyphs",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1791114907440,
+      "tag": "0065_playback_settings",
+      "breakpoints": true
     }
   ]
 }

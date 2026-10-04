@@ -8,7 +8,6 @@ import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLa
 import HeroRotatingText from "./HeroRotatingText";
 import LandingSongCarousel from "./LandingSongCarousel";
 import LandingLibraryCard from "./LandingLibraryCard";
-import ExclusiveAudioPlayback from "./ExclusiveAudioPlayback";
 import { HERO_TEXT_SIZE_CLASSES, type HeroAnimationType, type HeroTextSize } from "@/lib/hero-animation/types";
 import type { LandingHeroText, LandingOccasion, LandingStyle, LandingTrendingSong } from "./LandingPageMobile";
 
@@ -95,7 +94,6 @@ export default function LandingPageDesktop({
   ];
   return (
     <div className="landing-page bg-background font-body text-foreground flex flex-col min-h-screen">
-      <ExclusiveAudioPlayback />
       <nav className="landing-nav border-b border-border px-10 py-4 flex items-center justify-between">
         <a href="#accueil-desktop" aria-label={t("Accueil")}>
           <AppLogo size="md" />

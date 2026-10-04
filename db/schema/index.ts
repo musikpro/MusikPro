@@ -510,6 +510,14 @@ export const paymentBypassSettings = pgTable("payment_bypass_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/** Réglage global unique : lecture exclusive des chansons (une seule à la fois sur une page). Absence de ligne = activé. */
+export const playbackSettings = pgTable("playback_settings", {
+  id: text("id").primaryKey().default("global"),
+  exclusivePlaybackEnabled: boolean("exclusive_playback_enabled").notNull().default(true),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 /** Réglage global unique : la chanson jouée en fond sonore sur l'accueil du tableau de bord (démo et comptes réels). */
 export const ambientBackgroundTrack = pgTable("ambient_background_track", {
   id: text("id").primaryKey().default("global"),

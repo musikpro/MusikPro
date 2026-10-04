@@ -10,6 +10,8 @@ import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register"
 import { I18nBootstrap } from "@/components/i18n-bootstrap";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { NonceProvider } from "@/components/security/nonce-provider";
+import ExclusiveAudioPlayback from "@/components/banani/ExclusiveAudioPlayback";
+import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
 
 export const metadata: Metadata = {
   ...buildMetadata(),
@@ -41,12 +43,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Langue de <html lang> seulement : le layout racine n'affiche aucun texte traduit côté serveur ;
   // chaque composant serveur qui traduit appelle lui-même primeOverlay (pages, layouts, métadonnées, e-mails).
   const locale = await resolvePageLocale();
+  const exclusivePlayback = await isExclusivePlaybackEnabled();
   return (
     <html lang={locale}>
       <body suppressHydrationWarning>
         <NonceProvider nonce={nonce}>
           <ServiceWorkerRegister />
           <I18nBootstrap />
+          <ExclusiveAudioPlayback enabled={exclusivePlayback} />
           <div className="app-content">{children}</div>
         </NonceProvider>
       </body>
