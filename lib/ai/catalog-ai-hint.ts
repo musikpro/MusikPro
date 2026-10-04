@@ -69,3 +69,34 @@ export async function generateOccasionAiHint(input: { name: string; description?
   }
   return text;
 }
+
+const OCCASION_DESCRIPTION_MAX_LENGTH = 240;
+
+/**
+ * Propose la description d'une occasion (texte français montré au client) d'après son seul nom. Une phrase courte,
+ * bornée côté serveur (240 caractères, comme le champ) ; le texte reste modifiable avant l'enregistrement.
+ */
+export async function generateOccasionDescription(input: { name: string }, actorId?: string) {
+  const provider = await getLyricsProvider();
+  if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");
+  const raw = await runProviderTextTask(
+    provider,
+    SYSTEM_INSTRUCTIONS,
+    `Occasion d'une chanson personnalisée : « ${input.name} ».\n` +
+      "Rédige EN FRANÇAIS une description très courte (une seule phrase, 12 mots environ) qui explique au client quand cette occasion est proposée, avec un verbe à l'infinitif en début de phrase. " +
+      `${OCCASION_DESCRIPTION_MAX_LENGTH} caractères maximum, sans émoji. Exemple pour « Amour » : Déclarer ses sentiments et raconter une histoire à deux. Réponds uniquement avec la phrase.`,
+  );
+  const clean = raw.text.replace(/\s+/g, " ").replace(/^["'«\s]+|["'»\s]+$/g, "");
+  const text =
+    clean.length <= OCCASION_DESCRIPTION_MAX_LENGTH ? clean : clean.slice(0, OCCASION_DESCRIPTION_MAX_LENGTH).trim();
+  const verdict = await moderateText(text, `Description d'occasion musicale pour "${input.name}"`);
+  if (verdict.flagged) {
+    await writeAuditLog({
+      action: "ai.occasion_description.blocked",
+      actorId,
+      metadata: { name: input.name, categories: verdict.categories },
+    });
+    throw new Error("CONTENT_BLOCKED_RESULT");
+  }
+  return text;
+}
