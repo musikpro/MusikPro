@@ -277,6 +277,7 @@ export default function LandingPageMobile({
                     listenTitle: t("Écouter {title}"),
                     playing: t("En lecture"),
                     pause: t("Mettre en pause"),
+                    seek: t("Position de lecture"),
                   }}
                 />
               </Reveal>

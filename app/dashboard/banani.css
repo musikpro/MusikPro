@@ -6740,35 +6740,160 @@ span.musik-user-avatar {
   }
 }
 
-/* Landing "Bibliothèque populaire": a touch of depth on the rows + a small visualizer while playing. */
+/* Landing "Bibliothèque populaire": carte de lecture (pochette, titre, barre de lecture cliquable). */
 .landing-page .landing-library-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 14px;
+  border-radius: 22px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--color-border));
+  background: var(--color-card);
   box-shadow:
-    0 2px 6px rgba(26, 26, 26, 0.07),
-    0 6px 16px rgba(26, 26, 26, 0.06);
+    0 1px 2px rgba(26, 26, 26, 0.04),
+    0 10px 28px -12px rgba(120, 60, 20, 0.22);
+  transition:
+    transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
 }
-
-.landing-page .landing-mini-eq {
-  height: 14px;
-  display: inline-flex;
-  align-items: flex-end;
-  gap: 2px;
+.landing-page .landing-library-card:hover,
+.landing-page .landing-library-card.is-playing {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-primary) 38%, var(--color-border));
+  box-shadow:
+    0 2px 4px rgba(26, 26, 26, 0.05),
+    0 18px 36px -14px rgba(224, 96, 32, 0.38);
 }
-
-.landing-page .landing-mini-eq span {
-  width: 3px;
+.landing-page .landing-library-card.is-large {
+  padding: 16px;
+}
+.landing-page .landing-library-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.landing-page .landing-library-cover {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+.landing-page .is-large .landing-library-cover {
+  width: 60px;
+  height: 60px;
+}
+.landing-page .landing-library-cover img,
+.landing-page .landing-library-cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
   height: 100%;
-  border-radius: 2px;
-  background: var(--color-primary);
-  transform: scaleY(0.2);
-  transform-origin: bottom;
-  animation: trend-eq-bar 600ms ease-in-out infinite alternate;
+  object-fit: cover;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .landing-page .landing-mini-eq span {
-    animation: none;
-    transform: scaleY(0.6);
-  }
+.landing-page .landing-library-text {
+  flex: 1;
+  min-width: 0;
+}
+/* Lien étiré : toute la carte ouvre la page de la chanson, les commandes de lecture passent au-dessus. */
+.landing-page .landing-library-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-weight: 650;
+  font-size: 15px;
+  line-height: 1.25;
+  color: var(--color-foreground);
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.landing-page .landing-library-title::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.landing-page .landing-library-title:focus-visible {
+  outline: none;
+}
+.landing-page .landing-library-title:focus-visible::after {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: 22px;
+}
+.landing-page .is-large .landing-library-title {
+  font-size: 16px;
+}
+.landing-page .landing-library-detail {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--color-muted-foreground);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.landing-page .landing-library-plays {
+  flex: none;
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted-foreground);
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
+.landing-page .landing-library-player {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.landing-page .landing-library-strip {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: 8px;
+}
+.landing-page .landing-library-strip:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+.landing-page .landing-library-strip span {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--color-foreground) 16%, transparent);
+  transition: background-color 0.18s ease;
+}
+.landing-page .landing-library-strip span.is-filled {
+  background: var(--color-primary);
+}
+.landing-page .landing-library-time {
+  flex: none;
+  min-width: 5.4em;
+  text-align: right;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-muted-foreground);
+}
+.landing-page .landing-library-card .landing-inline-play.is-compact {
+  flex: none;
+  padding: 8px 14px;
+  font-size: 12px;
 }
 
 /* Currency list is portaled to <body> (MusikSelect `portal`) so no dashboard card can paint over it. */

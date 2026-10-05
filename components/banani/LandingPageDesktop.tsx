@@ -293,9 +293,18 @@ export default function LandingPageDesktop({
             <h2 className="font-headings font-bold text-4xl text-foreground mb-3">{t("Bibliothèque populaire")}</h2>
             <p className="text-lg text-muted-foreground mb-8">{t("Les chansons les plus écoutées de la communauté")}</p>
           </Reveal>
-          <div className="flex flex-wrap justify-center gap-5">
+          {/* Même largeur que la grille des occasions (max-w-5xl) ; moins de 3 chansons : cartes de 21 rem, centrées. */}
+          <div
+            className="grid gap-5 max-w-5xl mx-auto"
+            style={{
+              gridTemplateColumns: "repeat(auto-fit, minmax(17rem, 1fr))",
+              ...(librarySongs.length < 3
+                ? { maxWidth: `${librarySongs.length * 21 + (librarySongs.length - 1) * 1.25}rem` }
+                : {}),
+            }}
+          >
             {librarySongs.map((s, i) => (
-              <Reveal key={s.slug} delay={i * 90} className="w-72">
+              <Reveal key={s.slug} delay={i * 90}>
                 <LandingLibraryCard
                   song={s}
                   size="lg"
@@ -304,6 +313,7 @@ export default function LandingPageDesktop({
                     listenTitle: t("Écouter {title}"),
                     playing: t("En lecture"),
                     pause: t("Mettre en pause"),
+                    seek: t("Position de lecture"),
                   }}
                 />
               </Reveal>

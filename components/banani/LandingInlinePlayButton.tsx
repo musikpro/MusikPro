@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, type RefObject } from "react";
 import Icon from "./Icon";
 
 // Module-scope (not React state) on purpose: only one inline preview should ever play at a time
@@ -16,6 +16,8 @@ export type LandingPlayLabels = {
   listenTitle: string;
   playing: string;
   pause: string;
+  /** Nom accessible de la barre de lecture (cartes de la bibliothèque). */
+  seek?: string;
 };
 
 export default function LandingInlinePlayButton({
@@ -25,6 +27,9 @@ export default function LandingInlinePlayButton({
   compact = false,
   className = "",
   onPlayingChange,
+  audioRef: externalAudioRef,
+  preload = "none",
+  onAudioUpdate,
 }: {
   labels: LandingPlayLabels;
   audioUrl: string;
@@ -33,8 +38,15 @@ export default function LandingInlinePlayButton({
   className?: string;
   /** Lets the card around the button react (e.g. show a mini visualizer) while the song plays. */
   onPlayingChange?: (playing: boolean) => void;
+  /** Donne à la carte l'accès à l'élément audio (déplacement dans la chanson). */
+  audioRef?: RefObject<HTMLAudioElement | null>;
+  preload?: "none" | "metadata";
+  /** Appelé à chaque avancée de lecture ou chargement de la durée (barre de progression de la carte). */
+  onAudioUpdate?: (audio: HTMLAudioElement) => void;
 }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const ownAudioRef = useRef<HTMLAudioElement | null>(null);
+  const audioRef = externalAudioRef ?? ownAudioRef;
+  const notify = (event: React.SyntheticEvent<HTMLAudioElement>) => onAudioUpdate?.(event.currentTarget);
   const [playing, setPlayingState] = useState(false);
   const setPlaying = (value: boolean) => {
     setPlayingState(value);
@@ -65,10 +77,16 @@ export default function LandingInlinePlayButton({
       <audio
         ref={audioRef}
         src={audioUrl}
-        preload="none"
+        preload={preload}
+        onTimeUpdate={notify}
+        onLoadedMetadata={notify}
+        onDurationChange={notify}
         onPlaying={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onEnded={() => setPlaying(false)}
+        onEnded={(event) => {
+          setPlaying(false);
+          notify(event);
+        }}
         onError={() => setPlaying(false)}
         className="sr-only"
       />
