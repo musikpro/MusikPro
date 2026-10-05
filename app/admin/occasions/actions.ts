@@ -7,8 +7,12 @@ import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { occasions } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
-import { isOccasionEmoji, OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
-import { generateOccasionAiHint, generateOccasionDescription } from "@/lib/ai/catalog-ai-hint";
+import { isOccasionEmoji, OCCASION_AI_HINT_MAX_LENGTH, OCCASION_STORY_MAX_LENGTHS } from "@/lib/occasions/catalog";
+import {
+  generateOccasionAiHint,
+  generateOccasionDescription,
+  generateOccasionStoryCopy,
+} from "@/lib/ai/catalog-ai-hint";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 
@@ -26,6 +30,14 @@ const occasionFormSchema = z.object({
     .default(""),
   active: z.enum(["true", "false"]),
   sortOrder: z.coerce.number().int().min(0).max(999),
+});
+const storyCopySchema = z.object({
+  id: z.string().trim().min(1).max(120),
+  storyTitle: z.string().trim().max(OCCASION_STORY_MAX_LENGTHS.storyTitle),
+  storySubtitle: z.string().trim().max(OCCASION_STORY_MAX_LENGTHS.storySubtitle),
+  storyLabel: z.string().trim().max(OCCASION_STORY_MAX_LENGTHS.storyLabel),
+  storyPlaceholder: z.string().trim().max(OCCASION_STORY_MAX_LENGTHS.storyPlaceholder),
+  storyTip: z.string().trim().max(OCCASION_STORY_MAX_LENGTHS.storyTip),
 });
 const occasionMutationSchema = z.object({ id: z.string().trim().min(1).max(120) });
 const toggleOccasionSchema = occasionMutationSchema.extend({ active: z.enum(["true", "false"]) });
@@ -57,6 +69,8 @@ function revalidateOccasions() {
   revalidatePath("/admin/occasions");
   revalidatePath("/dashboard/create");
   revalidatePath("/demo/create");
+  revalidatePath("/dashboard/create/story");
+  revalidatePath("/demo/create/story");
 }
 
 export async function createOccasion(_previous: OccasionActionState, formData: FormData): Promise<OccasionActionState> {
@@ -110,6 +124,32 @@ export async function updateOccasion(_previous: OccasionActionState, formData: F
     return { ok: true, message: "Occasion enregistrée." };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer cette occasion.") };
+  }
+}
+/** Onglet « Page Raconte ton histoire » : enregistre les 5 textes de l'étape pour une occasion (vide = texte générique). */
+export async function saveOccasionStoryCopy(
+  _previous: OccasionActionState,
+  formData: FormData,
+): Promise<OccasionActionState> {
+  const session = await requireAdmin();
+  try {
+    const { id, ...copy } = storyCopySchema.parse(Object.fromEntries(formData));
+    const updated = await getServiceDb()
+      .update(occasions)
+      .set({ ...copy, updatedAt: new Date() })
+      .where(eq(occasions.id, id))
+      .returning({ id: occasions.id });
+    if (!updated.length) throw new Error("Cette occasion n’existe plus. Recharge la page.");
+    await writeAuditLog({
+      action: "occasion.story_copy.updated",
+      actorId: session.user.id,
+      targetType: "occasion",
+      targetId: id,
+    });
+    revalidateOccasions();
+    return { ok: true, message: "Textes de la page enregistrés." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ces textes.") };
   }
 }
 export async function toggleOccasion(_previous: OccasionActionState, formData: FormData): Promise<OccasionActionState> {
@@ -220,5 +260,41 @@ export async function suggestOccasionDescription(input: {
       return { ok: false, message: "La suggestion a été bloquée par la modération. Reformule le nom de l’occasion." };
     }
     return { ok: false, message: actionErrorMessage(error, "Impossible de suggérer une description pour le moment.") };
+  }
+}
+
+/** Bouton « Suggérer les textes de l'étape » du formulaire : propose les 5 textes de l'étape histoire ; ne modifie rien en base. */
+export async function suggestOccasionStoryCopy(input: {
+  name: string;
+  description?: string;
+}): Promise<
+  { ok: true; copy: Awaited<ReturnType<typeof generateOccasionStoryCopy>> } | { ok: false; message: string }
+> {
+  const session = await requireAdmin();
+  try {
+    const parsed = z
+      .object({
+        name: z.string().trim().min(2).max(60),
+        description: z.string().trim().max(240).optional().default(""),
+      })
+      .parse(input);
+    return { ok: true, copy: await generateOccasionStoryCopy(parsed, session.user.id) };
+  } catch (error) {
+    if (error instanceof Error && error.message === "AI_PROVIDER_NOT_CONFIGURED") {
+      return {
+        ok: false,
+        message: "Aucun fournisseur IA n’est configuré. Enregistrez sa clé dans Fournisseurs IA, puis réessayez.",
+      };
+    }
+    if (error instanceof Error && error.message === "CONTENT_BLOCKED_RESULT") {
+      return {
+        ok: false,
+        message: "La suggestion a été bloquée par la modération. Reformule le nom ou la description.",
+      };
+    }
+    if (error instanceof Error && error.message === "AI_INVALID_STORY_COPY") {
+      return { ok: false, message: "La réponse de l’IA était incomplète. Relance la suggestion." };
+    }
+    return { ok: false, message: actionErrorMessage(error, "Impossible de suggérer ces textes pour le moment.") };
   }
 }

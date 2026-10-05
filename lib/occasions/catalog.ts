@@ -14,7 +14,31 @@ export type OccasionOption = {
   showSender?: boolean;
   /** Champ (occasion_fields.id) servant de titre quand il n'y a pas de destinataire. */
   titleFieldId?: string | null;
+  /** Textes de l'étape « Raconte ton histoire » propres à l'occasion ; vide : texte générique (voir StepStory). */
+  storyTitle?: string;
+  storySubtitle?: string;
+  storyLabel?: string;
+  storyPlaceholder?: string;
+  storyTip?: string;
   translations?: CatalogTranslations | null;
+};
+
+/** Champs de l'étape histoire d'une occasion : clé = colonne = clé dans le jsonb `translations`. */
+export const OCCASION_STORY_FIELDS = [
+  "storyTitle",
+  "storySubtitle",
+  "storyLabel",
+  "storyPlaceholder",
+  "storyTip",
+] as const;
+export type OccasionStoryField = (typeof OCCASION_STORY_FIELDS)[number];
+export type OccasionStoryCopy = Record<OccasionStoryField, string>;
+export const OCCASION_STORY_MAX_LENGTHS: Record<OccasionStoryField, number> = {
+  storyTitle: 60,
+  storySubtitle: 120,
+  storyLabel: 40,
+  storyPlaceholder: 240,
+  storyTip: 200,
 };
 
 export const OCCASION_EMOJI_OPTIONS = [

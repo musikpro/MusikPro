@@ -88,7 +88,15 @@ export async function runTranslationsRefresh(): Promise<RefreshResult & { counts
       key: "occasions",
       rows: occasionRows.map((row) => ({
         id: row.id,
-        fields: { name: row.name, description: row.description },
+        fields: {
+          name: row.name,
+          description: row.description,
+          storyTitle: row.storyTitle,
+          storySubtitle: row.storySubtitle,
+          storyLabel: row.storyLabel,
+          storyPlaceholder: row.storyPlaceholder,
+          storyTip: row.storyTip,
+        },
         translations: asTranslations(row.translations),
       })),
       save: async (id, translations) => {

@@ -901,6 +901,7 @@ function useDemoState(
     moods,
     musicStyles,
     recipientRelations,
+    currentOccasion,
     occasionFields,
     details,
     setDetail,

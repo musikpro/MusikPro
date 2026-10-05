@@ -221,6 +221,12 @@ export const occasions = pgTable(
     showSender: boolean("show_sender").notNull().default(true),
     /** Champ (occasion_fields.id) dont la valeur sert de titre quand il n'y a pas de destinataire. */
     titleFieldId: text("title_field_id"),
+    /** Textes de l'étape « Raconte ton histoire » propres à l'occasion (français ; vide : texte générique). */
+    storyTitle: text("story_title").notNull().default(""),
+    storySubtitle: text("story_subtitle").notNull().default(""),
+    storyLabel: text("story_label").notNull().default(""),
+    storyPlaceholder: text("story_placeholder").notNull().default(""),
+    storyTip: text("story_tip").notNull().default(""),
     /** AI-generated per-locale { en: { name, description }, es: {...}, pt: {...} } — see lib/i18n/refresh-translations.ts (empreintes : lib/i18n/incremental.ts). */
     translations: jsonb("translations"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
