@@ -112,6 +112,14 @@ export async function generateOccasionDescription(input: { name: string }, actor
  * exemple dans le champ, astuce), en français et à la deuxième personne du singulier comme le reste du parcours.
  * Un seul appel ; chaque texte est borné côté serveur et le tout est modéré. Rien n'est enregistré ici.
  */
+/** Coupe au dernier mot entier sous la limite (dernier recours si l'IA dépasse), sans ponctuation finale orpheline. */
+function clampAtWord(text: string, max: number): string {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).replace(/[\s,;:–—-]+$/u, "");
+}
+
 export async function generateOccasionStoryCopy(
   input: { name: string; description?: string },
   actorId?: string,
@@ -123,14 +131,14 @@ export async function generateOccasionStoryCopy(
     provider,
     SYSTEM_INSTRUCTIONS,
     `Occasion d'une chanson personnalisée : « ${input.name} ».${context}\n` +
-      "Rédige EN FRANÇAIS, en tutoyant le client, les textes de l'écran où il décrit ce qu'il veut dans sa chanson. Ils doivent parler de CETTE occasion (jamais d'un texte générique du type « Raconte ton histoire »). " +
+      "Public : francophones d'Afrique et de la diaspora ; exemples ancrés dans leur quotidien (famille, amis, église ou mosquée, quartier), jamais de lieu étranger célèbre. Rédige EN FRANÇAIS, en tutoyant le client, les textes de l'écran où il décrit ce qu'il veut dans sa chanson. Ils doivent parler de CETTE occasion (jamais d'un texte générique du type « Raconte ton histoire »). " +
       "Réponds uniquement avec un objet JSON de cinq clés : " +
-      `storyTitle (titre de l'écran, ${OCCASION_STORY_MAX_LENGTHS.storyTitle} caractères max), ` +
-      `storySubtitle (sous-titre, ${OCCASION_STORY_MAX_LENGTHS.storySubtitle} max), ` +
-      `storyLabel (libellé du champ de saisie, ${OCCASION_STORY_MAX_LENGTHS.storyLabel} max), ` +
-      `storyPlaceholder (exemple concret commençant par « Ex. : », écrit à la première personne, ${OCCASION_STORY_MAX_LENGTHS.storyPlaceholder} max), ` +
-      `storyTip (astuce commençant par un verbe, qui dit quels détails donner, ${OCCASION_STORY_MAX_LENGTHS.storyTip} max). ` +
-      "Pas d'émoji, pas de balise Markdown.",
+      `storyTitle (titre de l'écran, ${Math.round(OCCASION_STORY_MAX_LENGTHS.storyTitle * 0.7)} caractères max), ` +
+      `storySubtitle (sous-titre, ${Math.round(OCCASION_STORY_MAX_LENGTHS.storySubtitle * 0.7)} max), ` +
+      `storyLabel (libellé du champ de saisie, ${Math.round(OCCASION_STORY_MAX_LENGTHS.storyLabel * 0.7)} max), ` +
+      `storyPlaceholder (exemple concret commençant par « Ex. : », écrit à la première personne, ${Math.round(OCCASION_STORY_MAX_LENGTHS.storyPlaceholder * 0.7)} max), ` +
+      `storyTip (astuce commençant par un verbe, qui dit quels détails donner, ${Math.round(OCCASION_STORY_MAX_LENGTHS.storyTip * 0.7)} max). ` +
+      "Chaque texte est UNE phrase complète qui respecte strictement sa limite (jamais coupée). Pas d'émoji, pas de balise Markdown.",
   );
   const match = raw.text.match(/\{[\s\S]*\}/);
   let parsed: Record<string, unknown> = {};
@@ -146,8 +154,11 @@ export async function generateOccasionStoryCopy(
     copy[field as OccasionStoryField] = value
       .replace(/\s+/g, " ")
       .replace(/^["«\s]+|["»\s]+$/g, "")
-      .slice(0, OCCASION_STORY_MAX_LENGTHS[field])
       .trim();
+    copy[field as OccasionStoryField] = clampAtWord(
+      copy[field as OccasionStoryField],
+      OCCASION_STORY_MAX_LENGTHS[field],
+    );
   }
   const verdict = await moderateText(Object.values(copy).join("\n"), `Textes d'étape histoire pour "${input.name}"`);
   if (verdict.flagged) {
