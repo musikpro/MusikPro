@@ -43,7 +43,9 @@ function AccentFields({
         <AdminSelect
           name="languageCode"
           ariaLabel="Langue des paroles"
-          defaultValue={accent?.languageCode ?? languageRows[0]?.code}
+          defaultValue={
+            accent?.languageCode ?? (languageRows.find((language) => language.code === "fr") ?? languageRows[0])?.code
+          }
           options={languageRows.map((language) => ({
             value: language.code,
             label: `${language.flag} ${language.name}`,
@@ -187,9 +189,11 @@ export default function AccentSection({
       )}
       {lyricsLanguages.length > 0 ? (
         <AdminActionForm action={saveLanguageAccent} className="admin-editor-grid">
-          <h3>Ajouter un accent</h3>
+          <div className="admin-editor-field is-wide">
+            <h3>Ajouter un accent</h3>
+          </div>
           <AccentFields languages={lyricsLanguages} styles={styles} linkedStyleIds={new Set()} />
-          <div className="admin-editor-actions">
+          <div className="admin-editor-actions is-wide">
             <button type="submit">
               <Icon i="plus" size={16} /> Ajouter l’accent
             </button>
