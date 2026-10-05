@@ -4,6 +4,12 @@ import { runProviderTextTask } from "./text-generation";
 import { moderateText } from "./moderation";
 import { writeAuditLog } from "@/lib/security/audit";
 import { MOOD_AI_HINT_MAX_LENGTH } from "@/lib/moods/catalog";
+import {
+  OCCASION_STORY_FIELDS,
+  OCCASION_STORY_MAX_LENGTHS,
+  type OccasionStoryCopy,
+  type OccasionStoryField,
+} from "@/lib/occasions/catalog";
 
 const SYSTEM_INSTRUCTIONS =
   "Tu es l'assistant éditorial de MusikPro, un SaaS qui génère des chansons personnalisées. Retourne uniquement le texte final demandé, sans commentaire, sans guillemets et sans balise Markdown.";
@@ -99,4 +105,58 @@ export async function generateOccasionDescription(input: { name: string }, actor
     throw new Error("CONTENT_BLOCKED_RESULT");
   }
   return text;
+}
+
+/**
+ * Propose les textes de l'étape « Raconte ton histoire » d'une occasion (titre, sous-titre, libellé du champ,
+ * exemple dans le champ, astuce), en français et à la deuxième personne du singulier comme le reste du parcours.
+ * Un seul appel ; chaque texte est borné côté serveur et le tout est modéré. Rien n'est enregistré ici.
+ */
+export async function generateOccasionStoryCopy(
+  input: { name: string; description?: string },
+  actorId?: string,
+): Promise<OccasionStoryCopy> {
+  const provider = await getLyricsProvider();
+  if (!provider.enabled || !provider.apiKey) throw new Error("AI_PROVIDER_NOT_CONFIGURED");
+  const context = input.description ? ` Description : « ${input.description} ».` : "";
+  const raw = await runProviderTextTask(
+    provider,
+    SYSTEM_INSTRUCTIONS,
+    `Occasion d'une chanson personnalisée : « ${input.name} ».${context}\n` +
+      "Rédige EN FRANÇAIS, en tutoyant le client, les textes de l'écran où il décrit ce qu'il veut dans sa chanson. Ils doivent parler de CETTE occasion (jamais d'un texte générique du type « Raconte ton histoire »). " +
+      "Réponds uniquement avec un objet JSON de cinq clés : " +
+      `storyTitle (titre de l'écran, ${OCCASION_STORY_MAX_LENGTHS.storyTitle} caractères max), ` +
+      `storySubtitle (sous-titre, ${OCCASION_STORY_MAX_LENGTHS.storySubtitle} max), ` +
+      `storyLabel (libellé du champ de saisie, ${OCCASION_STORY_MAX_LENGTHS.storyLabel} max), ` +
+      `storyPlaceholder (exemple concret commençant par « Ex. : », écrit à la première personne, ${OCCASION_STORY_MAX_LENGTHS.storyPlaceholder} max), ` +
+      `storyTip (astuce commençant par un verbe, qui dit quels détails donner, ${OCCASION_STORY_MAX_LENGTHS.storyTip} max). ` +
+      "Pas d'émoji, pas de balise Markdown.",
+  );
+  const match = raw.text.match(/\{[\s\S]*\}/);
+  let parsed: Record<string, unknown> = {};
+  try {
+    parsed = match ? (JSON.parse(match[0]) as Record<string, unknown>) : {};
+  } catch {
+    throw new Error("AI_INVALID_STORY_COPY");
+  }
+  const copy = {} as OccasionStoryCopy;
+  for (const field of OCCASION_STORY_FIELDS) {
+    const value = parsed[field];
+    if (typeof value !== "string" || !value.trim()) throw new Error("AI_INVALID_STORY_COPY");
+    copy[field as OccasionStoryField] = value
+      .replace(/\s+/g, " ")
+      .replace(/^["«\s]+|["»\s]+$/g, "")
+      .slice(0, OCCASION_STORY_MAX_LENGTHS[field])
+      .trim();
+  }
+  const verdict = await moderateText(Object.values(copy).join("\n"), `Textes d'étape histoire pour "${input.name}"`);
+  if (verdict.flagged) {
+    await writeAuditLog({
+      action: "ai.occasion_story_copy.blocked",
+      actorId,
+      metadata: { name: input.name, categories: verdict.categories },
+    });
+    throw new Error("CONTENT_BLOCKED_RESULT");
+  }
+  return copy;
 }

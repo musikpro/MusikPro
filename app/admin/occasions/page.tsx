@@ -1,5 +1,7 @@
 import { asc } from "drizzle-orm";
 import Link from "next/link";
+import AdminOccasionStoryEditor from "@/components/admin/AdminOccasionStoryEditor";
+import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
 import AdminOccasionSortableGrid from "@/components/admin/AdminOccasionSortableGrid";
 import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
@@ -27,7 +29,25 @@ export default async function AdminOccasionsPage() {
         </div>
       </div>
       {rows.length ? (
-        <AdminOccasionSortableGrid occasions={rows} />
+        <AdminTabs
+          ariaLabel="Sections des occasions"
+          urlParam="tab"
+          tabs={[
+            { id: "catalog", label: "Catalogue" },
+            { id: "story", label: "Personnalisation" },
+          ]}
+        >
+          <AdminTabPanel id="catalog">
+            <AdminOccasionSortableGrid occasions={rows} />
+          </AdminTabPanel>
+          <AdminTabPanel id="story">
+            <p className="admin-page-description" style={{ marginBottom: 12 }}>
+              Chaque occasion, y compris celles que tu ajoutes, apparaît ici. Modifie le titre, le sous-titre, le masque
+              du champ (texte d’exemple) et l’astuce de la page suivante, ou génère-les avec l’IA.
+            </p>
+            <AdminOccasionStoryEditor occasions={rows} />
+          </AdminTabPanel>
+        </AdminTabs>
       ) : (
         <div className="admin-empty-state admin-catalog-empty">
           <Icon i="calendar-heart" size={24} />

@@ -9,7 +9,8 @@ import Icon from "./Icon";
 import StepProgressBar from "./StepProgressBar";
 import VoiceMicrophoneButton from "./VoiceMicrophoneButton";
 import { InlineNotice } from "@/components/ui/inline-notice";
-import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+import { localizeField, translate as t, translateTemplate } from "@/lib/i18n/translate";
+import type { OccasionStoryField } from "@/lib/occasions/catalog";
 import { translateIssue } from "@/lib/validation/translate-issue";
 
 export const displayName = "Étape 2 — Raconte ton histoire";
@@ -19,6 +20,14 @@ export default function StepStory() {
   const demo = useDemo();
   const [storyError, setStoryError] = useState("");
   const storyCharacterCount = demo.fields.story.length;
+  // Textes propres à l'occasion choisie (saisis par le propriétaire, traduits par l'IA) ; générique si vides.
+  const occasion = demo.currentOccasion;
+  const copy = (field: OccasionStoryField, generic: string) => {
+    const value = occasion?.[field]?.trim();
+    return value ? localizeField(value, occasion?.translations, field) : generic;
+  };
+  const storyTitle = copy("storyTitle", t("Raconte ton histoire"));
+  const storyLabel = copy("storyLabel", t("Ton histoire"));
 
   useEffect(() => {
     if (!storyError) return;
@@ -52,15 +61,17 @@ export default function StepStory() {
       </div>
 
       <div className="px-4 pt-4 pb-5">
-        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{t("Raconte ton histoire")}</h1>
-        <p className="text-sm text-muted-foreground">{t("Décris ce que tu veux dans ta chanson")}</p>
+        <h1 className="font-headings font-bold text-2xl text-foreground mb-1">{storyTitle}</h1>
+        <p className="text-sm text-muted-foreground">
+          {copy("storySubtitle", t("Décris ce que tu veux dans ta chanson"))}
+        </p>
       </div>
 
       <div className="px-4 mb-4">
         <div className="bg-card border border-border rounded-xl p-4 relative" style={{ minHeight: 160 }}>
           <DemoField
             name="story"
-            label={t("Ton histoire")}
+            label={storyLabel}
             multiline
             rows={5}
             maxLength={DEMO_STORY_MAX_CHARACTERS}
@@ -68,8 +79,11 @@ export default function StepStory() {
             ariaInvalid={Boolean(storyError)}
             describedBy={storyError ? "story-field-error" : undefined}
             onValueChange={() => setStoryError("")}
-            placeholder={t(
-              "Ex. : Je veux rendre hommage à ma femme Aïcha. Sa force, sa douceur et son sourire illuminent notre famille depuis toutes ces années...",
+            placeholder={copy(
+              "storyPlaceholder",
+              t(
+                "Ex. : Je veux rendre hommage à ma femme Aïcha. Sa force, sa douceur et son sourire illuminent notre famille depuis toutes ces années...",
+              ),
             )}
           />
           <VoiceMicrophoneButton
@@ -118,8 +132,11 @@ export default function StepStory() {
           <p className="text-sm text-foreground leading-relaxed">
             <Icon i="lightbulb" size={16} className="inline-block text-primary mr-1" />
             <span className="font-semibold">{t("Astuce :")}</span>{" "}
-            {t(
-              "Plus tu donnes de détails, plus ta chanson sera personnalisée. Mentionne les souvenirs et les traits de caractère importants.",
+            {copy(
+              "storyTip",
+              t(
+                "Plus tu donnes de détails, plus ta chanson sera personnalisée. Mentionne les souvenirs et les traits de caractère importants.",
+              ),
             )}
           </p>
         </div>
