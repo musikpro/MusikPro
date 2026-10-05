@@ -470,6 +470,13 @@
       "when": 1791149069907,
       "tag": "0066_creation_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1791191086573,
+      "tag": "0067_language_accents",
+      "breakpoints": true
     }
   ]
 }

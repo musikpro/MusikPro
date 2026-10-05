@@ -692,6 +692,11 @@
         "db/migrations/0010_language_catalog.sql",
         "db/migrations/0011_localization_settings.sql",
         "db/migrations/0023_supreme_bloodaxe.sql",
+        "db/migrations/0067_language_accents.sql",
+        "lib/languages/accents-server.ts",
+        "lib/validation/language-accents.ts",
+        "app/admin/languages/accents-actions.ts",
+        "app/admin/languages/AccentSection.tsx",
         "lib/languages/catalog.ts",
         "lib/languages/server.ts",
         "lib/languages/detection.ts",
@@ -726,6 +731,7 @@
         "Les quatre langues initiales sont le français, l’anglais, l’espagnol et le portugais.",
         "La détection Country.is est pilotée depuis Neon, mise en cache sept jours dans Upstash et n’écrase jamais un choix manuel du client.",
         "L’onglet « Association pays → langue » (table country_languages) permet au propriétaire d’associer un pays détecté à une langue d’interface active ; sans association explicite, la détection retombe sur la carte statique de lib/languages/country-language.ts.",
+        "Onglet « Accents vocaux » (tables language_accents et music_style_accents, migration 0067) : variantes d’accent d’une langue de paroles (français ivoirien…), liées aux styles musicaux ; la consigne anglaise part vers Musicful via buildVocalHint, le client n’en voit rien ; sans accent, comportement inchangé.",
         "GET /api/i18n/overlay?locale=en|es|pt (public, lecture seule, validée par Zod) renvoie le dictionnaire incrémental des textes fixes (table ui_translations), mis en cache serveur avec le tag i18n-overlay."
       ]
     },
