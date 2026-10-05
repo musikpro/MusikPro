@@ -1,4 +1,15 @@
-import { pgTable, text, timestamp, integer, numeric, jsonb, boolean, uniqueIndex, index, primaryKey } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  timestamp,
+  integer,
+  numeric,
+  jsonb,
+  boolean,
+  uniqueIndex,
+  index,
+  primaryKey,
+} from "drizzle-orm/pg-core";
 import { user, organization } from "./auth.generated";
 
 export const plans = pgTable("plans", {
@@ -384,6 +395,47 @@ export const languages = pgTable(
   (table) => ({
     interfaceOrderIndex: index("languages_interface_order_idx").on(table.interfaceEnabled, table.interfaceOrder),
     lyricsOrderIndex: index("languages_lyrics_order_idx").on(table.lyricsEnabled, table.lyricsOrder),
+  }),
+);
+
+/**
+ * Variantes d'accent d'une langue de paroles (ex. « Français ivoirien »), gérées par le propriétaire. `aiHint` est la
+ * consigne ANGLAISE envoyée à Musicful ; rien de tout cela n'est lu côté client (voir lib/languages/accents-server.ts).
+ */
+export const languageAccents = pgTable(
+  "language_accents",
+  {
+    id: text("id").primaryKey(),
+    languageCode: text("language_code")
+      .notNull()
+      .references(() => languages.code, { onDelete: "cascade", onUpdate: "cascade" }),
+    name: text("name").notNull(),
+    aiHint: text("ai_hint").notNull(),
+    active: boolean("active").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(100),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    languageIndex: index("language_accents_language_idx").on(table.languageCode, table.active, table.sortOrder),
+  }),
+);
+
+/** Un style musical a au plus une variante d'accent par langue (clé primaire composite). */
+export const musicStyleAccents = pgTable(
+  "music_style_accents",
+  {
+    styleId: text("style_id")
+      .notNull()
+      .references(() => musicStyles.id, { onDelete: "cascade" }),
+    accentId: text("accent_id")
+      .notNull()
+      .references(() => languageAccents.id, { onDelete: "cascade" }),
+    languageCode: text("language_code").notNull(),
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.styleId, table.languageCode] }),
+    accentIndex: index("music_style_accents_accent_idx").on(table.accentId),
   }),
 );
 

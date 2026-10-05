@@ -7,12 +7,20 @@ import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
 import RefreshCatalogTranslationsButton from "@/components/admin/RefreshCatalogTranslationsButton";
 import { getServiceDb } from "@/db";
-import { countryLanguages, currencySettings, languages } from "@/db/schema";
+import {
+  countryLanguages,
+  currencySettings,
+  languageAccents,
+  languages,
+  musicStyleAccents,
+  musicStyles,
+} from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { getUntranslatedSummary } from "@/lib/i18n/untranslated-server";
 import { getCurrencyCatalog } from "@/lib/credit-plans/currencies-server";
 import type { CreditCurrency } from "@/lib/credit-plans/currency";
 import CurrencySection from "./CurrencySection";
+import AccentSection from "./AccentSection";
 import { COUNTRIES_REFERENCE } from "@/lib/languages/countries-reference";
 import { deleteLanguage, removeCountryLanguage, setCountryLanguage, toggleLanguageScope } from "./actions";
 
@@ -238,17 +246,26 @@ function CountryLanguageSection({
 export default async function AdminLanguagesPage() {
   await requireAdmin();
   const serviceDb = getServiceDb();
-  const [rows, countryLanguageRows, currencyCatalog, [rateSettings], untranslated] = await Promise.all([
-    serviceDb.select().from(languages).orderBy(asc(languages.name)),
-    serviceDb.select().from(countryLanguages),
-    getCurrencyCatalog(),
-    serviceDb
-      .select()
-      .from(currencySettings)
-      .limit(1)
-      .catch(() => []),
-    getUntranslatedSummary(),
-  ]);
+  const [rows, countryLanguageRows, currencyCatalog, [rateSettings], untranslated, accentRows, accentLinks, styleRows] =
+    await Promise.all([
+      serviceDb.select().from(languages).orderBy(asc(languages.name)),
+      serviceDb.select().from(countryLanguages),
+      getCurrencyCatalog(),
+      serviceDb
+        .select()
+        .from(currencySettings)
+        .limit(1)
+        .catch(() => []),
+      getUntranslatedSummary(),
+      serviceDb.select().from(languageAccents),
+      serviceDb
+        .select({ styleId: musicStyleAccents.styleId, accentId: musicStyleAccents.accentId })
+        .from(musicStyleAccents),
+      serviceDb
+        .select({ id: musicStyles.id, name: musicStyles.name })
+        .from(musicStyles)
+        .orderBy(asc(musicStyles.sortOrder)),
+    ]);
   const countryCountByCurrency: Record<string, number> = {};
   for (const row of countryLanguageRows) {
     countryCountByCurrency[row.currencyCode] = (countryCountByCurrency[row.currencyCode] ?? 0) + 1;
@@ -280,6 +297,7 @@ export default async function AdminLanguagesPage() {
         tabs={[
           { id: "interface", label: "Langues de l’interface" },
           { id: "lyrics", label: "Langues des paroles" },
+          { id: "accents", label: "Accents vocaux" },
           { id: "countries", label: "Association pays, langue et monnaie" },
           { id: "currencies", label: "Monnaies" },
           { id: "settings", label: "Réglages" },
@@ -300,6 +318,9 @@ export default async function AdminLanguagesPage() {
             rows={rows}
             scope="lyrics"
           />
+        </AdminTabPanel>
+        <AdminTabPanel id="accents">
+          <AccentSection accents={accentRows} languages={rows} styles={styleRows} links={accentLinks} />
         </AdminTabPanel>
         <AdminTabPanel id="countries">
           <CountryLanguageSection

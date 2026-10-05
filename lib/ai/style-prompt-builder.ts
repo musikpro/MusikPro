@@ -33,6 +33,9 @@ export const MUSICFUL_STYLE_MAX_LENGTH = 1000;
  */
 export const STYLE_AI_DESCRIPTION_MAX_LENGTH = 420;
 
+/** Longueur maximale de la consigne d'accent : la consigne vocale n'est jamais tronquée, elle doit rester courte. */
+export const ACCENT_HINT_MAX_LENGTH = 200;
+
 function truncateAtWord(text: string, maxLength: number): string {
   if (text.length <= maxLength) return text;
   const truncated = text.slice(0, maxLength);
@@ -57,9 +60,10 @@ function stripStyleNamePrefix(description: string, genreName: string): string {
 /**
  * Consigne vocale en anglais (« Vocals: ») déduite des choix « Langue des paroles » et « Voix du chanteur » :
  * les valeurs françaises du client (Femme/Homme/Duo, Français/Anglais) sont converties en anglais pour
- * Musicful. Valeur inconnue : rien n'est ajouté pour elle.
+ * Musicful. Valeur inconnue : rien n'est ajouté pour elle. `accentHint` (anglais, ≤ ACCENT_HINT_MAX_LENGTH) précise
+ * l'origine de la langue chantée (ex. « natural Ivorian French accent ») ; vide : comportement historique.
  */
-export function buildVocalHint(language: string, voice: string): string {
+export function buildVocalHint(language: string, voice: string, accentHint = ""): string {
   const voices: Record<string, string> = {
     femme: "female lead vocals",
     female: "female lead vocals",
@@ -76,7 +80,10 @@ export function buildVocalHint(language: string, voice: string): string {
   };
   const voicePart = voices[voice.trim().toLowerCase()];
   const languagePart = languages[language.trim().toLowerCase()];
-  return [voicePart, languagePart ? `sung in ${languagePart}` : ""].filter(Boolean).join(", ");
+  // La variante d'accent (consigne anglaise du propriétaire, liée au style) n'a de sens qu'avec une langue reconnue.
+  const accent = accentHint.trim();
+  const sung = languagePart ? `sung in ${languagePart}${accent ? ` with ${accent}` : ""}` : "";
+  return [voicePart, sung].filter(Boolean).join(", ");
 }
 
 const STRICT_STYLE_SENTENCE =

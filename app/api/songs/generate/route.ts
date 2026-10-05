@@ -21,6 +21,7 @@ import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } f
 import { writeAuditLog } from "@/lib/security/audit";
 import { OccasionDetailsError, resolveOccasionDetails } from "@/lib/occasion-fields/server";
 import { createLogger } from "@/lib/observability/logger";
+import { resolveAccentHint } from "@/lib/languages/accents-server";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -93,7 +94,11 @@ export async function POST(request: Request) {
       const first = Object.values(error.errors)[0];
       const cause = (first && ANSWER_ERROR_MESSAGES[first]) || "réponse invalide";
       return NextResponse.json(
-        { error: `Certaines informations personnalisées sont invalides (${cause}). Vérifie l’étape « Personnalise ta chanson ».`, code: "OCCASION_DETAILS_INVALID", fields: error.errors },
+        {
+          error: `Certaines informations personnalisées sont invalides (${cause}). Vérifie l’étape « Personnalise ta chanson ».`,
+          code: "OCCASION_DETAILS_INVALID",
+          fields: error.errors,
+        },
         { status: 422 },
       );
     }
@@ -134,7 +139,7 @@ export async function POST(request: Request) {
     input.mood,
     provider.strictStyleAdherence,
     input.occasion,
-    buildVocalHint(input.language, input.voice),
+    buildVocalHint(input.language, input.voice, await resolveAccentHint(input.genre, input.language)),
   );
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 
