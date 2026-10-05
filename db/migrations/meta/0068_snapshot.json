@@ -1,6 +1,6 @@
 {
-  "id": "be2ed559-6245-4022-9cb4-94f155eae385",
-  "prevId": "121ed8e0-a73f-4e6a-a78b-92e062b1bb21",
+  "id": "79f0b388-b5a8-49e3-87b3-308a40d8fc8b",
+  "prevId": "be2ed559-6245-4022-9cb4-94f155eae385",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -2971,6 +2971,41 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "story_title": {
+          "name": "story_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "story_subtitle": {
+          "name": "story_subtitle",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "story_label": {
+          "name": "story_label",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "story_placeholder": {
+          "name": "story_placeholder",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
+        },
+        "story_tip": {
+          "name": "story_tip",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "''"
         },
         "translations": {
           "name": "translations",
