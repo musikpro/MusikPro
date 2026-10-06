@@ -2,6 +2,7 @@ package com.musikpro.app;
 
 import android.app.DownloadManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,6 +22,27 @@ public class MainActivity extends BridgeActivity {
         super.onCreate(savedInstanceState);
         installBackNavigation();
         installDownloadListener();
+        openAppLink(getIntent());
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        openAppLink(intent);
+    }
+
+    // Liens d'application (App Links) : au retour du paiement (Chariow ouvre la page de retour dans Chrome), Android
+    // ouvre l'application sur https://musikpro.net/dashboard… . Capacitor ne charge pas ce lien tout seul (il faudrait le
+    // plugin @capacitor/app) : on le charge ici dans la WebView, uniquement pour notre domaine, en https et sous
+    // /dashboard, jamais une adresse arbitraire.
+    private void openAppLink(Intent intent) {
+        if (intent == null || !Intent.ACTION_VIEW.equals(intent.getAction())) return;
+        Uri link = intent.getData();
+        if (link == null || !"https".equals(link.getScheme()) || !"musikpro.net".equals(link.getHost())) return;
+        String path = link.getPath();
+        if (path == null || !(path.equals("/dashboard") || path.startsWith("/dashboard/"))) return;
+        WebView webView = getBridge() != null ? getBridge().getWebView() : null;
+        if (webView != null) webView.loadUrl(link.toString());
     }
 
     // Bouton / geste « Retour » d'Android : revient d'abord en arrière dans les pages du site (historique de la
