@@ -60,6 +60,11 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
               </p>
               <p>
                 {t(
+                  "Selon les fonctions que vous utilisez, MusikPro traite aussi les textes que vous saisissez ou dictez, l’image de pochette que vous choisissez, vos chansons générées et les informations nécessaires à l’achat de crédits (adresse e-mail, numéro de téléphone Mobile Money, montant et état du paiement). MusikPro ne reçoit ni ne conserve les numéros de carte ou les codes secrets de paiement.",
+                )}
+              </p>
+              <p>
+                {t(
                   "Des données techniques limitées, telles que l’adresse IP, le type de navigateur, les journaux de sécurité et les erreurs, peuvent être traitées pour protéger et maintenir le service.",
                 )}
               </p>
@@ -92,11 +97,50 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
           ),
         },
         {
+          title: t("Application mobile (Android et iPhone)"),
+          content: (
+            <>
+              <p>
+                {t(
+                  "L’application MusikPro donne accès au même service que le site. Elle ne contient aucune publicité, n’utilise pas d’identifiant publicitaire et ne suit pas votre activité dans d’autres applications ou sites.",
+                )}
+              </p>
+              <p>
+                {t(
+                  "Certaines fonctions demandent une autorisation de votre téléphone, utilisée uniquement pour cette fonction :",
+                )}
+              </p>
+              <ul>
+                <li>
+                  {t(
+                    "Microphone : seulement lorsque vous appuyez sur le bouton de dictée, pour transformer votre voix en texte avec le service de reconnaissance vocale de votre appareil. MusikPro reçoit le texte obtenu ; il n’enregistre ni ne conserve votre voix.",
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "Appareil photo et photos : seulement lorsque vous choisissez la pochette d’une chanson. Seule l’image sélectionnée est envoyée ; MusikPro n’accède pas au reste de votre galerie.",
+                  )}
+                </li>
+                <li>
+                  {t(
+                    "Enregistrement de fichiers : lorsque vous téléchargez une chanson, le fichier MP3 est enregistré sur votre appareil à votre demande.",
+                  )}
+                </li>
+              </ul>
+              <p>
+                {t(
+                  "Vous pouvez retirer chaque autorisation à tout moment dans les réglages de votre téléphone : la fonction concernée cesse alors de fonctionner, et le reste de l’application continue de fonctionner.",
+                )}
+              </p>
+            </>
+          ),
+        },
+        {
           title: t("Prestataires"),
           content: (
             <p>
               {t(
-                "MusikPro s’appuie sur des prestataires techniques pour héberger l’application, stocker les données, gérer l’authentification et envoyer les e-mails. Ils traitent uniquement les données nécessaires à leur mission, selon leurs engagements de sécurité et de confidentialité. MusikPro ne vend pas vos données personnelles.",
+                "MusikPro s’appuie sur des prestataires techniques pour héberger l’application, stocker les données, gérer l’authentification, envoyer les e-mails, générer les paroles et la musique par intelligence artificielle (ils reçoivent le texte et les choix nécessaires à la création), encaisser les paiements Mobile Money, héberger les images de pochette et, lorsqu’il est activé, vérifier que l’utilisateur n’est pas un robot. Ils traitent uniquement les données nécessaires à leur mission, selon leurs engagements de sécurité et de confidentialité. MusikPro ne vend pas vos données personnelles.",
               )}
             </p>
           ),
