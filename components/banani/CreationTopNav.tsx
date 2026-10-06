@@ -4,6 +4,7 @@ import Icon from "./Icon";
 import { useDemo } from "./DemoProvider";
 import { translate as t } from "@/lib/i18n/translate";
 import { recordCreationAbandoned } from "@/lib/analytics/funnel-actions";
+import { markResumeSkip } from "@/lib/creation-draft/resume-skip";
 
 export default function CreationTopNav({
   backHref,
@@ -19,7 +20,15 @@ export default function CreationTopNav({
   const demo = useDemo();
   return (
     <div className="creation-top-nav bg-background border-b border-border px-4 py-3">
-      <button type="button" data-demo-ready="true" onClick={() => demo.go(backHref)} className="creation-back-button">
+      <button
+        type="button"
+        data-demo-ready="true"
+        onClick={() => {
+          markResumeSkip();
+          demo.go(backHref);
+        }}
+        className="creation-back-button"
+      >
         <Icon i="arrow-left" size={17} /> {t("Retour")}
       </button>
       <button
@@ -27,6 +36,7 @@ export default function CreationTopNav({
         data-demo-ready="true"
         onClick={() => {
           if (!demo.isDemo) void recordCreationAbandoned(label);
+          markResumeSkip();
           demo.go("/dashboard");
         }}
         className="creation-dashboard-button"

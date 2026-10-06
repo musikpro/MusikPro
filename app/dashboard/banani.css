@@ -7076,3 +7076,106 @@ button.mobile-menu-brand {
   width: 0;
   height: 0;
 }
+
+/* Écran « Tu avais déjà commencé une chanson » : boutons Continuer / Recommencer. */
+.resume-action {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  animation: resume-action-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    border-color 220ms ease;
+}
+.resume-action-secondary {
+  animation-delay: 120ms;
+}
+.resume-action-primary {
+  background: linear-gradient(135deg, #f26522, #f4845f);
+  box-shadow:
+    0 2px 4px rgba(242, 101, 34, 0.22),
+    0 12px 28px -6px rgba(242, 101, 34, 0.45);
+}
+.resume-action-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.35) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+.resume-action-secondary {
+  box-shadow:
+    0 1px 2px rgba(60, 40, 20, 0.06),
+    0 8px 20px -8px rgba(60, 40, 20, 0.18);
+}
+.resume-action-icon,
+.resume-action-arrow {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.resume-action:hover:not(:disabled) {
+  transform: translateY(-3px);
+}
+.resume-action-primary:hover:not(:disabled) {
+  box-shadow:
+    0 4px 8px rgba(242, 101, 34, 0.25),
+    0 18px 36px -8px rgba(242, 101, 34, 0.55);
+}
+.resume-action-primary:hover:not(:disabled)::after {
+  transform: translateX(120%);
+  transition: transform 700ms ease;
+}
+.resume-action-secondary:hover:not(:disabled) {
+  border-color: rgba(242, 101, 34, 0.45);
+  box-shadow:
+    0 2px 4px rgba(60, 40, 20, 0.08),
+    0 14px 28px -8px rgba(242, 101, 34, 0.28);
+}
+.resume-action:hover:not(:disabled) .resume-action-arrow {
+  transform: translateX(5px);
+}
+.resume-action-primary:hover:not(:disabled) .resume-action-icon {
+  transform: scale(1.08);
+}
+.resume-action-secondary:hover:not(:disabled) .resume-action-icon {
+  transform: rotate(180deg);
+}
+.resume-action:active:not(:disabled) {
+  transform: translateY(1px) scale(0.985);
+  transition-duration: 90ms;
+}
+.resume-action:focus-visible {
+  outline: 3px solid rgba(242, 101, 34, 0.55);
+  outline-offset: 3px;
+}
+.resume-action:disabled {
+  cursor: progress;
+  opacity: 0.7;
+}
+@keyframes resume-action-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .resume-action {
+    animation: none;
+    transition: none;
+  }
+  .resume-action-icon,
+  .resume-action-arrow,
+  .resume-action-primary::after {
+    transition: none;
+  }
+  .resume-action:hover:not(:disabled),
+  .resume-action:hover:not(:disabled) .resume-action-icon,
+  .resume-action:hover:not(:disabled) .resume-action-arrow {
+    transform: none;
+  }
+}
