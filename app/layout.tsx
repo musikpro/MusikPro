@@ -8,6 +8,7 @@ import type { Metadata, Viewport } from "next";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
+import InstallPromptCapture from "@/components/pwa/install-prompt-capture";
 import { I18nBootstrap } from "@/components/i18n-bootstrap";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { NonceProvider } from "@/components/security/nonce-provider";
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body suppressHydrationWarning>
         <NonceProvider nonce={nonce}>
           <ServiceWorkerRegister />
+          <InstallPromptCapture />
           <NativeSplashHider />
           <I18nBootstrap />
           <ExclusiveAudioPlayback enabled={exclusivePlayback} />

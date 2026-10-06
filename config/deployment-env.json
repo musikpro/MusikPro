@@ -281,6 +281,14 @@
           "example": "openssl rand -base64 48"
         },
         {
+          "name": "BLOB_READ_WRITE_TOKEN",
+          "sensitive": true,
+          "required": "optional",
+          "vercel": ["Production", "Preview"],
+          "source": "Vercel > Storage > Create Database > Blob (accès privé) > relier au projet : la variable est ajoutée automatiquement. Sert à stocker le fichier d'installation Android envoyé depuis /admin/mobile-apps.",
+          "example": "vercel_blob_rw_..."
+        },
+        {
           "name": "FIREBASE_SERVICE_ACCOUNT_JSON",
           "sensitive": true,
           "required": "optional",

@@ -49,6 +49,7 @@ const SCAN_DIRS_WANTED = [
   "lib/api/error-messages.ts",
   "app/terms",
   "app/privacy",
+  "app/download",
   "components/legal-page.tsx",
   "app/opengraph-image.tsx",
   "lib/email/auth-email-text.ts",

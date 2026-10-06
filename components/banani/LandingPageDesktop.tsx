@@ -3,7 +3,7 @@ import AppLogo from "./AppLogo";
 import Icon from "./Icon";
 import Reveal from "./Reveal";
 import LandingFaqItem from "./LandingFaqItem";
-import { GooglePlayLogo, AppleLogo } from "./StoreDownloadCard";
+import InstallAppCta from "./InstallAppCta";
 import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLanguageSwitcher";
 import HeroRotatingText from "./HeroRotatingText";
 import LandingSongCarousel from "./LandingSongCarousel";
@@ -233,36 +233,9 @@ export default function LandingPageDesktop({
       ) : null}
 
       {storeLinks.googlePlayUrl || storeLinks.appStoreUrl ? (
-        <section className="landing-section-grid px-10 py-16 text-center">
+        <section className="landing-section-grid px-10 py-16">
           <Reveal>
-            <h2 className="font-headings font-bold text-4xl text-foreground mb-3">{t("Emporte ta musique partout")}</h2>
-            <p className="text-lg text-muted-foreground mb-12">
-              {t("Crée, écoute et partage tes chansons depuis ton téléphone.")}
-            </p>
-            <div className="flex items-center justify-center gap-8">
-              {storeLinks.googlePlayUrl ? (
-                <a
-                  href={storeLinks.googlePlayUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Google Play"
-                  className="landing-chip-hover inline-block"
-                >
-                  <GooglePlayLogo />
-                </a>
-              ) : null}
-              {storeLinks.appStoreUrl ? (
-                <a
-                  href={storeLinks.appStoreUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="App Store"
-                  className="landing-chip-hover inline-block"
-                >
-                  <AppleLogo />
-                </a>
-              ) : null}
-            </div>
+            <InstallAppCta variant="banner" links={storeLinks} />
           </Reveal>
         </section>
       ) : null}

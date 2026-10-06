@@ -27,3 +27,17 @@ export async function getStoreLinks(): Promise<StoreLinksStatus> {
     return EMPTY;
   }
 }
+
+/**
+ * Liens réellement proposés aux visiteurs (accueil, tableau de bord). Un lien de boutique configuré garde la priorité ;
+ * sinon Google Play mène à la page /download#android (installation sans avertissement, puis APK en option) et
+ * l'App Store à la page d'installation sur l'écran d'accueil (PWA). `getStoreLinks()` reste la valeur brute saisie par le propriétaire.
+ */
+export async function getEffectiveStoreLinks(): Promise<StoreLinksStatus> {
+  const links = await getStoreLinks();
+  return {
+    ...links,
+    googlePlayUrl: links.googlePlayUrl ?? "/download#android",
+    appStoreUrl: links.appStoreUrl ?? "/download#iphone",
+  };
+}

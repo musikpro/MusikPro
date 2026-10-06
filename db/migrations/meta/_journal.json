@@ -498,6 +498,13 @@
       "when": 1791316303723,
       "tag": "0070_push_devices",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1791318392816,
+      "tag": "0071_app_releases",
+      "breakpoints": true
     }
   ]
 }
