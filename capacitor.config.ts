@@ -1,9 +1,9 @@
-import type { CapacitorConfig } from '@capacitor/cli';
+import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   appId: "com.musikpro.app",
   appName: "MusikPro",
-  webDir: 'mobile-shell',
+  webDir: "mobile-shell",
   // Couleur du site : sans elle la WebView est noire tant que la page ne s'affiche pas.
   backgroundColor: "#fafaf7",
   server: {
@@ -17,7 +17,8 @@ const config: CapacitorConfig = {
     // Écran de démarrage plein écran (resources/splash.png) : l'application charge le site hébergé, donc
     // le splash système seul disparaît avant l'affichage de la page. Durée fixe, repli sûr hors ligne.
     SplashScreen: {
-      launchShowDuration: 2000,
+      // Durée maximale : le site retire lui-même l'écran de lancement dès que la page est affichée (NativeSplashHider).
+      launchShowDuration: 10000,
       launchAutoHide: true,
       launchFadeOutDuration: 300,
       backgroundColor: "#FB5104",
