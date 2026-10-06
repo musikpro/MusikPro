@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import InstallAppButton from "@/components/pwa/install-app-button";
-import { getPublishedRelease } from "@/lib/app-releases/server";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { translateForLocale, translateTemplateForLocale } from "@/lib/i18n/translate";
@@ -21,8 +20,6 @@ export async function generateMetadata(): Promise<Metadata> {
   });
 }
 
-const formatMegabytes = (bytes: number) => (bytes / (1024 * 1024)).toFixed(1);
-
 export default async function DownloadPage() {
   const locale = await resolvePageLocale();
   await primeOverlay(locale);
@@ -30,7 +27,6 @@ export default async function DownloadPage() {
   // Alias nommé `translateTemplate` : le scanner i18n ne reconnaît pas `translateTemplateForLocale(`.
   const translateTemplate = (text: string, params: Record<string, string | number>) =>
     translateTemplateForLocale(text, params, locale);
-  const release = await getPublishedRelease("android");
 
   return (
     <main className="legal-shell">
@@ -54,42 +50,6 @@ export default async function DownloadPage() {
           )}
         </p>
         <InstallAppButton />
-
-        {release ? (
-          <>
-            <h3>{t("Fichier d'installation (APK), pour utilisateurs avancés")}</h3>
-            <p>
-              {translateTemplate("Version {version} · {size} Mo", {
-                version: release.version,
-                size: formatMegabytes(release.sizeBytes),
-              })}
-            </p>
-            <p>
-              <a className="download-cta-secondary" href="/download/android" download>
-                {t("Télécharger l'APK Android")}
-              </a>
-            </p>
-            <ol>
-              <li>{t("Ouvrez le fichier téléchargé depuis les notifications ou le dossier Téléchargements.")}</li>
-              <li>
-                {t(
-                  "Si Android le demande, autorisez l'installation depuis ce navigateur (réglage « Installer des applications inconnues »).",
-                )}
-              </li>
-              <li>{t("Appuyez sur Installer, puis ouvrez MusikPro.")}</li>
-            </ol>
-            <p>
-              {t(
-                "Android peut afficher un avertissement parce que l'application ne vient pas du Play Store : c'est normal pour toute application installée depuis un fichier. Elle est signée par MusikPro ; vous pouvez vérifier l'empreinte du fichier ci-dessous.",
-              )}
-            </p>
-            <p>
-              {t("Empreinte SHA-256 du fichier, pour vérifier son intégrité :")}
-              <br />
-              <code style={{ wordBreak: "break-all" }}>{release.sha256}</code>
-            </p>
-          </>
-        ) : null}
       </article>
 
       <article className="legal-card" id="iphone">
