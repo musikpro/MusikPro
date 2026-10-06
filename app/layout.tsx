@@ -1,3 +1,4 @@
+import NativeSplashHider from "@/components/native/NativeSplashHider";
 import "./globals.css";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
@@ -49,6 +50,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body suppressHydrationWarning>
         <NonceProvider nonce={nonce}>
           <ServiceWorkerRegister />
+          <NativeSplashHider />
           <I18nBootstrap />
           <ExclusiveAudioPlayback enabled={exclusivePlayback} />
           <div className="app-content">{children}</div>
