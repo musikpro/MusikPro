@@ -33,12 +33,11 @@ function relativeTime(iso: string, language: string): string {
 
 /**
  * Écran d'entrée de la création lorsqu'un parcours a été commencé sans générer la chanson : continuer là où l'on
- * s'était arrêté, ou repartir de zéro (suppression du brouillon, confirmée). Affiché par `app/dashboard/create/page.tsx`.
+ * s'était arrêté, ou repartir de zéro (suppression immédiate du brouillon, sans confirmation : l'avertissement reste affiché sous les boutons). Affiché par `app/dashboard/create/page.tsx`.
  */
 export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCreationDraft }) {
   const demo = useDemo();
   const router = useRouter();
-  const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
   const [age, setAge] = useState("");
   const steps = summarizeCreationDraft(draft.data);
@@ -191,55 +190,24 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
             <Icon i="arrow-right" size={18} className="opacity-80 flex-shrink-0" />
           </button>
 
-          {!confirming ? (
-            <button
-              type="button"
-              data-demo-ready="true"
-              onClick={() => setConfirming(true)}
-              disabled={pending}
-              className="w-full rounded-2xl py-4 px-5 flex items-center gap-4 bg-card border border-border"
-            >
-              <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center flex-shrink-0">
-                <Icon i="refresh-cw" size={18} className="text-primary" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="font-bold text-base text-foreground leading-tight">{t("Recommencer de zéro")}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{t("Nouvelle histoire, nouveaux paramètres")}</p>
-              </div>
-              <Icon i="arrow-right" size={18} className="text-muted-foreground flex-shrink-0" />
-            </button>
-          ) : (
-            <div
-              role="alertdialog"
-              aria-label={t("Confirmer le nouveau départ")}
-              className="rounded-2xl p-4 bg-card border border-border"
-            >
-              <p className="text-sm font-semibold text-foreground mb-1">{t("Supprimer cette session ?")}</p>
-              <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                {t("La session précédente et les paroles générées seront supprimées définitivement.")}
-              </p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  data-demo-ready="true"
-                  onClick={() => setConfirming(false)}
-                  disabled={pending}
-                  className="flex-1 rounded-xl py-3 text-sm font-semibold bg-input border border-border"
-                >
-                  {t("Annuler")}
-                </button>
-                <button
-                  type="button"
-                  data-demo-ready="true"
-                  onClick={() => void restart()}
-                  disabled={pending}
-                  className="flex-1 rounded-xl py-3 text-sm font-bold text-primary-foreground bg-primary"
-                >
-                  {pending ? t("Suppression…") : t("Oui, recommencer")}
-                </button>
-              </div>
+          <button
+            type="button"
+            data-demo-ready="true"
+            onClick={() => void restart()}
+            disabled={pending}
+            className="w-full rounded-2xl py-4 px-5 flex items-center gap-4 bg-card border border-border"
+          >
+            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center flex-shrink-0">
+              <Icon i="refresh-cw" size={18} className="text-primary" />
             </div>
-          )}
+            <div className="flex-1 text-left">
+              <p className="font-bold text-base text-foreground leading-tight">
+                {pending ? t("Suppression…") : t("Recommencer de zéro")}
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">{t("Nouvelle histoire, nouveaux paramètres")}</p>
+            </div>
+            <Icon i="arrow-right" size={18} className="text-muted-foreground flex-shrink-0" />
+          </button>
         </div>
 
         <div className="flex items-start gap-2 mt-5 px-1">

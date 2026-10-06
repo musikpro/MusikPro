@@ -28,6 +28,7 @@ Décidées :
 Réponses du propriétaire (2026-10-04) :
 
 3. **Paroles et coût (tranché : cas b)** : la génération de paroles n'est pas débitée à l'utilisateur (vérifié : `deductCredits` n'est appelé que dans `POST /api/songs/generate`) ; c'est le **fournisseur IA qui facture le propriétaire** à chaque génération. Conséquences : le brouillon conserve les paroles déjà générées pour qu'une reprise ne les régénère jamais (économie directe de coût IA) ; « Continuer » ne rappelle pas `/api/ai/generate` ; « Recommencer » demande une confirmation rappelant que les paroles seront perdues, **sans parler de crédits utilisateur**. Aucun remboursement ni écriture dans l'historique de crédits.
+5. **Pas de confirmation (2026-10-05)** : « Recommencer de zéro » supprime le brouillon immédiatement, sans bloc de confirmation ; l'avertissement reste affiché sous les boutons. « Continuer ma chanson » reprend directement.
 4. **Expiration : 30 jours** sans activité (`expires_at` prolongé à chaque sauvegarde). Brouillon périmé ignoré à la lecture et supprimé ; purge périodique sur le modèle des routes cron existantes (`app/api/cron/funnel-retention`), protégée par le secret cron.
 
 ## Réutilisation / anti-doublons
