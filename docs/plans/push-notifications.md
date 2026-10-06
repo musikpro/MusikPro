@@ -90,10 +90,20 @@ démo ne doit pas être restaurée pour les vrais comptes.
 
 ## Avancement
 
-- **Étape A (faite, sans compte externe)** : table `user_notifications` (migration 0069), `lib/notifications/*`,
-  `GET /api/notifications`, `POST /api/notifications/read`, création à la fin de génération (`pollMusicJob`,
-  donc aussi le rattrapage planifié), cloche réelle (liste, « Marquer tout », toucher = ouvrir), purge à la suppression
-  de compte. Clé d'unicité : groupe de chansons.
-- **Étape B (à faire après Firebase)** : `push_devices`, `notification_preferences`, plugin Capacitor, envoi FCM,
-  `POST_NOTIFICATIONS`, déclarations de confidentialité.
-- Reste à brancher : pastille « non lues » sur la cloche, interrupteurs de réglage réels (étape B).
+- **Étape A (livrée, en production)** : table `user_notifications` (0069), `lib/notifications/*`, `GET /api/notifications`,
+  `POST /api/notifications/read`, création à la fin de génération, cloche réelle, purge à la suppression de compte.
+- **Étape B (codée, Android, en attente de Firebase pour l'envoi réel)** :
+  - Tables `push_devices` et `notification_preferences` (migration 0070, à appliquer en production après accord).
+  - `POST/DELETE /api/push/devices`, `GET/PUT /api/notifications/preferences` (la réponse GET dit si les push sont disponibles).
+  - Envoi FCM HTTP v1 (`lib/notifications/fcm.ts`, OAuth par compte de service, sans SDK), orchestration par langue
+    (`push-user.ts`), jetons morts supprimés. **Inactif tant que `FIREBASE_SERVICE_ACCOUNT_JSON` est absente.**
+  - Plugin `@capacitor/push-notifications` 8.1.3, permission `POST_NOTIFICATIONS`, icône et canal « default ».
+  - App : `NativePushRegistrar` (réenregistrement au lancement si autorisé et disponible) ; réglages réels
+    (`RealNotificationSettings`) : carte « Activer les notifications » (boîte du système demandée à ce moment-là) et
+    interrupteur « Génération terminée » (décision du 2026-10-06 : coupé = ni cloche ni alerte sur téléphone ; les notifications déjà reçues restent visibles).
+  - Confidentialité : page `/privacy` (puces « Notifications »), `store-privacy-declarations.md`.
+- **Pour activer l'envoi** : projet Firebase → app Android `com.musikpro.app` → `google-services.json` dans
+  `android/app/` (puis recompiler l'APK) + compte de service JSON dans la variable Vercel `FIREBASE_SERVICE_ACCOUNT_JSON`.
+- **iPhone (non fait)** : exige le compte Apple Developer (clé APNs, capacité Push, `aps-environment`) et le SDK Firebase
+  iOS pour obtenir un jeton FCM, ou un second envoi direct APNs. À planifier une fois le compte créé.
+- Reste : pastille « non lues » sur la cloche ; autres types de notification (likes, écoutes, concours) = lot 2.

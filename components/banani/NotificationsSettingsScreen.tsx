@@ -8,6 +8,7 @@ export const displayName = "Paramètres de notifications";
 export const screenSize = "mobile";
 
 import Icon from "./Icon";
+import RealNotificationSettings from "./RealNotificationSettings";
 
 export default function NotificationsSettingsScreen() {
   const demo = useDemo();
@@ -28,69 +29,74 @@ export default function NotificationsSettingsScreen() {
 
       {/* Content */}
       <div className="flex-1 px-4 py-6 overflow-y-auto space-y-6">
-        {/* Music Notifications */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Vos chansons")}</h3>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="music" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Génération terminée")}</span>
+        {!demo.isDemo && <RealNotificationSettings />}
+        {demo.isDemo && (
+          <>
+            {/* Music Notifications */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Vos chansons")}</h3>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="music" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Génération terminée")}</span>
+                </div>
+                <DemoToggle toggleKey="Génération terminée" label={t("Génération terminée")} />
+              </div>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="heart" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Nouvelles likes")}</span>
+                </div>
+                <DemoToggle toggleKey="Nouvelles likes" label={t("Nouvelles likes")} />
+              </div>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="play" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Nouvelles écoutes")}</span>
+                </div>
+                <DemoToggle toggleKey="Nouvelles écoutes" label={t("Nouvelles écoutes")} />
+              </div>
             </div>
-            <DemoToggle toggleKey="Génération terminée" label={t("Génération terminée")} />
-          </div>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="heart" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Nouvelles likes")}</span>
-            </div>
-            <DemoToggle toggleKey="Nouvelles likes" label={t("Nouvelles likes")} />
-          </div>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="play" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Nouvelles écoutes")}</span>
-            </div>
-            <DemoToggle toggleKey="Nouvelles écoutes" label={t("Nouvelles écoutes")} />
-          </div>
-        </div>
 
-        {/* Community Notifications */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Communauté")}</h3>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="bell" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Concours & événements")}</span>
+            {/* Community Notifications */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Communauté")}</h3>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="bell" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Concours & événements")}</span>
+                </div>
+                <DemoToggle toggleKey="Concours & événements" label={t("Concours & événements")} />
+              </div>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="trending-up" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Tendances musicales")}</span>
+                </div>
+                <DemoToggle toggleKey="Tendances musicales" label={t("Tendances musicales")} />
+              </div>
             </div>
-            <DemoToggle toggleKey="Concours & événements" label={t("Concours & événements")} />
-          </div>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="trending-up" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Tendances musicales")}</span>
-            </div>
-            <DemoToggle toggleKey="Tendances musicales" label={t("Tendances musicales")} />
-          </div>
-        </div>
 
-        {/* System Notifications */}
-        <div className="space-y-3">
-          <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Système")}</h3>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="mail" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Emails promotionnels")}</span>
+            {/* System Notifications */}
+            <div className="space-y-3">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase">{t("Système")}</h3>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="mail" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Emails promotionnels")}</span>
+                </div>
+                <DemoToggle toggleKey="Emails promotionnels" label={t("Emails promotionnels")} />
+              </div>
+              <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1">
+                  <Icon i="alert-circle" size={18} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">{t("Alertes de sécurité")}</span>
+                </div>
+                <DemoToggle toggleKey="Alertes de sécurité" label={t("Alertes de sécurité")} />
+              </div>
             </div>
-            <DemoToggle toggleKey="Emails promotionnels" label={t("Emails promotionnels")} />
-          </div>
-          <div className="bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1">
-              <Icon i="alert-circle" size={18} className="text-primary" />
-              <span className="text-sm font-medium text-foreground">{t("Alertes de sécurité")}</span>
-            </div>
-            <DemoToggle toggleKey="Alertes de sécurité" label={t("Alertes de sécurité")} />
-          </div>
-        </div>
+          </>
+        )}
 
         {/* Footer Info */}
         <div className="bg-secondary/40 border border-secondary rounded-xl p-4 mt-6">

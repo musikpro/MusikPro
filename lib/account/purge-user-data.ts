@@ -7,6 +7,8 @@ import {
   discoverHiddenSongs,
   landingSongFeatures,
   musicGenerationJobs,
+  notificationPreferences,
+  pushDevices,
   songPublications,
   userNotifications,
 } from "@/db/schema";
@@ -43,5 +45,7 @@ export async function purgeUserData(userId: string): Promise<void> {
     db.delete(musicGenerationJobs).where(eq(musicGenerationJobs.userId, userId)),
     db.delete(creationDrafts).where(eq(creationDrafts.userId, userId)),
     db.delete(userNotifications).where(eq(userNotifications.userId, userId)),
+    db.delete(pushDevices).where(eq(pushDevices.userId, userId)),
+    db.delete(notificationPreferences).where(eq(notificationPreferences.userId, userId)),
   ]);
 }

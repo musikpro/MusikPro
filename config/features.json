@@ -996,12 +996,21 @@
       ]
     },
     "user-notifications": {
-      "description": "Notifications réelles du compte : une ligne en base par événement (aujourd'hui « chanson prête », créée à la fin de génération, une seule fois par groupe de chansons), affichée dans la cloche du tableau de bord (liste, tout marquer comme lu, toucher pour ouvrir). Base des futurs envois push (Firebase), voir docs/plans/push-notifications.md.",
+      "description": "Notifications réelles du compte : une ligne en base par événement (aujourd'hui « chanson prête », créée à la fin de génération, une seule fois par groupe de chansons), affichée dans la cloche du tableau de bord (liste, tout marquer comme lu, toucher pour ouvrir). Notifications push Android via Firebase (jeton enregistré par l'app, envoi FCM HTTP v1 inactif sans FIREBASE_SERVICE_ACCOUNT_JSON), préférence « Génération terminée », voir docs/plans/push-notifications.md.",
       "optional": true,
-      "env": [],
+      "env": ["FIREBASE_SERVICE_ACCOUNT_JSON"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0069_user_notifications.sql",
+        "db/migrations/0070_push_devices.sql",
+        "lib/notifications/devices.ts",
+        "lib/notifications/fcm.ts",
+        "lib/notifications/push-user.ts",
+        "lib/mobile/native-push.ts",
+        "components/native/NativePushRegistrar.tsx",
+        "components/banani/RealNotificationSettings.tsx",
+        "app/api/push/devices/route.ts",
+        "app/api/notifications/preferences/route.ts",
         "lib/validation/notifications.ts",
         "lib/notifications/server.ts",
         "lib/notifications/song-ready.ts",
@@ -1012,10 +1021,10 @@
         "components/banani/NotificationCenterScreen.tsx",
         "components/banani/useRealNotifications.ts"
       ],
-      "routes": ["/api/notifications", "/api/notifications/read"],
+      "routes": ["/api/notifications", "/api/notifications/read", "/api/notifications/preferences", "/api/push/devices"],
       "dependsOn": ["database", "auth", "real-song-generation-journey"],
       "removalComplexity": "low",
-      "disableBehavior": "Retirer l'appel notifySongReady dans lib/ai/music-jobs.ts : plus aucune notification créée, la cloche affiche son état vide. La table user_notifications peut rester inutilisée.",
+      "disableBehavior": "Retirer l'appel notifySongReady dans lib/ai/music-jobs.ts : plus aucune notification créée, la cloche affiche son état vide. Supprimer FIREBASE_SERVICE_ACCOUNT_JSON coupe seulement les push (la cloche reste). Les tables restent inutilisées.",
       "notes": [
         "La démonstration (/demo) garde ses notifications d'exemple (demoNotifications), jamais mélangées à celles d'un compte réel.",
         "La table n'est jamais lue par le client : accès serveur uniquement, filtré par user_id (lib/notifications/server.ts).",

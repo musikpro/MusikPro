@@ -618,6 +618,39 @@ export const userNotifications = pgTable(
   ],
 );
 
+/**
+ * Appareils (jetons Firebase) qui reçoivent les notifications push d'un utilisateur. Un jeton appartient à un seul
+ * compte à la fois : à la connexion d'un autre compte sur le même appareil, la ligne est réassignée.
+ */
+export const pushDevices = pgTable(
+  "push_devices",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    token: text("token").notNull(),
+    platform: text("platform").notNull(),
+    /** Langue de l'interface au dernier enregistrement : sert à traduire le texte de la notification. */
+    locale: text("locale").notNull().default("fr"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("push_devices_token_idx").on(table.token),
+    index("push_devices_user_idx").on(table.userId),
+  ],
+);
+
+/** Préférences de notification d'un utilisateur. Absence de ligne = tout activé. */
+export const notificationPreferences = pgTable("notification_preferences", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  songReady: boolean("song_ready").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 /** Réglage global unique : lecture exclusive des chansons (une seule à la fois sur une page). Absence de ligne = activé. */
 export const playbackSettings = pgTable("playback_settings", {
   id: text("id").primaryKey().default("global"),

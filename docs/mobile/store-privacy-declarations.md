@@ -4,7 +4,7 @@ Réponses à saisir dans la console Google Play (« Sécurité des données ») 
 (« Confidentialité de l'app »). Elles reprennent la politique publiée sur `/privacy`, la section « Application mobile »
 et le manifeste `ios/App/App/PrivacyInfo.xcprivacy`. **Toute évolution de l'un impose de mettre à jour les trois.**
 
-Dernière relecture : 2026-10-06. À refaire à chaque ajout de service qui reçoit des données (statistiques, publicité,
+Dernière relecture : 2026-10-06 (notifications push Android ajoutées ; côté Apple, rien à changer tant que les notifications iPhone ne sont pas livrées). À refaire à chaque ajout de service qui reçoit des données (statistiques, publicité,
 notifications, nouveau prestataire).
 
 ## Faits à connaître
@@ -17,6 +17,7 @@ notifications, nouveau prestataire).
   La voix n'est pas enregistrée ni conservée par MusikPro → **audio non déclaré comme collecté**.
 - **Photos** : seule la pochette choisie par l'utilisateur est envoyée (hébergée par un service d'images). Pas d'accès
   à la galerie entière (sélecteur du système).
+- **Notifications (Android)** : le jeton Firebase de l'appareil est stocké pour envoyer l'alerte « chanson prête » ; transmis à Google (Firebase Cloud Messaging) pour l'acheminement, jamais pour de la publicité.
 - **Paiement** : Mobile Money via un prestataire (redirection vers sa page). MusikPro ne reçoit aucune donnée de carte.
 - **Suppression de compte** : depuis Sécurité (site et application), par e-mail de confirmation ; chansons et données
   personnelles effacées, historique de paiement conservé de façon anonyme.
@@ -28,22 +29,23 @@ Collecte de données : **Oui**. Partage avec des tiers : **Non** (les prestatair
 de MusikPro — hébergement, IA, paiement, images — ne sont pas du « partage » au sens de Google). Chiffrement en transit :
 **Oui**. Possibilité de demander la suppression : **Oui** (dans l'application et sur le site).
 
-| Catégorie Google                 | Type                                       | Collecté | Facultatif             | Finalité                                     |
-| -------------------------------- | ------------------------------------------ | -------- | ---------------------- | -------------------------------------------- |
-| Informations personnelles        | Nom                                        | Oui      | Non                    | Fonctionnalité de l'appli, gestion du compte |
-| Informations personnelles        | Adresse e-mail                             | Oui      | Non                    | Fonctionnalité de l'appli, gestion du compte |
-| Informations personnelles        | ID utilisateur                             | Oui      | Non                    | Fonctionnalité de l'appli, gestion du compte |
-| Informations personnelles        | Numéro de téléphone                        | Oui      | Oui (achat de crédits) | Fonctionnalité de l'appli                    |
-| Informations financières         | Historique des achats                      | Oui      | Oui                    | Fonctionnalité de l'appli                    |
-| Photos et vidéos                 | Photos                                     | Oui      | Oui (pochette)         | Fonctionnalité de l'appli                    |
-| Contenu de l'utilisateur         | Autre contenu (histoires, paroles, titres) | Oui      | Non                    | Fonctionnalité de l'appli                    |
-| Activité dans l'appli            | Interactions avec l'appli                  | Oui      | Non                    | Analyse, fonctionnalité de l'appli           |
-| Infos et performances de l'appli | Journaux de plantage / diagnostics         | Oui      | Non                    | Fonctionnalité de l'appli, sécurité          |
+| Catégorie Google                     | Type                                                    | Collecté | Facultatif                      | Finalité                                     |
+| ------------------------------------ | ------------------------------------------------------- | -------- | ------------------------------- | -------------------------------------------- |
+| Informations personnelles            | Nom                                                     | Oui      | Non                             | Fonctionnalité de l'appli, gestion du compte |
+| Informations personnelles            | Adresse e-mail                                          | Oui      | Non                             | Fonctionnalité de l'appli, gestion du compte |
+| Informations personnelles            | ID utilisateur                                          | Oui      | Non                             | Fonctionnalité de l'appli, gestion du compte |
+| Informations personnelles            | Numéro de téléphone                                     | Oui      | Oui (achat de crédits)          | Fonctionnalité de l'appli                    |
+| Informations financières             | Historique des achats                                   | Oui      | Oui                             | Fonctionnalité de l'appli                    |
+| Photos et vidéos                     | Photos                                                  | Oui      | Oui (pochette)                  | Fonctionnalité de l'appli                    |
+| Contenu de l'utilisateur             | Autre contenu (histoires, paroles, titres)              | Oui      | Non                             | Fonctionnalité de l'appli                    |
+| Activité dans l'appli                | Interactions avec l'appli                               | Oui      | Non                             | Analyse, fonctionnalité de l'appli           |
+| Infos et performances de l'appli     | Journaux de plantage / diagnostics                      | Oui      | Non                             | Fonctionnalité de l'appli, sécurité          |
+| Identifiants de l'appareil ou autres | Identifiant d'appareil (jeton de notification Firebase) | Oui      | Oui (si notifications activées) | Fonctionnalité de l'appli                    |
 
 Types **non collectés** : position, contacts, calendrier, messages, fichiers audio ou vocaux, informations de santé,
 informations de paiement (carte), historique de navigation, identifiants d'appareil publicitaires.
 
-Autorisations Android déclarées : `INTERNET`, `RECORD_AUDIO`, `MODIFY_AUDIO_SETTINGS`, `CAMERA`
+Autorisations Android déclarées : `INTERNET`, `POST_NOTIFICATIONS` (Android 13+, alerte « chanson prête »), `RECORD_AUDIO`, `MODIFY_AUDIO_SETTINGS`, `CAMERA`
 (+ `WRITE_EXTERNAL_STORAGE` limité à Android 9 et moins, pour le téléchargement). Pas de permission de lecture des
 photos. Formulaire « Autorisations » : microphone = dictée de l'histoire ; appareil photo = photo de pochette.
 

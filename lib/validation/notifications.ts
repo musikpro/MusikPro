@@ -18,3 +18,36 @@ export type NotificationsReadInput = z.infer<typeof notificationsReadSchema>;
 export function isInternalNotificationHref(href: string | null | undefined): href is string {
   return typeof href === "string" && /^\/(?!\/)[\w\-./?=&%]*$/.test(href) && href.length <= 300;
 }
+
+/** Plateformes et langues acceptées pour l'enregistrement d'un appareil de notification. */
+export const PUSH_PLATFORMS = ["android", "ios"] as const;
+export const PUSH_LOCALES = ["fr", "en", "es", "pt"] as const;
+
+/** Corps de `POST /api/push/devices` : jeton Firebase de l'appareil, plateforme et langue de l'interface. */
+export const pushDeviceRegisterSchema = z
+  .object({
+    token: z
+      .string()
+      .min(20)
+      .max(4096)
+      .regex(/^[\w\-.:]+$/, "Jeton invalide"),
+    platform: z.enum(PUSH_PLATFORMS),
+    locale: z.enum(PUSH_LOCALES).default("fr"),
+  })
+  .strict();
+export type PushDeviceRegisterInput = z.infer<typeof pushDeviceRegisterSchema>;
+
+/** Corps de `DELETE /api/push/devices`. */
+export const pushDeviceRemoveSchema = z
+  .object({
+    token: z
+      .string()
+      .min(20)
+      .max(4096)
+      .regex(/^[\w\-.:]+$/, "Jeton invalide"),
+  })
+  .strict();
+
+/** Corps de `PUT /api/notifications/preferences`. */
+export const notificationPreferencesSchema = z.object({ songReady: z.boolean() }).strict();
+export type NotificationPreferences = z.infer<typeof notificationPreferencesSchema>;
