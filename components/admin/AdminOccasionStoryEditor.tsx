@@ -28,7 +28,15 @@ export type OccasionStoryRow = {
   active: boolean;
 } & OccasionStoryCopy;
 
-function OccasionStoryCard({ occasion }: { occasion: OccasionStoryRow }) {
+function OccasionStoryCard({
+  occasion,
+  open,
+  onToggle,
+}: {
+  occasion: OccasionStoryRow;
+  open: boolean;
+  onToggle: () => void;
+}) {
   const [copy, setCopy] = useState<OccasionStoryCopy>({
     storyTitle: occasion.storyTitle,
     storySubtitle: occasion.storySubtitle,
@@ -55,61 +63,91 @@ function OccasionStoryCard({ occasion }: { occasion: OccasionStoryRow }) {
     });
   };
 
+  const bodyId = `occasion-story-${occasion.id}`;
+
   return (
-    <article className="admin-panel admin-editor-card">
-      <AdminActionForm action={saveOccasionStoryCopy} className="admin-editor-grid">
-        <input type="hidden" name="id" value={occasion.id} />
-        <div className="admin-editor-field is-wide">
-          <span>
-            {occasion.emoji} {occasion.name}
-            {occasion.active ? "" : " (désactivée)"}
-          </span>
-          <small>
-            {empty
-              ? "Aucun texte personnalisé : le client voit le texte générique « Raconte ton histoire »."
-              : "Ces textes remplacent le texte générique quand le client choisit cette occasion."}
-          </small>
-        </div>
-        {FIELDS.map(({ key, label, rows, placeholder }) => (
-          <label key={key} className="admin-editor-field is-wide">
-            <span>{label}</span>
-            <textarea
-              name={key}
-              rows={rows}
-              maxLength={OCCASION_STORY_MAX_LENGTHS[key]}
-              value={copy[key]}
-              onChange={(event) => setCopy((previous) => ({ ...previous, [key]: event.target.value }))}
-              placeholder={placeholder}
-            />
+    <article className={`admin-occasion-row ${open ? "is-open" : ""}`}>
+      <button
+        type="button"
+        className="admin-occasion-row-head"
+        aria-expanded={open}
+        aria-controls={bodyId}
+        onClick={onToggle}
+      >
+        <span className="admin-occasion-row-emoji" aria-hidden="true">
+          {occasion.emoji}
+        </span>
+        <span className="admin-occasion-row-name">{occasion.name}</span>
+        {occasion.active ? null : <span className="admin-status">Désactivée</span>}
+        <span className={`admin-status ${empty ? "" : "is-success"}`}>{empty ? "Texte générique" : "Personnalisée"}</span>
+        <Icon i="chevron-down" size={18} className="admin-occasion-row-chevron" />
+      </button>
+      <div id={bodyId} className="admin-occasion-row-body" inert={!open}>
+        <div className="admin-occasion-row-inner">
+          <AdminActionForm action={saveOccasionStoryCopy} className="admin-editor-grid">
+            <input type="hidden" name="id" value={occasion.id} />
             <small>
-              {copy[key].length}/{OCCASION_STORY_MAX_LENGTHS[key]}
+              {empty
+                ? "Aucun texte personnalisé : le client voit le texte générique « Raconte ton histoire »."
+                : "Ces textes remplacent le texte générique quand le client choisit cette occasion."}
             </small>
-            <button type="button" className="admin-secondary-action" onClick={() => suggest(key)} disabled={suggesting}>
-              <Icon i="bot" size={15} />
-              {suggesting && suggestingField === key ? "Suggestion…" : "Suggérer ce texte"}
-            </button>
-          </label>
-        ))}
-        <div className="admin-editor-actions is-wide">
-          <button type="button" className="admin-secondary-action" onClick={() => suggest()} disabled={suggesting}>
-            <Icon i="bot" size={15} />
-            {suggesting && suggestingField === null ? "Génération…" : "Générer les 5 textes avec l’IA"}
-          </button>
-          <button type="submit">
-            <Icon i="save" size={17} />
-            Enregistrer
-          </button>
+            {FIELDS.map(({ key, label, rows, placeholder }) => (
+              <label key={key} className="admin-editor-field is-wide">
+                <span>{label}</span>
+                <textarea
+                  name={key}
+                  rows={rows}
+                  maxLength={OCCASION_STORY_MAX_LENGTHS[key]}
+                  value={copy[key]}
+                  onChange={(event) => setCopy((previous) => ({ ...previous, [key]: event.target.value }))}
+                  placeholder={placeholder}
+                />
+                <small>
+                  {copy[key].length}/{OCCASION_STORY_MAX_LENGTHS[key]}
+                </small>
+                <button
+                  type="button"
+                  className="admin-secondary-action"
+                  onClick={() => suggest(key)}
+                  disabled={suggesting}
+                >
+                  <Icon i="bot" size={15} />
+                  {suggesting && suggestingField === key ? "Suggestion…" : "Suggérer ce texte"}
+                </button>
+              </label>
+            ))}
+            <div className="admin-editor-actions is-wide">
+              <button type="button" className="admin-secondary-action" onClick={() => suggest()} disabled={suggesting}>
+                <Icon i="bot" size={15} />
+                {suggesting && suggestingField === null ? "Génération…" : "Générer les 5 textes avec l’IA"}
+              </button>
+              <button type="submit">
+                <Icon i="save" size={17} />
+                Enregistrer
+              </button>
+            </div>
+          </AdminActionForm>
         </div>
-      </AdminActionForm>
+      </div>
     </article>
   );
 }
 
+/**
+ * Liste d'occasions repliées par défaut ; un clic déplie les textes de la page « Raconte ton histoire » de cette
+ * occasion (une seule ouverte à la fois). Les panneaux restent montés : les saisies d'une occasion repliée sont gardées.
+ */
 export default function AdminOccasionStoryEditor({ occasions }: { occasions: OccasionStoryRow[] }) {
+  const [openId, setOpenId] = useState<string | null>(null);
   return (
-    <div className="admin-occasion-story-grid">
+    <div className="admin-occasion-list">
       {occasions.map((occasion) => (
-        <OccasionStoryCard key={`${occasion.id}:${occasion.storyTitle}:${occasion.storyTip}`} occasion={occasion} />
+        <OccasionStoryCard
+          key={`${occasion.id}:${occasion.storyTitle}:${occasion.storyTip}`}
+          occasion={occasion}
+          open={openId === occasion.id}
+          onToggle={() => setOpenId((current) => (current === occasion.id ? null : occasion.id))}
+        />
       ))}
     </div>
   );
