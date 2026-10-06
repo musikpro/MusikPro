@@ -1,5 +1,6 @@
 "use client";
 
+import DeleteAccountPanel from "@/components/account/DeleteAccountPanel";
 import { TwoFactorSetup } from "@/components/two-factor-setup";
 import Icon from "./Icon";
 import MobileBottomNav from "./MobileBottomNav";
@@ -101,6 +102,8 @@ export default function SecurityAccountScreen({
             )}
           </InlineNotice>
         )}
+
+        {!isOwner && <DeleteAccountPanel />}
 
         <section className="security-tips">
           <h2>

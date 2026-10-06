@@ -15,6 +15,14 @@ describe("authEmailText", () => {
     expect(authEmailText("verify", "fr").subject).toBe("Vérifiez votre adresse e-mail");
     expect(authEmailText("verify", "fr").actionLabel).toBe("Vérifier mon e-mail");
   });
+  it("décrit la suppression de compte : sujet, bouton et avertissement de définitivité", () => {
+    const text = authEmailText("delete", "fr");
+    expect(text.subject).toBe("Confirmer la suppression de votre compte");
+    expect(text.actionLabel).toBe("Supprimer définitivement mon compte");
+    expect(text.intro).toContain("{brand}");
+    expect(text.intro).toContain("définitive");
+    expect(text.ignore).toContain("votre compte restera intact");
+  });
   it("retombe sur le français quand aucune traduction n'est connue", () => {
     expect(authEmailText("verify", "es").title).toBe("Confirmez votre adresse e-mail");
   });

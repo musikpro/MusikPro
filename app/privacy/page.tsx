@@ -45,20 +45,28 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
       path="/privacy"
       eyebrow={t("Vie privée")}
       title={t("Politique de confidentialité")}
-      introduction={t("Cette politique explique quelles données MusikPro traite, pourquoi elles sont utilisées et quels choix vous sont proposés.")}
+      introduction={t(
+        "Cette politique explique quelles données MusikPro traite, pourquoi elles sont utilisées et quels choix vous sont proposés.",
+      )}
       sections={[
         {
           title: t("Données traitées"),
           content: (
             <>
               <p>
-                {t("MusikPro traite les informations nécessaires à la création et à la sécurisation de votre compte, notamment votre nom, votre adresse e-mail et les données de session. Lorsque vous utilisez le service, nous traitons aussi les contenus et préférences que vous fournissez pour préparer vos créations musicales.")}
+                {t(
+                  "MusikPro traite les informations nécessaires à la création et à la sécurisation de votre compte, notamment votre nom, votre adresse e-mail et les données de session. Lorsque vous utilisez le service, nous traitons aussi les contenus et préférences que vous fournissez pour préparer vos créations musicales.",
+                )}
               </p>
               <p>
-                {t("Des données techniques limitées, telles que l’adresse IP, le type de navigateur, les journaux de sécurité et les erreurs, peuvent être traitées pour protéger et maintenir le service.")}
+                {t(
+                  "Des données techniques limitées, telles que l’adresse IP, le type de navigateur, les journaux de sécurité et les erreurs, peuvent être traitées pour protéger et maintenir le service.",
+                )}
               </p>
               <p>
-                {t("MusikPro comptabilise aussi, de façon agrégée et sans cookie ni identifiant personnel, le nombre de visites de la page d’accueil publique, à des fins statistiques internes de suivi du service.")}
+                {t(
+                  "MusikPro comptabilise aussi, de façon agrégée et sans cookie ni identifiant personnel, le nombre de visites de la page d’accueil publique, à des fins statistiques internes de suivi du service.",
+                )}
               </p>
             </>
           ),
@@ -67,7 +75,9 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
           title: t("Finalités"),
           content: (
             <p>
-              {t("Ces données servent à fournir MusikPro, authentifier les utilisateurs, enregistrer leurs préférences, envoyer les e-mails transactionnels, prévenir les abus, résoudre les incidents et améliorer la fiabilité du service.")}
+              {t(
+                "Ces données servent à fournir MusikPro, authentifier les utilisateurs, enregistrer leurs préférences, envoyer les e-mails transactionnels, prévenir les abus, résoudre les incidents et améliorer la fiabilité du service.",
+              )}
             </p>
           ),
         },
@@ -75,7 +85,9 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
           title: t("Connexion avec Google"),
           content: (
             <p>
-              {t("Si vous choisissez « Connectez-vous avec Google », MusikPro reçoit les informations de profil de base que Google vous présente avant votre consentement, comme votre nom, votre adresse e-mail et votre identifiant de compte. MusikPro n’accède pas à votre mot de passe Google.")}
+              {t(
+                "Si vous choisissez « Connectez-vous avec Google », MusikPro reçoit les informations de profil de base que Google vous présente avant votre consentement, comme votre nom, votre adresse e-mail et votre identifiant de compte. MusikPro n’accède pas à votre mot de passe Google.",
+              )}
             </p>
           ),
         },
@@ -83,7 +95,9 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
           title: t("Prestataires"),
           content: (
             <p>
-              {t("MusikPro s’appuie sur des prestataires techniques pour héberger l’application, stocker les données, gérer l’authentification et envoyer les e-mails. Ils traitent uniquement les données nécessaires à leur mission, selon leurs engagements de sécurité et de confidentialité. MusikPro ne vend pas vos données personnelles.")}
+              {t(
+                "MusikPro s’appuie sur des prestataires techniques pour héberger l’application, stocker les données, gérer l’authentification et envoyer les e-mails. Ils traitent uniquement les données nécessaires à leur mission, selon leurs engagements de sécurité et de confidentialité. MusikPro ne vend pas vos données personnelles.",
+              )}
             </p>
           ),
         },
@@ -91,26 +105,39 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
           title: t("Conservation et sécurité"),
           content: (
             <p>
-              {t("Les données sont conservées pendant la durée nécessaire au service, à la sécurité et aux obligations applicables. Des mesures techniques et organisationnelles limitent les accès non autorisés. Aucun système ne pouvant garantir une sécurité absolue, nous réévaluons régulièrement ces protections.")}
+              {t(
+                "Les données sont conservées pendant la durée nécessaire au service, à la sécurité et aux obligations applicables. Des mesures techniques et organisationnelles limitent les accès non autorisés. Aucun système ne pouvant garantir une sécurité absolue, nous réévaluons régulièrement ces protections.",
+              )}
             </p>
           ),
         },
         {
           title: t("Vos droits"),
           content: (
-            <p>
-              <LegalEmail
-                text={t("Vous pouvez demander l’accès, la correction ou la suppression de vos données, ainsi que poser toute question relative à leur traitement, en écrivant à {email}. Certaines informations peuvent être conservées lorsqu’une obligation légale ou un besoin de sécurité l’exige.")}
-                email={CONTACT_EMAIL}
-              />
-            </p>
+            <>
+              <p>
+                {t(
+                  "Vous pouvez supprimer vous-même votre compte à tout moment depuis la page Sécurité de votre espace, sur le site comme dans l’application mobile : un e-mail de confirmation vous est envoyé, puis votre compte, vos chansons et leurs liens de partage sont effacés. L’historique des paiements est conservé de façon anonyme pour répondre aux obligations comptables, et les journaux de sécurité sont conservés pour la durée nécessaire à la protection du service.",
+                )}
+              </p>
+              <p>
+                <LegalEmail
+                  text={t(
+                    "Vous pouvez demander l’accès, la correction ou la suppression de vos données, ainsi que poser toute question relative à leur traitement, en écrivant à {email}. Certaines informations peuvent être conservées lorsqu’une obligation légale ou un besoin de sécurité l’exige.",
+                  )}
+                  email={CONTACT_EMAIL}
+                />
+              </p>
+            </>
           ),
         },
         {
           title: t("Mises à jour"),
           content: (
             <p>
-              {t("Cette politique peut évoluer avec le service. Sa date de mise à jour permet d’identifier la version actuellement applicable.")}
+              {t(
+                "Cette politique peut évoluer avec le service. Sa date de mise à jour permet d’identifier la version actuellement applicable.",
+              )}
             </p>
           ),
         },

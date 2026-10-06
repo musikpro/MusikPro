@@ -1,4 +1,5 @@
 "use server";
+import { purgeUserData } from "@/lib/account/purge-user-data";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -93,6 +94,8 @@ export async function deleteUser(_previous: AdminActionState, formData: FormData
     const parsed = deleteUserSchema.parse(Object.fromEntries(formData));
     if (parsed.userId === adminSession.user.id)
       throw new Error("Vous ne pouvez pas supprimer votre propre compte depuis cet écran.");
+    // Mêmes données que la suppression en libre-service : sans cela, histoires et liens publics resteraient orphelins.
+    await purgeUserData(parsed.userId);
     await auth.api.removeUser({ body: parsed, headers: await headers() });
     await writeAuditLog({
       action: "user.deleted",
