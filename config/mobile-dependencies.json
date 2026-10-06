@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "capacitorVersion": "8.5.1",
+  "capacitorVersion": "8.5.2",
   "minimumNodeMajor": 22,
   "notes": "Capacitor est optionnel. Ce contrat est utilisé uniquement lorsque le pipeline Android/iOS est activé."
 }

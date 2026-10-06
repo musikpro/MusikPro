@@ -46,13 +46,11 @@ export default function StoreLinksPanel({ status }: { status: StoreLinksStatus }
             defaultValue={status.appStoreUrl ?? ""}
           />
         </label>
-        <label className="admin-check-control">
-          <input type="checkbox" name="hideInApp" defaultChecked={status.hideInApp} />
-          <span>Masquer ces boutons dans l&rsquo;application mobile</span>
-        </label>
+        <input type="hidden" name="hideInApp" value="on" />
         <p className="admin-field-hint">
-          Pour les personnes qui ont déjà l&rsquo;application ou qui affichent le site dedans (tableau de bord et menu
-          latéral). Sur le web, sur mobile comme sur ordinateur, les boutons restent toujours visibles.
+          Ces boutons sont toujours masqués dans l&rsquo;application mobile (Play Store et App Store refusent
+          qu&rsquo;une application en promeuve une autre). Sur le web, sur mobile comme sur ordinateur, ils restent
+          toujours visibles.
         </p>
         <button type="submit" className="admin-form-submit">
           <Icon i="save" size={16} />

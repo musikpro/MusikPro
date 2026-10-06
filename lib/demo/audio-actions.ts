@@ -1,17 +1,65 @@
+import { extensionForContentType, sanitizeDownloadName } from "@/lib/songs/audio-file";
+
 /**
- * Musicful doesn't consistently label its finished files: the same song can come back as
- * `audio/mpeg` or as `video/mp4` (an MP4 container holding only an audio track). Naming the
- * download after the response's real content type — instead of always forcing `.mp3` — keeps
- * the saved file's extension honest about what's actually inside it.
+ * Android natif (application Capacitor) : la WebView n'enregistre pas un lien `blob:` avec l'attribut `download`.
+ * Le téléchargement passe alors par la route serveur, dont la réponse « attachment » est prise en charge par le
+ * `DownloadListener` de `MainActivity` (dossier Téléchargements + notification Android).
  */
-function extensionForContentType(contentType: string): string {
-  if (contentType.includes("mp4")) return "m4a";
-  if (contentType.includes("wav")) return "wav";
-  if (contentType.includes("ogg")) return "ogg";
-  return "mp3";
+function isAndroidNativeApp(): boolean {
+  const capacitor = (globalThis as { Capacitor?: { getPlatform?: () => string } }).Capacitor;
+  return capacitor?.getPlatform?.() === "android";
+}
+
+/**
+ * iPhone (application Capacitor) : WKWebView n'enregistre pas non plus un lien `blob:` avec `download`.
+ * Le fichier est donc lu via la même route serveur (même origine, session de l'utilisateur) puis remis à la
+ * feuille de partage iOS, qui propose « Enregistrer dans Fichiers », AirDrop, WhatsApp, etc.
+ */
+function isIosNativeApp(): boolean {
+  const capacitor = (globalThis as { Capacitor?: { getPlatform?: () => string } }).Capacitor;
+  return capacitor?.getPlatform?.() === "ios";
+}
+
+async function downloadViaShareSheet(audioUrl: string, baseName: string): Promise<boolean> {
+  try {
+    const target = `/api/songs/download?${new URLSearchParams({ url: audioUrl, name: baseName })}`;
+    const response = await fetch(target, { credentials: "same-origin" });
+    if (!response.ok) return false;
+    const contentType = response.headers.get("content-type") || "audio/mpeg";
+    const blob = await response.blob();
+    const file = new File([blob], `${sanitizeDownloadName(baseName)}.${extensionForContentType(contentType)}`, {
+      type: contentType,
+    });
+    if (!navigator.canShare?.({ files: [file] })) return false;
+    await navigator.share({ files: [file], title: baseName });
+    return true;
+  } catch (error) {
+    // Fermeture de la feuille de partage par l'utilisateur : ce n'est pas un échec du téléchargement.
+    return error instanceof DOMException && error.name === "AbortError";
+  }
+}
+
+async function downloadViaNativeManager(audioUrl: string, baseName: string): Promise<boolean> {
+  try {
+    const target = `/api/songs/download?${new URLSearchParams({ url: audioUrl, name: baseName })}`;
+    // Vérifie l'accès avant de naviguer : une erreur serveur (JSON) ne doit jamais remplacer la page de l'application.
+    const probe = await fetch(target, { method: "HEAD", credentials: "same-origin" });
+    if (!probe.ok) return false;
+    const link = document.createElement("a");
+    link.href = target;
+    link.rel = "noopener";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export async function downloadAudioFile(audioUrl: string, baseName: string): Promise<boolean> {
+  if (isAndroidNativeApp()) return downloadViaNativeManager(audioUrl, baseName);
+  if (isIosNativeApp()) return downloadViaShareSheet(audioUrl, baseName);
   try {
     const response = await fetch(audioUrl);
     if (!response.ok) throw new Error("download_failed");

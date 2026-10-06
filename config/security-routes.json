@@ -219,6 +219,12 @@
       "rateLimit": "distributed-or-fail-closed",
       "markers": ["auth.api.getSession", "rateLimit("]
     },
+    "app/api/songs/download/route.ts": {
+      "auth": "session",
+      "validation": "zod-query",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "safeParse(", "rateLimit("]
+    },
     "app/api/songs/generate/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

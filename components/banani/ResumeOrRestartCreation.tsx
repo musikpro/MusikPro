@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { translate as t } from "@/lib/i18n/translate";
 import { lyricsPreview, resumeStepFor, summarizeCreationDraft } from "@/lib/creation-draft/summary";
+import { consumeResumeContinued, markResumeContinued, markResumeSkip } from "@/lib/creation-draft/resume-skip";
 import type { CreationDraftData, CreationDraftStep } from "@/lib/validation/creation-draft";
 import AppLogo from "./AppLogo";
 import Icon from "./Icon";
@@ -40,6 +41,7 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
   const router = useRouter();
   const [pending, setPending] = useState(false);
   const [age, setAge] = useState("");
+  const [leaving, setLeaving] = useState(false);
   const steps = summarizeCreationDraft(draft.data);
   const currentIndex = steps.findIndex((step) => !step.done);
   const preview = lyricsPreview(draft.data.fields.lyrics);
@@ -55,6 +57,14 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
     };
   }, [draft.updatedAt]);
 
+  // Retour du système vers cet écran après « Continuer ma chanson » : il a déjà servi, on affiche l'étape 1.
+  useEffect(() => {
+    if (!consumeResumeContinued()) return;
+    markResumeSkip();
+    window.queueMicrotask(() => setLeaving(true));
+    router.refresh();
+  }, [router]);
+
   const labels: Record<(typeof steps)[number]["id"], string> = {
     story: t("Histoire sélectionnée"),
     style: t("Style musical choisi"),
@@ -63,6 +73,7 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
   };
 
   const resume = () => {
+    markResumeContinued();
     demo.restoreCreationDraft(draft.data);
     demo.go(`/dashboard/create/${resumeStepFor(draft.step, draft.data)}`);
   };
@@ -80,6 +91,8 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
       setPending(false);
     }
   };
+
+  if (leaving) return <div className="bg-background" style={{ minHeight: "100dvh" }} aria-busy="true" />;
 
   return (
     <div className="bg-background font-body text-foreground flex flex-col" style={{ minHeight: "100dvh" }}>

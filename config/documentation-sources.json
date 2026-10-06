@@ -62,7 +62,7 @@
       "package": "@capacitor/core",
       "expectedMajor": 8,
       "optional": true,
-      "reviewedAt": "2026-10-03",
+      "reviewedAt": "2026-10-06",
       "maxAgeDays": 180
     }
   ]
