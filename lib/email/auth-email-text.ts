@@ -2,7 +2,7 @@ import { LANDING_LANGUAGE_COOKIE } from "@/lib/languages/landing-language-cookie
 import { pickPageLocale, readCookieValue } from "@/lib/i18n/page-locale";
 import { translateForLocale, type Locale } from "@/lib/i18n/translate";
 
-export type AuthEmailKind = "reset" | "verify";
+export type AuthEmailKind = "reset" | "verify" | "delete";
 
 export type AuthEmailText = {
   subject: string;
@@ -25,6 +25,17 @@ export function authEmailText(kind: AuthEmailKind, locale: Locale): AuthEmailTex
       actionLabel: t("Choisir un nouveau mot de passe"),
       intro,
       ignore,
+    };
+  }
+  if (kind === "delete") {
+    return {
+      subject: t("Confirmer la suppression de votre compte"),
+      title: t("Suppression de votre compte"),
+      actionLabel: t("Supprimer définitivement mon compte"),
+      intro: t(
+        "Vous avez demandé la suppression de votre compte {brand}. Vos chansons et vos informations personnelles seront effacées et cette action est définitive.",
+      ),
+      ignore: t("Si vous n'êtes pas à l'origine de cette demande, ignorez cet e-mail : votre compte restera intact."),
     };
   }
   return {

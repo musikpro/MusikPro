@@ -8,6 +8,9 @@ import { sendAuthEmail, sendTwoFactorEmail } from "@/lib/email";
 import { authEmailText, localeFromRequest, type AuthEmailKind } from "@/lib/email/auth-email-text";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { ownerTwoFactor, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
+import { purgeUserData } from "@/lib/account/purge-user-data";
+import { isAdminRole } from "@/lib/auth/permissions";
+import { APIError } from "better-auth/api";
 import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
 
 assertServerOnlyEnv();
@@ -45,6 +48,26 @@ export const auth = betterAuth({
   // déjà stockées en clair restent lisibles (Better Auth ne déchiffre que ce qui a l'air chiffré) ; elles sont
   // chiffrées à la prochaine connexion. Le chiffrement dérive de BETTER_AUTH_SECRET.
   account: { encryptOAuthTokens: true },
+  // Suppression de compte en libre-service (exigence Apple 5.1.1(v) et Google Play) : un e-mail de confirmation
+  // est envoyé à l'adresse du compte, puis le lien supprime le compte. Marche aussi sans mot de passe (Google).
+  user: {
+    deleteUser: {
+      enabled: true,
+      deleteTokenExpiresIn: 60 * 60 * 24,
+      sendDeleteAccountVerification: async ({ user, url }, request) => {
+        await sendAuthEmail({ to: user.email, actionUrl: url, ...(await localizedAuthEmail("delete", request)) });
+      },
+      beforeDelete: async (user) => {
+        // Un propriétaire/administrateur ne peut pas supprimer son propre compte (perte d'accès au SaaS) :
+        // seul un Super Admin le fait depuis /admin/users.
+        const role = (user as { role?: string }).role;
+        if (isAdminRole(role) || (role ?? "").split(",").some((r) => r.trim().startsWith("custom:"))) {
+          throw new APIError("FORBIDDEN", { message: "Ce compte ne peut pas être supprimé ici." });
+        }
+        await purgeUserData(user.id);
+      },
+    },
+  },
   socialProviders:
     process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
       ? {
@@ -113,6 +136,7 @@ export const auth = betterAuth({
       "/sign-in/email": { window: 60, max: 5 },
       "/sign-up/email": { window: 300, max: 5 },
       "/two-factor/*": { window: 60, max: 5 },
+      "/delete-user": { window: 300, max: 3 },
     },
   },
 });
