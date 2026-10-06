@@ -1,7 +1,7 @@
 import type { Locale } from "./translate";
 
 /** Date de dernière mise à jour des pages légales (constante canonique, jamais traduite). */
-const LEGAL_UPDATED_AT = Date.UTC(2026, 8, 19);
+const LEGAL_UPDATED_AT = Date.UTC(2026, 9, 6);
 
 /**
  * Langue d'une page légale : `?lang=fr` force la version française (celle qui fait foi) ;
@@ -15,7 +15,7 @@ export function pickLegalLocale(pageLocale: Locale, langParam: string | string[]
   return isFrenchForced(langParam) ? "fr" : pageLocale;
 }
 
-/** « 19 septembre 2026 » en français ; formaté pour la langue demandée sinon (UTC : pas de décalage de jour). */
+/** « 6 octobre 2026 » en français ; formaté pour la langue demandée sinon (UTC : pas de décalage de jour). */
 export function formatLegalDate(locale: Locale): string {
   return new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(
     LEGAL_UPDATED_AT,
