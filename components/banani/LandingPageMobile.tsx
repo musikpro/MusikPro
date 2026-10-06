@@ -3,7 +3,7 @@ import AppLogo from "./AppLogo";
 import Icon from "./Icon";
 import Reveal from "./Reveal";
 import LandingFaqItem from "./LandingFaqItem";
-import { GooglePlayLogo, AppleLogo } from "./StoreDownloadCard";
+import InstallAppCta from "./InstallAppCta";
 import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLanguageSwitcher";
 import MobileLandingMenu from "./MobileLandingMenu";
 import HeroRotatingText, { type HeroRotatingTextItem } from "./HeroRotatingText";
@@ -208,34 +208,9 @@ export default function LandingPageMobile({
       ) : null}
 
       {storeLinks.googlePlayUrl || storeLinks.appStoreUrl ? (
-        <section className="landing-section-grid px-4 py-10 text-center">
+        <section className="landing-section-grid px-4 py-10">
           <Reveal>
-            <h2 className="font-headings font-bold text-2xl text-foreground mb-2">{t("Emporte ta musique partout")}</h2>
-            <p className="text-sm text-muted-foreground mb-8">{t("Crée et partage depuis ton téléphone.")}</p>
-            <div className="flex items-center justify-center gap-3">
-              {storeLinks.googlePlayUrl ? (
-                <a
-                  href={storeLinks.googlePlayUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Google Play"
-                  className="landing-chip-hover inline-block"
-                >
-                  <GooglePlayLogo />
-                </a>
-              ) : null}
-              {storeLinks.appStoreUrl ? (
-                <a
-                  href={storeLinks.appStoreUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="App Store"
-                  className="landing-chip-hover inline-block"
-                >
-                  <AppleLogo />
-                </a>
-              ) : null}
-            </div>
+            <InstallAppCta variant="banner" links={storeLinks} />
           </Reveal>
         </section>
       ) : null}

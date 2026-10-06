@@ -2316,3 +2316,107 @@ a.psp-badge {
     font-size: 16px;
   }
 }
+
+/* Bouton d'installation de la page /download. */
+.download-cta-wrap {
+  display: grid;
+  gap: 12px;
+  margin: 8px 0 20px;
+}
+.download-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 380px;
+  min-height: 64px;
+  padding: 12px 22px 12px 14px;
+  border: 0;
+  border-radius: 18px;
+  color: #fff;
+  text-align: left;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ff7a3d 0%, #f45d22 55%, #e04a12 100%);
+  box-shadow:
+    0 12px 28px -10px rgba(244, 93, 34, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.download-cta:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 16px 34px -10px rgba(244, 93, 34, 0.75),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.download-cta:active {
+  transform: translateY(0);
+}
+.download-cta:focus-visible,
+.download-cta-secondary:focus-visible {
+  outline: 3px solid #1a1a1a;
+  outline-offset: 3px;
+}
+.download-cta-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.2);
+}
+.download-cta-text {
+  display: grid;
+  line-height: 1.2;
+}
+.download-cta-text strong {
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.download-cta-text small {
+  font-size: 0.82rem;
+  opacity: 0.92;
+}
+.download-cta-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #5f5854;
+}
+.download-cta-trust li::before {
+  content: "✓";
+  margin-right: 6px;
+  font-weight: 800;
+  color: #1f9d55;
+}
+.download-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 10px 20px;
+  border: 2px solid #f45d22;
+  border-radius: 14px;
+  font-weight: 800;
+  color: #c44413;
+  background: #fff;
+}
+.download-cta-secondary:hover {
+  background: #fff3ec;
+}
+@media (prefers-reduced-motion: reduce) {
+  .download-cta {
+    transition: none;
+  }
+  .download-cta:hover {
+    transform: none;
+  }
+}

@@ -65,7 +65,7 @@ export default async function DownloadPage() {
               })}
             </p>
             <p>
-              <a className="legal-brand" href="/download/android" download>
+              <a className="download-cta-secondary" href="/download/android" download>
                 {t("Télécharger l'APK Android")}
               </a>
             </p>

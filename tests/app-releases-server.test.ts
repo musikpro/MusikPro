@@ -110,3 +110,32 @@ describe("registerAppRelease", () => {
     expect(del).not.toHaveBeenCalled();
   });
 });
+
+describe("toFreshStream", () => {
+  it("restitue les mêmes octets dans un flux neuf et propage l'annulation", async () => {
+    const { toFreshStream } = await import("@/lib/app-releases/server");
+    const cancelled = vi.fn();
+    const source = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(new Uint8Array([1, 2]));
+        controller.enqueue(new Uint8Array([3]));
+        controller.close();
+      },
+      cancel: cancelled,
+    });
+    const fresh = toFreshStream(source);
+    expect(fresh.locked).toBe(false);
+    const chunks: number[] = [];
+    const reader = fresh.getReader();
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      chunks.push(...value);
+    }
+    expect(chunks).toEqual([1, 2, 3]);
+
+    const second = toFreshStream(new ReadableStream<Uint8Array>({ pull() {}, cancel: cancelled }));
+    await second.cancel("fermé par le client");
+    expect(cancelled).toHaveBeenCalledWith("fermé par le client");
+  });
+});

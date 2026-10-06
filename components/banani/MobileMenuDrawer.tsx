@@ -95,7 +95,7 @@ export default function MobileMenuDrawer({
           <QuickLanguageSelect compact />
         </div>
 
-        <StoreBadges className="musik-store-actions mobile-menu-stores" />
+        <StoreBadges className="mobile-menu-stores" />
 
         <button type="button" className="mobile-menu-profile" onClick={() => navigate("Mon Profil")}>
           <UserAvatar gender="male" ageGroup="25-35" heritage="African" index={1} className="w-12 h-12 rounded-xl" />

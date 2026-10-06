@@ -1,105 +1,21 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
 import { useDemo } from "./DemoProvider";
-import { isNativeMobileApp } from "@/lib/mobile/native-runtime";
-import { translate as t } from "@/lib/i18n/translate";
+import InstallAppCta, { useHideStoreButtons } from "./InstallAppCta";
 
-export function GooglePlayLogo() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="store-logo">
-      <path fill="#4285F4" d="M3.7 2.4C3.25 2.83 3 3.53 3 4.4v15.2c0 .87.25 1.57.7 2L14 12 3.7 2.4Z" />
-      <path fill="#34A853" d="m3.7 2.4 10.3 9.6 2.6-3.3L5 2.1c-.5-.13-.95-.03-1.3.3Z" />
-      <path fill="#FBBC04" d="M3.7 21.6 14 12l2.6 3.3L5 21.9c-.5.13-.95.03-1.3-.3Z" />
-      <path fill="#EA4335" d="m16.6 8.7 3.8 2.2c.8.46.8 1.74 0 2.2l-3.8 2.2L14 12l2.6-3.3Z" />
-    </svg>
-  );
-}
-
-export function AppleLogo() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" className="store-logo store-logo-apple">
-      <path
-        fill="currentColor"
-        d="M17.05 12.54c-.03-3.05 2.49-4.52 2.61-4.59-1.37-2-3.5-2.28-4.26-2.3-1.79-.18-3.49 1.05-4.4 1.05-.93 0-2.33-1.03-3.84-1-1.95.03-3.77 1.16-4.77 2.89-2.06 3.57-.52 8.82 1.48 11.72.98 1.43 2.15 3.01 3.69 2.95 1.48-.06 2.04-.95 3.83-.95 1.77 0 2.27.95 3.83.92 1.63-.03 2.66-1.43 3.64-2.86 1.13-1.65 1.59-3.25 1.62-3.34-.04-.01-3.11-1.19-3.14-4.74l.01.25ZM14.21 3.66C15.03 2.67 15.58 1.3 15.43 0c-1.18.05-2.61.79-3.46 1.78-.76.88-1.43 2.28-1.25 3.55 1.32.1 2.67-.67 3.49-1.67Z"
-      />
-    </svg>
-  );
-}
-
-const subscribeNever = () => () => {};
+export { useHideStoreButtons };
 
 /**
- * Vrai dans l'application native (Capacitor), toujours : proposer « Télécharger l'application » à quelqu'un qui
- * l'utilise déjà n'a aucun sens, et les boutiques (Apple, Google) refusent qu'une application en promeuve une autre.
- * Sur le web — mobile ou ordinateur — la valeur reste toujours fausse : les boutons ne sont jamais masqués.
- * Rendu serveur = faux, donc pas d'écart d'hydratation ; le masquage s'applique dès l'hydratation dans l'application.
+ * Invitation à installer l'application (remplace les anciens badges Google Play / App Store) : carte du tableau de
+ * bord client (`compact` pour la colonne latérale du bureau) et bande du menu mobile. Les liens viennent des réglages
+ * du propriétaire (`/admin/mobile-apps`), avec repli sur la page /download.
  */
-export function useHideStoreButtons(): boolean {
-  return useSyncExternalStore(subscribeNever, isNativeMobileApp, () => false);
-}
-
-/**
- * The Google Play / App Store buttons, shared by the dashboard card and the mobile drawer. With a
- * store link configured (/admin store links) they open it in a new tab; without one they say the
- * app is coming soon instead of doing nothing.
- */
-export function StoreBadges({ className = "musik-store-actions" }: { className?: string }) {
+export function StoreBadges({ className = "" }: { className?: string }) {
   const demo = useDemo();
-  const hidden = useHideStoreButtons();
-  const unavailable = () => demo.notify(t("L’application MusikPro sera bientôt disponible sur les stores."));
-  const { googlePlayUrl, appStoreUrl } = demo.storeLinks;
-  const stores = [
-    {
-      url: googlePlayUrl,
-      logo: <GooglePlayLogo />,
-      label: t("Télécharger MusikPro sur Google Play"),
-      small: t("Disponible sur"),
-      name: "Google Play",
-    },
-    {
-      url: appStoreUrl,
-      logo: <AppleLogo />,
-      label: t("Télécharger MusikPro sur l’App Store"),
-      small: t("Télécharger dans"),
-      name: t("l’App Store"),
-    },
-  ];
-  if (hidden) return null;
-  return (
-    <div className={className}>
-      {stores.map((store) => {
-        const content = (
-          <>
-            {store.logo}
-            <span>
-              <small>{store.small}</small>
-              <strong>{store.name}</strong>
-            </span>
-          </>
-        );
-        return store.url ? (
-          <a key={store.name} href={store.url} target="_blank" rel="noopener noreferrer" aria-label={store.label}>
-            {content}
-          </a>
-        ) : (
-          <button key={store.name} type="button" data-demo-ready onClick={unavailable} aria-label={store.label}>
-            {content}
-          </button>
-        );
-      })}
-    </div>
-  );
+  return <InstallAppCta variant="strip" links={demo.storeLinks} className={className} />;
 }
 
 export default function StoreDownloadCard({ compact = false }: { compact?: boolean }) {
-  const hidden = useHideStoreButtons();
-  if (hidden) return null;
-  return (
-    <section className={`musik-store-card ${compact ? "musik-store-card-compact" : ""}`}>
-      <h2>{t("Télécharger l’application MusikPro")}</h2>
-      <p>{t("Créez vos chansons partout, à tout moment.")}</p>
-      <StoreBadges />
-    </section>
-  );
+  const demo = useDemo();
+  return <InstallAppCta variant={compact ? "compact" : "card"} links={demo.storeLinks} />;
 }

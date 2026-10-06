@@ -2961,93 +2961,373 @@
   }
 }
 
-.musik-store-card {
-  border: 1px solid color-mix(in srgb, var(--color-primary) 24%, var(--color-border));
-  border-radius: 18px;
-  padding: 20px;
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--color-primary) 10%, var(--color-card)),
-    var(--color-card)
-  );
+/* Invitation à installer l'application (accueil, tableau de bord, menu mobile). Remplace les anciens badges de boutiques. */
+.install-cta {
+  --install-accent: #ffb48a;
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-radius: 22px;
+  color: #fff;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgb(242 101 34 / 40%), transparent 56%),
+    linear-gradient(145deg, #1c130e, #2a190f);
   box-shadow: var(--musik-shadow);
 }
 
-.musik-store-card h2 {
-  margin: 0 0 6px;
-  color: var(--color-foreground);
-  font-family: "DM Sans", sans-serif;
-  font-size: 18px;
-  line-height: 1.3;
-}
-
-.musik-store-card > p {
-  margin: 0 0 16px;
-  color: var(--color-muted-foreground);
-  font-size: 13px;
-  line-height: 1.45;
-}
-
-.musik-store-actions {
+.install-cta__body {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
-}
-
-.musik-store-actions button,
-.musik-store-actions a {
-  min-width: 0;
-  min-height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border: 1px solid rgb(255 255 255 / 18%);
-  border-radius: 13px;
-  background: #111;
-  color: #fff;
-  text-decoration: none;
-  box-shadow: 0 7px 18px rgb(0 0 0 / 16%);
-}
-
-.musik-store-actions button > span,
-.musik-store-actions a > span {
-  min-width: 0;
-  display: grid;
-  text-align: left;
-  line-height: 1.05;
-}
-
-.musik-store-actions small {
-  font-size: 8px;
-  font-weight: 500;
-  color: rgb(255 255 255 / 72%);
-}
-
-.musik-store-actions strong {
-  margin-top: 3px;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.store-logo {
-  width: 22px;
-  height: 22px;
-  flex: 0 0 auto;
-}
-
-.store-logo-apple {
-  width: 23px;
-  height: 23px;
-}
-
-.musik-store-card-compact {
   padding: 20px;
 }
 
-.musik-store-card-compact .musik-store-actions {
-  grid-template-columns: 1fr;
+.install-cta__eyebrow {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--install-accent);
+}
+
+.install-cta__title {
+  margin: 0;
+  font-family: "DM Sans", sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: #fff;
+  text-wrap: balance;
+}
+
+.install-cta__text {
+  margin: 0;
+  max-width: 40ch;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 80%);
+}
+
+.install-cta--card .install-cta__eyebrow,
+.install-cta--card .install-cta__title,
+.install-cta--card .install-cta__text,
+.install-cta--compact .install-cta__eyebrow,
+.install-cta--compact .install-cta__title,
+.install-cta--compact .install-cta__text {
+  padding-right: 76px;
+}
+
+.install-cta__perks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 4px 0 2px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: rgb(255 255 255 / 90%);
+}
+
+.install-cta__perks li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.install-cta__perks svg {
+  color: var(--install-accent);
+}
+
+.install-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.install-cta__primary,
+.install-cta__chip {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  font-family: "DM Sans", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.install-cta__primary {
+  padding: 0 20px;
+  border: 0;
+  background: #fff;
+  color: #1a1a1a;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 30%);
+  transition: transform 0.15s ease;
+}
+
+.install-cta__primary:hover {
+  transform: translateY(-1px);
+}
+
+.install-cta__chip {
+  padding: 0 14px;
+  border: 1px solid rgb(255 255 255 / 30%);
+  background: rgb(255 255 255 / 6%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.install-cta a:focus-visible,
+.install-cta button:focus-visible {
+  outline: 3px solid var(--install-accent);
+  outline-offset: 2px;
+}
+
+/* Maquette de téléphone décorative */
+.install-cta__phone {
+  position: absolute;
+  top: 16px;
+  right: -12px;
+  z-index: 0;
+  width: 88px;
+  aspect-ratio: 9 / 18;
+  border: 3px solid #3d2a1c;
+  border-radius: 22px;
+  background: #0f0a07;
+  box-shadow: 0 18px 40px rgb(0 0 0 / 45%);
+  transform: rotate(8deg);
+}
+
+.install-cta__screen {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 14px 8px 8px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #ff8a4c, #f26522 55%, #c8480f);
+}
+
+.install-cta__logo {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #fff;
+  color: #f26522;
+  box-shadow: 0 6px 14px rgb(0 0 0 / 22%);
+}
+
+.install-cta__eq {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 26px;
+}
+
+.install-cta__eq i {
+  width: 4px;
+  height: 100%;
+  border-radius: 2px;
+  background: rgb(255 255 255 / 92%);
+  transform-origin: bottom;
+  animation: install-cta-eq 1.1s ease-in-out infinite;
+}
+
+.install-cta__eq i:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.install-cta__eq i:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.install-cta__eq i:nth-child(4) {
+  animation-delay: 0.45s;
+}
+
+.install-cta__eq i:nth-child(5) {
+  animation-delay: 0.6s;
+}
+
+.install-cta__line {
+  width: 78%;
+  height: 6px;
+  border-radius: 3px;
+  background: rgb(255 255 255 / 55%);
+}
+
+.install-cta__line--short {
+  width: 52%;
+  background: rgb(255 255 255 / 35%);
+}
+
+@keyframes install-cta-eq {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+  }
+
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .install-cta__eq i {
+    animation: none;
+    transform: scaleY(0.6);
+  }
+
+  .install-cta__primary {
+    transition: none;
+  }
+}
+
+/* Colonne latérale du bureau : un peu plus étroit */
+.install-cta--compact .install-cta__title {
+  font-size: 19px;
+}
+
+.install-cta--compact .install-cta__phone {
+  width: 72px;
+}
+
+/* Grande bande de la page d'accueil */
+.install-cta--banner {
+  max-width: 980px;
+  margin: 0 auto;
+  border-radius: 28px;
+  text-align: left;
+}
+
+.install-cta--banner .install-cta__body {
+  padding: 24px 20px 26px;
+}
+
+.install-cta--banner .install-cta__title {
+  font-size: 26px;
+  padding-right: 70px;
+}
+
+.install-cta--banner .install-cta__eyebrow,
+.install-cta--banner .install-cta__text {
+  padding-right: 70px;
+}
+
+@media (min-width: 768px) {
+  .install-cta--banner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.6fr);
+    align-items: center;
+  }
+
+  .install-cta--banner .install-cta__body {
+    padding: 44px 0 44px 48px;
+    gap: 14px;
+  }
+
+  .install-cta--banner .install-cta__eyebrow,
+  .install-cta--banner .install-cta__title,
+  .install-cta--banner .install-cta__text {
+    padding-right: 0;
+  }
+
+  .install-cta--banner .install-cta__title {
+    font-size: 40px;
+  }
+
+  .install-cta--banner .install-cta__text {
+    font-size: 16px;
+  }
+
+  .install-cta--banner .install-cta__perks {
+    font-size: 14px;
+  }
+
+  .install-cta--banner .install-cta__phone {
+    position: relative;
+    top: auto;
+    right: auto;
+    width: 170px;
+    margin: 28px auto;
+    border-radius: 30px;
+    transform: rotate(7deg);
+  }
+
+  .install-cta--banner .install-cta__screen {
+    gap: 12px;
+    padding: 26px 12px 12px;
+    border-radius: 26px;
+  }
+
+  .install-cta--banner .install-cta__logo {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+  }
+
+  .install-cta--banner .install-cta__eq {
+    height: 44px;
+    gap: 5px;
+  }
+
+  .install-cta--banner .install-cta__eq i {
+    width: 6px;
+  }
+}
+
+/* Bande compacte du menu mobile */
+.install-cta--strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 10px 14px;
+  border: 0;
+  border-radius: 16px;
+  color: #fff;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2a190f, #1c130e);
+}
+
+.install-cta__strip-icon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: linear-gradient(160deg, #ff8a4c, #f26522);
+  color: #fff;
+}
+
+.install-cta__strip-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  line-height: 1.2;
+}
+
+.install-cta__strip-text strong {
+  font-size: 14px;
+}
+
+.install-cta__strip-text small {
+  font-size: 12px;
+  color: rgb(255 255 255 / 72%);
 }
 
 .musik-trend-brand-cover {

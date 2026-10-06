@@ -996,7 +996,7 @@
       ]
     },
     "app-downloads": {
-      "description": "Hébergement des applications sur le site : le propriétaire envoie l'APK Android signé depuis /admin/mobile-apps (onglet « Fichiers d'installation »), le serveur le vérifie (APK signé de com.musikpro.app, SHA-256) et le stocke dans un Blob privé ; le logo Google Play du site ouvre /download#android : installation du site comme application (PWA, sans avertissement) d'abord, puis l'APK publié en option via GET /download/android (débit limité, jamais d'URL de stockage exposée). iPhone : page /download#iphone (installation sur l'écran d'accueil, PWA), le logo App Store y mène.",
+      "description": "Hébergement des applications sur le site : le propriétaire envoie l'APK Android signé depuis /admin/mobile-apps (onglet « Fichiers d'installation »), le serveur le vérifie (APK signé de com.musikpro.app, SHA-256) et le stocke dans un Blob privé ; le logo Google Play du site ouvre /download#android : installation du site comme application (PWA, sans avertissement) d'abord, puis l'APK publié en option via GET /download/android (débit limité, jamais d'URL de stockage exposée). iPhone : page /download#iphone (installation sur l'écran d'accueil, PWA). Les anciens logos Google Play / App Store sont remplacés par l'invitation « Emportez MusikPro dans votre poche » (accueil, carte du tableau de bord, bande du menu mobile) : bouton « Installer maintenant » (fenêtre d'installation du navigateur) ou lien vers la page d'installation de la plateforme détectée ; masquée dans l'app native et une fois installée.",
       "optional": true,
       "env": ["BLOB_READ_WRITE_TOKEN"],
       "files": [
@@ -1014,6 +1014,10 @@
         "app/download/android/route.ts",
         "app/download/page.tsx",
         "components/pwa/install-app-button.tsx",
+        "components/pwa/install-prompt-capture.tsx",
+        "lib/pwa/install-prompt.ts",
+        "components/banani/InstallAppCta.tsx",
+        "components/banani/StoreDownloadCard.tsx",
         "app/sitemap.ts",
         "android/app/build.gradle",
         "docs/mobile/android-signing.md"

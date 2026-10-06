@@ -180,6 +180,23 @@ export async function deleteRelease(id: string): Promise<AppReleaseView> {
   return target;
 }
 
+/**
+ * Recopie un flux de lecture dans un flux neuf. Le flux renvoyé par le SDK Blob vient de son propre `fetch` (undici) :
+ * le passer tel quel à `new Response()` échoue par intermittence (« Response body object should not be disturbed or
+ * locked »). Le flux neuf n'a jamais été lu, et l'annulation du client est propagée à la source.
+ */
+export function toFreshStream(source: ReadableStream<Uint8Array>): ReadableStream<Uint8Array> {
+  const reader = source.getReader();
+  return new ReadableStream<Uint8Array>({
+    async pull(controller) {
+      const { done, value } = await reader.read();
+      if (done) controller.close();
+      else controller.enqueue(value);
+    },
+    cancel: (reason) => reader.cancel(reason),
+  });
+}
+
 /** Fichier de la version publiée prêt à être servi (flux), ou null. */
 export async function openPublishedRelease(platform: AppPlatform) {
   const [row] = await getServiceDb()
@@ -190,7 +207,7 @@ export async function openPublishedRelease(platform: AppPlatform) {
   if (!row) return null;
   const result = await get(row.blobPathname, { access: "private" });
   if (!result || result.statusCode !== 200) return null;
-  return { release: row, stream: result.stream, size: result.blob.size };
+  return { release: row, stream: toFreshStream(result.stream), size: result.blob.size };
 }
 
 /** Compte un téléchargement (agrégat, aucune donnée personnelle). Ne lève jamais. */
