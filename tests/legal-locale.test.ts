@@ -16,13 +16,13 @@ describe("pickLegalLocale", () => {
 
 describe("formatLegalDate", () => {
   it("reste identique au texte français actuel", () => {
-    expect(formatLegalDate("fr")).toBe("19 septembre 2026");
+    expect(formatLegalDate("fr")).toBe("6 octobre 2026");
   });
   it("formate dans les autres langues sans décalage de fuseau", () => {
-    expect(formatLegalDate("en")).toMatch(/19/);
-    expect(formatLegalDate("en")).toMatch(/September/);
-    expect(formatLegalDate("es")).toMatch(/septiembre/);
-    expect(formatLegalDate("pt")).toMatch(/setembro/);
+    expect(formatLegalDate("en")).toMatch(/6/);
+    expect(formatLegalDate("en")).toMatch(/October/);
+    expect(formatLegalDate("es")).toMatch(/octubre/);
+    expect(formatLegalDate("pt")).toMatch(/outubro/);
   });
 });
 

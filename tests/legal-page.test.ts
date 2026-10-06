@@ -16,7 +16,7 @@ describe("LegalPage", () => {
   it("français : aucun bandeau, date française, pas de lang forcé", () => {
     const html = renderToStaticMarkup(createElement(LegalPage, { ...base, locale: "fr", forcedFrench: false }));
     expect(html).not.toContain("legal-notice");
-    expect(html).toContain("Dernière mise à jour : 19 septembre 2026");
+    expect(html).toContain("Dernière mise à jour : 6 octobre 2026");
     expect(html).not.toContain('lang="fr"');
   });
   it("langue étrangère : bandeau avec lien ?lang=fr (textes français faute de traduction)", () => {
