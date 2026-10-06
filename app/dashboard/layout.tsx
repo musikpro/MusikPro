@@ -31,7 +31,7 @@ import {
 import { withLocalePrefix } from "@/lib/languages/locale-path";
 import { isPaymentBypassEnabled } from "@/lib/settings/payment-bypass";
 import { getMusicfulGenerationScreenSettings, getMusicfulVersionsPerGeneration } from "@/lib/ai/musicful";
-import { getStoreLinks } from "@/lib/settings/store-links";
+import { getEffectiveStoreLinks } from "@/lib/settings/store-links";
 import { headers } from "next/headers";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolveDashboardLocale } from "@/lib/i18n/dashboard-locale";
@@ -104,7 +104,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     !demo && isOwnerAccount ? isPaymentBypassEnabled() : Promise.resolve(false),
     getMusicfulVersionsPerGeneration(),
     getMusicfulGenerationScreenSettings(),
-    getStoreLinks(),
+    getEffectiveStoreLinks(),
     demo
       ? Promise.resolve(0)
       : userQuery(

@@ -20,6 +20,7 @@ export const i18nClientFiles = [
   "app/page.tsx",
   "app/terms/**/*.{ts,tsx}",
   "app/privacy/**/*.{ts,tsx}",
+  "app/download/**/*.{ts,tsx}",
   "components/legal-page.tsx",
   "app/not-found.tsx",
   "app/loading.tsx",
@@ -36,7 +37,7 @@ export const i18nClientFiles = [
 const ACCENT = "[àâäçéèêëîïôöùûüÿœæÀÂÇÉÈÊËÎÏÔÙÛÜŒ]";
 const ATTRS = "/^(placeholder|aria-label|title|alt|label)$/";
 const message =
-  "Texte français en dur : l'envelopper avec t(\"…\") ou translateTemplate(\"…{param}…\", { param }) (lib/i18n/translate.ts).";
+  'Texte français en dur : l\'envelopper avec t("…") ou translateTemplate("…{param}…", { param }) (lib/i18n/translate.ts).';
 
 export const i18nClientTextSelectors = [
   { selector: `JSXText[value=/${ACCENT}/]`, message },
@@ -44,6 +45,12 @@ export const i18nClientTextSelectors = [
   { selector: `JSXAttribute[name.name=${ATTRS}] > JSXExpressionContainer > Literal[value=/${ACCENT}/]`, message },
   { selector: `CallExpression[callee.name='notify'] > Literal[value=/${ACCENT}/]`, message },
   { selector: `CallExpression[callee.property.name='notify'] > Literal[value=/${ACCENT}/]`, message },
-  { selector: `CallExpression[callee.name='notify'] > TemplateLiteral > TemplateElement[value.raw=/${ACCENT}/]`, message },
-  { selector: `CallExpression[callee.property.name='notify'] > TemplateLiteral > TemplateElement[value.raw=/${ACCENT}/]`, message },
+  {
+    selector: `CallExpression[callee.name='notify'] > TemplateLiteral > TemplateElement[value.raw=/${ACCENT}/]`,
+    message,
+  },
+  {
+    selector: `CallExpression[callee.property.name='notify'] > TemplateLiteral > TemplateElement[value.raw=/${ACCENT}/]`,
+    message,
+  },
 ];

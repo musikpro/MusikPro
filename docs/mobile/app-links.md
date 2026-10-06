@@ -10,7 +10,7 @@ les liens d'application rouvrent l'application au lieu de laisser l'utilisateur 
 - `MainActivity.openAppLink` charge le lien dans la WebView, seulement pour `https`, l'hôte `musikpro.net` et un chemin
   `/dashboard`.
 - `public/.well-known/assetlinks.json` : lie le site au paquet `com.musikpro.app` par l'empreinte SHA-256 du certificat
-  de signature. **Contient aujourd'hui l'empreinte du certificat de test (debug).**
+  de signature. **Contient l'empreinte du certificat de production (clé `android/keystore/musikpro-release.jks`) et, pour les tests sur émulateur, celle du certificat de test (debug).**
 
 ### À faire avant la publication
 

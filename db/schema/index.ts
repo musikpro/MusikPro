@@ -11,6 +11,7 @@ import {
   primaryKey,
 } from "drizzle-orm/pg-core";
 import { user, organization } from "./auth.generated";
+import { sql } from "drizzle-orm";
 
 export const plans = pgTable("plans", {
   id: text("id").primaryKey(),
@@ -650,6 +651,37 @@ export const notificationPreferences = pgTable("notification_preferences", {
   songReady: boolean("song_ready").notNull().default(true),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+/**
+ * Versions de l'application mobile hébergées sur le site (fichier d'installation Android envoyé depuis l'admin).
+ * Le fichier vit dans un stockage privé (Vercel Blob) ; seule la route de téléchargement le sert. Une seule version
+ * est « publiée » par plateforme : celle que reçoit le logo Google Play du site.
+ */
+export const appReleases = pgTable(
+  "app_releases",
+  {
+    id: text("id").primaryKey(),
+    platform: text("platform").notNull(),
+    version: text("version").notNull(),
+    build: integer("build").notNull(),
+    fileName: text("file_name").notNull(),
+    sizeBytes: integer("size_bytes").notNull(),
+    /** Empreinte SHA-256 calculée par le serveur sur le fichier reçu (affichée aux utilisateurs pour vérification). */
+    sha256: text("sha256").notNull(),
+    /** Chemin du fichier dans le stockage privé ; jamais renvoyé au navigateur. */
+    blobPathname: text("blob_pathname").notNull(),
+    notes: text("notes"),
+    published: boolean("published").notNull().default(false),
+    downloads: integer("downloads").notNull().default(0),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    publishedAt: timestamp("published_at"),
+  },
+  (table) => [
+    uniqueIndex("app_releases_platform_build_idx").on(table.platform, table.build),
+    uniqueIndex("app_releases_one_published_idx").on(table.platform).where(sql`${table.published}`),
+  ],
+);
 
 /** Réglage global unique : lecture exclusive des chansons (une seule à la fois sur une page). Absence de ligne = activé. */
 export const playbackSettings = pgTable("playback_settings", {

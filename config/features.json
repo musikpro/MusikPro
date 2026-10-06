@@ -995,6 +995,40 @@
         "Les paroles sont facturées au propriétaire par le fournisseur IA : le brouillon les conserve pour qu'une reprise ne les régénère jamais."
       ]
     },
+    "app-downloads": {
+      "description": "Hébergement des applications sur le site : le propriétaire envoie l'APK Android signé depuis /admin/mobile-apps (onglet « Fichiers d'installation »), le serveur le vérifie (APK signé de com.musikpro.app, SHA-256) et le stocke dans un Blob privé ; le logo Google Play du site ouvre /download#android : installation du site comme application (PWA, sans avertissement) d'abord, puis l'APK publié en option via GET /download/android (débit limité, jamais d'URL de stockage exposée). iPhone : page /download#iphone (installation sur l'écran d'accueil, PWA), le logo App Store y mène.",
+      "optional": true,
+      "env": ["BLOB_READ_WRITE_TOKEN"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0071_app_releases.sql",
+        "lib/app-releases/constants.ts",
+        "lib/app-releases/apk.ts",
+        "lib/app-releases/server.ts",
+        "lib/validation/app-releases.ts",
+        "lib/settings/store-links.ts",
+        "app/api/admin/app-releases/upload/route.ts",
+        "app/admin/mobile-apps/releases-actions.ts",
+        "app/admin/mobile-apps/page.tsx",
+        "components/admin/AppReleasesPanel.tsx",
+        "app/download/android/route.ts",
+        "app/download/page.tsx",
+        "components/pwa/install-app-button.tsx",
+        "app/sitemap.ts",
+        "android/app/build.gradle",
+        "docs/mobile/android-signing.md"
+      ],
+      "routes": ["/api/admin/app-releases/upload"],
+      "dependsOn": ["database", "auth", "mobileAppPipeline"],
+      "removalComplexity": "low",
+      "disableBehavior": "Dépublier la version dans /admin/mobile-apps : le logo Google Play retombe sur « bientôt disponible » (ou sur le lien de boutique configuré). La table app_releases et le Blob peuvent rester inutilisés.",
+      "notes": [
+        "Un lien Google Play ou App Store saisi dans « Liens des stores » garde toujours la priorité sur le téléchargement direct.",
+        "Taille maximale d'un fichier : 35 Mo (refus strict), avertissement au-delà de 30 Mo.",
+        "La clé de signature (android/keystore, android/key.properties) n'est jamais dans Git : à sauvegarder hors de l'ordinateur, voir docs/mobile/android-signing.md.",
+        "Un fichier public peut toujours être copié : la protection porte sur l'intégrité (envoi réservé à l'admin, vérification serveur, signature, SHA-256), l'abus (débit limité) et la valeur (comptes et crédits restent côté serveur)."
+      ]
+    },
     "user-notifications": {
       "description": "Notifications réelles du compte : une ligne en base par événement (aujourd'hui « chanson prête », créée à la fin de génération, une seule fois par groupe de chansons), affichée dans la cloche du tableau de bord (liste, tout marquer comme lu, toucher pour ouvrir). Notifications push Android via Firebase (jeton enregistré par l'app, envoi FCM HTTP v1 inactif sans FIREBASE_SERVICE_ACCOUNT_JSON), préférence « Génération terminée », voir docs/plans/push-notifications.md.",
       "optional": true,

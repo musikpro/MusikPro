@@ -16,7 +16,9 @@ export default function StoreLinksPanel({ status }: { status: StoreLinksStatus }
           <h2>Boîte « Télécharger l&rsquo;application »</h2>
           <p>
             Liens ouverts quand un client clique sur Google Play ou l&rsquo;App Store depuis son tableau de bord. Laisse
-            un champ vide pour afficher « Bientôt disponible » à la place.
+            un champ vide : Google Play mène alors au fichier d&rsquo;installation publié (onglet « Fichiers
+            d&rsquo;installation ») et l&rsquo;App Store à la page d&rsquo;installation sur l&rsquo;écran
+            d&rsquo;accueil de l&rsquo;iPhone.
           </p>
         </div>
         <span className={`admin-status ${configured ? "is-success" : "is-pending"}`}>
