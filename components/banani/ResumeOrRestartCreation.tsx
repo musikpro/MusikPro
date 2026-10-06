@@ -174,20 +174,16 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
             data-demo-ready="true"
             onClick={resume}
             disabled={pending}
-            className="w-full rounded-2xl py-4 px-5 flex items-center gap-4 text-primary-foreground"
-            style={{
-              background: "linear-gradient(135deg,#f26522,#f4845f)",
-              boxShadow: "0 6px 20px rgba(242,101,34,0.30)",
-            }}
+            className="resume-action resume-action-primary w-full rounded-2xl py-4 px-5 flex items-center gap-4 text-primary-foreground"
           >
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="resume-action-icon w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
               <Icon i="circle-play" size={20} />
             </div>
             <div className="flex-1 text-left">
               <p className="font-bold text-base leading-tight">{t("Continuer ma chanson")}</p>
               <p className="text-xs opacity-80 mt-0.5">{t("Reprendre là où tu t'es arrêté(e)")}</p>
             </div>
-            <Icon i="arrow-right" size={18} className="opacity-80 flex-shrink-0" />
+            <Icon i="arrow-right" size={18} className="resume-action-arrow opacity-80 flex-shrink-0" />
           </button>
 
           <button
@@ -195,9 +191,9 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
             data-demo-ready="true"
             onClick={() => void restart()}
             disabled={pending}
-            className="w-full rounded-2xl py-4 px-5 flex items-center gap-4 bg-card border border-border"
+            className="resume-action resume-action-secondary w-full rounded-2xl py-4 px-5 flex items-center gap-4 bg-card border border-border"
           >
-            <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center flex-shrink-0">
+            <div className="resume-action-icon w-10 h-10 bg-secondary rounded-xl flex items-center justify-center flex-shrink-0">
               <Icon i="refresh-cw" size={18} className="text-primary" />
             </div>
             <div className="flex-1 text-left">
@@ -206,7 +202,7 @@ export default function ResumeOrRestartCreation({ draft }: { draft: ResumableCre
               </p>
               <p className="text-xs text-muted-foreground mt-0.5">{t("Nouvelle histoire, nouveaux paramètres")}</p>
             </div>
-            <Icon i="arrow-right" size={18} className="text-muted-foreground flex-shrink-0" />
+            <Icon i="arrow-right" size={18} className="resume-action-arrow text-muted-foreground flex-shrink-0" />
           </button>
         </div>
 

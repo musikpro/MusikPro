@@ -1,4 +1,6 @@
 "use client";
+import { useEffect } from "react";
+import { clearResumeSkip } from "@/lib/creation-draft/resume-skip";
 import { translate as t, localizeField } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
@@ -11,6 +13,8 @@ import CreationTopNav from "./CreationTopNav";
 
 export default function SongCreationStep1Mobile() {
   const demo = useDemo();
+  // L'écran de reprise n'a été sauté qu'une fois : le témoin posé par « Retour » / « Tableau de bord » est consommé ici.
+  useEffect(() => clearResumeSkip(), []);
   return (
     <div className="bg-surface flex flex-col">
       <CreationTopNav backHref="/dashboard" current={1} total={8} />
