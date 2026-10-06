@@ -995,6 +995,33 @@
         "Les paroles sont facturées au propriétaire par le fournisseur IA : le brouillon les conserve pour qu'une reprise ne les régénère jamais."
       ]
     },
+    "user-notifications": {
+      "description": "Notifications réelles du compte : une ligne en base par événement (aujourd'hui « chanson prête », créée à la fin de génération, une seule fois par groupe de chansons), affichée dans la cloche du tableau de bord (liste, tout marquer comme lu, toucher pour ouvrir). Base des futurs envois push (Firebase), voir docs/plans/push-notifications.md.",
+      "optional": true,
+      "env": [],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0069_user_notifications.sql",
+        "lib/validation/notifications.ts",
+        "lib/notifications/server.ts",
+        "lib/notifications/song-ready.ts",
+        "lib/ai/music-jobs.ts",
+        "lib/account/purge-user-data.ts",
+        "app/api/notifications/route.ts",
+        "app/api/notifications/read/route.ts",
+        "components/banani/NotificationCenterScreen.tsx",
+        "components/banani/useRealNotifications.ts"
+      ],
+      "routes": ["/api/notifications", "/api/notifications/read"],
+      "dependsOn": ["database", "auth", "real-song-generation-journey"],
+      "removalComplexity": "low",
+      "disableBehavior": "Retirer l'appel notifySongReady dans lib/ai/music-jobs.ts : plus aucune notification créée, la cloche affiche son état vide. La table user_notifications peut rester inutilisée.",
+      "notes": [
+        "La démonstration (/demo) garde ses notifications d'exemple (demoNotifications), jamais mélangées à celles d'un compte réel.",
+        "La table n'est jamais lue par le client : accès serveur uniquement, filtré par user_id (lib/notifications/server.ts).",
+        "Le texte n'est pas stocké : seul le type et le sujet (titre de chanson, jamais traduit) le sont ; le texte est composé et traduit à l'affichage."
+      ]
+    },
     "song-public-link-sharing": {
       "description": "Rangée Partager/Publier/Télécharger/Changer la pochette sous chaque carte chanson : lien public /s/[slug] lisible sans compte (sans option de téléchargement), pochette modifiable via upload Cloudinary restreint (isTrustedImageUrl). Téléchargement MP3 : blob sur le web ; sur Android natif, GET /api/songs/download (session + propriété de la chanson) relayé vers le DownloadManager par MainActivity.",
       "optional": true,

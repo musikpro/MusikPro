@@ -82,6 +82,7 @@
     "mobile:app:install": "node scripts/mobile-app-install.mjs",
     "mobile:app:prepare": "node scripts/mobile-app-prepare.mjs",
     "mobile:app:check": "node scripts/mobile-app-check.mjs",
+    "mobile:version": "node scripts/mobile-version.mjs",
     "kit:clean": "node scripts/clean-kit.mjs --apply",
     "kit:clean:check": "node scripts/clean-kit.mjs",
     "kit:integrity": "node scripts/kit-integrity-check.mjs",

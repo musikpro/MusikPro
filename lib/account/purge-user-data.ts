@@ -8,6 +8,7 @@ import {
   landingSongFeatures,
   musicGenerationJobs,
   songPublications,
+  userNotifications,
 } from "@/db/schema";
 
 /**
@@ -41,5 +42,6 @@ export async function purgeUserData(userId: string): Promise<void> {
     db.delete(songPublications).where(eq(songPublications.userId, userId)),
     db.delete(musicGenerationJobs).where(eq(musicGenerationJobs.userId, userId)),
     db.delete(creationDrafts).where(eq(creationDrafts.userId, userId)),
+    db.delete(userNotifications).where(eq(userNotifications.userId, userId)),
   ]);
 }

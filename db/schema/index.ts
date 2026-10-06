@@ -590,6 +590,34 @@ export const creationDrafts = pgTable(
   (table) => [index("creation_drafts_expires_at_idx").on(table.expiresAt)],
 );
 
+/**
+ * Notifications d'un utilisateur (cloche + base des envois push). Une seule ligne par `dedupe_key` et par utilisateur :
+ * un webhook rejoué ou le rattrapage planifié ne crée jamais deux fois la même notification.
+ */
+export const userNotifications = pgTable(
+  "user_notifications",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    /** Catégorie : `song_ready` pour l'instant ; sert à choisir l'icône et à respecter les préférences. */
+    type: text("type").notNull(),
+    /** Identifiant stable de l'événement (ex. groupe de chansons) : unicité par utilisateur. */
+    dedupeKey: text("dedupe_key").notNull(),
+    /** Lien interne relatif (jamais d'URL externe), ouvert au toucher de la notification. */
+    href: text("href"),
+    /** Valeur canonique non traduite (ex. titre de la chanson) injectée dans le texte à l'affichage. */
+    subject: text("subject"),
+    readAt: timestamp("read_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("user_notifications_user_dedupe_idx").on(table.userId, table.dedupeKey),
+    index("user_notifications_user_created_idx").on(table.userId, table.createdAt),
+  ],
+);
+
 /** Réglage global unique : lecture exclusive des chansons (une seule à la fois sur une page). Absence de ligne = activé. */
 export const playbackSettings = pgTable("playback_settings", {
   id: text("id").primaryKey().default("global"),

@@ -46,6 +46,7 @@
     "custom_role": "server/admin-only global role catalog; created/edited/deleted exclusively via Super-Admin-gated Server Actions (app/admin/roles/actions.ts), never queried directly by clients",
     "ai_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
     "audio_provider_configs": "server/admin-only global configuration containing an encrypted provider credential",
+    "user_notifications": "user-owned notification ledger; never queried directly by clients — always accessed server-side via getServiceDb() with an explicit user_id filter in lib/notifications/server.ts, not direct RLS",
     "creation_drafts": "user-owned song-creation draft (one per user, expires 30 days after the last save); never queried directly by clients — always accessed server-side via getServiceDb() with an explicit user_id filter in lib/creation-draft/server.ts, not direct RLS",
     "music_generation_jobs": "user-owned generation ledger; never queried directly by clients — always accessed server-side via getServiceDb() with an explicit user_id filter (same pattern as app/api/payments/checkout/route.ts), not direct RLS",
     "song_publications": "user-owned publication ledger; never queried directly by clients — always accessed server-side via lib/ai/songs.ts, filtered by user_id for owner mutations (publishSongGroup, setSongGroupCover) and intentionally by slug alone for the anonymous public read path (getPublicSongBySlug, consumed by GET /s/[slug]), not direct RLS",
