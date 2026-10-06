@@ -206,6 +206,33 @@
       "rateLimit": "distributed-or-fail-closed",
       "markers": ["auth.api.getSession", "rateLimit("]
     },
+    "app/api/notifications/preferences/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "notificationPreferencesSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
+    "app/api/push/devices/route.ts": {
+      "auth": "session",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "pushDeviceRegisterSchema.safeParse",
+        "pushDeviceRemoveSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
     "app/api/notifications/read/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

@@ -281,6 +281,14 @@
           "example": "openssl rand -base64 48"
         },
         {
+          "name": "FIREBASE_SERVICE_ACCOUNT_JSON",
+          "sensitive": true,
+          "required": "optional",
+          "vercel": ["Production"],
+          "source": "Firebase > Paramètres du projet > Comptes de service > Générer une clé privée (JSON, à coller sur une seule ligne). Sans elle, les notifications push sont simplement désactivées.",
+          "example": "{\"type\":\"service_account\",...}"
+        },
+        {
           "name": "EASYCRON_API_KEY",
           "sensitive": true,
           "required": "optional",

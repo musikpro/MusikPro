@@ -29,7 +29,7 @@ describe("purgeUserData", () => {
   it("removes the account's songs, public links, curation rows and draft in one atomic batch", async () => {
     await purgeUserData("user-1");
     expect(batch).toHaveBeenCalledTimes(1);
-    expect(batch.mock.calls[0][0]).toHaveLength(8);
+    expect(batch.mock.calls[0][0]).toHaveLength(10);
     expect(new Set(deleted)).toEqual(
       new Set([
         "discover_hidden_songs",
@@ -38,6 +38,8 @@ describe("purgeUserData", () => {
         "music_generation_jobs",
         "creation_drafts",
         "user_notifications",
+        "push_devices",
+        "notification_preferences",
       ]),
     );
   });

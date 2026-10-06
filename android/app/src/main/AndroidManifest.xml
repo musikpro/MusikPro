@@ -35,11 +35,18 @@
             android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
         </provider>
+
+        <!-- Notifications push (Firebase) : icône monochrome, couleur de la marque et canal par défaut. -->
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/ic_stat_notification" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_color" android:resource="@color/splash_background" />
+        <meta-data android:name="com.google.firebase.messaging.default_notification_channel_id" android:value="default" />
     </application>
 
     <!-- Permissions -->
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Android 13+ : autorisation d'afficher les notifications (« chanson prête »), demandée au bon moment par l'application. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- Microphone : transcription vocale de l'histoire de la chanson (écran « Raconte ton histoire »). -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />

@@ -126,6 +126,11 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
                     "Enregistrement de fichiers : lorsque vous téléchargez une chanson, le fichier MP3 est enregistré sur votre appareil à votre demande.",
                   )}
                 </li>
+                <li>
+                  {t(
+                    "Notifications (Android) : si vous les activez, MusikPro enregistre un identifiant de votre appareil pour vous prévenir quand votre chanson est prête. Cet identifiant est transmis au service de notifications Firebase de Google, uniquement pour acheminer l’alerte. Vous pouvez les désactiver dans l’application (Notifications) ou dans les réglages du téléphone.",
+                  )}
+                </li>
               </ul>
               <p>
                 {t(
