@@ -8,6 +8,7 @@ import { musicfulTasksSchema, type MusicfulGenerateRequest } from "@/lib/validat
 import { createLogger } from "@/lib/observability/logger";
 import { isCloudinaryConfigured, transcodeRemoteAudioToMp3 } from "@/lib/storage/cloudinary";
 import { writeAuditLog } from "@/lib/security/audit";
+import { notifySongReady } from "@/lib/notifications/song-ready";
 
 const logger = createLogger("music-jobs");
 
@@ -482,6 +483,7 @@ export async function pollMusicJob(jobId: string, userId: string) {
       updatedAt: new Date(),
     };
     await database.update(musicGenerationJobs).set(values).where(eq(musicGenerationJobs.id, job.id));
+    if (isCompleted) await notifySongReady({ ...job, ...values });
     if (isCompleted && mp3Result?.normalized) {
       await writeAuditLog({
         action: "musicful.audio.normalized_to_mp3",
