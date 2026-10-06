@@ -5833,6 +5833,11 @@ span.musik-user-avatar {
   gap: 10px;
 }
 
+/* Une seule offre active : elle occupe toute la largeur au lieu de laisser une colonne vide. */
+.pack-grid > :only-child {
+  grid-column: 1 / -1;
+}
+
 .pack-purchase-title {
   min-width: 0;
 }

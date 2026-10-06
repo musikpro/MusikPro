@@ -30,15 +30,13 @@ export function AppleLogo() {
 const subscribeNever = () => () => {};
 
 /**
- * Vrai uniquement dans l'application native (Capacitor) quand le propriétaire a choisi de masquer les
- * boutons des stores (/admin/mobile-apps, masqué par défaut). Sur le web — mobile ou ordinateur — la
- * valeur reste toujours fausse : les boutons ne sont jamais masqués. Rendu serveur = faux, donc pas
- * d'écart d'hydratation ; le masquage s'applique dès l'hydratation dans l'application.
+ * Vrai dans l'application native (Capacitor), toujours : proposer « Télécharger l'application » à quelqu'un qui
+ * l'utilise déjà n'a aucun sens, et les boutiques (Apple, Google) refusent qu'une application en promeuve une autre.
+ * Sur le web — mobile ou ordinateur — la valeur reste toujours fausse : les boutons ne sont jamais masqués.
+ * Rendu serveur = faux, donc pas d'écart d'hydratation ; le masquage s'applique dès l'hydratation dans l'application.
  */
 export function useHideStoreButtons(): boolean {
-  const { storeLinks } = useDemo();
-  const native = useSyncExternalStore(subscribeNever, isNativeMobileApp, () => false);
-  return native && storeLinks.hideInApp;
+  return useSyncExternalStore(subscribeNever, isNativeMobileApp, () => false);
 }
 
 /**

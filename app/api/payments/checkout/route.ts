@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { getServiceDb } from "@/db";
 import { paymentAttempts, payments, plans, planProviderMappings } from "@/db/schema";
 import { getPaymentProvider } from "@/lib/payments";
-import { isSafeProviderFallbackError } from "@/lib/payments/provider-base";
+import { isPhoneRejection, isSafeProviderFallbackError } from "@/lib/payments/provider-base";
 import { rankProviders } from "@/lib/payments/routing";
 import type { PaymentProviderId } from "@/lib/payments/types";
 import { computeDiscount } from "@/lib/coupons/catalog";
@@ -107,7 +107,10 @@ export async function POST(request: Request) {
   if (body.provider) ranked = ranked.filter((x) => x.provider === body.provider);
   ranked = ranked.filter((x) => !x.degraded);
   if (!ranked.length)
-    return Response.json({ error: "Aucun moyen de paiement compatible n’est disponible pour le moment." }, { status: 503 });
+    return Response.json(
+      { error: "Aucun moyen de paiement compatible n’est disponible pour le moment." },
+      { status: 503 },
+    );
 
   const paymentId = randomUUID();
   const reference = `ask_${randomUUID()}`;
@@ -271,7 +274,9 @@ export async function POST(request: Request) {
         return Response.json(
           {
             error: safeFallback
-              ? "Le prestataire de paiement a refusé la transaction."
+              ? isPhoneRejection(error)
+                ? "Le numéro de téléphone n’est pas valide pour ce pays. Vérifie-le et réessaie."
+                : "Le prestataire de paiement a refusé la transaction."
               : "La réponse du prestataire de paiement est incertaine : le paiement n’a pas été relancé automatiquement pour éviter un doublon.",
             provider: providerId,
             retryable: safeFallback,

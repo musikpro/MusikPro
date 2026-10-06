@@ -2291,3 +2291,14 @@ a.psp-badge {
     animation: none !important;
   }
 }
+
+/* iPhone (Safari et WebView) : un champ de saisie sous 16px déclenche un zoom automatique de la page au
+   focus (le champ email de la connexion a le focus à l'ouverture) et la page reste décalée/zoomée ensuite.
+   16px sur iOS uniquement évite le zoom sans bloquer le zoom utilisateur (accessibilité). Aucun effet ailleurs. */
+@supports (-webkit-touch-callout: none) {
+  html body input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  html body select,
+  html body textarea {
+    font-size: 16px;
+  }
+}

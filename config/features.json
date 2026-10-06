@@ -996,7 +996,7 @@
       ]
     },
     "song-public-link-sharing": {
-      "description": "Rangée Partager/Publier/Télécharger/Changer la pochette sous chaque carte chanson : lien public /s/[slug] lisible sans compte (sans option de téléchargement), pochette modifiable via upload Cloudinary restreint (isTrustedImageUrl).",
+      "description": "Rangée Partager/Publier/Télécharger/Changer la pochette sous chaque carte chanson : lien public /s/[slug] lisible sans compte (sans option de téléchargement), pochette modifiable via upload Cloudinary restreint (isTrustedImageUrl). Téléchargement MP3 : blob sur le web ; sur Android natif, GET /api/songs/download (session + propriété de la chanson) relayé vers le DownloadManager par MainActivity.",
       "optional": true,
       "env": [],
       "files": [
@@ -1006,6 +1006,10 @@
         "lib/ai/songs.ts",
         "lib/storage/cloudinary.ts",
         "lib/demo/audio-actions.ts",
+        "lib/songs/audio-file.ts",
+        "lib/ai/song-download.ts",
+        "app/api/songs/download/route.ts",
+        "android/app/src/main/java/com/musikpro/app/MainActivity.java",
         "lib/demo/cover-actions.ts",
         "lib/demo/song-types.ts",
         "app/api/songs/[groupId]/publish/route.ts",
@@ -1021,7 +1025,8 @@
       ],
       "routes": [
         "/api/songs/[groupId]/publish",
-        "/api/songs/[groupId]/cover"
+        "/api/songs/[groupId]/cover",
+        "/api/songs/download"
       ],
       "dependsOn": [
         "database",

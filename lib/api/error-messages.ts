@@ -68,6 +68,7 @@ export const API_ERROR_MESSAGES = [
   i18nKey("Les adresses de redirection doivent appartenir à l’application."),
   i18nKey("Aucun moyen de paiement compatible n’est disponible pour le moment."),
   i18nKey("Le prestataire de paiement a refusé la transaction."),
+  i18nKey("Le numéro de téléphone n’est pas valide pour ce pays. Vérifie-le et réessaie."),
   i18nKey(
     "La réponse du prestataire de paiement est incertaine : le paiement n’a pas été relancé automatiquement pour éviter un doublon.",
   ),
