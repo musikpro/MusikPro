@@ -18,6 +18,14 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <!-- Liens d'application : le retour du paiement (https://musikpro.net/dashboard…) rouvre l'application au lieu de
+                 rester dans Chrome. Android vérifie le lien avec https://musikpro.net/.well-known/assetlinks.json. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="musikpro.net" android:pathPrefix="/dashboard" />
+            </intent-filter>
         </activity>
 
         <provider
