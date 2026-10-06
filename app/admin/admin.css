@@ -6926,16 +6926,85 @@ body:has(.admin-app),
   border-bottom: 1px solid var(--admin-border, rgba(127, 127, 127, 0.2));
 }
 
-/* Onglet « Raconte ton histoire » des occasions : une boîte par occasion, deux colonnes dès que la place le permet. */
-.admin-occasion-story-grid {
+/* Onglet « Personnalisation » des occasions : liste de lignes repliées, un clic déplie les textes de l'occasion. */
+.admin-occasion-list {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
+  gap: 10px;
+  max-width: 860px;
 }
-
-@media (min-width: 1100px) {
-  .admin-occasion-story-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+.admin-occasion-row {
+  border: 1px solid color-mix(in srgb, var(--admin-border) 86%, white);
+  border-radius: 16px;
+  background: var(--admin-card, #fff);
+  box-shadow: var(--admin-shadow);
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+.admin-occasion-row.is-open {
+  border-color: rgba(242, 101, 34, 0.45);
+  box-shadow: 0 10px 28px -14px rgba(242, 101, 34, 0.35);
+}
+.admin-occasion-row-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 16px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.admin-occasion-row-head:focus-visible {
+  outline: 3px solid rgba(242, 101, 34, 0.55);
+  outline-offset: 2px;
+}
+.admin-occasion-row-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.admin-occasion-row-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+}
+.admin-occasion-row-chevron {
+  flex-shrink: 0;
+  transition: transform 220ms ease;
+}
+.admin-occasion-row.is-open .admin-occasion-row-chevron {
+  transform: rotate(180deg);
+}
+.admin-occasion-row-body {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 260ms ease,
+    visibility 0s linear 260ms;
+}
+.admin-occasion-row.is-open .admin-occasion-row-body {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition:
+    grid-template-rows 260ms ease,
+    visibility 0s;
+}
+.admin-occasion-row-inner {
+  min-height: 0;
+  overflow: hidden;
+}
+.admin-occasion-row-inner > form {
+  padding: 4px 16px 18px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .admin-occasion-row,
+  .admin-occasion-row-chevron,
+  .admin-occasion-row-body {
+    transition: none;
   }
 }
