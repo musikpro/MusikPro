@@ -83,10 +83,14 @@ export default function SchedulerPanel({ status }: { status: SchedulerStatus }) 
               <dd>{formatSeconds(status.stats.averageSeconds)}</dd>
             </div>
           </dl>
-          <p className="admin-bypass-warning" style={{ background: "transparent", border: "none", padding: 0 }}>
-            Un passage en échec avec le code 401 signifie que l’en-tête Authorization d’EasyCron ne correspond pas au
-            CRON_SECRET de Vercel. EasyCron t’envoie aussi un e-mail dès le premier échec.
-          </p>
+          {last && !last.ok ? (
+            <p className="admin-bypass-warning" role="alert">
+              <Icon i="triangle-alert" size={14} />
+              {last.httpCode === 401
+                ? "Le dernier passage a été refusé (HTTP 401) : l’en-tête Authorization d’EasyCron ne correspond pas au CRON_SECRET de Vercel. Mets la même valeur dans les deux, puis redéploie la production. EasyCron t’envoie aussi un e-mail dès le premier échec."
+                : `Le dernier passage a échoué${last.httpCode ? ` (HTTP ${last.httpCode})` : ""}${last.error ? ` : ${last.error}` : ""}. EasyCron t’envoie aussi un e-mail dès le premier échec.`}
+            </p>
+          ) : null}
         </>
       ) : (
         <p className="admin-bypass-warning">
