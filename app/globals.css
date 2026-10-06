@@ -860,6 +860,20 @@ button {
 .legal-section p + p {
   margin-top: 12px;
 }
+.legal-section ul {
+  margin: 12px 0 0;
+  padding-left: 22px;
+  list-style: disc;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: #4e4844;
+}
+.legal-section ul + p {
+  margin-top: 12px;
+}
+.legal-section li + li {
+  margin-top: 8px;
+}
 .legal-section a,
 .legal-footer a {
   text-decoration: underline;
