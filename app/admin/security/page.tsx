@@ -65,10 +65,10 @@ export default async function AdminSecurityPage() {
           <div>
             <h2>Comment ça fonctionne</h2>
             <p>
-              Le double facteur est facultatif et se règle compte par compte : chaque propriétaire l’active ou le
-              désactive lui-même depuis son espace sécurité, avec une application d’authentification (Google
-              Authenticator…) et des codes de secours. Une fois activé, un code est demandé à chaque connexion, avec le
-              code reçu par e-mail en secours. Aucun client n’est soumis à cette étape.
+              Le double facteur est obligatoire pour tous les propriétaires. À la première connexion, le code reçu par
+              e-mail ouvre l’accès, puis le propriétaire lie une application d’authentification (Google Authenticator…)
+              et conserve ses codes de secours. Ensuite, chaque connexion se valide au choix avec l’application ou avec
+              un code envoyé par e-mail. Aucun client n’est soumis à cette étape.
             </p>
           </div>
           <span className={`admin-status ${enabled ? "is-success" : "is-pending"}`}>
@@ -77,9 +77,9 @@ export default async function AdminSecurityPage() {
         </div>
         {enabled ? (
           <p className="admin-trending-empty-hint">
-            Ton compte{me ? (me.twoFactorEnabled ? " est protégé." : " n’est pas encore protégé.") : "."}{" "}
+            Ton compte{me ? (me.twoFactorEnabled ? " est protégé." : " sera protégé dès ta prochaine connexion.") : "."}{" "}
             <Link href="/dashboard/security" className="admin-inline-link">
-              {me?.twoFactorEnabled ? "Gérer ou désactiver mon double facteur" : "Activer mon double facteur"}
+              {me?.twoFactorEnabled ? "Gérer mon double facteur" : "Activer mon double facteur"}
             </Link>
           </p>
         ) : (
@@ -129,7 +129,7 @@ export default async function AdminSecurityPage() {
                   </td>
                   <td>
                     <span className={`admin-status ${entry.twoFactorEnabled ? "is-success" : "is-pending"}`}>
-                      {entry.twoFactorEnabled ? "Activé" : "Non"}
+                      {entry.twoFactorEnabled ? "Activé" : enabled ? "À la prochaine connexion" : "Non"}
                     </span>
                   </td>
                 </tr>

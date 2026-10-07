@@ -148,47 +148,6 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
     e.currentTarget.reset();
   }
 
-  async function disable(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setMessage("");
-    const parsed = twoFactorOptionalPasswordSchema.safeParse({
-      password: String(new FormData(e.currentTarget).get("password") || ""),
-    });
-    if (!parsed.success) {
-      const issue = parsed.error.issues[0];
-      setMessage(issue ? translateIssue(issue) : t("Mot de passe invalide"));
-      return;
-    }
-    if (
-      !window.confirm(t("Désactiver le double facteur ? Votre compte ne sera plus protégé que par votre connexion."))
-    ) {
-      return;
-    }
-    const r = await authClient.twoFactor.disable({ password: parsed.data.password });
-    if (r.error) {
-      setMessage(authResultErrorMessage(r.error, t("Impossible de désactiver le 2FA")));
-      return;
-    }
-    setMessage(t("Double facteur désactivé."));
-    window.location.reload();
-  }
-
-  const disableForm = (
-    <div className="twofa-disable">
-      <h3>{t("Désactiver le double facteur")}</h3>
-      <p className="muted">
-        {t("Vous pourrez le réactiver à tout moment depuis cette page. Votre mot de passe est demandé s’il existe.")}
-      </p>
-      <form onSubmit={disable} className="security-2fa-form">
-        <label className="field">
-          {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
-          <input type="password" name="password" autoComplete="current-password" />
-        </label>
-        <button className="btn">{t("Désactiver le double facteur")}</button>
-      </form>
-    </div>
-  );
-
   if (enabled && totpConfigured && !uri)
     return (
       <div className="card security-2fa-card is-enabled">
@@ -221,7 +180,6 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
           </label>
           <button className="btn security-primary-button">{t("Reconnecter l’application")}</button>
         </form>
-        {disableForm}
         {message && <p role="status">{message}</p>}
       </div>
     );
@@ -236,7 +194,6 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
           )}
         </p>
       )}
-      {enabled && !uri && disableForm}
       {!uri && (
         <form onSubmit={(e) => enable(e)} className="security-2fa-form">
           <label className="field">

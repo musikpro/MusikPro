@@ -155,6 +155,10 @@ export function AuthForm({
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
         if (native?.error) throw new Error(authResultErrorMessage(native.error, t("Connexion Google impossible")));
+        if (native?.data && "twoFactorRedirect" in native.data && native.data.twoFactorRedirect) {
+          router.push("/two-factor");
+          return;
+        }
         goToAuthenticatedSpace();
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
