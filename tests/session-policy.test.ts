@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   CLIENT_SESSION_SECONDS,
+  MAX_COOKIE_SECONDS,
   OWNER_SESSION_SECONDS,
   clampOwnerExpiry,
   ownerSessionExpiry,
@@ -24,7 +25,9 @@ describe("session policy", () => {
     expect(clampOwnerExpiry({ createdAt: start, expiresAt: early })).toEqual(early);
   });
 
-  it("keeps client sessions effectively permanent (10 years, renewed on use)", () => {
-    expect(CLIENT_SESSION_SECONDS).toBeGreaterThan(60 * 60 * 24 * 365 * 5);
+  it("keeps client sessions long but within what a cookie allows (Max-Age <= 400 days)", () => {
+    expect(CLIENT_SESSION_SECONDS).toBeGreaterThan(60 * 60 * 24 * 300);
+    expect(CLIENT_SESSION_SECONDS).toBeLessThanOrEqual(MAX_COOKIE_SECONDS);
+    expect(OWNER_SESSION_SECONDS).toBeLessThanOrEqual(MAX_COOKIE_SECONDS);
   });
 });
