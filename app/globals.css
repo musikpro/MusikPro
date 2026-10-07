@@ -2575,3 +2575,13 @@ a.psp-badge {
   height: 22px;
   margin-top: 2px;
 }
+
+.twofa-qr {
+  display: block;
+  margin: 12px auto;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--border, #e5e0d8);
+  max-width: 100%;
+  height: auto;
+}
