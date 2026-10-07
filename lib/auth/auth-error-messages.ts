@@ -53,6 +53,8 @@ export function authErrorMessage(code: string | undefined, fallback: string): st
     case "TOTP_NOT_ENABLED":
     case "TOTP_NOT_CONFIGURED":
       return t("L’application d’authentification n’est pas disponible.");
+    case "TOTP_ALREADY_ENABLED":
+      return t("Une application d’authentification est déjà liée à ce compte. Rechargez la page.");
     case "BACKUP_CODES_NOT_ENABLED":
       return t("Les codes de secours ne sont pas activés.");
     case "VERIFICATION_FAILED":
