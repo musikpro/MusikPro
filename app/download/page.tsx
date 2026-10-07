@@ -58,6 +58,59 @@ export default async function DownloadPage() {
                 "Téléchargez le fichier d'installation officiel de MusikPro, puis ouvrez-le : l'application s'installe en quelques secondes sur votre téléphone, sans passer par le Play Store.",
               )}
             </p>
+            <p className="download-read-hint" role="note">
+              <Icon i="arrow-down" size={18} />
+              {t("Lisez ces étapes avant d'installer, puis téléchargez l'application en bas de la page.")}
+            </p>
+
+            <h3>{t("Installer en 4 étapes")}</h3>
+            <ol className="download-steps">
+              <li>{t("Touchez « Télécharger l'application » en bas de cette page.")}</li>
+              <li>
+                {t(
+                  "Ouvrez le fichier depuis la notification de téléchargement ou le dossier Téléchargements. Si Android le demande, autorisez l'installation depuis votre navigateur.",
+                )}
+              </li>
+              <li>
+                {t(
+                  "Si Google Play Protect affiche le message ci-dessous, touchez « Installer quand même » (parfois derrière « Plus de détails »).",
+                )}
+              </li>
+              <li>{t("Touchez Installer, puis ouvrez MusikPro et connectez-vous avec votre compte.")}</li>
+            </ol>
+
+            <details className="download-details">
+              <summary>
+                <span>{t("Un message s'affiche pendant l'installation ? C'est normal")}</span>
+                <small>{t("Touchez pour lire avant d'installer")}</small>
+              </summary>
+
+              <figure className="download-figure">
+                <Image
+                  src="/images/play-protect-message.png"
+                  width={530}
+                  height={776}
+                  alt={t(
+                    "Message de Google Play Protect : Appli bloquée pour protéger votre appareil, avec l'option Installer quand même",
+                  )}
+                  sizes="(max-width: 640px) 80vw, 320px"
+                />
+                <figcaption>{t("Le message de Google Play Protect tel qu'il apparaît sur le téléphone.")}</figcaption>
+              </figure>
+              <p>
+                {t(
+                  "Google Play Protect affiche ce message pour toute application qui n'est pas encore publiée dans le Play Store, parce qu'il ne connaît pas encore son éditeur. Ce n'est qu'une précaution : il ne signale aucun problème avec MusikPro.",
+                )}
+              </p>
+              <p>
+                <strong>{t("MusikPro est une application officielle.")}</strong>{" "}
+                {t(
+                  "Ce fichier n'est proposé que sur musikpro.net, il est signé numériquement par MusikPro, et il ouvre le même service que le site, avec votre compte, vos crédits et vos chansons. Touchez simplement « Installer quand même » pour continuer.",
+                )}
+              </p>
+            </details>
+
+            <h3>{t("Prêt ? Téléchargez l'application")}</h3>
             <div className="download-cta-wrap">
               <a className="download-cta" href="/download/android" download>
                 <span className="download-cta-icon" aria-hidden="true">
@@ -78,47 +131,6 @@ export default async function DownloadPage() {
                 <li>{t("Gratuit")}</li>
               </ul>
             </div>
-
-            <h3>{t("Installer en 4 étapes")}</h3>
-            <ol className="download-steps">
-              <li>{t("Touchez « Télécharger l'application » ci-dessus.")}</li>
-              <li>
-                {t(
-                  "Ouvrez le fichier depuis la notification de téléchargement ou le dossier Téléchargements. Si Android le demande, autorisez l'installation depuis votre navigateur.",
-                )}
-              </li>
-              <li>
-                {t(
-                  "Si Google Play Protect affiche le message ci-dessous, touchez « Installer quand même » (parfois derrière « Plus de détails »).",
-                )}
-              </li>
-              <li>{t("Touchez Installer, puis ouvrez MusikPro et connectez-vous avec votre compte.")}</li>
-            </ol>
-
-            <h3>{t("Un message s'affiche pendant l'installation ? C'est normal")}</h3>
-            <figure className="download-figure">
-              <Image
-                src="/images/play-protect-message.png"
-                width={530}
-                height={776}
-                alt={t(
-                  "Message de Google Play Protect : Appli bloquée pour protéger votre appareil, avec l'option Installer quand même",
-                )}
-                sizes="(max-width: 640px) 80vw, 320px"
-              />
-              <figcaption>{t("Le message de Google Play Protect tel qu'il apparaît sur le téléphone.")}</figcaption>
-            </figure>
-            <p>
-              {t(
-                "Google Play Protect affiche ce message pour toute application qui n'est pas encore publiée dans le Play Store, parce qu'il ne connaît pas encore son éditeur. Ce n'est qu'une précaution : il ne signale aucun problème avec MusikPro.",
-              )}
-            </p>
-            <p>
-              <strong>{t("MusikPro est une application officielle.")}</strong>{" "}
-              {t(
-                "Ce fichier n'est proposé que sur musikpro.net, il est signé numériquement par MusikPro, et il ouvre le même service que le site, avec votre compte, vos crédits et vos chansons. Touchez simplement « Installer quand même » pour continuer.",
-              )}
-            </p>
 
             <h3>{t("Vérifier le fichier (facultatif)")}</h3>
             <p>
