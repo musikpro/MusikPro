@@ -34,14 +34,12 @@ export function AdminCatalogBody({
   sourceNote,
   emptyTitle = "Aucun résultat",
   emptyDescription = "Modifie la recherche ou le statut sélectionné.",
-  showResultCount = true,
 }: {
   items: AdminCatalogItem[];
   searchLabel: string;
   sourceNote?: string;
   emptyTitle?: string;
   emptyDescription?: string;
-  showResultCount?: boolean;
 }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<"all" | AdminCatalogItem["status"]>("all");
@@ -86,11 +84,9 @@ export function AdminCatalogBody({
           ))}
         </div>
       </section>
-      {showResultCount ? (
-        <p className="admin-result-count">
-          {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
-        </p>
-      ) : null}
+      <p className="admin-result-count">
+        {filtered.length} résultat{filtered.length > 1 ? "s" : ""}
+      </p>
       {filtered.length ? (
         <section className="admin-catalog-grid">
           {filtered.map((item) => (

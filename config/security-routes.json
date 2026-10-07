@@ -148,6 +148,20 @@
         "requireContentType"
       ]
     },
+    "app/api/admin/app-releases/upload/route.ts": {
+      "auth": "session-admin",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "auth.api.getSession",
+        "isAdminRole",
+        "uploadRequestSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
     "app/api/admin/trending/lookup/route.ts": {
       "auth": "session-admin",
       "validation": "zod-safeParse",

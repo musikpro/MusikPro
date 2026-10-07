@@ -19,7 +19,9 @@
    (JDK d'Android Studio). Le fichier est `android/app/build/outputs/apk/release/app-release.apk`.
 3. Vérifier la signature : `apksigner verify --print-certs app-release.apk` doit afficher `CN=MusikPro` et l'empreinte
    ci-dessus.
-4. L'envoi d'un APK depuis le tableau de bord a été retiré (distribution par PWA : page `/download`). L'APK signé sert aux tests directs sur appareil ou à une future publication sur les stores.
+4. Dans le tableau de bord : **Applications mobiles → Fichiers d'installation** : envoyer l'APK (35 Mo maximum), saisir la
+   version et le build **identiques à ceux de l'étape 1**, puis **Publier**. La page `/download#android` (ouverte par le logo Google Play)
+   propose alors cette version en option, après l'installation du site comme application (sans avertissement).
 5. Tester l'installation sur un téléphone réel (autoriser « Installer des applications inconnues »).
 
 ## Limites à connaître
