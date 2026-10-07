@@ -1,6 +1,6 @@
 "use client";
 import { goToAuthenticatedSpace } from "@/lib/auth/go-to-authenticated-space";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { authClient } from "@/lib/auth/client";
 import { backupCodesFileContent, totpSetupKey } from "@/lib/auth/backup-codes-file";
 import { twoFactorCodeSchema, twoFactorOptionalPasswordSchema } from "@/lib/validation/auth";
@@ -8,6 +8,36 @@ import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
 import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
+
+/** QR code de l'URI otpauth, généré dans le navigateur : le secret ne quitte jamais la page. */
+function SetupQrCode({ uri }: { uri: string }) {
+  const [src, setSrc] = useState("");
+  useEffect(() => {
+    let active = true;
+    import("qrcode")
+      .then((qr) => qr.toDataURL(uri, { width: 224, margin: 2, errorCorrectionLevel: "M" }))
+      .then((url) => {
+        if (active) setSrc(url);
+      })
+      .catch(() => {
+        if (active) setSrc("");
+      });
+    return () => {
+      active = false;
+    };
+  }, [uri]);
+  if (!src) return null;
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- QR code généré localement (data URL), rien à optimiser
+    <img
+      className="twofa-qr"
+      src={src}
+      width={224}
+      height={224}
+      alt={t("QR code à scanner avec votre application d’authentification")}
+    />
+  );
+}
 
 function BackupCodes({ codes }: { codes: string[] }) {
   const [copied, setCopied] = useState(false);
@@ -207,8 +237,12 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
         <>
           <h3>{t("1. Ajoutez MusikPro dans votre application")}</h3>
           <p className="muted">
-            {t("Dans Google Authenticator (ou équivalent) : Ajouter un compte, puis Saisir une clé de configuration.")}
+            {t(
+              "Dans Google Authenticator (ou équivalent) : appuyez sur +, puis « Scanner un code QR », et visez le code ci-dessous.",
+            )}
           </p>
+          <SetupQrCode uri={uri} />
+          <p className="muted">{t("Impossible de scanner ? Saisissez cette clé de configuration à la place :")}</p>
           {setupKey ? <code className="twofa-key">{setupKey}</code> : null}
           <div className="twofa-actions">
             <a className="btn" href={uri}>
