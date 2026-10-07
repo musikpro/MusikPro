@@ -229,7 +229,6 @@ export default function LandingPageDesktop({
         </section>
       ) : null}
 
-
       {occasions.length ? (
         <section className="landing-section-waves px-10 py-20">
           <Reveal className="text-center mb-12">
@@ -330,7 +329,7 @@ export default function LandingPageDesktop({
         </Reveal>
       </section>
 
-      <footer className="border-t border-border px-10 py-8">
+      <footer className="border-t border-border px-10 py-5">
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <AppLogo size="sm" />
