@@ -113,7 +113,7 @@ export default function AdminOccasionForm({
           </button>
         </label>
         <AdminOccasionEmojiPicker defaultEmoji={values.emoji} />
-        <label className="admin-editor-field is-wide">
+        <label className="admin-editor-field">
           <span>Consigne pour l’IA musicale (anglais, facultative)</span>
           <textarea
             name="aiHint"
