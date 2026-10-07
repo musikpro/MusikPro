@@ -10,6 +10,13 @@ import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { ownerTwoFactor, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 import { purgeUserData } from "@/lib/account/purge-user-data";
 import { isAdminRole } from "@/lib/auth/permissions";
+import { isOwnerAccount } from "@/lib/auth/owner-two-factor";
+import {
+  CLIENT_SESSION_SECONDS,
+  SESSION_REFRESH_SECONDS,
+  clampOwnerExpiry,
+  ownerSessionExpiry,
+} from "@/lib/auth/session-policy";
 import { APIError } from "better-auth/api";
 import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
 
@@ -48,6 +55,31 @@ export const auth = betterAuth({
   // déjà stockées en clair restent lisibles (Better Auth ne déchiffre que ce qui a l'air chiffré) ; elles sont
   // chiffrées à la prochaine connexion. Le chiffrement dérive de BETTER_AUTH_SECRET.
   account: { encryptOAuthTokens: true },
+  // Clients : session quasi permanente, renouvelée chaque jour d'usage, jusqu'à la déconnexion. Propriétaires : 24 h
+  // à partir de la connexion (les hooks ci-dessous raccourcissent la création et empêchent le renouvellement).
+  session: { expiresIn: CLIENT_SESSION_SECONDS, updateAge: SESSION_REFRESH_SECONDS },
+  databaseHooks: {
+    session: {
+      create: {
+        before: async (session, ctx) => {
+          const owner = await ctx?.context.internalAdapter.findUserById(session.userId);
+          if (!owner || !(await isOwnerAccount((owner as { role?: string | null }).role))) return;
+          return { data: { ...session, expiresAt: ownerSessionExpiry(new Date()) } };
+        },
+      },
+      update: {
+        before: async (data, ctx) => {
+          if (!ctx || !data.expiresAt) return;
+          const token = await ctx.getSignedCookie(ctx.context.authCookies.sessionToken.name, ctx.context.secret);
+          if (!token) return;
+          const current = await ctx.context.internalAdapter.findSession(token);
+          if (!current || !(await isOwnerAccount((current.user as { role?: string | null }).role))) return;
+          // Le renouvellement automatique ne prolonge jamais la session d'un propriétaire.
+          return { data: { ...data, expiresAt: clampOwnerExpiry(current.session) } };
+        },
+      },
+    },
+  },
   // Suppression de compte en libre-service (exigence Apple 5.1.1(v) et Google Play) : un e-mail de confirmation
   // est envoyé à l'adresse du compte, puis le lien supprime le compte. Marche aussi sans mot de passe (Google).
   user: {
