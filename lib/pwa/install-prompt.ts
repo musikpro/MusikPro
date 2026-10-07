@@ -46,6 +46,13 @@ export function startInstallPromptCapture(): void {
   started = true;
   // Ouverte en mode application : on s'en souvient, pour masquer aussi l'invitation dans un onglet du navigateur.
   if (isStandalone()) rememberInstalled();
+  // Invitation déjà captée par le script de la page avant l'hydratation, ou captée plus tard.
+  const early = (window as Window & { __musikproInstallPrompt?: Event }).__musikproInstallPrompt;
+  if (early) deferred = early as InstallPromptEvent;
+  window.addEventListener("musikpro:install-prompt", () => {
+    deferred = (window as Window & { __musikproInstallPrompt?: Event }).__musikproInstallPrompt as InstallPromptEvent;
+    emit();
+  });
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
     deferred = event as InstallPromptEvent;
@@ -114,6 +121,7 @@ export async function promptInstall(): Promise<"accepted" | "dismissed" | "unava
     await event.prompt();
     const { outcome } = await event.userChoice;
     deferred = null;
+    (window as Window & { __musikproInstallPrompt?: Event }).__musikproInstallPrompt = undefined;
     emit();
     return outcome;
   } catch {

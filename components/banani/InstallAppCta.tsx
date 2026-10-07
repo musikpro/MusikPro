@@ -4,7 +4,8 @@ import { useSyncExternalStore, type ReactNode } from "react";
 import { isNativeMobileApp } from "@/lib/mobile/native-runtime";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
-import { promptInstall, useAppInstalled, useDevicePlatform, useInstallPromptAvailable } from "@/lib/pwa/install-prompt";
+import { InstallGuide, useInstallAction } from "@/components/pwa/install-guide";
+import { useAppInstalled, useDevicePlatform } from "@/lib/pwa/install-prompt";
 import Icon from "./Icon";
 
 export type InstallLinks = { googlePlayUrl: string | null; appStoreUrl: string | null };
@@ -86,40 +87,32 @@ export default function InstallAppCta({
   useI18nOverlay();
   const hiddenInApp = useHideStoreButtons();
   const installed = useAppInstalled();
-  const canPrompt = useInstallPromptAvailable();
   const platform = useDevicePlatform();
+  const { install, guideOpen, closeGuide } = useInstallAction();
   if (hiddenInApp || installed) return null;
 
   const androidHref = links.googlePlayUrl ?? "/download#android";
   const iosHref = links.appStoreUrl ?? "/download#iphone";
   const primaryHref = platform === "ios" ? iosHref : androidHref;
-  const primaryLabel = canPrompt
-    ? t("Installer maintenant")
-    : platform === "ios"
-      ? t("Installer sur iPhone")
-      : platform === "android"
-        ? t("Installer sur Android")
-        : t("Voir comment installer");
+  // Lien de boutique saisi par le propriétaire : il garde la priorité sur l'installation directe.
+  const storeHref = isExternal(primaryHref) ? primaryHref : null;
+  const primaryLabel = t("Installer maintenant");
 
-  const primary = canPrompt ? (
-    <button type="button" className="install-cta__primary" onClick={() => void promptInstall()}>
-      <Icon i="download" size={18} />
-      {primaryLabel}
-    </button>
-  ) : (
-    <LinkOrButton href={platform === "other" ? "/download" : primaryHref} className="install-cta__primary">
+  const primary = storeHref ? (
+    <LinkOrButton href={storeHref} className="install-cta__primary">
       <Icon i="download" size={18} />
       {primaryLabel}
     </LinkOrButton>
+  ) : (
+    <button type="button" className="install-cta__primary" onClick={() => void install()}>
+      <Icon i="download" size={18} />
+      {primaryLabel}
+    </button>
   );
 
   if (variant === "strip") {
-    return canPrompt ? (
-      <button
-        type="button"
-        className={`install-cta install-cta--strip ${className}`}
-        onClick={() => void promptInstall()}
-      >
+    const inner = (
+      <>
         <span className="install-cta__strip-icon">
           <Icon i="smartphone" size={18} />
         </span>
@@ -128,21 +121,18 @@ export default function InstallAppCta({
           <small>{t("Gratuit, en 30 secondes")}</small>
         </span>
         <Icon i="chevron-right" size={16} />
-      </button>
-    ) : (
-      <LinkOrButton
-        href={platform === "other" ? "/download" : primaryHref}
-        className={`install-cta install-cta--strip ${className}`}
-      >
-        <span className="install-cta__strip-icon">
-          <Icon i="smartphone" size={18} />
-        </span>
-        <span className="install-cta__strip-text">
-          <strong>{t("Installer l'application")}</strong>
-          <small>{t("Gratuit, en 30 secondes")}</small>
-        </span>
-        <Icon i="chevron-right" size={16} />
+      </>
+    );
+    return storeHref ? (
+      <LinkOrButton href={storeHref} className={`install-cta install-cta--strip ${className}`}>
+        {inner}
       </LinkOrButton>
+    ) : (
+      <>
+        <button type="button" className={`install-cta install-cta--strip ${className}`} onClick={() => void install()}>
+          {inner}
+        </button>
+      </>
     );
   }
 
@@ -173,26 +163,14 @@ export default function InstallAppCta({
         </ul>
         <div className="install-cta__actions">
           {primary}
-          {!canPrompt && platform === "other" ? (
-            <>
-              <LinkOrButton href={androidHref} className="install-cta__chip">
-                <Icon i="smartphone" size={15} />
-                {t("Android")}
-              </LinkOrButton>
-              <LinkOrButton href={iosHref} className="install-cta__chip">
-                <Icon i="smartphone" size={15} />
-                {t("iPhone")}
-              </LinkOrButton>
-            </>
-          ) : (
-            <LinkOrButton href={platform === "ios" ? androidHref : iosHref} className="install-cta__chip">
-              <Icon i="smartphone" size={15} />
-              {platform === "ios" ? t("Android") : t("iPhone")}
-            </LinkOrButton>
-          )}
+          <LinkOrButton href={platform === "ios" ? androidHref : iosHref} className="install-cta__chip">
+            <Icon i="smartphone" size={15} />
+            {platform === "ios" ? t("Android") : t("iPhone")}
+          </LinkOrButton>
         </div>
       </div>
       <PhoneMockup />
+      <InstallGuide open={guideOpen} onClose={closeGuide} platform={platform} />
     </section>
   );
 }

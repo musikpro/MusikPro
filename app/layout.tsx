@@ -5,6 +5,7 @@ import "@fontsource/dm-sans/500.css";
 import "@fontsource/dm-sans/700.css";
 import { headers } from "next/headers";
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { buildMetadata } from "@/lib/seo/metadata";
 import { siteConfig } from "@/lib/seo/site";
 import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
@@ -49,6 +50,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang={locale}>
       <body suppressHydrationWarning>
+        {/* Chrome n'émet « beforeinstallprompt » qu'une fois, parfois avant l'hydratation : on le garde dès le départ. */}
+        <Script id="musikpro-install-prompt" strategy="beforeInteractive" nonce={nonce}>
+          {`window.addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__musikproInstallPrompt=e;window.dispatchEvent(new Event("musikpro:install-prompt"))});`}
+        </Script>
         <NonceProvider nonce={nonce}>
           <ServiceWorkerRegister />
           <InstallPromptCapture />
