@@ -78,7 +78,7 @@ export function ownerTwoFactor(): BetterAuthPlugin {
           return ctx.json({
             email: maskEmail(user.email),
             expiresAt: verification.expiresAt.toISOString(),
-            methods: totpRecord && totpRecord.verified !== false ? ["otp", "totp"] : ["otp"],
+            methods: totpRecord && totpRecord.verified !== false ? ["otp", "totp", "backup"] : ["otp"],
           });
         },
       ),

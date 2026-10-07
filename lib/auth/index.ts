@@ -103,6 +103,9 @@ export const auth = betterAuth({
           twoFactor({
             issuer: process.env.APP_NAME ?? "Africa SaaS Kit",
             twoFactorCookieMaxAge: 600,
+            // Compte propriétaire connecté uniquement par Google : pas de mot de passe à confirmer. Un compte
+            // avec mot de passe continue de devoir le saisir (vérifié côté serveur par Better Auth).
+            allowPasswordless: true,
             otpOptions: {
               digits: 6,
               period: 5,
