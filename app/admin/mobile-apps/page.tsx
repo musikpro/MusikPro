@@ -7,40 +7,51 @@ import { isBlobConfigured, listAppReleases } from "@/lib/app-releases/server";
 import { requireAdmin } from "@/lib/auth/session";
 import { getStoreLinks } from "@/lib/settings/store-links";
 
-const apps = [
-  {
-    id: "web",
-    title: "Application Web",
-    subtitle: "SaaS Next.js responsive",
-    meta: "Canal principal",
-    status: "active" as const,
-    icon: "monitor-smartphone",
-  },
-  {
-    id: "pwa",
-    title: "PWA",
-    subtitle: "Installation depuis le navigateur",
-    meta: "Manifest + service worker",
-    status: "active" as const,
-    icon: "app-window",
-  },
-  {
-    id: "android",
-    title: "Android",
-    subtitle: "Conteneur Capacitor (PWA + Capacitor)",
-    meta: "Phase 21 optionnelle",
-    status: "coming" as const,
-    icon: "smartphone",
-  },
-  {
-    id: "ios",
-    title: "iOS",
-    subtitle: "Conteneur Capacitor (PWA + Capacitor)",
-    meta: "Phase 21 optionnelle",
-    status: "coming" as const,
-    icon: "smartphone",
-  },
-];
+import type { AdminCatalogItem } from "@/components/admin/AdminCatalogPage";
+
+/** Canaux de diffusion calculés à partir de l'état réel : le fichier Android dépend de la version publiée. */
+function buildChannels(
+  published: { version: string; downloads: number } | undefined,
+  googlePlayUrl: string | null,
+): AdminCatalogItem[] {
+  const downloads = published?.downloads ?? 0;
+  return [
+    {
+      id: "web",
+      title: "Application Web",
+      subtitle: "SaaS Next.js responsive",
+      meta: "Canal principal",
+      status: "active",
+      icon: "monitor-smartphone",
+    },
+    {
+      id: "pwa",
+      title: "PWA",
+      subtitle: "Installation depuis le navigateur",
+      meta: "Manifest + service worker",
+      status: "active",
+      icon: "app-window",
+    },
+    {
+      id: "android",
+      title: "Android",
+      subtitle: googlePlayUrl ? "Publiée sur Google Play" : "Fichier d'installation hébergé sur le site",
+      meta: published
+        ? `Version ${published.version} · ${downloads} téléchargement${downloads > 1 ? "s" : ""}`
+        : "Aucune version publiée",
+      status: published || googlePlayUrl ? "active" : "coming",
+      icon: "smartphone",
+    },
+    {
+      id: "ios",
+      title: "iOS",
+      subtitle: "Pas encore disponible",
+      meta: "Prévu plus tard",
+      status: "coming",
+      icon: "smartphone",
+    },
+  ];
+}
 
 export default async function AdminMobileAppsPage() {
   await requireAdmin();
@@ -63,9 +74,12 @@ export default async function AdminMobileAppsPage() {
       >
         <AdminTabPanel id="channels">
           <AdminCatalogBody
-            items={apps}
+            items={buildChannels(
+              releases.find((release) => release.published),
+              storeLinks.googlePlayUrl,
+            )}
             searchLabel="Rechercher une plateforme"
-            sourceNote="Le Web responsive reste le produit actif. Android et iOS sont optionnels et utiliseront la couche PWA + Capacitor autour du SaaS HTTPS lorsque la Phase 21 sera activée."
+            showResultCount={false}
           />
         </AdminTabPanel>
         <AdminTabPanel id="store-links">
