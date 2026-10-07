@@ -18,7 +18,7 @@ describe("code de secours du double facteur", () => {
 
   it("accepte la méthode backup dans le contexte propriétaire", () => {
     const base = { email: "mu••••@gmail.com", expiresAt: new Date().toISOString() };
-    expect(ownerTwoFactorContextSchema.safeParse({ ...base, methods: ["otp", "totp", "backup"] }).success).toBe(true);
+    expect(ownerTwoFactorContextSchema.safeParse({ ...base, methods: ["totp", "otp", "backup"] }).success).toBe(true);
     expect(ownerTwoFactorContextSchema.safeParse({ ...base, methods: ["sms"] }).success).toBe(false);
   });
 });

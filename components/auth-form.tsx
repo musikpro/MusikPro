@@ -139,14 +139,7 @@ export function AuthForm({
         return;
       }
       if (r.data && "twoFactorRedirect" in r.data && r.data.twoFactorRedirect) {
-        const methods =
-          "twoFactorMethods" in r.data && Array.isArray(r.data.twoFactorMethods) ? r.data.twoFactorMethods : [];
-        if (methods.includes("otp")) {
-          await authClient.twoFactor.sendOtp({ trustDevice: false });
-          sessionStorage.setItem("owner-2fa-method", "otp");
-        } else {
-          sessionStorage.setItem("owner-2fa-method", "totp");
-        }
+        // L'écran de vérification choisit lui-même la méthode (application d'abord, e-mail en secours).
         router.push("/two-factor");
         return;
       }
