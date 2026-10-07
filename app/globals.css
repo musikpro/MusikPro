@@ -2445,3 +2445,59 @@ a.psp-badge {
   color: #6f6762;
   text-align: center;
 }
+
+/* /download : invitation à lire, section repliable et bouton en fin de parcours */
+.download-read-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 4px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: #fff3ec;
+  color: #8a3a12;
+  font-weight: 600;
+}
+.download-details {
+  margin: 16px 0;
+  border: 1px solid #f0d8c8;
+  border-radius: 16px;
+  background: #fffaf6;
+}
+.download-details > summary {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  cursor: pointer;
+  list-style: none;
+  font-weight: 700;
+}
+.download-details > summary::-webkit-details-marker {
+  display: none;
+}
+.download-details > summary small {
+  font-weight: 500;
+  color: #c44413;
+}
+.download-details > summary::after {
+  content: "▾";
+  position: absolute;
+  right: 16px;
+}
+.download-details {
+  position: relative;
+}
+.download-details[open] > summary::after {
+  content: "▴";
+}
+.download-details > summary:focus-visible {
+  outline: 3px solid #1a1a1a;
+  outline-offset: 2px;
+  border-radius: 16px;
+}
+.download-details > :not(summary) {
+  padding: 0 16px;
+}
+.download-details > :last-child {
+  padding-bottom: 16px;
+}
