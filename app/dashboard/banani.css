@@ -7569,3 +7569,115 @@ button.mobile-menu-brand {
   background: transparent;
   color: var(--color-foreground);
 }
+
+/* Guide d'installation (feuille modale, en bas sur mobile) */
+.install-guide {
+  width: min(480px, 100%);
+  max-width: 100%;
+  margin: auto auto 0;
+  padding: 0;
+  border: 0;
+  border-radius: 24px 24px 0 0;
+  background: #fff;
+  color: #1a1a1a;
+  box-shadow: 0 -12px 40px rgb(0 0 0 / 30%);
+}
+
+.install-guide::backdrop {
+  background: rgb(10 6 4 / 60%);
+}
+
+@media (min-width: 640px) {
+  .install-guide {
+    margin: auto;
+    border-radius: 24px;
+  }
+}
+
+.install-guide__sheet {
+  display: grid;
+  gap: 14px;
+  padding: 24px 20px calc(20px + env(safe-area-inset-bottom, 0px));
+}
+
+.install-guide__title {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.install-guide__lead {
+  margin: 0;
+  color: #5f5854;
+  font-size: 14px;
+}
+
+.install-guide__steps {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.install-guide__steps li {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 16px;
+  background: #fdf1e9;
+}
+
+.install-guide__num {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f26522;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.install-guide__icon {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #fff;
+  color: #f26522;
+}
+
+.install-guide__text {
+  display: grid;
+  gap: 2px;
+}
+
+.install-guide__text strong {
+  font-size: 15px;
+}
+
+.install-guide__text small {
+  color: #5f5854;
+  font-size: 13px;
+}
+
+.install-guide__close {
+  min-height: 52px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ff7a3d, #f26522);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.install-guide__close:focus-visible {
+  outline: 3px solid #1a1a1a;
+  outline-offset: 2px;
+}
