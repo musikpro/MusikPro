@@ -45,9 +45,12 @@ const viewColumns = {
   publishedAt: appReleases.publishedAt,
 };
 
-/** Le stockage privé est configuré (jeton lecture/écriture ou identifiant de store avec OIDC). */
+/**
+ * L'envoi de fichiers est possible : le SDK ne fabrique le jeton d'envoi du navigateur qu'à partir d'un jeton
+ * lecture/écriture statique (l'identifiant de store seul, avec OIDC, ne suffit pas pour l'envoi).
+ */
 export function isBlobConfigured(): boolean {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
+  return Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 }
 
 export async function listAppReleases(platform: AppPlatform): Promise<AppReleaseView[]> {

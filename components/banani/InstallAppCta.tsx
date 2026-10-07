@@ -6,6 +6,7 @@ import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { InstallGuide, useInstallAction } from "@/components/pwa/install-guide";
 import { useAppInstalled, useDevicePlatform } from "@/lib/pwa/install-prompt";
+import { APK_DOWNLOAD_PATH } from "@/lib/app-releases/constants";
 import Icon from "./Icon";
 
 export type InstallLinks = { googlePlayUrl: string | null; appStoreUrl: string | null };
@@ -95,7 +96,9 @@ export default function InstallAppCta({
   const iosHref = links.appStoreUrl ?? "/download#iphone";
   const primaryHref = platform === "ios" ? iosHref : androidHref;
   // Lien de boutique saisi par le propriétaire : il garde la priorité sur l'installation directe.
-  const storeHref = isExternal(primaryHref) ? primaryHref : null;
+  // Android + APK publié : le bouton télécharge le fichier, qu'on installe d'un toucher. Ailleurs : PWA / guide.
+  const isApk = primaryHref === APK_DOWNLOAD_PATH;
+  const storeHref = isExternal(primaryHref) || (isApk && platform === "android") ? primaryHref : null;
   const primaryLabel = t("Installer maintenant");
 
   const primary = storeHref ? (

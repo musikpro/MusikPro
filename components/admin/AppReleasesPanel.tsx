@@ -110,56 +110,63 @@ export default function AppReleasesPanel({
       )}
 
       <form ref={formRef} onSubmit={onSubmit} className="admin-stack-form">
-        <label className="admin-editor-field">
-          <span>Fichier APK</span>
-          <input
-            type="file"
-            name="file"
-            accept=".apk,application/vnd.android.package-archive"
-            required
-            disabled={!storageReady || progress !== null}
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              setFileInfo(file ? { size: file.size } : null);
-            }}
-          />
-        </label>
+        <div className="admin-form-two-cols">
+          <label className="admin-editor-field">
+            <span>Fichier APK</span>
+            <input
+              type="file"
+              name="file"
+              accept=".apk,application/vnd.android.package-archive"
+              required
+              disabled={!storageReady || progress !== null}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                setFileInfo(file ? { size: file.size } : null);
+              }}
+            />
+          </label>
+          <label className="admin-editor-field">
+            <span>Version affichée</span>
+            <input
+              type="text"
+              name="version"
+              placeholder="1.2"
+              inputMode="decimal"
+              required
+              disabled={progress !== null}
+            />
+          </label>
+          <label className="admin-editor-field">
+            <span>Numéro de build (supérieur au précédent)</span>
+            <input
+              type="number"
+              name="build"
+              min={1}
+              defaultValue={suggestedBuild}
+              required
+              disabled={progress !== null}
+            />
+          </label>
+          <label className="admin-editor-field">
+            <span>Notes de version (facultatif)</span>
+            <textarea name="notes" rows={2} maxLength={1000} disabled={progress !== null} />
+          </label>
+        </div>
         {fileInfo && fileInfo.size > WARN_APK_BYTES && (
           <p className="admin-field-hint" role="status">
             Ce fichier fait {mb(fileInfo.size)} : il devient lourd à télécharger sur mobile (maximum accepté : 35 Mo).
           </p>
         )}
-        <label className="admin-editor-field">
-          <span>Version affichée</span>
-          <input
-            type="text"
-            name="version"
-            placeholder="1.2"
-            inputMode="decimal"
-            required
-            disabled={progress !== null}
-          />
-        </label>
-        <label className="admin-editor-field">
-          <span>Numéro de build (supérieur au précédent)</span>
-          <input
-            type="number"
-            name="build"
-            min={1}
-            defaultValue={suggestedBuild}
-            required
-            disabled={progress !== null}
-          />
-        </label>
-        <label className="admin-editor-field">
-          <span>Notes de version (facultatif)</span>
-          <textarea name="notes" rows={3} maxLength={1000} disabled={progress !== null} />
-        </label>
         <p className="admin-field-hint">
           Version et build doivent être ceux de l&rsquo;APK (commande « npm run mobile:version »). Une version envoyée
           n&rsquo;est pas visible tant que tu ne l&rsquo;as pas publiée.
         </p>
-        <button type="submit" className="admin-form-submit" disabled={!storageReady || progress !== null}>
+        <button
+          type="submit"
+          className="admin-form-submit"
+          style={{ width: "auto", justifySelf: "end", alignSelf: "end" }}
+          disabled={!storageReady || progress !== null}
+        >
           <Icon i="upload" size={16} />
           {progress === null ? "Envoyer et vérifier" : `Envoi en cours… ${progress} %`}
         </button>

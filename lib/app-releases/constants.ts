@@ -18,3 +18,6 @@ export const APK_CONTENT_TYPES = [
 
 export const APP_PLATFORMS = ["android"] as const;
 export type AppPlatform = (typeof APP_PLATFORMS)[number];
+
+/** Route publique de téléchargement de l'APK publié. */
+export const APK_DOWNLOAD_PATH = "/download/android";
