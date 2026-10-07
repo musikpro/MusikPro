@@ -93,9 +93,6 @@ export default function LandingLibraryCard({
           </Link>
           {detail ? <p className="landing-library-detail">{detail}</p> : null}
         </div>
-        <span className="landing-library-plays">
-          <Icon i="headphones" size={12} /> {song.plays}
-        </span>
       </div>
 
       {song.audioUrl ? (
