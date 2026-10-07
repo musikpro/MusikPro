@@ -1073,6 +1073,10 @@ button {
 .app-content:has(.auth-page) {
   padding-bottom: 0;
 }
+/* Landing publique : pas de barre de navigation mobile, donc rien à réserver sous le pied de page. */
+.app-content:has(.landing-page) {
+  padding-bottom: 0;
+}
 .auth-page {
   --auth-bg: #fafaf7;
   --auth-fg: #1a1a1a;

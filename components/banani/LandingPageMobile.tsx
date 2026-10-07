@@ -204,7 +204,6 @@ export default function LandingPageMobile({
         </section>
       ) : null}
 
-
       {occasions.length ? (
         <section className="landing-section-waves px-4 py-10">
           <Reveal className="text-center mb-6">
@@ -297,9 +296,9 @@ export default function LandingPageMobile({
         </Reveal>
       </section>
 
-      <footer className="border-t border-border px-4 py-6 text-center flex flex-col items-center">
+      <footer className="border-t border-border px-4 py-4 text-center flex flex-col items-center">
         <AppLogo size="sm" />
-        <p className="text-xs text-muted-foreground mt-3 mb-3">{t("© 2026 MusikPro. Tous droits réservés.")}</p>
+        <p className="text-xs text-muted-foreground mt-2 mb-2">{t("© 2026 MusikPro. Tous droits réservés.")}</p>
         <div className="flex items-center justify-center gap-5">
           <Link href="/privacy" className="text-xs text-muted-foreground">
             {t("Confidentialité")}
