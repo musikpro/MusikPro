@@ -29,14 +29,6 @@ export async function isOwnerAccount(role: string | null | undefined) {
   return isAdminRole(role, await resolveOwnerSlugs(role));
 }
 
-export function shouldBootstrapOwnerTwoFactor(
-  user: { role?: string | null; twoFactorEnabled?: boolean | null },
-  enabled = ownerTwoFactorEnabled(),
-  extraAdminSlugs: string[] = [],
-) {
-  return enabled && isAdminRole(user.role, extraAdminSlugs) && user.twoFactorEnabled !== true;
-}
-
 export function ownerTwoFactor(): BetterAuthPlugin {
   return {
     id: "owner-two-factor",
@@ -78,7 +70,7 @@ export function ownerTwoFactor(): BetterAuthPlugin {
           return ctx.json({
             email: maskEmail(user.email),
             expiresAt: verification.expiresAt.toISOString(),
-            methods: totpRecord && totpRecord.verified !== false ? ["otp", "totp", "backup"] : ["otp"],
+            methods: totpRecord && totpRecord.verified !== false ? ["totp", "otp", "backup"] : ["otp"],
           });
         },
       ),
@@ -95,35 +87,6 @@ export function ownerTwoFactor(): BetterAuthPlugin {
                 message: "Le double facteur est réservé aux propriétaires.",
               });
             }
-          }),
-        },
-      ],
-      after: [
-        {
-          matcher: (ctx) => ctx.path === "/sign-in/email" || ctx.path === "/sign-in/username",
-          handler: createAuthMiddleware(async (ctx) => {
-            const current = ctx.context.newSession;
-            if (!current) return;
-            const owner = current.user as typeof current.user & {
-              role?: string | null;
-              twoFactorEnabled?: boolean | null;
-            };
-            if (!shouldBootstrapOwnerTwoFactor(owner, ownerTwoFactorEnabled(), await resolveOwnerSlugs(owner.role)))
-              return;
-
-            const updated = await ctx.context.internalAdapter.updateUser(owner.id, {
-              twoFactorEnabled: true,
-            });
-            if (!updated) {
-              throw APIError.from("INTERNAL_SERVER_ERROR", {
-                code: "OWNER_TWO_FACTOR_BOOTSTRAP_FAILED",
-                message: "Impossible de préparer la vérification du propriétaire.",
-              });
-            }
-            ctx.context.setNewSession({
-              session: current.session,
-              user: { ...current.user, ...updated, twoFactorEnabled: true },
-            });
           }),
         },
       ],

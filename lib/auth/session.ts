@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isAdminRole } from "@/lib/auth/permissions";
 import { resolveExtraAdminSlugs } from "@/lib/auth/custom-roles";
-import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 
 export async function getSession() {
   return auth.api.getSession({ headers: await headers() });
@@ -51,10 +50,5 @@ export async function requireAdmin() {
   const session = await requireUser();
   const role = (session.user as { role?: string }).role;
   if (!isAdminRole(role, await resolveExtraAdminSlugs(role))) redirect("/dashboard");
-  const twoFactorEnabled = Boolean((session.user as { twoFactorEnabled?: boolean }).twoFactorEnabled);
-  // OWNER_2FA_ENABLED is the switch: once on, every admin-type account must have 2FA, whatever the security level.
-  if (ownerTwoFactorEnabled() && !twoFactorEnabled) {
-    redirect("/dashboard/security?required=admin-2fa");
-  }
   return session;
 }

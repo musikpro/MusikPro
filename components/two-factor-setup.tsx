@@ -58,7 +58,7 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
   const [newCodes, setNewCodes] = useState<string[]>([]);
   const setupKey = uri ? totpSetupKey(uri) : null;
 
-  async function enable(e: FormEvent<HTMLFormElement>) {
+  async function enable(e: FormEvent<HTMLFormElement>, reenroll = false) {
     e.preventDefault();
     setMessage("");
     const parsed = twoFactorOptionalPasswordSchema.safeParse({
@@ -68,6 +68,14 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
       const issue = parsed.error.issues[0];
       setMessage(issue ? translateIssue(issue) : t("Mot de passe invalide"));
       return;
+    }
+    if (reenroll) {
+      // Nouveau téléphone : l'ancienne application et les anciens codes sont retirés avant d'en créer de nouveaux.
+      const off = await authClient.twoFactor.disable({ password: parsed.data.password });
+      if (off.error) {
+        setMessage(authResultErrorMessage(off.error, t("Impossible de remplacer l’application")));
+        return;
+      }
     }
     const r = await authClient.twoFactor.enable({
       password: parsed.data.password,
@@ -140,7 +148,48 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
     e.currentTarget.reset();
   }
 
-  if (enabled && totpConfigured)
+  async function disable(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setMessage("");
+    const parsed = twoFactorOptionalPasswordSchema.safeParse({
+      password: String(new FormData(e.currentTarget).get("password") || ""),
+    });
+    if (!parsed.success) {
+      const issue = parsed.error.issues[0];
+      setMessage(issue ? translateIssue(issue) : t("Mot de passe invalide"));
+      return;
+    }
+    if (
+      !window.confirm(t("Désactiver le double facteur ? Votre compte ne sera plus protégé que par votre connexion."))
+    ) {
+      return;
+    }
+    const r = await authClient.twoFactor.disable({ password: parsed.data.password });
+    if (r.error) {
+      setMessage(authResultErrorMessage(r.error, t("Impossible de désactiver le 2FA")));
+      return;
+    }
+    setMessage(t("Double facteur désactivé."));
+    window.location.reload();
+  }
+
+  const disableForm = (
+    <div className="twofa-disable">
+      <h3>{t("Désactiver le double facteur")}</h3>
+      <p className="muted">
+        {t("Vous pourrez le réactiver à tout moment depuis cette page. Votre mot de passe est demandé s’il existe.")}
+      </p>
+      <form onSubmit={disable} className="security-2fa-form">
+        <label className="field">
+          {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
+          <input type="password" name="password" autoComplete="current-password" />
+        </label>
+        <button className="btn">{t("Désactiver le double facteur")}</button>
+      </form>
+    </div>
+  );
+
+  if (enabled && totpConfigured && !uri)
     return (
       <div className="card security-2fa-card is-enabled">
         <h2>{t("Authentification à deux facteurs")}</h2>
@@ -159,6 +208,20 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
           <button className="btn security-primary-button">{t("Générer de nouveaux codes")}</button>
         </form>
         {newCodes.length > 0 && <BackupCodes codes={newCodes} />}
+        <h3>{t("Changer de téléphone")}</h3>
+        <p className="muted">
+          {t(
+            "Nouveau téléphone ou application perdue ? Reconnectez une application d’authentification : l’ancienne et les anciens codes de secours sont remplacés.",
+          )}
+        </p>
+        <form onSubmit={(e) => enable(e, true)} className="security-2fa-form">
+          <label className="field">
+            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
+            <input type="password" name="password" autoComplete="current-password" />
+          </label>
+          <button className="btn security-primary-button">{t("Reconnecter l’application")}</button>
+        </form>
+        {disableForm}
         {message && <p role="status">{message}</p>}
       </div>
     );
@@ -166,15 +229,16 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
   return (
     <div className="card security-2fa-card">
       <h2>{t("Activer le 2FA (application d’authentification)")}</h2>
-      {enabled && (
+      {enabled && !uri && (
         <p className="muted">
           {t(
             "La vérification par e-mail est active. Ajoutez une application d’authentification et vos codes de secours.",
           )}
         </p>
       )}
+      {enabled && !uri && disableForm}
       {!uri && (
-        <form onSubmit={enable} className="security-2fa-form">
+        <form onSubmit={(e) => enable(e)} className="security-2fa-form">
           <label className="field">
             {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
             <input type="password" name="password" autoComplete="current-password" />

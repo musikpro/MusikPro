@@ -25,6 +25,7 @@ export function TwoFactorChallenge() {
   useI18nOverlay();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement>(null);
+  const autoSent = useRef(false);
   const [context, setContext] = useState<Context | null>(null);
   const [method, setMethod] = useState<Method>("otp");
   const [code, setCode] = useState("");
@@ -42,8 +43,13 @@ export function TwoFactorChallenge() {
         if (!active) return;
         const data = parsed.data;
         setContext(data);
-        const stored = sessionStorage.getItem("owner-2fa-method");
-        setMethod(stored === "totp" && data.methods.includes("totp") ? "totp" : data.methods[0]);
+        // L'application d'authentification passe en premier ; l'e-mail et les codes de secours viennent ensuite.
+        setMethod(data.methods[0]);
+        // Sans application enregistrée, le code e-mail est la seule méthode : on l'envoie tout de suite.
+        if (data.methods[0] === "otp" && !autoSent.current) {
+          autoSent.current = true;
+          void resend();
+        }
         setSecondsLeft(Math.max(0, Math.ceil((new Date(data.expiresAt).getTime() - Date.now()) / 1000)));
         requestAnimationFrame(() => inputRef.current?.focus());
       })
@@ -71,7 +77,7 @@ export function TwoFactorChallenge() {
       setError(issue ? translateIssue(issue) : t("Saisissez les 6 chiffres du code."));
       return;
     }
-    if (secondsLeft <= 0) {
+    if (method === "otp" && secondsLeft <= 0) {
       setError(t("Ce code a expiré. Demandez un nouveau code."));
       return;
     }
@@ -87,7 +93,6 @@ export function TwoFactorChallenge() {
       setBusy(false);
       return;
     }
-    sessionStorage.removeItem("owner-2fa-method");
     goToAuthenticatedSpace();
   }
 
@@ -112,7 +117,6 @@ export function TwoFactorChallenge() {
     setCode("");
     setError("");
     setNotice("");
-    if (next === "totp") sessionStorage.setItem("owner-2fa-method", next);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
@@ -140,7 +144,10 @@ export function TwoFactorChallenge() {
               ) : method === "backup" ? (
                 <>{t("Saisissez l’un de vos codes de secours. Chaque code ne sert qu’une seule fois.")}</>
               ) : (
-                <>{t("Ouvrez votre application d’authentification pour obtenir votre code.")}</>
+                <>
+                  {t("Ouvrez votre application d’authentification pour obtenir votre code.")}{" "}
+                  {t("Téléphone perdu ? Recevez un code par e-mail ci-dessous.")}
+                </>
               )}
             </p>
             <form className="auth-code-card" onSubmit={submit}>
@@ -187,12 +194,14 @@ export function TwoFactorChallenge() {
                   />
                 </div>
               )}
-              <p className={secondsLeft === 0 ? "owner-2fa-timer is-expired" : "owner-2fa-timer"}>
-                <Icon i="clock-3" size={15} />
-                {secondsLeft > 0
-                  ? translateTemplate("Ce code expire dans {time}", { time: timerLabel(secondsLeft) })
-                  : t("Ce code a expiré")}
-              </p>
+              {method === "otp" && (
+                <p className={secondsLeft === 0 ? "owner-2fa-timer is-expired" : "owner-2fa-timer"}>
+                  <Icon i="clock-3" size={15} />
+                  {secondsLeft > 0
+                    ? translateTemplate("Ce code expire dans {time}", { time: timerLabel(secondsLeft) })
+                    : t("Ce code a expiré")}
+                </p>
+              )}
               {error && (
                 <p className="auth-alert auth-alert-error" role="alert">
                   {error}
@@ -205,7 +214,9 @@ export function TwoFactorChallenge() {
               )}
               <button
                 className="auth-submit"
-                disabled={busy || code.length < (method === "backup" ? 8 : 6) || secondsLeft === 0}
+                disabled={
+                  busy || code.length < (method === "backup" ? 8 : 6) || (method === "otp" && secondsLeft === 0)
+                }
               >
                 <Icon i="shield-check" size={18} />
                 {busy ? t("Vérification…") : t("Vérifier le code")}

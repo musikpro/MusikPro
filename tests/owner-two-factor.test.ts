@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { maskEmail, ownerTwoFactorEnabled, shouldBootstrapOwnerTwoFactor } from "@/lib/auth/owner-two-factor";
+import { maskEmail, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 
 describe("owner two-factor challenge", () => {
   it("masks the mailbox while keeping the destination recognizable", () => {
@@ -11,27 +11,9 @@ describe("owner two-factor challenge", () => {
     expect(maskEmail("private-value")).toBe("••••••");
   });
 
-  it("starts email 2FA automatically only for an owner who has not enabled it", () => {
-    expect(shouldBootstrapOwnerTwoFactor({ role: "admin", twoFactorEnabled: false }, true)).toBe(true);
-    expect(shouldBootstrapOwnerTwoFactor({ role: "user,admin", twoFactorEnabled: null }, true)).toBe(true);
-    expect(shouldBootstrapOwnerTwoFactor({ role: "admin", twoFactorEnabled: true }, true)).toBe(false);
-    expect(shouldBootstrapOwnerTwoFactor({ role: "user", twoFactorEnabled: false }, true)).toBe(false);
-  });
-
-  it("covers every admin-type account (financier, support, custom roles) but never clients", () => {
-    expect(shouldBootstrapOwnerTwoFactor({ role: "admin_payments", twoFactorEnabled: false }, true)).toBe(true);
-    expect(shouldBootstrapOwnerTwoFactor({ role: "support", twoFactorEnabled: false }, true)).toBe(true);
-    expect(shouldBootstrapOwnerTwoFactor({ role: "custom:abc", twoFactorEnabled: false }, true, ["custom:abc"])).toBe(
-      true,
-    );
-    expect(shouldBootstrapOwnerTwoFactor({ role: "custom:abc", twoFactorEnabled: false }, true)).toBe(false);
-    expect(shouldBootstrapOwnerTwoFactor({ role: null, twoFactorEnabled: false }, true, ["custom:abc"])).toBe(false);
-  });
-
   it("keeps owner 2FA disabled unless explicitly enabled", () => {
     expect(ownerTwoFactorEnabled(undefined)).toBe(false);
     expect(ownerTwoFactorEnabled("false")).toBe(false);
     expect(ownerTwoFactorEnabled("true")).toBe(true);
-    expect(shouldBootstrapOwnerTwoFactor({ role: "admin", twoFactorEnabled: false }, false)).toBe(false);
   });
 });
