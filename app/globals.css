@@ -2501,3 +2501,77 @@ a.psp-badge {
 .download-details > :last-child {
   padding-bottom: 16px;
 }
+
+/* Double facteur : saisie d'un code de secours, grille des codes, clé de configuration */
+.owner-2fa-backup-input {
+  width: 100%;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 1px solid var(--auth-border);
+  border-radius: 14px;
+  background: var(--auth-input);
+  color: var(--auth-fg);
+  font:
+    600 1.15rem/1 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+.owner-2fa-backup-input:focus-visible {
+  outline: 3px solid var(--auth-primary);
+  outline-offset: 2px;
+}
+.twofa-codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin: 10px 0;
+  padding: 0;
+  list-style: none;
+}
+.twofa-codes li {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f6f1ea;
+  font:
+    600 0.95rem/1.2 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  text-align: center;
+  user-select: all;
+}
+.twofa-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+.twofa-key {
+  display: block;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f6f1ea;
+  font:
+    700 1.05rem/1.4 ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.06em;
+  word-break: break-all;
+  user-select: all;
+}
+.twofa-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 12px 0;
+  font-weight: 600;
+}
+.twofa-confirm input {
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+}

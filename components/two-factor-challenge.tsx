@@ -5,7 +5,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authClient } from "@/lib/auth/client";
 import { apiFetch } from "@/lib/api/client";
-import { ownerTwoFactorContextSchema, twoFactorCodeSchema } from "@/lib/validation/auth";
+import { ownerTwoFactorContextSchema, twoFactorBackupCodeSchema, twoFactorCodeSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
 import { AuthBackLink, AuthHeroIcon } from "@/components/auth/auth-ui";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,7 +14,7 @@ import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
 import { authResultErrorMessage } from "@/lib/auth/auth-error-messages";
 
-type Method = "otp" | "totp";
+type Method = "otp" | "totp" | "backup";
 type Context = { email: string; expiresAt: string; methods: Method[] };
 
 function timerLabel(seconds: number) {
@@ -65,7 +65,7 @@ export function TwoFactorChallenge() {
     event.preventDefault();
     setError("");
     setNotice("");
-    const parsed = twoFactorCodeSchema.safeParse({ code });
+    const parsed = (method === "backup" ? twoFactorBackupCodeSchema : twoFactorCodeSchema).safeParse({ code });
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
       setError(issue ? translateIssue(issue) : t("Saisissez les 6 chiffres du code."));
@@ -79,7 +79,9 @@ export function TwoFactorChallenge() {
     const result =
       method === "otp"
         ? await authClient.twoFactor.verifyOtp({ code: parsed.data.code, trustDevice: false })
-        : await authClient.twoFactor.verifyTotp({ code: parsed.data.code, trustDevice: false });
+        : method === "backup"
+          ? await authClient.twoFactor.verifyBackupCode({ code: parsed.data.code, trustDevice: false })
+          : await authClient.twoFactor.verifyTotp({ code: parsed.data.code, trustDevice: false });
     if (result.error) {
       setError(authResultErrorMessage(result.error, t("Code invalide. Vérifiez les chiffres et réessayez.")));
       setBusy(false);
@@ -110,7 +112,7 @@ export function TwoFactorChallenge() {
     setCode("");
     setError("");
     setNotice("");
-    sessionStorage.setItem("owner-2fa-method", next);
+    if (next === "totp") sessionStorage.setItem("owner-2fa-method", next);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
 
@@ -135,30 +137,56 @@ export function TwoFactorChallenge() {
                 <>
                   {t("Nous avons envoyé un code à")} <strong>{context.email}</strong>.
                 </>
+              ) : method === "backup" ? (
+                <>{t("Saisissez l’un de vos codes de secours. Chaque code ne sert qu’une seule fois.")}</>
               ) : (
                 <>{t("Ouvrez votre application d’authentification pour obtenir votre code.")}</>
               )}
             </p>
             <form className="auth-code-card" onSubmit={submit}>
-              <label htmlFor="owner-2fa-code">{t("Entrez le code à 6 chiffres")}</label>
-              <div className="auth-code-boxes">
-                {Array.from({ length: 6 }, (_, index) => (
-                  <span className={index < code.length ? "filled" : index === code.length ? "active" : ""} key={index}>
-                    {code[index] || ""}
-                  </span>
-                ))}
+              <label htmlFor="owner-2fa-code">
+                {method === "backup" ? t("Entrez un code de secours") : t("Entrez le code à 6 chiffres")}
+              </label>
+              {method === "backup" ? (
                 <input
                   ref={inputRef}
                   id="owner-2fa-code"
+                  className="owner-2fa-backup-input"
                   name="code"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
+                  type="text"
+                  autoComplete="off"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  maxLength={24}
+                  placeholder="xxxxx-xxxxx"
                   value={code}
-                  onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
-                  aria-label={t("Code d’authentification à six chiffres")}
+                  onChange={(event) => setCode(event.target.value.replace(/[^A-Za-z0-9-]/g, "").slice(0, 24))}
+                  aria-label={t("Code de secours")}
                   required
                 />
-              </div>
+              ) : (
+                <div className="auth-code-boxes">
+                  {Array.from({ length: 6 }, (_, index) => (
+                    <span
+                      className={index < code.length ? "filled" : index === code.length ? "active" : ""}
+                      key={index}
+                    >
+                      {code[index] || ""}
+                    </span>
+                  ))}
+                  <input
+                    ref={inputRef}
+                    id="owner-2fa-code"
+                    name="code"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    value={code}
+                    onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                    aria-label={t("Code d’authentification à six chiffres")}
+                    required
+                  />
+                </div>
+              )}
               <p className={secondsLeft === 0 ? "owner-2fa-timer is-expired" : "owner-2fa-timer"}>
                 <Icon i="clock-3" size={15} />
                 {secondsLeft > 0
@@ -175,7 +203,10 @@ export function TwoFactorChallenge() {
                   {notice}
                 </p>
               )}
-              <button className="auth-submit" disabled={busy || code.length !== 6 || secondsLeft === 0}>
+              <button
+                className="auth-submit"
+                disabled={busy || code.length < (method === "backup" ? 8 : 6) || secondsLeft === 0}
+              >
                 <Icon i="shield-check" size={18} />
                 {busy ? t("Vérification…") : t("Vérifier le code")}
               </button>
@@ -199,6 +230,15 @@ export function TwoFactorChallenge() {
                     <Icon i="mail" size={16} />
                   </span>
                   {t("Recevoir un code par e-mail")}
+                  <Icon i="chevron-right" size={16} />
+                </button>
+              )}
+              {context.methods.includes("backup") && method !== "backup" && (
+                <button type="button" onClick={() => selectMethod("backup")}>
+                  <span>
+                    <Icon i="key-round" size={16} />
+                  </span>
+                  {t("Utiliser un code de secours")}
                   <Icon i="chevron-right" size={16} />
                 </button>
               )}

@@ -12,12 +12,14 @@ import { translate as t } from "@/lib/i18n/translate";
 export default function SecurityAccountScreen({
   emailVerified,
   twoFactorEnabled,
+  totpConfigured,
   twoFactorAvailable,
   required,
   isOwner,
 }: {
   emailVerified: boolean;
   twoFactorEnabled: boolean;
+  totpConfigured: boolean;
   twoFactorAvailable: boolean;
   required: boolean;
   isOwner: boolean;
@@ -91,7 +93,7 @@ export default function SecurityAccountScreen({
                 <p>{t("Utilise une application comme Google Authenticator pour protéger la connexion.")}</p>
               </div>
             </div>
-            <TwoFactorSetup enabled={twoFactorEnabled} />
+            <TwoFactorSetup enabled={twoFactorEnabled} totpConfigured={totpConfigured} />
           </section>
         )}
 
