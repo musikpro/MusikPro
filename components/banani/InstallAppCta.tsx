@@ -4,9 +4,7 @@ import { useSyncExternalStore, type ReactNode } from "react";
 import { isNativeMobileApp } from "@/lib/mobile/native-runtime";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
-import { InstallGuide, useInstallAction } from "@/components/pwa/install-guide";
-import { useAppInstalled, useDevicePlatform } from "@/lib/pwa/install-prompt";
-import { APK_DOWNLOAD_PATH } from "@/lib/app-releases/constants";
+import { useAppInstalled } from "@/lib/pwa/install-prompt";
 import Icon from "./Icon";
 
 export type InstallLinks = { googlePlayUrl: string | null; appStoreUrl: string | null };
@@ -22,7 +20,7 @@ export function useHideStoreButtons(): boolean {
   return useSyncExternalStore(subscribeNever, isNativeMobileApp, () => false);
 }
 
-type Variant = "card" | "compact" | "banner" | "strip";
+type Variant = "card" | "compact";
 
 const isExternal = (href: string) => /^https?:\/\//i.test(href);
 
@@ -71,10 +69,10 @@ function PhoneMockup() {
 }
 
 /**
- * Invitation à installer l'application MusikPro (remplace les logos Google Play / App Store, l'application n'étant
- * pas dans ces boutiques). Sur Chrome Android, le bouton ouvre directement la fenêtre d'installation du navigateur ;
- * sinon il mène à la page d'installation de la plateforme détectée. Un lien de boutique saisi par le propriétaire
- * reste prioritaire (il arrive ici dans `links`). Masquée dans l'application native et une fois l'application installée.
+ * Invitation à installer l'application Android de MusikPro, avant la publication sur les boutiques officielles. Le
+ * bouton mène à la page /download (téléchargement du fichier d'installation et étapes pas à pas) ; un lien Google Play
+ * saisi par le propriétaire dans `/admin/mobile-apps` reste prioritaire. Masquée dans l'application native et une
+ * fois l'application installée.
  */
 export default function InstallAppCta({
   variant = "card",
@@ -88,56 +86,9 @@ export default function InstallAppCta({
   useI18nOverlay();
   const hiddenInApp = useHideStoreButtons();
   const installed = useAppInstalled();
-  const platform = useDevicePlatform();
-  const { install, guideOpen, closeGuide } = useInstallAction();
   if (hiddenInApp || installed) return null;
 
-  const androidHref = links.googlePlayUrl ?? "/download#android";
-  const iosHref = links.appStoreUrl ?? "/download#iphone";
-  const primaryHref = platform === "ios" ? iosHref : androidHref;
-  // Lien de boutique saisi par le propriétaire : il garde la priorité sur l'installation directe.
-  // Android + APK publié : le bouton télécharge le fichier, qu'on installe d'un toucher. Ailleurs : PWA / guide.
-  const isApk = primaryHref === APK_DOWNLOAD_PATH;
-  const storeHref = isExternal(primaryHref) || (isApk && platform === "android") ? primaryHref : null;
-  const primaryLabel = t("Installer maintenant");
-
-  const primary = storeHref ? (
-    <LinkOrButton href={storeHref} className="install-cta__primary">
-      <Icon i="download" size={18} />
-      {primaryLabel}
-    </LinkOrButton>
-  ) : (
-    <button type="button" className="install-cta__primary" onClick={() => void install()}>
-      <Icon i="download" size={18} />
-      {primaryLabel}
-    </button>
-  );
-
-  if (variant === "strip") {
-    const inner = (
-      <>
-        <span className="install-cta__strip-icon">
-          <Icon i="smartphone" size={18} />
-        </span>
-        <span className="install-cta__strip-text">
-          <strong>{t("Installer l'application")}</strong>
-          <small>{t("Gratuit, en 30 secondes")}</small>
-        </span>
-        <Icon i="chevron-right" size={16} />
-      </>
-    );
-    return storeHref ? (
-      <LinkOrButton href={storeHref} className={`install-cta install-cta--strip ${className}`}>
-        {inner}
-      </LinkOrButton>
-    ) : (
-      <>
-        <button type="button" className={`install-cta install-cta--strip ${className}`} onClick={() => void install()}>
-          {inner}
-        </button>
-      </>
-    );
-  }
+  const href = links.googlePlayUrl ?? "/download#android";
 
   return (
     <section
@@ -145,7 +96,7 @@ export default function InstallAppCta({
       aria-label={t("Installer l'application MusikPro")}
     >
       <div className="install-cta__body">
-        <p className="install-cta__eyebrow">{t("Application mobile")}</p>
+        <p className="install-cta__eyebrow">{t("Application Android")}</p>
         <h2 className="install-cta__title">{t("Emportez MusikPro dans votre poche")}</h2>
         <p className="install-cta__text">
           {t("Créez vos chansons en quelques minutes, directement depuis l'écran d'accueil de votre téléphone.")}
@@ -165,15 +116,13 @@ export default function InstallAppCta({
           </li>
         </ul>
         <div className="install-cta__actions">
-          {primary}
-          <LinkOrButton href={platform === "ios" ? androidHref : iosHref} className="install-cta__chip">
-            <Icon i="smartphone" size={15} />
-            {platform === "ios" ? t("Android") : t("iPhone")}
+          <LinkOrButton href={href} className="install-cta__primary">
+            <Icon i="download" size={18} />
+            {t("Installer maintenant")}
           </LinkOrButton>
         </div>
       </div>
       <PhoneMockup />
-      <InstallGuide open={guideOpen} onClose={closeGuide} platform={platform} />
     </section>
   );
 }

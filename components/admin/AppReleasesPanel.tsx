@@ -182,7 +182,7 @@ export default function AppReleasesPanel({
         <ul style={{ listStyle: "none", padding: 0, display: "grid", gap: "0.75rem" }}>
           {releases.map((release) => (
             <li key={release.id} className={`admin-panel ${release.published ? "is-active" : ""}`}>
-              <div className="admin-provider-heading">
+              <div className="admin-release-head">
                 <div>
                   <h4>
                     Version {release.version} · build {release.build}

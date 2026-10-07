@@ -4,7 +4,7 @@ import Icon from "@/components/banani/Icon";
 import { InstallGuide, useInstallAction } from "@/components/pwa/install-guide";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
-import { useAppInstalled, useDevicePlatform } from "@/lib/pwa/install-prompt";
+import { useAppInstalled } from "@/lib/pwa/install-prompt";
 
 /**
  * Bouton « Installer l'application » : toujours affiché. Il ouvre la fenêtre d'installation du navigateur quand elle
@@ -14,7 +14,6 @@ import { useAppInstalled, useDevicePlatform } from "@/lib/pwa/install-prompt";
 export default function InstallAppButton() {
   useI18nOverlay();
   const installed = useAppInstalled();
-  const platform = useDevicePlatform();
   const { install, guideOpen, closeGuide } = useInstallAction();
 
   if (installed) return <p>{t("MusikPro est déjà installée sur cet appareil.")}</p>;
@@ -33,7 +32,7 @@ export default function InstallAppButton() {
         <li>{t("Sans avertissement de sécurité")}</li>
         <li>{t("Mises à jour automatiques")}</li>
       </ul>
-      <InstallGuide open={guideOpen} onClose={closeGuide} platform={platform} />
+      <InstallGuide open={guideOpen} onClose={closeGuide} />
     </div>
   );
 }

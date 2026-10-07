@@ -2980,6 +2980,32 @@
   gap: 10px;
 }
 
+/* Carte d'une version envoyée : texte à gauche (pleine largeur), statut à droite. */
+.admin-release-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-release-head > div {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.admin-release-head h4,
+.admin-release-head p {
+  margin: 0 0 4px;
+}
+
+.admin-release-head + div {
+  margin-top: 10px;
+}
+
+.admin-release-head .admin-status {
+  flex: none;
+}
+
 .admin-provider-heading h2,
 .admin-provider-heading p {
   margin: 0;

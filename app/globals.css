@@ -2420,3 +2420,28 @@ a.psp-badge {
     transform: none;
   }
 }
+
+/* Page /download : étapes et message de Google Play Protect */
+.download-steps {
+  display: grid;
+  gap: 8px;
+  padding-left: 1.25rem;
+}
+.download-figure {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 12px 0 16px;
+}
+.download-figure img {
+  width: min(320px, 80vw);
+  height: auto;
+  border-radius: 20px;
+  border: 1px solid #e8e3dc;
+  box-shadow: 0 10px 30px -14px rgb(0 0 0 / 35%);
+}
+.download-figure figcaption {
+  font-size: 0.85rem;
+  color: #6f6762;
+  text-align: center;
+}

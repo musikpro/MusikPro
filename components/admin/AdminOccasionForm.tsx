@@ -113,8 +113,12 @@ export default function AdminOccasionForm({
           </button>
         </label>
         <AdminOccasionEmojiPicker defaultEmoji={values.emoji} />
-        <label className="admin-editor-field is-wide">
+        <label className="admin-editor-field">
           <span>Consigne pour l’IA musicale (anglais, facultative)</span>
+          <small>
+            Seule cette consigne est envoyée à Musicful (jamais le nom français) ; elle n’est pas montrée au client.
+            Vide : rien n’est envoyé pour l’occasion. {aiHint.length}/{OCCASION_AI_HINT_MAX_LENGTH}
+          </small>
           <textarea
             name="aiHint"
             rows={2}
@@ -123,10 +127,6 @@ export default function AdminOccasionForm({
             onChange={(event) => setAiHint(event.target.value)}
             placeholder="Ex. birthday celebration, joyful, warm, heartfelt tribute"
           />
-          <small>
-            Seule cette consigne est envoyée à Musicful (jamais le nom français) ; elle n’est pas montrée au client.
-            Vide : rien n’est envoyé pour l’occasion. {aiHint.length}/{OCCASION_AI_HINT_MAX_LENGTH}
-          </small>
           <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
             <Icon i="bot" size={15} />
             {suggesting ? "Suggestion…" : "Suggérer la consigne"}
