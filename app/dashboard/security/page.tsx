@@ -1,24 +1,9 @@
 import { requireUser } from "@/lib/auth/session";
 import Preview from "@/components/banani/Preview";
 import SecurityAccountScreen from "@/components/banani/SecurityAccountScreen";
-import { eq } from "drizzle-orm";
-import { getServiceDb } from "@/db";
-import { twoFactor } from "@/db/schema";
 import { isOwnerAccount, ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
+import { hasVerifiedTotp } from "@/lib/auth/totp-status";
 
-/** Une application d'authentification est-elle enregistrée et vérifiée pour ce compte ? */
-async function hasVerifiedTotp(userId: string) {
-  try {
-    const [row] = await getServiceDb()
-      .select({ id: twoFactor.id, verified: twoFactor.verified })
-      .from(twoFactor)
-      .where(eq(twoFactor.userId, userId))
-      .limit(1);
-    return Boolean(row && row.verified !== false);
-  } catch {
-    return false;
-  }
-}
 export default async function Page({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const s = await requireUser();
   const q = await searchParams;

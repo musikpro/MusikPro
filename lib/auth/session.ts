@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { isAdminRole } from "@/lib/auth/permissions";
 import { resolveExtraAdminSlugs } from "@/lib/auth/custom-roles";
+import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
+import { hasVerifiedTotp } from "@/lib/auth/totp-status";
 
 export async function getSession() {
   return auth.api.getSession({ headers: await headers() });
@@ -50,5 +52,10 @@ export async function requireAdmin() {
   const session = await requireUser();
   const role = (session.user as { role?: string }).role;
   if (!isAdminRole(role, await resolveExtraAdminSlugs(role))) redirect("/dashboard");
+  // OWNER_2FA_ENABLED est l'interrupteur : une fois actif, un propriétaire doit avoir lié une application
+  // d'authentification. À la première connexion (code e-mail) il est conduit à l'enregistrer avant d'administrer.
+  if (ownerTwoFactorEnabled() && !(await hasVerifiedTotp(session.user.id))) {
+    redirect("/dashboard/security?required=admin-2fa");
+  }
   return session;
 }

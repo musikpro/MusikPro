@@ -1,5 +1,7 @@
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthEndpoint, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
+import { deleteSessionCookie } from "better-auth/cookies";
+import { generateRandomString } from "better-auth/crypto";
 import { isAdminRole } from "@/lib/auth/permissions";
 
 const TWO_FACTOR_COOKIE_NAME = "two_factor";
@@ -27,6 +29,19 @@ export async function resolveOwnerSlugs(role: string | null | undefined) {
 
 export async function isOwnerAccount(role: string | null | undefined) {
   return isAdminRole(role, await resolveOwnerSlugs(role));
+}
+
+export function shouldBootstrapOwnerTwoFactor(
+  user: { role?: string | null; twoFactorEnabled?: boolean | null },
+  enabled = ownerTwoFactorEnabled(),
+  extraAdminSlugs: string[] = [],
+) {
+  return enabled && isAdminRole(user.role, extraAdminSlugs) && user.twoFactorEnabled !== true;
+}
+
+/** Connexion sociale (Google) : le plugin Better Auth ne pose le défi que pour l'e-mail et le mot de passe. */
+export function isSocialSignInPath(path: string) {
+  return path.startsWith("/callback/") || path.startsWith("/oauth2/callback/") || path === "/sign-in/social";
 }
 
 export function ownerTwoFactor(): BetterAuthPlugin {
@@ -87,6 +102,72 @@ export function ownerTwoFactor(): BetterAuthPlugin {
                 message: "Le double facteur est réservé aux propriétaires.",
               });
             }
+          }),
+        },
+      ],
+      after: [
+        {
+          matcher: (ctx) => ctx.path === "/sign-in/email" || ctx.path === "/sign-in/username",
+          handler: createAuthMiddleware(async (ctx) => {
+            const current = ctx.context.newSession;
+            if (!current) return;
+            const owner = current.user as typeof current.user & {
+              role?: string | null;
+              twoFactorEnabled?: boolean | null;
+            };
+            if (!shouldBootstrapOwnerTwoFactor(owner, ownerTwoFactorEnabled(), await resolveOwnerSlugs(owner.role)))
+              return;
+
+            const updated = await ctx.context.internalAdapter.updateUser(owner.id, {
+              twoFactorEnabled: true,
+            });
+            if (!updated) {
+              throw APIError.from("INTERNAL_SERVER_ERROR", {
+                code: "OWNER_TWO_FACTOR_BOOTSTRAP_FAILED",
+                message: "Impossible de préparer la vérification du propriétaire.",
+              });
+            }
+            ctx.context.setNewSession({
+              session: current.session,
+              user: { ...current.user, ...updated, twoFactorEnabled: true },
+            });
+          }),
+        },
+        {
+          // Propriétaire qui entre avec Google : même second facteur que par mot de passe (application ou code e-mail).
+          matcher: (ctx) => ownerTwoFactorEnabled() && isSocialSignInPath(ctx.path ?? ""),
+          handler: createAuthMiddleware(async (ctx) => {
+            const current = ctx.context.newSession;
+            if (!current) return;
+            const owner = current.user as typeof current.user & { role?: string | null };
+            if (!(await isOwnerAccount(owner.role))) return;
+
+            // Première connexion : le code e-mail sert de second facteur tant qu'aucune application n'est liée.
+            await ctx.context.internalAdapter.updateUser(owner.id, { twoFactorEnabled: true });
+            deleteSessionCookie(ctx, true);
+            await ctx.context.internalAdapter.deleteSession(current.session.token);
+            ctx.context.setNewSession(null);
+
+            const maxAge = 600;
+            const cookie = ctx.context.createAuthCookie(TWO_FACTOR_COOKIE_NAME, { maxAge });
+            const identifier = `2fa-${generateRandomString(20)}`;
+            const expiresAt = new Date(Date.now() + maxAge * 1000);
+            await ctx.context.internalAdapter.createVerificationValue({ value: owner.id, identifier, expiresAt });
+            await ctx.context.internalAdapter.createVerificationValue({
+              value: "0",
+              identifier: `2fa-attempts-${identifier}`,
+              expiresAt,
+            });
+            await ctx.setSignedCookie(cookie.name, identifier, ctx.context.secret, cookie.attributes);
+
+            const totp = await ctx.context.adapter.findOne({
+              model: "twoFactor",
+              where: [{ field: "userId", value: owner.id }],
+            });
+            const totpRecord = totp as { verified?: boolean } | null;
+            const twoFactorMethods = totpRecord && totpRecord.verified !== false ? ["totp", "otp"] : ["otp"];
+            if (ctx.path === "/sign-in/social") return ctx.json({ twoFactorRedirect: true, twoFactorMethods });
+            throw ctx.redirect("/two-factor");
           }),
         },
       ],
