@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { translate as t } from "@/lib/i18n/translate";
-import { promptInstall, useInstallPromptAvailable, type DevicePlatform } from "@/lib/pwa/install-prompt";
+import { promptInstall, useInstallPromptAvailable } from "@/lib/pwa/install-prompt";
 
 /**
  * Action « Installer l'application » partagée par tous les boutons : ouvre la fenêtre d'installation du navigateur
@@ -22,26 +22,7 @@ export function useInstallAction() {
 
 type Step = { icon: string; title: string; hint?: string };
 
-function stepsFor(platform: DevicePlatform): Step[] {
-  if (platform === "ios") {
-    return [
-      {
-        icon: "compass",
-        title: t("Ouvrez musikpro.net dans Safari"),
-        hint: t("L'installation ne marche pas depuis un autre navigateur."),
-      },
-      {
-        icon: "share",
-        title: t("Touchez le bouton Partager"),
-        hint: t("Le carré avec une flèche, en bas de l'écran."),
-      },
-      {
-        icon: "square-plus",
-        title: t("Choisissez « Sur l'écran d'accueil »"),
-        hint: t("Faites défiler le menu si besoin, puis touchez Ajouter."),
-      },
-    ];
-  }
+function stepsFor(): Step[] {
   return [
     {
       icon: "ellipsis-vertical",
@@ -58,15 +39,7 @@ function stepsFor(platform: DevicePlatform): Step[] {
 }
 
 /** Guide d'installation en fenêtre modale (feuille du bas sur mobile). Fermeture : bouton, Échap ou toucher à l'extérieur. */
-export function InstallGuide({
-  open,
-  onClose,
-  platform,
-}: {
-  open: boolean;
-  onClose: () => void;
-  platform: DevicePlatform;
-}) {
+export function InstallGuide({ open, onClose }: { open: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -88,11 +61,11 @@ export function InstallGuide({
     >
       <div className="install-guide__sheet">
         <h2 id="install-guide-title" className="install-guide__title">
-          {platform === "ios" ? t("Installer MusikPro sur votre iPhone") : t("Installer MusikPro sur votre téléphone")}
+          {t("Installer MusikPro sur votre téléphone")}
         </h2>
         <p className="install-guide__lead">{t("Trois gestes, sans boutique d'applications. Gratuit.")}</p>
         <ol className="install-guide__steps">
-          {stepsFor(platform).map((step, index) => (
+          {stepsFor().map((step, index) => (
             <li key={step.icon}>
               <span className="install-guide__num" aria-hidden="true">
                 {index + 1}

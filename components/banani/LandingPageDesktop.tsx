@@ -3,7 +3,6 @@ import AppLogo from "./AppLogo";
 import Icon from "./Icon";
 import Reveal from "./Reveal";
 import LandingFaqItem from "./LandingFaqItem";
-import InstallAppCta from "./InstallAppCta";
 import LandingLanguageSwitcher, { type LandingLanguageOption } from "./LandingLanguageSwitcher";
 import HeroRotatingText from "./HeroRotatingText";
 import LandingSongCarousel from "./LandingSongCarousel";
@@ -26,7 +25,6 @@ type Props = {
   heroTexts: LandingHeroText[];
   heroAnimationType: HeroAnimationType;
   heroTextSize: HeroTextSize;
-  storeLinks: { googlePlayUrl: string | null; appStoreUrl: string | null };
 };
 
 // Splits already-translated text into <span> words that fade/slide up in sequence on page load
@@ -70,7 +68,6 @@ export default function LandingPageDesktop({
   heroTexts,
   heroAnimationType,
   heroTextSize,
-  storeLinks,
 }: Props) {
   const faqs = [
     {
@@ -232,13 +229,6 @@ export default function LandingPageDesktop({
         </section>
       ) : null}
 
-      {storeLinks.googlePlayUrl || storeLinks.appStoreUrl ? (
-        <section className="landing-section-grid px-10 py-16">
-          <Reveal>
-            <InstallAppCta variant="banner" links={storeLinks} />
-          </Reveal>
-        </section>
-      ) : null}
 
       {occasions.length ? (
         <section className="landing-section-waves px-10 py-20">

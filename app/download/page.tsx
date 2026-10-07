@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
+import Icon from "@/components/banani/Icon";
 import InstallAppButton from "@/components/pwa/install-app-button";
 import { getPublishedRelease } from "@/lib/app-releases/server";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
@@ -16,7 +18,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = (text: string) => translateForLocale(text, locale);
   return buildMetadata({
     title: t("Télécharger l'application MusikPro"),
-    description: t("Installez MusikPro sur votre téléphone Android ou iPhone."),
+    description: t(
+      "Installez MusikPro sur votre téléphone Android : téléchargement du fichier officiel et étapes pas à pas.",
+    ),
     path: "/download",
   });
 }
@@ -46,65 +50,93 @@ export default async function DownloadPage() {
       </header>
 
       <article className="legal-card" id="android">
-        <h2>{t("Android")}</h2>
-        <h3>{t("Installation recommandée, sans avertissement")}</h3>
-        <p>
-          {t(
-            "Installez MusikPro directement depuis votre navigateur : l'icône apparaît sur votre écran d'accueil et l'application s'ouvre en plein écran, avec les mises à jour automatiques.",
-          )}
-        </p>
-        <InstallAppButton />
-
+        <h2>{t("Installer MusikPro sur Android")}</h2>
         {release ? (
           <>
-            <h3>{t("Fichier d'installation (APK), pour utilisateurs avancés")}</h3>
-            <p>
-              {translateTemplate("Version {version} · {size} Mo", {
-                version: release.version,
-                size: formatMegabytes(release.sizeBytes),
-              })}
-            </p>
-            <p>
-              <a className="download-cta-secondary" href="/download/android" download>
-                {t("Télécharger l'APK Android")}
-              </a>
-            </p>
-            <ol>
-              <li>{t("Ouvrez le fichier téléchargé depuis les notifications ou le dossier Téléchargements.")}</li>
-              <li>
-                {t(
-                  "Si Android le demande, autorisez l'installation depuis ce navigateur (réglage « Installer des applications inconnues »).",
-                )}
-              </li>
-              <li>{t("Appuyez sur Installer, puis ouvrez MusikPro.")}</li>
-            </ol>
             <p>
               {t(
-                "Android peut afficher un avertissement parce que l'application ne vient pas du Play Store : c'est normal pour toute application installée depuis un fichier. Elle est signée par MusikPro ; vous pouvez vérifier l'empreinte du fichier ci-dessous.",
+                "Téléchargez le fichier d'installation officiel de MusikPro, puis ouvrez-le : l'application s'installe en quelques secondes sur votre téléphone, sans passer par le Play Store.",
               )}
             </p>
+            <div className="download-cta-wrap">
+              <a className="download-cta" href="/download/android" download>
+                <span className="download-cta-icon" aria-hidden="true">
+                  <Icon i="download" size={22} />
+                </span>
+                <span className="download-cta-text">
+                  <strong>{t("Télécharger l'application")}</strong>
+                  <small>
+                    {translateTemplate("Version {version} · {size} Mo", {
+                      version: release.version,
+                      size: formatMegabytes(release.sizeBytes),
+                    })}
+                  </small>
+                </span>
+              </a>
+              <ul className="download-cta-trust">
+                <li>{t("Fichier officiel MusikPro")}</li>
+                <li>{t("Gratuit")}</li>
+              </ul>
+            </div>
+
+            <h3>{t("Installer en 4 étapes")}</h3>
+            <ol className="download-steps">
+              <li>{t("Touchez « Télécharger l'application » ci-dessus.")}</li>
+              <li>
+                {t(
+                  "Ouvrez le fichier depuis la notification de téléchargement ou le dossier Téléchargements. Si Android le demande, autorisez l'installation depuis votre navigateur.",
+                )}
+              </li>
+              <li>
+                {t(
+                  "Si Google Play Protect affiche le message ci-dessous, touchez « Installer quand même » (parfois derrière « Plus de détails »).",
+                )}
+              </li>
+              <li>{t("Touchez Installer, puis ouvrez MusikPro et connectez-vous avec votre compte.")}</li>
+            </ol>
+
+            <h3>{t("Un message s'affiche pendant l'installation ? C'est normal")}</h3>
+            <figure className="download-figure">
+              <Image
+                src="/images/play-protect-message.png"
+                width={530}
+                height={776}
+                alt={t(
+                  "Message de Google Play Protect : Appli bloquée pour protéger votre appareil, avec l'option Installer quand même",
+                )}
+                sizes="(max-width: 640px) 80vw, 320px"
+              />
+              <figcaption>{t("Le message de Google Play Protect tel qu'il apparaît sur le téléphone.")}</figcaption>
+            </figure>
+            <p>
+              {t(
+                "Google Play Protect affiche ce message pour toute application qui n'est pas encore publiée dans le Play Store, parce qu'il ne connaît pas encore son éditeur. Ce n'est qu'une précaution : il ne signale aucun problème avec MusikPro.",
+              )}
+            </p>
+            <p>
+              <strong>{t("MusikPro est une application officielle.")}</strong>{" "}
+              {t(
+                "Ce fichier n'est proposé que sur musikpro.net, il est signé numériquement par MusikPro, et il ouvre le même service que le site, avec votre compte, vos crédits et vos chansons. Touchez simplement « Installer quand même » pour continuer.",
+              )}
+            </p>
+
+            <h3>{t("Vérifier le fichier (facultatif)")}</h3>
             <p>
               {t("Empreinte SHA-256 du fichier, pour vérifier son intégrité :")}
               <br />
               <code style={{ wordBreak: "break-all" }}>{release.sha256}</code>
             </p>
           </>
-        ) : null}
-      </article>
-
-      <article className="legal-card" id="iphone">
-        <h2>{t("iPhone")}</h2>
-        <p>{t("Installez MusikPro sur l'écran d'accueil de votre iPhone, sans passer par l'App Store :")}</p>
-        <ol>
-          <li>{t("Ouvrez musikpro.net dans Safari.")}</li>
-          <li>{t("Touchez le bouton Partager, en bas de l'écran.")}</li>
-          <li>{t("Choisissez « Sur l'écran d'accueil », puis Ajouter.")}</li>
-        </ol>
-        <p>
-          {t(
-            "L'icône MusikPro apparaît alors sur votre écran d'accueil et s'ouvre en plein écran, comme une application.",
-          )}
-        </p>
+        ) : (
+          <>
+            <p>
+              {t(
+                "Le fichier d'installation Android sera bientôt disponible. En attendant, vous pouvez installer MusikPro depuis votre navigateur :",
+              )}
+            </p>
+            <InstallAppButton />
+          </>
+        )}
       </article>
 
       <footer className="legal-footer">

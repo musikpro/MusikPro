@@ -19,7 +19,6 @@ import { CREDITS_PER_GENERATION, VERSIONS_PER_GENERATION } from "@/lib/credit-pl
 import { getLandingLibrarySongs, getLandingShowcaseSongs } from "@/lib/landing-features/server";
 import { getActiveHeroAnimatedTexts } from "@/lib/hero-animated-texts/server";
 import { getHeroSettings } from "@/lib/hero-animation/settings";
-import { getEffectiveStoreLinks } from "@/lib/settings/store-links";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { detectCurrency } from "@/lib/languages/detection";
 import {
@@ -92,7 +91,6 @@ export default async function Home() {
     librarySongs,
     heroAnimatedTexts,
     heroSettings,
-    storeLinks,
     languageCatalog,
   ] = await Promise.all([
     getActiveOccasions(),
@@ -101,7 +99,6 @@ export default async function Home() {
     getLandingLibrarySongs(),
     getActiveHeroAnimatedTexts(),
     getHeroSettings(),
-    getEffectiveStoreLinks(),
     languageCatalogPromise,
     cookieLanguageCode || urlLocaleCode ? Promise.resolve(null) : detectCurrency(requestHeaders),
   ]);
@@ -175,7 +172,6 @@ export default async function Home() {
     heroTexts: landingHeroTexts,
     heroAnimationType: heroSettings.animationType,
     heroTextSize: heroSettings.textSize,
-    storeLinks,
   };
 
   return (

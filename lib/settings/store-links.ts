@@ -3,8 +3,6 @@ import "server-only";
 import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { mobileStoreLinks } from "@/db/schema";
-import { APK_DOWNLOAD_PATH } from "@/lib/app-releases/constants";
-import { getPublishedRelease } from "@/lib/app-releases/server";
 
 export type StoreLinksStatus = { googlePlayUrl: string | null; appStoreUrl: string | null; hideInApp: boolean };
 
@@ -37,11 +35,9 @@ export async function getStoreLinks(): Promise<StoreLinksStatus> {
  */
 export async function getEffectiveStoreLinks(): Promise<StoreLinksStatus> {
   const links = await getStoreLinks();
-  // Fichier d'installation publié depuis l'admin : Google Play (Android) le télécharge directement.
-  const apk = links.googlePlayUrl ? null : await getPublishedRelease("android").catch(() => null);
   return {
     ...links,
-    googlePlayUrl: links.googlePlayUrl ?? (apk ? APK_DOWNLOAD_PATH : "/download#android"),
+    googlePlayUrl: links.googlePlayUrl ?? "/download#android",
     appStoreUrl: links.appStoreUrl ?? "/download#iphone",
   };
 }
