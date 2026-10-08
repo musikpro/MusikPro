@@ -70,3 +70,34 @@ describe("generateMusicStyleDescription (consigne IA)", () => {
     expect(result.text.split(/[\s,]+/).filter(Boolean)).toHaveLength(5);
   });
 });
+
+describe("stripLeadingPreamble", () => {
+  it("retire l'introduction ajoutée après une recherche web", async () => {
+    const { stripLeadingPreamble } = await import("@/lib/ai/music-style-description");
+    expect(
+      stripLeadingPreamble(
+        "Based on my research, here is the style instruction for the Zouglou music genre: Ivorian Zouglou, 100-125 BPM, congas.",
+      ),
+    ).toBe("Ivorian Zouglou, 100-125 BPM, congas.");
+  });
+  it("laisse une consigne normale intacte", async () => {
+    const { stripLeadingPreamble } = await import("@/lib/ai/music-style-description");
+    const text = "Ivorian Zouglou, 100-125 BPM, congas. Festive vibes.";
+    expect(stripLeadingPreamble(text)).toBe(text);
+  });
+});
+
+describe("consigne trop courte", () => {
+  beforeEach(() => runProviderTextTask.mockReset());
+
+  it("redemande une fois et garde la version la plus complète", async () => {
+    const full =
+      "Ivorian Zouglou, 100-125 BPM, congas, bass. Chanted lead lines, crowd choruses. Nouchi slang, call-and-response. Festive campus vibes.";
+    runProviderTextTask
+      .mockResolvedValueOnce({ id: "1", text: "Ivorian Zouglou, 100-125 BPM, congas. Chanted lead lines.", model: "m" })
+      .mockResolvedValueOnce({ id: "2", text: full, model: "m" });
+    const result = await generateMusicStyleDescription({ styleName: "Zouglou", kind: "ai" });
+    expect(runProviderTextTask).toHaveBeenCalledTimes(2);
+    expect(result.text).toBe(full);
+  });
+});
