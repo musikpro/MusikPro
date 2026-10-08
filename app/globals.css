@@ -842,6 +842,33 @@ button {
   padding: clamp(22px, 5vw, 48px);
   box-shadow: 0 24px 70px rgba(55, 36, 25, 0.08);
 }
+.legal-toc {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e8e1dc;
+  border-radius: 20px;
+  padding: clamp(18px, 4vw, 28px);
+  margin-bottom: 20px;
+}
+.legal-toc-title {
+  margin: 0 0 10px;
+  font-weight: 700;
+}
+.legal-toc ol {
+  margin: 0;
+  padding-left: 22px;
+  columns: 2 260px;
+  column-gap: 32px;
+  line-height: 1.9;
+  color: #4e4844;
+}
+.legal-toc a {
+  text-decoration: underline;
+  text-decoration-color: #f45d22;
+  text-underline-offset: 4px;
+}
+.legal-section {
+  scroll-margin-top: 20px;
+}
 .legal-section + .legal-section {
   border-top: 1px solid #eee8e4;
   margin-top: 28px;

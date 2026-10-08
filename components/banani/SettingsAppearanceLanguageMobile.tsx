@@ -1,5 +1,6 @@
 "use client";
-import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+import Link from "next/link";
+import { translate as t } from "@/lib/i18n/translate";
 import SelectionMark from "./SelectionMark";
 import { useDemo } from "./DemoProvider";
 import DemoToggle from "./DemoToggle";
@@ -217,27 +218,26 @@ export default function SettingsMobile() {
           <h2 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">{t("À propos")}</h2>
           <div className="bg-card border border-border rounded-xl p-4 flex flex-col gap-2">
             {[
-              { isVersion: true, label: t("Version"), value: "v2.1.4" },
-              { isVersion: false, label: t("Conditions"), value: t("Lire") },
-              { isVersion: false, label: t("Confidentialité"), value: t("Lire") },
-            ].map((item) => (
-              <button
-                type="button"
-                data-demo-ready="true"
-                onClick={() =>
-                  demo.notify(translateTemplate("Information de maquette : {label}", { label: item.label }))
-                }
-                key={item.label}
-                className="w-full flex items-center justify-between px-3 py-2.5 text-left"
-              >
-                <span className="text-sm text-foreground">{item.label}</span>
-                <span
-                  className={`text-xs ${item.isVersion ? "text-muted-foreground" : "text-primary font-semibold"}`}
+              { isVersion: true, label: t("Version"), value: "v2.1.4", href: "" },
+              { isVersion: false, label: t("Conditions"), value: t("Lire"), href: "/terms" },
+              { isVersion: false, label: t("Confidentialité"), value: t("Lire"), href: "/privacy" },
+            ].map((item) =>
+              item.href ? (
+                <Link
+                  href={item.href}
+                  key={item.label}
+                  className="w-full flex items-center justify-between px-3 py-2.5 text-left"
                 >
-                  {item.value}
-                </span>
-              </button>
-            ))}
+                  <span className="text-sm text-foreground">{item.label}</span>
+                  <span className="text-xs text-primary font-semibold">{item.value}</span>
+                </Link>
+              ) : (
+                <div key={item.label} className="w-full flex items-center justify-between px-3 py-2.5 text-left">
+                  <span className="text-sm text-foreground">{item.label}</span>
+                  <span className="text-xs text-muted-foreground">{item.value}</span>
+                </div>
+              ),
+            )}
           </div>
         </div>
       </div>

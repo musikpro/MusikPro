@@ -57,10 +57,25 @@ export function LegalPage({
         </p>
       </header>
 
+      {sections.length > 3 ? (
+        <nav className="legal-toc" aria-label={t("Sommaire")}>
+          <p className="legal-toc-title">{t("Sommaire")}</p>
+          <ol>
+            {sections.map((section, index) => (
+              <li key={index}>
+                <a href={`#section-${index + 1}`}>{section.title}</a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      ) : null}
+
       <article className="legal-card">
         {sections.map((section, index) => (
-          <section className="legal-section" key={index}>
-            <h2>{section.title}</h2>
+          <section className="legal-section" id={`section-${index + 1}`} key={index}>
+            <h2>
+              {index + 1}. {section.title}
+            </h2>
             <div>{section.content}</div>
           </section>
         ))}
