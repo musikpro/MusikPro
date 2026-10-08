@@ -222,9 +222,10 @@ export default function StepRecipient() {
 
           <div className="story-name-row">
             <div className="story-recipient-field">
-              <label htmlFor="recipient-name">{t("Nom de la personne")}</label>
+              <label htmlFor="recipient-name">{t("Nom de la personne")}<span className="required-mark" aria-hidden="true">*</span></label>
               <input
                 id="recipient-name"
+                aria-required="true"
                 type="text"
                 value={demo.fields.recipientName}
                 maxLength={100}
@@ -274,7 +275,7 @@ export default function StepRecipient() {
           </div>
 
           <div className="story-relation-field">
-            <span>{t("Lien avec cette personne")}</span>
+            <span>{t("Lien avec cette personne")}<span className="required-mark" aria-hidden="true">*</span></span>
             <MusikSelect
               className="story-relation-select"
               icon="heart-handshake"
@@ -317,9 +318,10 @@ export default function StepRecipient() {
 
           <div className="story-name-row">
             <div className="story-recipient-field">
-              <label htmlFor="sender-name">{t("Votre nom")}</label>
+              <label htmlFor="sender-name">{t("Votre nom")}<span className="required-mark" aria-hidden="true">*</span></label>
               <input
                 id="sender-name"
+                aria-required="true"
                 type="text"
                 value={demo.fields.senderName}
                 maxLength={100}
