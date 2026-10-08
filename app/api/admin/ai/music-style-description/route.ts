@@ -52,6 +52,8 @@ export async function POST(request: Request) {
         { error: "Le fournisseur IA n’est pas encore configuré dans Capacités IA." },
         { status: 503 },
       );
+    if (code === "AI_BAD_FORMAT")
+      return NextResponse.json({ error: "La consigne générée n’avait pas le bon format. Réessaie." }, { status: 422 });
     if (code === "CONTENT_BLOCKED_RESULT")
       return NextResponse.json({ error: "Le résultat généré n’a pas pu être validé. Réessaie." }, { status: 422 });
     const failure = provider.provider === "anthropic" ? classifyAnthropicError(error) : classifyOpenAiError(error);

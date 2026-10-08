@@ -87,17 +87,64 @@ describe("stripLeadingPreamble", () => {
   });
 });
 
-describe("consigne trop courte", () => {
+describe("recherche puis rédaction (deux appels)", () => {
   beforeEach(() => runProviderTextTask.mockReset());
+  const good =
+    "Ivorian Zouglou, 100-125 BPM, congas, bass. Chanted lead lines, crowd choruses. Nouchi slang, call-and-response. Festive campus vibes.";
+  const commentary =
+    'Based on my research, "Slow" is best understood as a general tempo classification. The research shows that slow music typically ranges from 60-90 BPM.';
+  const notes = { id: "n", text: "- origin: Ivory Coast\n- 100-125 BPM", model: "m", webSearch: "used" };
 
-  it("redemande une fois et garde la version la plus complète", async () => {
-    const full =
-      "Ivorian Zouglou, 100-125 BPM, congas, bass. Chanted lead lines, crowd choruses. Nouchi slang, call-and-response. Festive campus vibes.";
+  it("cherche d'abord sur le web, puis rédige sans outil avec les notes", async () => {
     runProviderTextTask
-      .mockResolvedValueOnce({ id: "1", text: "Ivorian Zouglou, 100-125 BPM, congas. Chanted lead lines.", model: "m" })
-      .mockResolvedValueOnce({ id: "2", text: full, model: "m" });
+      .mockResolvedValueOnce(notes)
+      .mockResolvedValueOnce({ id: "w", text: good, model: "m", webSearch: "off" });
     const result = await generateMusicStyleDescription({ styleName: "Zouglou", kind: "ai" });
     expect(runProviderTextTask).toHaveBeenCalledTimes(2);
-    expect(result.text).toBe(full);
+    expect(runProviderTextTask.mock.calls[0][3]).toEqual({ webSearch: true });
+    expect(runProviderTextTask.mock.calls[1][3]).toEqual({ webSearch: false });
+    expect(runProviderTextTask.mock.calls[1][2]).toContain("- origin: Ivory Coast");
+    expect(result.text).toBe(good);
+    expect(result.webSearch).toBe("used");
+  });
+
+  it("redemande la rédaction si la réponse est un commentaire de recherche (style générique)", async () => {
+    runProviderTextTask
+      .mockResolvedValueOnce(notes)
+      .mockResolvedValueOnce({ id: "w1", text: commentary, model: "m", webSearch: "off" })
+      .mockResolvedValueOnce({ id: "w2", text: good, model: "m", webSearch: "off" });
+    const result = await generateMusicStyleDescription({ styleName: "Slow", kind: "ai" });
+    expect(runProviderTextTask).toHaveBeenCalledTimes(3);
+    expect(result.text).toBe(good);
+  });
+
+  it("redemande si la consigne a moins de 3 phrases", async () => {
+    runProviderTextTask
+      .mockResolvedValueOnce(notes)
+      .mockResolvedValueOnce({
+        id: "w1",
+        text: "Ivorian Zouglou, 100-125 BPM, congas. Chanted lead lines.",
+        model: "m",
+        webSearch: "off",
+      })
+      .mockResolvedValueOnce({ id: "w2", text: good, model: "m", webSearch: "off" });
+    const result = await generateMusicStyleDescription({ styleName: "Zouglou", kind: "ai" });
+    expect(result.text).toBe(good);
+  });
+
+  it("refuse (AI_BAD_FORMAT) une réponse qui n'est jamais une consigne : rien n'est mis dans le champ", async () => {
+    runProviderTextTask
+      .mockResolvedValueOnce(notes)
+      .mockResolvedValue({ id: "w", text: commentary, model: "m", webSearch: "off" });
+    await expect(generateMusicStyleDescription({ styleName: "Slow", kind: "ai" })).rejects.toThrow("AI_BAD_FORMAT");
+  });
+});
+
+describe("looksLikeStyleInstruction", () => {
+  it("reconnaît une consigne et rejette un commentaire", async () => {
+    const { looksLikeStyleInstruction } = await import("@/lib/ai/music-style-description");
+    expect(looksLikeStyleInstruction(STYLE_AI_REFERENCE_EXAMPLES[0].text)).toBe(true);
+    expect(looksLikeStyleInstruction("Based on my research, Pop is a style, 60-90 BPM.")).toBe(false);
+    expect(looksLikeStyleInstruction("Smooth vocals, gentle guitars.")).toBe(false);
   });
 });
