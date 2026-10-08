@@ -403,7 +403,7 @@ export default function MySongsGenerated() {
                       </div>
 
                       {/* Actions */}
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div className="song-version-actions flex items-center gap-1.5 flex-shrink-0">
                         <span className="text-xs text-muted-foreground">{v.plays}</span>
                         <button
                           type="button"

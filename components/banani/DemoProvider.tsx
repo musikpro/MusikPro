@@ -332,8 +332,16 @@ function useDemoState(
     };
   }, [isDemo, router]);
   const [songs, setSongs] = useState(() => defaults.songs);
-  const [favorites, setFavorites] = useState<(string | number)[]>(() => defaults.favorites);
-  const [versionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
+  const [demoFavorites, setFavorites] = useState<(string | number)[]>(() => defaults.favorites);
+  const [demoVersionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
+  // Compte réel : les favoris sont les « j'aime » par version enregistrés en base (`liked`), jamais un état local
+  // qui se perdrait au rechargement. La démo garde ses favoris locaux.
+  const versionFavorites = isDemo
+    ? demoVersionFavorites
+    : songs.flatMap((song) => song.versions.flatMap((version, index) => (version.liked ? [`${song.id}|${index}`] : [])));
+  const favorites = isDemo
+    ? demoFavorites
+    : songs.filter((song) => song.versions.some((version) => version.liked)).map((song) => song.id);
   const [readNotifications, setReadNotifications] = useState<number[]>([]);
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     "Génération terminée": true,
@@ -449,7 +457,7 @@ function useDemoState(
           cover: owned.coverUrl ?? null,
           duration: ownedVersion?.duration ?? "1m 32s",
           artist: profile.name,
-          likes: ownedVersion?.plays ?? 0,
+          likes: isDemo ? (ownedVersion?.plays ?? 0) : owned.versions.filter((version) => version.liked).length,
           audioUrl: ownedVersion?.audioUrl ?? null,
           status: ownedVersion?.status ?? "completed",
         }
@@ -576,40 +584,62 @@ function useDemoState(
     }
   };
   const toggle = (key: string) => setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
-  const toggleFavorite = (id: string | number) =>
-    setFavorites((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
+  /**
+   * Enregistre le « j'aime » d'une version (compte réel) : mise à jour immédiate, puis annulée avec un message si
+   * l'enregistrement échoue.
+   */
+  const persistVersionLiked = (songId: string | number, index: number, nextLiked: boolean) => {
+    const song = songs.find((s) => s.id === songId);
+    const jobId = song?.versions[index]?.jobId;
+    if (!song || !jobId) return;
+    const apply = (liked: boolean) =>
+      setSongs((prev) =>
+        prev.map((s) =>
+          s.id !== song.id
+            ? s
+            : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked } : v)) },
+        ),
+      );
+    apply(nextLiked);
+    void apiFetch(`/api/songs/${song.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "toggle-like", jobId, liked: nextLiked }),
+    }).catch(() => {
+      apply(!nextLiked);
+      notify(t("Impossible d’enregistrer ce favori pour le moment."));
+    });
+  };
+  /**
+   * Cœur d'une chanson entière (lecteur, page Favoris). Compte réel : une chanson est favorite dès qu'une de ses
+   * versions l'est ; on retire donc tous les favoris de la chanson, ou on ajoute la version en cours d'écoute.
+   */
+  const toggleFavorite = (id: string | number) => {
+    if (isDemo) {
+      setFavorites((prev) => (prev.includes(id) ? prev.filter((v) => v !== id) : [...prev, id]));
+      return;
+    }
+    const song = songs.find((s) => s.id === id);
+    if (!song) {
+      notify(t("Seules tes propres chansons peuvent être ajoutées aux favoris."));
+      return;
+    }
+    const likedIndexes = song.versions.flatMap((version, index) => (version.liked ? [index] : []));
+    if (likedIndexes.length) {
+      likedIndexes.forEach((index) => persistVersionLiked(song.id, index, false));
+      return;
+    }
+    const index = selectedSongId === song.id && song.versions[selectedVersion] ? selectedVersion : 0;
+    persistVersionLiked(song.id, index, true);
+  };
   // Keyed by the song's unique id, not its title: several songs (e.g. two separate
   // "Ma chanson — Anniversaire" generations) can share the exact same title, and a
   // title-based key made liking/playing one collide visually with every same-titled song's
   // version at the same index.
   const toggleVersion = (songId: string | number, index: number) => {
     if (!isDemo) {
-      const song = songs.find((s) => s.id === songId);
-      const version = song?.versions[index];
-      if (!song || !version?.jobId) return;
-      const nextLiked = !version.liked;
-      const jobId = version.jobId;
-      setSongs((prev) =>
-        prev.map((s) =>
-          s.id !== song.id
-            ? s
-            : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: nextLiked } : v)) },
-        ),
-      );
-      void apiFetch(`/api/songs/${song.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "toggle-like", jobId, liked: nextLiked }),
-      }).catch(() => {
-        setSongs((prev) =>
-          prev.map((s) =>
-            s.id !== song.id
-              ? s
-              : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked: !nextLiked } : v)) },
-          ),
-        );
-        notify(t("Impossible d’enregistrer ce favori pour le moment."));
-      });
+      const version = songs.find((s) => s.id === songId)?.versions[index];
+      if (version?.jobId) persistVersionLiked(songId, index, !version.liked);
       return;
     }
     const key = `${songId}|${index}`;
