@@ -381,43 +381,6 @@ export default function StepRecipient() {
         />
       </div>
 
-      {demo.occasionBlocks.showRecipient || demo.occasionBlocks.showSender ? (
-      <section className="recipient-tips mx-4 mt-4 mb-6" aria-labelledby="recipient-tips-title">
-        <div className="recipient-tips-title">
-          <span>
-            <Icon i="lightbulb" size={18} />
-          </span>
-          <div>
-            <h2 id="recipient-tips-title">{t("Pourquoi remplir cette partie ?")}</h2>
-            <p>{t("Ces précisions rendent la chanson plus naturelle et personnelle.")}</p>
-          </div>
-        </div>
-        <ul>
-          <li>
-            <Icon i="audio-lines" size={16} />
-            <span>
-              <strong>{t("Une meilleure prononciation")}</strong>
-              {t("Le nom est chanté plus clairement, notamment pour les prénoms africains.")}
-            </span>
-          </li>
-          <li>
-            <Icon i="heart" size={16} />
-            <span>
-              <strong>{t("Le bon ton émotionnel")}</strong>
-              {t("Le lien choisi adapte les mots à votre relation.")}
-            </span>
-          </li>
-          <li>
-            <Icon i="pencil" size={16} />
-            <span>
-              <strong>{t("Tu gardes le contrôle")}</strong>
-              {t("La prononciation proposée peut être corrigée avant de continuer.")}
-            </span>
-          </li>
-        </ul>
-      </section>
-      ) : null}
-
       <div className="creation-mobile-cta px-4 pb-8">
         <button
           type="button"
