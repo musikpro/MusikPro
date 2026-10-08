@@ -5421,6 +5421,12 @@ span.musik-user-avatar {
   margin-bottom: 10px;
   font-weight: 700;
 }
+/* Étoile rouge après le libellé d'un champ obligatoire de la création. */
+.required-mark {
+  margin-left: 3px;
+  color: #dc2626;
+  font-weight: 700;
+}
 /* Mention « (facultatif) » affichée à la suite du titre d'un champ non obligatoire de la création. */
 .optional-hint {
   margin-left: 5px;
