@@ -47,6 +47,10 @@ export function stripLeadingPreamble(text: string): string {
   return text.slice(colon + 1).trim();
 }
 
+function sentenceCount(text: string): number {
+  return text.split(/\.\s+|\.$/).filter((part) => part.trim().length > 0).length;
+}
+
 /** Retire un « Nom : » que le modèle aurait déjà écrit en tête, pour ne pas le dupliquer. */
 function stripLeadingStyleName(text: string, styleName: string): string {
   const escaped = styleName.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -140,21 +144,25 @@ export async function generateMusicStyleDescription(input: MusicStyleDescription
 
   // Consigne IA : le modèle cherche d'abord sur Internet de quel style il s'agit (repli sans recherche si le fournisseur
   // la refuse, signalé à l'écran). Description client : texte court, sans recherche.
-  const raw = await runProviderTextTask(provider, SYSTEM_INSTRUCTIONS, promptFor(input), {
+  const cleanAiText = (value: string) =>
+    clampToSentence(
+      stripLeadingPreamble(
+        value
+          .replace(/\s+/g, " ")
+          .replace(/\s+([,.;:])/g, "$1")
+          .trim(),
+      ),
+      AI_BODY_MAX,
+    );
+  let raw = await runProviderTextTask(provider, SYSTEM_INSTRUCTIONS, promptFor(input), {
     webSearch: input.kind === "ai",
   });
-  const lengthClamped =
-    input.kind === "ai"
-      ? clampToSentence(
-          stripLeadingPreamble(
-            raw.text
-              .replace(/\s+/g, " ")
-              .replace(/\s+([,.;:])/g, "$1")
-              .trim(),
-          ),
-          AI_BODY_MAX,
-        )
-      : clampToLength(raw.text, MAX_LENGTH.client);
+  // Les exemples validés font 3 ou 4 phrases : une consigne plus courte (vocals/ambiance oubliés) est redemandée une fois.
+  if (input.kind === "ai" && sentenceCount(cleanAiText(raw.text)) < 3) {
+    const retry = await runProviderTextTask(provider, SYSTEM_INSTRUCTIONS, promptFor(input), { webSearch: true });
+    if (sentenceCount(cleanAiText(retry.text)) >= sentenceCount(cleanAiText(raw.text))) raw = retry;
+  }
+  const lengthClamped = input.kind === "ai" ? cleanAiText(raw.text) : clampToLength(raw.text, MAX_LENGTH.client);
   // Consigne IA : le nom du style est déjà dans la première phrase ; on retire seulement un éventuel « Nom : » en
   // tête que le modèle aurait écrit malgré la consigne. Client : cinq mots.
   const text =

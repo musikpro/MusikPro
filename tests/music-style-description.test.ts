@@ -86,3 +86,18 @@ describe("stripLeadingPreamble", () => {
     expect(stripLeadingPreamble(text)).toBe(text);
   });
 });
+
+describe("consigne trop courte", () => {
+  beforeEach(() => runProviderTextTask.mockReset());
+
+  it("redemande une fois et garde la version la plus complète", async () => {
+    const full =
+      "Ivorian Zouglou, 100-125 BPM, congas, bass. Chanted lead lines, crowd choruses. Nouchi slang, call-and-response. Festive campus vibes.";
+    runProviderTextTask
+      .mockResolvedValueOnce({ id: "1", text: "Ivorian Zouglou, 100-125 BPM, congas. Chanted lead lines.", model: "m" })
+      .mockResolvedValueOnce({ id: "2", text: full, model: "m" });
+    const result = await generateMusicStyleDescription({ styleName: "Zouglou", kind: "ai" });
+    expect(runProviderTextTask).toHaveBeenCalledTimes(2);
+    expect(result.text).toBe(full);
+  });
+});
