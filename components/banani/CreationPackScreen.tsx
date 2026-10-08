@@ -7,7 +7,7 @@ import { apiFetch } from "@/lib/api/client";
 import { translateApiMessage } from "@/lib/api/error-messages";
 import CreationTopNav from "./CreationTopNav";
 import Icon from "./Icon";
-import MusikSelect from "./MusikSelect";
+import CurrencySelect from "./CurrencySelect";
 import { useDemo } from "./DemoProvider";
 import { CREDITS_PER_GENERATION, getCreditsConsumed, getGenerationCount } from "@/lib/credit-plans/catalog";
 
@@ -81,19 +81,14 @@ export default function CreationPackScreen() {
             <h1>{t("Choisis tes crédits")}</h1>
             <p>{t("Sélectionne l’offre adaptée au nombre de générations souhaité.")}</p>
           </div>
-          <MusikSelect
-            className="pack-currency-select"
-            icon="coins"
-            ariaLabel={t("Devise")}
-            showOptionDisplays={false}
-            showSelectionMark={false}
+          <CurrencySelect
+            currencies={demo.currencies}
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
-            options={demo.currencies.map((currency) => ({
-              value: currency.code,
-              label: currency.label,
-              display: currency.symbol,
-            }))}
+            auto={demo.currencyAuto}
+            detectedCountry={demo.detectedCountry}
+            detectedCurrency={demo.detectedCurrency}
+            onResetAuto={demo.resetCurrencyToAuto}
           />
         </header>
 

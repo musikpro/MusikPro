@@ -2280,6 +2280,184 @@
   flex: 0 0 auto;
 }
 
+.admin-combobox {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.admin-combobox-field {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.admin-combobox-field > input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 40px 10px 13px;
+  border: 1px solid var(--admin-border);
+  border-radius: 13px;
+  color: var(--admin-foreground);
+  background: var(--admin-background);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.admin-combobox-field > input::placeholder {
+  color: var(--admin-muted);
+  font-weight: 650;
+}
+
+.admin-combobox-field > svg {
+  position: absolute;
+  right: 13px;
+  color: var(--admin-muted);
+  pointer-events: none;
+  transition: transform 160ms ease;
+}
+
+.admin-combobox.is-open .admin-combobox-field > svg {
+  transform: rotate(180deg);
+}
+
+.admin-app .admin-combobox-field > input:focus,
+.admin-app .admin-combobox-field > input:focus-visible,
+.admin-combobox.is-open .admin-combobox-field > input {
+  border-color: var(--admin-primary);
+  outline: 0;
+  box-shadow: 0 0 0 4px rgb(242 101 34 / 9%);
+}
+
+.admin-combobox-menu {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  display: grid;
+  max-height: min(300px, 50dvh);
+  gap: 2px;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid #e8e3dc;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow:
+    0 20px 48px rgb(70 43 23 / 18%),
+    0 3px 10px rgb(70 43 23 / 8%);
+  list-style: none;
+  scrollbar-width: thin;
+}
+
+.admin-combobox-menu > li {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  color: #1a1a1a;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.admin-combobox-menu > li > small {
+  color: var(--admin-muted);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.admin-combobox-menu > li.is-highlighted {
+  color: #d94f11;
+  background: #fff0e5;
+}
+
+.admin-combobox-menu > li[aria-selected="true"] {
+  color: #d94f11;
+}
+
+.admin-combobox-menu > li.admin-combobox-empty {
+  color: var(--admin-muted);
+  cursor: default;
+}
+
+/* Champs validés : pastille verte (valide) ou rouge (à corriger) devant la valeur, message dessous. */
+.admin-validated-field {
+  position: relative;
+}
+
+.admin-validated-field > input,
+.admin-validated-field .admin-combobox-field > input {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.admin-validated-field.is-valid > input,
+.admin-validated-field.is-valid .admin-combobox-field > input,
+.admin-validated-field.is-invalid > input,
+.admin-validated-field.is-invalid .admin-combobox-field > input {
+  padding-left: 44px;
+}
+
+.admin-validated-icon {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 12px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.admin-validated-field.is-valid .admin-validated-icon {
+  background: #16a34a;
+}
+
+.admin-validated-field.is-invalid .admin-validated-icon {
+  background: #dc2626;
+}
+
+.admin-validated-field.is-valid > input,
+.admin-validated-field.is-valid .admin-combobox-field > input {
+  border-color: #16a34a;
+}
+
+.admin-validated-field.is-invalid > input,
+.admin-validated-field.is-invalid .admin-combobox-field > input {
+  border-color: #dc2626;
+}
+
+.admin-validated-message {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.admin-validated-message.is-valid {
+  color: #15803d;
+}
+
+.admin-validated-message.is-invalid {
+  color: #b91c1c;
+}
+
+.admin-validated-message.is-warning {
+  color: #b45309;
+}
+
 .admin-choice-fieldset {
   margin: 0;
   padding: 16px 0 0;

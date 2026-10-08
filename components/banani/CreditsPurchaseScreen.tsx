@@ -11,7 +11,7 @@ export const screenSize = "mobile";
 import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
-import MusikSelect from "./MusikSelect";
+import CurrencySelect from "./CurrencySelect";
 import { CREDITS_PER_GENERATION, getCreditsConsumed, getGenerationCount } from "@/lib/credit-plans/catalog";
 
 // Fonction (et non constante de module) : t() doit s'exécuter au rendu, dans la langue active.
@@ -118,22 +118,14 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
               </span>
             </p>
           </div>
-          <MusikSelect
-            className="pack-currency-select"
-            icon="coins"
-            ariaLabel={t("Devise")}
-            showOptionDisplays={false}
-            showSelectionMark={false}
-            portal
-            portalWidth={178}
-            menuClassName="pack-currency-menu"
+          <CurrencySelect
+            currencies={demo.currencies}
             value={demo.choices.currency}
             onChange={(value) => demo.choose("currency", value)}
-            options={demo.currencies.map((currency) => ({
-              value: currency.code,
-              label: currency.label,
-              display: currency.symbol,
-            }))}
+            auto={demo.currencyAuto}
+            detectedCountry={demo.detectedCountry}
+            detectedCurrency={demo.detectedCurrency}
+            onResetAuto={demo.resetCurrencyToAuto}
           />
         </div>
         <div className="pack-grid">

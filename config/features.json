@@ -837,6 +837,8 @@
         "lib/ai/text-generation.ts",
         "lib/ai/music-style-description.ts",
         "lib/ai/accent-hint.ts",
+        "lib/ai/phone-prefix.ts",
+        "app/api/admin/ai/phone-prefix/route.ts",
         "app/api/admin/ai/accent-hint/route.ts",
         "components/admin/AdminAccentHintField.tsx",
         "db/migrations/0073_accent_country.sql",
@@ -864,7 +866,8 @@
         "/api/ai/generate",
         "/api/ai/pronunciation",
         "/api/admin/ai/music-style-description",
-        "/api/admin/ai/accent-hint"
+        "/api/admin/ai/accent-hint",
+        "/api/admin/ai/phone-prefix"
       ],
       "dependsOn": [
         "database",

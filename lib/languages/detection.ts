@@ -152,3 +152,14 @@ export async function detectCurrency(headersList: Headers): Promise<CreditCurren
   const { currencyCode: override } = await resolveCountryLanguageRow(country);
   return resolveCurrencyForCountry(country, override ? { [country]: override } : {}, await getCurrencyCatalog());
 }
+
+/**
+ * Pays détecté du visiteur (code ISO, ex. « CI »), ou null : sert uniquement à afficher « Détecté depuis : CI » dans le
+ * sélecteur de monnaie. Même détection que la langue et la monnaie (en-tête Vercel, sinon adresse IP) ; désactivée
+ * avec la détection automatique.
+ */
+export async function detectCountryCode(headersList: Headers): Promise<string | null> {
+  const { enabled, ttlSeconds, fallbackCountryCode } = await resolveLocalizationSettings();
+  if (!enabled) return null;
+  return resolveVisitorCountryCode(headersList, ttlSeconds, fallbackCountryCode);
+}

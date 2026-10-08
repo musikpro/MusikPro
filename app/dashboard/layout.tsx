@@ -20,7 +20,7 @@ import { getActiveOccasionFields } from "@/lib/occasion-fields/server";
 import { listDiscoverSongs } from "@/lib/discover/server";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
 import { getActivePhonePrefixes } from "@/lib/phone-prefixes/server";
-import { detectCurrency } from "@/lib/languages/detection";
+import { detectCountryCode, detectCurrency } from "@/lib/languages/detection";
 import {
   readLanguagePreference,
   readRequestLocale,
@@ -87,6 +87,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     generationScreen,
     storeLinks,
     balance,
+    detectedCountry,
   ] = await Promise.all([
     getActiveCreditPlans({ demo }),
     getActiveOccasions({ demo }),
@@ -111,6 +112,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           session.user.id,
           db.select({ balance: credits.balance }).from(credits).where(eq(credits.userId, session.user.id)).limit(1),
         ).then((rows) => Number(rows[0]?.balance ?? 0)),
+    detectCountryCode(requestHeaders),
   ]);
   // The language comes from the URL prefix; one that is not an active catalog language is a 404.
   if (!detectedInterfaceLanguage) notFound();
@@ -139,6 +141,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialDetectedInterfaceLanguage={detectedInterfaceLanguage}
       initialPhonePrefixes={phonePrefixOptions}
       initialDetectedCurrency={detectedCurrency}
+      initialDetectedCountry={detectedCountry}
       initialCurrencies={currencyOptions}
       persistenceId={demo ? "demo" : session.user.id}
       initialProfile={{
