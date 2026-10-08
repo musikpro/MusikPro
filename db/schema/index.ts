@@ -417,6 +417,8 @@ export const languageAccents = pgTable(
       .notNull()
       .references(() => languages.code, { onDelete: "cascade", onUpdate: "cascade" }),
     name: text("name").notNull(),
+    /** Pays de l'accent, saisi en français par le propriétaire (« Côte d'Ivoire ») : sert à générer la consigne anglaise. */
+    country: text("country").notNull().default(""),
     aiHint: text("ai_hint").notNull(),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),

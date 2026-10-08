@@ -7,16 +7,28 @@ const IVORIAN =
 
 describe("buildVocalHint — accent de la langue chantée", () => {
   it("garde le comportement historique sans accent", () => {
-    expect(buildVocalHint("Français", "Femme")).toBe("female lead vocals, sung in French");
-    expect(buildVocalHint("Anglais", "Homme", "  ")).toBe("male lead vocals, sung in English");
+    expect(buildVocalHint("Français", "Femme")).toBe(
+      "female lead vocals, sung in French, avoid European or Western accents",
+    );
+    expect(buildVocalHint("Anglais", "Homme", "  ")).toBe(
+      "male lead vocals, sung in English, avoid European or Western accents",
+    );
   });
 
   it("ajoute l'accent en anglais à la langue chantée", () => {
     expect(buildVocalHint("Français", "Homme", IVORIAN)).toBe(`male lead vocals, sung in French with ${IVORIAN}`);
   });
 
-  it("n'ajoute pas d'accent à une langue inconnue", () => {
-    expect(buildVocalHint("Wolof", "Duo", IVORIAN)).toBe("male and female duet vocals");
+  it("n'ajoute pas d'accent à une langue inconnue (mais garde l'évitement des accents européens)", () => {
+    expect(buildVocalHint("Wolof", "Duo", IVORIAN)).toBe(
+      "male and female duet vocals, avoid European or Western accents",
+    );
+  });
+
+  it("ajoute l'évitement des accents européens/occidentaux après un accent qui ne le dit pas", () => {
+    expect(buildVocalHint("Français", "Femme", "natural Ivorian French accent")).toBe(
+      "female lead vocals, sung in French with natural Ivorian French accent, avoid European or Western accents",
+    );
   });
 
   it("garde le prompt complet sous la limite de Musicful avec un accent au maximum", () => {

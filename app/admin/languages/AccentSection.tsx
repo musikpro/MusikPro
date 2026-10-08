@@ -1,7 +1,7 @@
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import Icon from "@/components/banani/Icon";
-import { ACCENT_HINT_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
+import AdminAccentHintField from "@/components/admin/AdminAccentHintField";
 import type { languageAccents, languages } from "@/db/schema";
 import { deleteLanguageAccent, saveLanguageAccent, toggleLanguageAccent } from "./accents-actions";
 
@@ -9,19 +9,18 @@ type Accent = typeof languageAccents.$inferSelect;
 type Language = typeof languages.$inferSelect;
 type StyleOption = { id: string; name: string };
 
-const HINT_PLACEHOLDER =
-  "Ex. natural Ivorian French accent, Abidjan urban vocal style, authentic Côte d’Ivoire pronunciation. Avoid European French accent.";
-
 function AccentFields({
   accent,
   languages: languageRows,
   styles,
   linkedStyleIds,
+  languageNames,
 }: {
   accent?: Accent;
   languages: Language[];
   styles: StyleOption[];
   linkedStyleIds: Set<string>;
+  languageNames: Record<string, string>;
 }) {
   const key = accent?.id ?? "new";
   return (
@@ -52,23 +51,29 @@ function AccentFields({
           }))}
         />
       </div>
-      <label className="admin-editor-field is-wide">
-        <span>Consigne envoyée à Musicful, en anglais ({ACCENT_HINT_MAX_LENGTH} caractères max.)</span>
-        <textarea
-          name="aiHint"
-          required
-          rows={3}
-          maxLength={ACCENT_HINT_MAX_LENGTH}
-          defaultValue={accent?.aiHint}
-          placeholder={HINT_PLACEHOLDER}
+      <label className="admin-editor-field">
+        <span>Pays de l’accent (en français)</span>
+        <input
+          name="country"
+          minLength={2}
+          maxLength={80}
+          defaultValue={accent?.country}
+          placeholder="Ex. Côte d’Ivoire"
         />
       </label>
+      <AdminAccentHintField key={`${key}-hint`} defaultValue={accent?.aiHint} languageNames={languageNames} />
       <fieldset className="admin-editor-field is-wide">
         <legend>Styles musicaux qui utilisent cet accent</legend>
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 18px" }}>
           {styles.map((style) => (
             <label className="admin-check-control" key={`${key}-${style.id}`}>
-              <input type="checkbox" name="styleIds" value={style.id} defaultChecked={linkedStyleIds.has(style.id)} />
+              <input
+                type="checkbox"
+                name="styleIds"
+                value={style.id}
+                data-style-name={style.name}
+                defaultChecked={linkedStyleIds.has(style.id)}
+              />
               <span>{style.name}</span>
             </label>
           ))}
@@ -110,6 +115,7 @@ export default function AccentSection({
   links: Array<{ styleId: string; accentId: string }>;
 }) {
   const lyricsLanguages = languageRows.filter((language) => language.lyricsEnabled);
+  const languageNames = Object.fromEntries(languageRows.map((language) => [language.code, language.name]));
   const styleIdsByAccent = new Map<string, Set<string>>();
   for (const link of links) {
     if (!styleIdsByAccent.has(link.accentId)) styleIdsByAccent.set(link.accentId, new Set());
@@ -128,9 +134,12 @@ export default function AccentSection({
         <div>
           <h2>Accents vocaux</h2>
           <p>
-            Précise l’origine de la langue chantée (par exemple français ivoirien, anglais ghanéen). La consigne,
-            rédigée en anglais, est ajoutée à la demande envoyée à Musicful quand le client choisit un des styles cochés
-            avec cette langue. Le client ne voit jamais ces accents. Un style a au plus un accent par langue.
+            Précise l’origine de la langue chantée (par exemple français ivoirien, anglais ghanéen). Indique le pays en
+            français, coche les styles concernés puis clique sur « Générer avec l’IA » : l’IA cherche sur Internet et
+            rédige la consigne en anglais. Cette consigne, prioritaire, est ajoutée à la demande envoyée à l’IA musicale
+            quand le client choisit un des styles cochés avec cette langue. Pour toutes les chansons, quel que soit le
+            style, « éviter les accents européens ou occidentaux » est ajouté automatiquement. Le client ne voit jamais
+            ces accents. Un style a au plus un accent par langue.
           </p>
         </div>
         <span className="admin-status is-success">
@@ -152,12 +161,14 @@ export default function AccentSection({
                   </span>
                 </div>
                 <h3>{accent.name}</h3>
+                {accent.country ? <p className="admin-muted">{accent.country}</p> : null}
                 <AdminActionForm id={formId} action={saveLanguageAccent} className="admin-editor-grid">
                   <AccentFields
                     accent={accent}
                     languages={languageRows}
                     styles={styles}
                     linkedStyleIds={styleIdsByAccent.get(accent.id) ?? new Set()}
+                    languageNames={languageNames}
                   />
                 </AdminActionForm>
                 <footer className="admin-style-actions">
@@ -192,7 +203,12 @@ export default function AccentSection({
           <div className="admin-editor-field is-wide">
             <h3>Ajouter un accent</h3>
           </div>
-          <AccentFields languages={lyricsLanguages} styles={styles} linkedStyleIds={new Set()} />
+          <AccentFields
+            languages={lyricsLanguages}
+            styles={styles}
+            linkedStyleIds={new Set()}
+            languageNames={languageNames}
+          />
           <div className="admin-editor-actions is-wide">
             <button type="submit">
               <Icon i="plus" size={16} /> Ajouter l’accent

@@ -205,6 +205,14 @@ export const musicStyleDescriptionRequestSchema = z.object({
 
 export type MusicStyleDescriptionRequest = z.infer<typeof musicStyleDescriptionRequestSchema>;
 
+export const accentHintRequestSchema = z.object({
+  languageName: z.string().trim().min(2).max(60),
+  country: z.string().trim().min(2).max(80),
+  styleNames: z.array(z.string().trim().min(1).max(60)).max(30).default([]),
+});
+
+export type AccentHintRequest = z.infer<typeof accentHintRequestSchema>;
+
 export const pronunciationRequestSchema = z.object({
   name: z.string().trim().min(1).max(120),
   language: z.string().trim().max(50).optional().default(""),

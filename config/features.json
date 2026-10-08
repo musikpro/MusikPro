@@ -836,6 +836,10 @@
         "lib/ai/moderation.ts",
         "lib/ai/text-generation.ts",
         "lib/ai/music-style-description.ts",
+        "lib/ai/accent-hint.ts",
+        "app/api/admin/ai/accent-hint/route.ts",
+        "components/admin/AdminAccentHintField.tsx",
+        "db/migrations/0073_accent_country.sql",
         "lib/validation/ai.ts",
         "app/api/ai/generate/route.ts",
         "app/api/ai/pronunciation/route.ts",
@@ -859,7 +863,8 @@
       "routes": [
         "/api/ai/generate",
         "/api/ai/pronunciation",
-        "/api/admin/ai/music-style-description"
+        "/api/admin/ai/music-style-description",
+        "/api/admin/ai/accent-hint"
       ],
       "dependsOn": [
         "database",

@@ -83,8 +83,16 @@ export function buildVocalHint(language: string, voice: string, accentHint = "")
   // La variante d'accent (consigne anglaise du propriétaire, liée au style) n'a de sens qu'avec une langue reconnue.
   const accent = accentHint.trim();
   const sung = languagePart ? `sung in ${languagePart}${accent ? ` with ${accent}` : ""}` : "";
-  return [voicePart, sung].filter(Boolean).join(", ");
+  // Une consigne d'accent qui dit déjà d'éviter l'accent européen/occidental n'est pas répétée.
+  const alreadyAvoids = Boolean(languagePart) && /\b(european|western)\b/i.test(accent);
+  return [voicePart, sung, alreadyAvoids ? "" : AVOID_WESTERN_ACCENT_HINT].filter(Boolean).join(", ");
 }
+
+/**
+ * Ajoutée à la consigne vocale de TOUTES les chansons (propriétaire, tous styles) : le public visé est africain, la voix
+ * ne doit pas prendre un accent européen ou occidental. Placée dans « Vocals: », jamais tronquée.
+ */
+export const AVOID_WESTERN_ACCENT_HINT = "avoid European or Western accents";
 
 const STRICT_STYLE_SENTENCE =
   " Stay faithful to this style's authentic rhythmic, instrumental and vocal codes, without drifting toward a more generic genre.";
