@@ -864,6 +864,13 @@
   height: max(100%, 44px);
 }
 
+/* Icônes voisines d'une ligne de version (favori, partager, télécharger) : la zone de clic de 44 px ci-dessus
+   les faisait se recouvrir et un clic sur le cœur déclenchait « Partager ». La largeur de zone est limitée à
+   l'icône + la moitié de l'espace de chaque côté, la hauteur reste à 44 px. */
+.banani-copy .song-version-actions button::after {
+  width: calc(100% + 6px);
+}
+
 .banani-copy .demo-toggle {
   min-height: 24px;
 }

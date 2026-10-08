@@ -152,9 +152,9 @@ export default function SongPlayerScreen() {
             onClick={() => demo.toggleFavorite(currentSong.id)}
             aria-pressed={demo.favorites.includes(currentSong.id)}
             aria-label={translateTemplate("Favori {title}", { title: currentSong.title })}
-            className="flex items-center gap-1.5 text-primary font-semibold"
+            className={`flex items-center gap-1.5 font-semibold ${demo.favorites.includes(currentSong.id) ? "text-red-400" : "text-primary"}`}
           >
-            <Icon i="heart" size={18} />
+            <Icon i="heart" size={18} className={demo.favorites.includes(currentSong.id) ? "fill-current" : ""} />
             <span className="text-sm">{currentSong.likes}</span>
           </button>
         </div>
