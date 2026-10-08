@@ -2691,16 +2691,26 @@
 }
 
 .pack-purchase-heading {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 6px 10px;
   margin-bottom: 12px;
 }
 
+/* Le titre et la note deviennent des éléments de la grille : titre et pastille sur la même ligne, note dessous. */
 .pack-purchase-heading .pack-purchase-title {
-  flex: 1 1 200px;
+  display: contents;
+}
+
+.pack-purchase-heading .pack-purchase-title > :not(h2) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.pack-purchase-heading .currency-select {
+  grid-column: 2;
+  grid-row: 1;
 }
 
 .pack-currency-select {
@@ -7653,21 +7663,20 @@ button.mobile-menu-brand {
 .currency-select {
   position: relative;
   flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .currency-select-trigger {
   display: inline-flex;
-  min-width: 176px;
-  min-height: 48px;
+  min-height: 46px;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 0 16px;
+  gap: 8px;
+  padding: 0 10px;
   border: 1.5px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
   border-radius: 999px;
   background: var(--color-card);
   color: var(--color-foreground);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -7683,7 +7692,7 @@ button.mobile-menu-brand {
 }
 
 .currency-select-flag {
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1;
 }
 
