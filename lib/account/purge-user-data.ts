@@ -5,6 +5,7 @@ import { getServiceDb } from "@/db";
 import {
   creationDrafts,
   discoverHiddenSongs,
+  discoverSharedSongs,
   landingSongFeatures,
   musicGenerationJobs,
   notificationPreferences,
@@ -37,6 +38,7 @@ export async function purgeUserData(userId: string): Promise<void> {
     .from(musicGenerationJobs)
     .where(eq(musicGenerationJobs.userId, userId));
   await db.batch([
+    db.delete(discoverSharedSongs).where(eq(discoverSharedSongs.userId, userId)),
     db.delete(discoverHiddenSongs).where(inArray(discoverHiddenSongs.songGroupId, ownGroups)),
     db.delete(discoverHiddenSongs).where(inArray(discoverHiddenSongs.songGroupId, ownJobGroups)),
     db.delete(landingSongFeatures).where(inArray(landingSongFeatures.songGroupId, ownGroups)),

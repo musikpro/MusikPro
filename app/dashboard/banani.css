@@ -5759,6 +5759,38 @@ span.musik-user-avatar {
   line-height: 1.45;
 }
 
+.checkout-share-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 15px;
+  background: var(--color-card);
+  cursor: pointer;
+}
+
+.checkout-share-option input {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+  margin-top: 1px;
+  accent-color: var(--color-primary);
+}
+
+.checkout-share-option strong {
+  display: block;
+  font-size: 13px;
+}
+
+.checkout-share-option small {
+  display: block;
+  margin-top: 2px;
+  color: var(--color-muted-foreground);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
 .checkout-information-cta,
 .creation-pack-cta {
   display: grid;

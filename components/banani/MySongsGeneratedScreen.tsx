@@ -523,6 +523,22 @@ export default function MySongsGenerated() {
                 </button>
               </div>
 
+              {!demo.isDemo && (
+                <div className="song-discover-action px-4 pb-3">
+                  <button
+                    type="button"
+                    data-demo-ready="true"
+                    aria-pressed={Boolean(song.sharedToDiscover)}
+                    disabled={!primaryVersion?.audioUrl}
+                    onClick={() => void demo.setSongShared(String(song.id), !song.sharedToDiscover)}
+                    className={`w-full flex items-center justify-center gap-1.5 rounded-full border px-3 py-2 text-xs font-semibold ${song.sharedToDiscover ? "border-primary bg-primary/10 text-primary" : "border-border bg-input text-foreground"} ${!primaryVersion?.audioUrl ? "opacity-50" : ""}`}
+                  >
+                    <Icon i="library" size={14} />
+                    {song.sharedToDiscover ? t("Retirer de Découvrir") : t("Partager dans Découvrir")}
+                  </button>
+                </div>
+              )}
+
               {/* Card Footer Actions */}
               <div className="border-t border-border mx-4 mb-3" />
               <div className="song-card-actions px-4 pb-3">

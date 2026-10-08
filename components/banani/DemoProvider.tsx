@@ -38,6 +38,7 @@ export type SongGroupResponse = {
   status: "processing" | "completed" | "failed";
   createdAt: string;
   coverUrl: string | null;
+  sharedToDiscover?: boolean;
   versions: Array<{
     jobId: string;
     label: string;
@@ -66,6 +67,7 @@ function mapSongGroup(song: SongGroupResponse): WorkspaceSong {
     lyrics: song.lyrics || "",
     status: song.status,
     coverUrl: song.coverUrl,
+    sharedToDiscover: Boolean(song.sharedToDiscover),
     versions: song.versions.map((v) => ({
       jobId: v.jobId,
       label: v.label,
@@ -364,6 +366,8 @@ function useDemoState(
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [lyricsPending, setLyricsPending] = useState(false);
   const [removedDiscoverIds, setRemovedDiscoverIds] = useState<string[]>([]);
+  // Case « Partager dans Découvrir » de la création : décochée à chaque nouvelle création (rien n'est public sans ce choix).
+  const [shareToDiscover, setShareToDiscover] = useState(false);
   const library = isDemo
     ? [
         ...demoLibrarySongs,
@@ -410,6 +414,16 @@ function useDemoState(
       notify(t("Chanson retirée de Découvrir."));
     } catch (error) {
       notify(error instanceof ApiClientError ? error.message : t("Impossible de retirer cette chanson pour le moment."));
+    }
+  };
+  /** Interrupteur « Partager dans Découvrir » d'une chanson de « Mes chansons » (compte réel). */
+  const setSongShared = async (songGroupId: string, shared: boolean) => {
+    try {
+      await apiFetch(`/api/songs/${songGroupId}/discover`, { method: shared ? "POST" : "DELETE", timeoutMs: 15_000 });
+      setSongs((prev) => prev.map((song) => (song.id === songGroupId ? { ...song, sharedToDiscover: shared } : song)));
+      notify(shared ? t("Chanson partagée dans Découvrir.") : t("Chanson retirée de Découvrir."));
+    } catch (error) {
+      notify(error instanceof ApiClientError ? error.message : t("Impossible de modifier le partage pour le moment."));
     }
   };
   const songPacks = initialCreditPlans;
@@ -832,11 +846,13 @@ function useDemoState(
           language: choices.language,
           lyrics: fields.lyrics,
           occasionDetails: buildOccasionDetails(occasionFields, details),
+          shareToDiscover,
         }),
         timeoutMs: 30_000,
       });
       setBalance(result.newBalance);
       setSelectedSongId(result.songGroupId);
+      setShareToDiscover(false);
       return { songGroupId: result.songGroupId };
     } catch (error) {
       notify(
@@ -937,6 +953,9 @@ function useDemoState(
     setDetail,
     occasionBlocks,
     removeFromDiscover,
+    setSongShared,
+    shareToDiscover,
+    setShareToDiscover,
     interfaceLanguages,
     lyricsLanguages,
     phonePrefixes,

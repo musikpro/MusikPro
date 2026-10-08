@@ -196,7 +196,7 @@ export default async function TermsPage({ searchParams }: PageProps) {
               </p>
               <p>
                 {t(
-                  "Par défaut, chaque chanson terminée apparaît aussi dans la bibliothèque Découvrir, visible par les autres utilisateurs connectés. Ils peuvent l’écouter, mais pas la télécharger ni la partager, et votre nom n’est pas affiché. Le titre d’une chanson contient le prénom du destinataire, l’occasion, le style et le mois de création : n’utilisez pas de nom que vous ne souhaitez pas voir affiché. Vous pouvez retirer une chanson de Découvrir à tout moment depuis sa page.",
+                  "Une chanson n’apparaît dans la bibliothèque Découvrir que si vous choisissez de la partager (case à cocher lors de la création, ou bouton sur la chanson dans Mes chansons) ; par défaut, rien n’est partagé. Elle est alors visible par les autres utilisateurs connectés, qui peuvent l’écouter mais pas la télécharger ni la partager, et votre nom n’est pas affiché. Le titre d’une chanson contient le prénom du destinataire, l’occasion, le style et le mois de création : ne partagez pas une chanson dont le titre contient un nom que vous ne souhaitez pas voir affiché. Vous pouvez retirer une chanson de Découvrir à tout moment depuis sa page.",
                 )}
               </p>
               <p>

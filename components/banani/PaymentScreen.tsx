@@ -47,8 +47,7 @@ export default function PaymentScreen() {
     });
   };
 
-  const hasEnoughCredits =
-    !isCreditsPurchase && (demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION);
+  const hasEnoughCredits = !isCreditsPurchase && (demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION);
 
   const handleContinue = () => {
     const parsed = buildDemoPaymentSchema(demo.phonePrefixes).safeParse({
@@ -218,6 +217,25 @@ export default function PaymentScreen() {
             <p>{t("Elles servent uniquement à préparer la commande et à t’informer du suivi de la chanson.")}</p>
           </div>
         </aside>
+
+        {!isCreditsPurchase && (
+          <label className="checkout-share-option" htmlFor="share-to-discover">
+            <input
+              id="share-to-discover"
+              type="checkbox"
+              checked={demo.shareToDiscover}
+              onChange={(event) => demo.setShareToDiscover(event.target.checked)}
+            />
+            <span>
+              <strong>{t("Partager ma chanson dans Découvrir")}</strong>
+              <small>
+                {t(
+                  "Les autres utilisateurs pourront l’écouter. Tu peux changer d’avis à tout moment dans Mes chansons.",
+                )}
+              </small>
+            </span>
+          </label>
+        )}
       </div>
 
       <div className="creation-mobile-cta checkout-information-cta">

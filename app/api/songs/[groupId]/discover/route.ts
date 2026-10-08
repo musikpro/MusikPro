@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { getSongGroupForUser } from "@/lib/ai/songs";
-import { hideDiscoverSong, restoreDiscoverSong } from "@/lib/discover/server";
+import { restoreDiscoverSong, shareDiscoverSong, unshareDiscoverSong } from "@/lib/discover/server";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { rejectCrossSiteMutation } from "@/lib/security/request-guards";
 import { writeAuditLog } from "@/lib/security/audit";
@@ -13,8 +13,8 @@ type Ctx = { params: Promise<{ groupId: string }> };
 const groupIdSchema = z.string().uuid();
 
 /**
- * Every completed song appears in the client "Découvrir" page automatically. DELETE lets the song's
- * owner remove it from there, POST puts it back — the song itself and its public link are untouched.
+ * "Découvrir" est sur demande : une chanson n'y apparaît que si son créateur la partage. POST la partage, DELETE la
+ * retire — la chanson elle-même et son lien public ne changent pas.
  */
 async function setListed(request: Request, ctx: Ctx, listed: boolean) {
   const originFailure = rejectCrossSiteMutation(request);
@@ -37,17 +37,19 @@ async function setListed(request: Request, ctx: Ctx, listed: boolean) {
   if (!song) return NextResponse.json({ error: "Chanson introuvable." }, { status: 404 });
 
   if (listed) {
-    const restored = await restoreDiscoverSong(parsedId.data, false);
-    if (!restored)
+    // Une chanson retirée par l'équipe (modération) ne peut pas être remise par son créateur.
+    const allowed = await restoreDiscoverSong(parsedId.data, false);
+    if (!allowed)
       return NextResponse.json(
         { error: "Cette chanson a été retirée de Découvrir par l’équipe MusikPro." },
         { status: 403 },
       );
+    await shareDiscoverSong(parsedId.data, session.user.id);
   } else {
-    await hideDiscoverSong(parsedId.data, "owner");
+    await unshareDiscoverSong(parsedId.data);
   }
   await writeAuditLog({
-    action: listed ? "discover.song.restored" : "discover.song.removed",
+    action: listed ? "discover.song.shared" : "discover.song.unshared",
     actorId: session.user.id,
     targetType: "song_group",
     targetId: parsedId.data,

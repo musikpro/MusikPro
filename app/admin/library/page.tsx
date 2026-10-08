@@ -21,10 +21,11 @@ export default async function AdminDiscoverPage() {
       <div className="admin-source-notice is-connected">
         <Icon i="database-zap" size={18} />
         <div>
-          <strong>Ajout automatique</strong>
+          <strong>Partage sur demande</strong>
           <p>
-            Toutes les chansons terminées des clients apparaissent dans Découvrir sans action de votre part. Chaque
-            créateur peut retirer les siennes ; vous pouvez retirer n’importe laquelle ci-dessous.
+            Une chanson n’apparaît dans Découvrir que si son créateur choisit de la partager (case à la création ou
+            bouton dans Mes chansons). Il peut la retirer à tout moment ; vous pouvez retirer n’importe laquelle
+            ci-dessous.
           </p>
         </div>
       </div>
@@ -42,7 +43,11 @@ export default async function AdminDiscoverPage() {
         </AdminTabPanel>
         <AdminTabPanel id="songs">
           <section className="admin-panel">
-            <AdminDiscoverSongList songs={songs} hideAction={hideSongFromDiscover} restoreAction={restoreSongToDiscover} />
+            <AdminDiscoverSongList
+              songs={songs}
+              hideAction={hideSongFromDiscover}
+              restoreAction={restoreSongToDiscover}
+            />
           </section>
         </AdminTabPanel>
       </AdminTabs>

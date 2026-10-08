@@ -20,7 +20,7 @@ export default function AdminDiscoverSongList({
       <div className="admin-empty-state admin-catalog-empty">
         <Icon i="library" size={25} />
         <strong>Aucune chanson pour l’instant</strong>
-        <p>Les chansons terminées des clients apparaîtront ici automatiquement.</p>
+        <p>Les chansons que les clients choisissent de partager apparaîtront ici.</p>
       </div>
     );
   return (

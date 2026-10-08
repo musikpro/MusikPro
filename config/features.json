@@ -788,6 +788,7 @@
       "files": [
         "db/schema/index.ts",
         "db/migrations/0050_discover_library.sql",
+        "db/migrations/0072_discover_opt_in.sql",
         "lib/discover/types.ts",
         "lib/discover/server.ts",
         "app/api/songs/[groupId]/discover/route.ts",

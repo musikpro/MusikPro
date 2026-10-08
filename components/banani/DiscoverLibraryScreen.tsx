@@ -50,7 +50,7 @@ export default function DiscoverLibraryScreen() {
               <p className="mt-1 text-sm text-muted-foreground">
                 {search
                   ? t("Essaie une autre recherche.")
-                  : t("Les chansons créées par la communauté apparaîtront ici automatiquement.")}
+                  : t("Les chansons partagées par la communauté apparaîtront ici.")}
               </p>
             </div>
           )}

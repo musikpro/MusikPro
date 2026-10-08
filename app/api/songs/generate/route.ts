@@ -8,6 +8,7 @@ import { getActiveAudioProvider } from "@/lib/ai/musicful";
 import { getAudioProviderDefinition } from "@/lib/ai/audio-providers/catalog";
 import { buildVocalHint, resolveStylePrompt } from "@/lib/ai/style-prompt";
 import { submitSongGeneration } from "@/lib/ai/songs";
+import { shareDiscoverSong } from "@/lib/discover/server";
 import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
 import { recordSongGroupCharge } from "@/lib/credits/generation-refund";
@@ -179,6 +180,8 @@ export async function POST(request: Request) {
       targetId: songGroupId,
       metadata: { occasion: input.occasion, style, versionsSubmitted: succeeded },
     });
+    // Partage sur demande : le créateur a coché « Partager dans Découvrir » (ne bloque jamais la génération).
+    if (input.shareToDiscover) await shareDiscoverSong(songGroupId, session.user.id).catch(() => undefined);
     // La chanson est lancée : le brouillon de création n'a plus lieu d'être (ne lève jamais).
     await deleteCreationDraft(session.user.id);
     return NextResponse.json({ songGroupId, newBalance });

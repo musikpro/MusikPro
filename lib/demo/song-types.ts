@@ -23,5 +23,7 @@ export type WorkspaceSong = {
   lyrics: string;
   status?: "processing" | "completed" | "failed";
   coverUrl?: string | null;
+  /** Real mode only — la chanson est dans « Découvrir » (partage choisi par son créateur). */
+  sharedToDiscover?: boolean;
   versions: WorkspaceSongVersion[];
 };
