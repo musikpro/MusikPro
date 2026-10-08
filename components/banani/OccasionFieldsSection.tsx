@@ -17,6 +17,7 @@ function FieldLabel({ field, htmlFor }: { field: OccasionFieldClientDefinition; 
       <label id={htmlFor ? undefined : `${field.id}-label`} htmlFor={htmlFor}>
         {label}
       </label>
+      {field.required ? null : <span className="optional-hint">{t("(facultatif)")}</span>}
       {help ? <small>{help}</small> : null}
     </div>
   );
