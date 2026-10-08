@@ -2387,6 +2387,77 @@
   cursor: default;
 }
 
+/* Champs validés : pastille verte (valide) ou rouge (à corriger) devant la valeur, message dessous. */
+.admin-validated-field {
+  position: relative;
+}
+
+.admin-validated-field > input,
+.admin-validated-field .admin-combobox-field > input {
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.admin-validated-field.is-valid > input,
+.admin-validated-field.is-valid .admin-combobox-field > input,
+.admin-validated-field.is-invalid > input,
+.admin-validated-field.is-invalid .admin-combobox-field > input {
+  padding-left: 44px;
+}
+
+.admin-validated-icon {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 12px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border-radius: 999px;
+  color: #fff;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.admin-validated-field.is-valid .admin-validated-icon {
+  background: #16a34a;
+}
+
+.admin-validated-field.is-invalid .admin-validated-icon {
+  background: #dc2626;
+}
+
+.admin-validated-field.is-valid > input,
+.admin-validated-field.is-valid .admin-combobox-field > input {
+  border-color: #16a34a;
+}
+
+.admin-validated-field.is-invalid > input,
+.admin-validated-field.is-invalid .admin-combobox-field > input {
+  border-color: #dc2626;
+}
+
+.admin-validated-message {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.admin-validated-message.is-valid {
+  color: #15803d;
+}
+
+.admin-validated-message.is-invalid {
+  color: #b91c1c;
+}
+
+.admin-validated-message.is-warning {
+  color: #b45309;
+}
+
 .admin-choice-fieldset {
   margin: 0;
   padding: 16px 0 0;

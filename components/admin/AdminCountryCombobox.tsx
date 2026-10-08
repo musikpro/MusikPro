@@ -27,12 +27,15 @@ export default function AdminCountryCombobox({
   ariaLabel,
   placeholder = "Rechercher un pays…",
   onSelect,
+  onTouched,
 }: {
   name: string;
   options: readonly CountryComboboxOption[];
   ariaLabel: string;
   placeholder?: string;
   onSelect?: (option: CountryComboboxOption) => void;
+  /** Appelé quand le champ perd le focus (pour afficher « Choisis un pays » si rien n'est sélectionné). */
+  onTouched?: () => void;
 }) {
   const listId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -132,6 +135,7 @@ export default function AdminCountryCombobox({
             setHighlighted(0);
           }}
           onKeyDown={onKeyDown}
+          onBlur={() => onTouched?.()}
         />
         <Icon i="chevron-down" size={16} />
       </div>

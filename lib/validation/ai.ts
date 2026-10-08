@@ -213,6 +213,17 @@ export const accentHintRequestSchema = z.object({
 
 export type AccentHintRequest = z.infer<typeof accentHintRequestSchema>;
 
+export const phonePrefixRequestSchema = z.object({
+  countryCode: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z]{2}$/),
+  countryName: z.string().trim().min(2).max(80),
+});
+
+export type PhonePrefixRequest = z.infer<typeof phonePrefixRequestSchema>;
+
 export const pronunciationRequestSchema = z.object({
   name: z.string().trim().min(1).max(120),
   language: z.string().trim().max(50).optional().default(""),
