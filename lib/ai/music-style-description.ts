@@ -34,6 +34,19 @@ function clampToWordCount(text: string, maxWords: number): string {
     .replace(/[,;.]+$/, "");
 }
 
+/**
+ * Retire une phrase d'introduction que le modèle ajoute parfois après sa recherche web (« Based on my research, here
+ * is the style instruction for X: … ») : seule la consigne elle-même doit rester dans le champ.
+ */
+export function stripLeadingPreamble(text: string): string {
+  const colon = text.indexOf(":");
+  if (colon < 0 || colon > 200) return text.trim();
+  const head = text.slice(0, colon);
+  if (/\d/.test(head) || !/\b(research|here is|here's|based on|instruction|following)\b/i.test(head))
+    return text.trim();
+  return text.slice(colon + 1).trim();
+}
+
 /** Retire un « Nom : » que le modèle aurait déjà écrit en tête, pour ne pas le dupliquer. */
 function stripLeadingStyleName(text: string, styleName: string): string {
   const escaped = styleName.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -117,7 +130,7 @@ export function aiDescriptionPrompt(styleName: string, reference = "") {
     "Style of writing: only comma-separated noun and adjective phrases, no verbs, no articles, no filler. Every sentence ends with a period. " +
     'Be concrete: name real instruments, real rhythms, real local markers. Never write words like "authentic", "unique", "amazing" or "high quality". ' +
     'Never write "Create", "Generate", "Make", "song" or "track". No artist names, no brand names, no quotation marks, no line breaks, no Markdown, and do not start with a label or the style name followed by a colon. ' +
-    "Return only the paragraph."
+    'Your final message must contain ONLY the paragraph itself: no introduction (never write "Based on my research" or "Here is"), no explanation, no sources, no commentary, and never fewer than 3 sentences.'
   );
 }
 
@@ -133,10 +146,12 @@ export async function generateMusicStyleDescription(input: MusicStyleDescription
   const lengthClamped =
     input.kind === "ai"
       ? clampToSentence(
-          raw.text
-            .replace(/\s+/g, " ")
-            .replace(/\s+([,.;:])/g, "$1")
-            .trim(),
+          stripLeadingPreamble(
+            raw.text
+              .replace(/\s+/g, " ")
+              .replace(/\s+([,.;:])/g, "$1")
+              .trim(),
+          ),
           AI_BODY_MAX,
         )
       : clampToLength(raw.text, MAX_LENGTH.client);
