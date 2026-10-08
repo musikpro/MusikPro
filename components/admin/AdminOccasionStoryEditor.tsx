@@ -103,7 +103,7 @@ function OccasionStoryCard({
                   placeholder={placeholder}
                 />
                 <small>
-                  {copy[key].length}/{OCCASION_STORY_MAX_LENGTHS[key]}
+                  {copy[key].length}/{OCCASION_STORY_MAX_LENGTHS[key]} caractères
                 </small>
                 <button
                   type="button"

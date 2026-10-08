@@ -99,7 +99,7 @@ export default function AdminMoodForm({
           />
           <small>
             Envoyée à Musicful avec le nom de l’ambiance ; jamais montrée au client. Vide : seul le nom est envoyé.{" "}
-            {aiHint.length}/{MOOD_AI_HINT_MAX_LENGTH}
+            {aiHint.length}/{MOOD_AI_HINT_MAX_LENGTH} caractères
           </small>
           <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
             <Icon i="bot" size={15} />

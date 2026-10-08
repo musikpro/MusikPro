@@ -117,7 +117,7 @@ export default function AdminOccasionForm({
           <span>Consigne pour l’IA musicale (anglais, facultative)</span>
           <small>
             Seule cette consigne est envoyée à Musicful (jamais le nom français) ; elle n’est pas montrée au client.
-            Vide : rien n’est envoyé pour l’occasion. {aiHint.length}/{OCCASION_AI_HINT_MAX_LENGTH}
+            Vide : rien n’est envoyé pour l’occasion. {aiHint.length}/{OCCASION_AI_HINT_MAX_LENGTH} caractères
           </small>
           <textarea
             name="aiHint"
