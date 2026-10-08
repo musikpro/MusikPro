@@ -505,6 +505,13 @@
       "when": 1791318392816,
       "tag": "0071_app_releases",
       "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1791439009284,
+      "tag": "0072_discover_opt_in",
+      "breakpoints": true
     }
   ]
 }

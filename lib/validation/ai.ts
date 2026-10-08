@@ -96,6 +96,8 @@ export const songGenerateRequestSchema = z.object({
   language: z.string().trim().max(80).optional().default(""),
   lyrics: z.string().trim().min(1).max(30_000),
   occasionDetails: occasionAnswersSchema,
+  /** Case « Partager dans Découvrir » de la création : décochée par défaut, rien n'est public sans ce choix. */
+  shareToDiscover: z.boolean().optional().default(false),
 });
 
 export type SongGenerateRequest = z.infer<typeof songGenerateRequestSchema>;

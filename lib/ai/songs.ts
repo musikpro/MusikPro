@@ -3,7 +3,7 @@ import { stripVersionSuffix, withVersionSuffix } from "@/lib/ai/song-title";
 import { randomBytes, randomUUID } from "node:crypto";
 import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { musicGenerationJobs, songPublications } from "@/db/schema";
+import { discoverSharedSongs, musicGenerationJobs, songPublications } from "@/db/schema";
 import { createMusicJob, MusicJobOwnershipError } from "./music-jobs";
 import { pollJobForProvider, submitSongGroupJobsForProvider } from "./audio-providers/dispatch";
 import { findSongGroupUsages } from "./song-usage";
@@ -35,6 +35,8 @@ export type SongGroupView = {
   status: "processing" | "completed" | "failed";
   createdAt: Date;
   versions: SongVersionView[];
+  /** La chanson est dans « Découvrir » (partage choisi par son créateur). */
+  sharedToDiscover: boolean;
 };
 
 function formatDuration(seconds: number | null) {
@@ -92,6 +94,7 @@ function toGroupView(jobs: JobRow[]): SongGroupView {
       .slice()
       .sort((a, b) => (a.versionLabel || "").localeCompare(b.versionLabel || ""))
       .map(toVersionView),
+    sharedToDiscover: false,
   };
 }
 
@@ -123,7 +126,13 @@ export async function submitSongGeneration(
           instrumental: input.instrumental ?? 0,
         },
         model,
-        { songGroupId, versionLabel: `Version ${index + 1}`, occasion: input.occasion, provider: providerId, occasionDetails: input.occasionDetails },
+        {
+          songGroupId,
+          versionLabel: `Version ${index + 1}`,
+          occasion: input.occasion,
+          provider: providerId,
+          occasionDetails: input.occasionDetails,
+        },
       ),
     ),
   );
@@ -163,6 +172,21 @@ async function refreshPendingRows(rows: JobRow[], userId: string): Promise<JobRo
     .orderBy(desc(musicGenerationJobs.createdAt));
 }
 
+/** Marque les chansons que leur créateur a partagées dans « Découvrir ». Ne lève jamais : sans l'info, rien n'est coché. */
+async function withSharedFlag(userId: string, groups: SongGroupView[]): Promise<SongGroupView[]> {
+  if (!groups.length) return groups;
+  try {
+    const rows = await getServiceDb()
+      .select({ id: discoverSharedSongs.songGroupId })
+      .from(discoverSharedSongs)
+      .where(eq(discoverSharedSongs.userId, userId));
+    const shared = new Set(rows.map((row) => row.id));
+    return groups.map((group) => ({ ...group, sharedToDiscover: shared.has(group.songGroupId) }));
+  } catch {
+    return groups;
+  }
+}
+
 export async function listSongGroupsForUser(userId: string): Promise<SongGroupView[]> {
   const database = getServiceDb();
   const rows = await database
@@ -178,9 +202,12 @@ export async function listSongGroupsForUser(userId: string): Promise<SongGroupVi
     if (list) list.push(row);
     else groups.set(key, [row]);
   }
-  return Array.from(groups.values())
-    .map(toGroupView)
-    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  return withSharedFlag(
+    userId,
+    Array.from(groups.values())
+      .map(toGroupView)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
+  );
 }
 
 export async function getSongGroupForUser(userId: string, songGroupId: string): Promise<SongGroupView | null> {
@@ -204,9 +231,9 @@ export async function getSongGroupForUser(userId: string, songGroupId: string): 
       .select()
       .from(musicGenerationJobs)
       .where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)));
-    return toGroupView(refreshed);
+    return (await withSharedFlag(userId, [toGroupView(refreshed)]))[0];
   }
-  return toGroupView(rows);
+  return (await withSharedFlag(userId, [toGroupView(rows)]))[0];
 }
 
 /** Thrown when a song can't be deleted because the platform currently displays it somewhere. */
@@ -223,6 +250,9 @@ export async function removeSongGroupForUser(userId: string, songGroupId: string
   await database
     .delete(musicGenerationJobs)
     .where(and(eq(musicGenerationJobs.userId, userId), eq(musicGenerationJobs.songGroupId, songGroupId)));
+  await database
+    .delete(discoverSharedSongs)
+    .where(and(eq(discoverSharedSongs.userId, userId), eq(discoverSharedSongs.songGroupId, songGroupId)));
 }
 
 export async function setSongVersionLiked(userId: string, jobId: string, liked: boolean): Promise<SongVersionView> {

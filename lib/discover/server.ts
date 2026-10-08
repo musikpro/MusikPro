@@ -2,7 +2,7 @@ import "server-only";
 
 import { asc, desc, eq, inArray, isNotNull, and } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { discoverHiddenSongs, discoverSettings, musicGenerationJobs } from "@/db/schema";
+import { discoverHiddenSongs, discoverSettings, discoverSharedSongs, musicGenerationJobs } from "@/db/schema";
 import { extractGenreLabel } from "@/lib/ai/songs";
 import { stripVersionSuffix } from "@/lib/ai/song-title";
 import {
@@ -100,17 +100,43 @@ async function hiddenGroupIds(): Promise<Set<string>> {
   return new Set(rows.map((row) => row.id));
 }
 
+async function sharedGroupIds(): Promise<Set<string>> {
+  const rows = await getServiceDb().select({ id: discoverSharedSongs.songGroupId }).from(discoverSharedSongs);
+  return new Set(rows.map((row) => row.id));
+}
+
+/** Les chansons de cet utilisateur qu'il a choisi de partager dans Découvrir (pour l'interrupteur de « Mes chansons »). */
+export async function listSharedGroupIdsForUser(userId: string): Promise<Set<string>> {
+  const rows = await getServiceDb()
+    .select({ id: discoverSharedSongs.songGroupId })
+    .from(discoverSharedSongs)
+    .where(eq(discoverSharedSongs.userId, userId));
+  return new Set(rows.map((row) => row.id));
+}
+
+/** Partage sur demande : le créateur place sa chanson dans Découvrir (sans effet si elle y est déjà). */
+export async function shareDiscoverSong(songGroupId: string, userId: string): Promise<void> {
+  await getServiceDb().insert(discoverSharedSongs).values({ songGroupId, userId }).onConflictDoNothing();
+}
+
+/** Le créateur retire sa chanson de Découvrir : la chanson et son lien public ne changent pas. */
+export async function unshareDiscoverSong(songGroupId: string): Promise<void> {
+  await getServiceDb().delete(discoverSharedSongs).where(eq(discoverSharedSongs.songGroupId, songGroupId));
+}
+
 /**
- * The client "Découvrir" page: every completed song, automatically, minus the ones removed by their
- * owner or by the SaaS owner, ordered and capped by /admin/library's settings. Never throws — an
- * empty page is better than a crashed dashboard.
+ * The client "Découvrir" page: only the completed songs their creator chose to share, minus the ones removed by the
+ * SaaS owner, ordered and capped by /admin/library's settings. Never throws — an empty page is better than a
+ * crashed dashboard.
  */
 export async function listDiscoverSongs(viewerUserId: string | null): Promise<DiscoverSong[]> {
   try {
     const settings = await getDiscoverSettings();
     if (!settings.enabled) return [];
-    const [rows, hidden] = await Promise.all([listCompletedSongRows(), hiddenGroupIds()]);
-    const songs = groupIntoSongs(rows, viewerUserId).filter((song) => !hidden.has(song.songGroupId));
+    const [rows, hidden, shared] = await Promise.all([listCompletedSongRows(), hiddenGroupIds(), sharedGroupIds()]);
+    const songs = groupIntoSongs(rows, viewerUserId).filter(
+      (song) => shared.has(song.songGroupId) && !hidden.has(song.songGroupId),
+    );
     if (settings.sortBy === "popular") songs.sort((a, b) => b.plays - a.plays);
     return songs.slice(0, settings.maxItems);
   } catch {
@@ -122,12 +148,15 @@ export type AdminDiscoverSong = DiscoverSong & { hidden: boolean; hiddenBy: stri
 
 /** Admin moderation list: the same songs, plus the ones currently hidden so they can be put back. */
 export async function listDiscoverSongsForAdmin(limit = 100): Promise<AdminDiscoverSong[]> {
-  const [rows, hiddenRows] = await Promise.all([
+  const [rows, hiddenRows, shared] = await Promise.all([
     listCompletedSongRows(),
     getServiceDb().select().from(discoverHiddenSongs).orderBy(asc(discoverHiddenSongs.createdAt)),
+    sharedGroupIds(),
   ]);
   const hiddenBy = new Map(hiddenRows.map((row) => [row.songGroupId, row.hiddenBy]));
+  // Seules les chansons partagées par leur créateur peuvent être modérées (ou remises) ici.
   return groupIntoSongs(rows, null)
+    .filter((song) => shared.has(song.songGroupId))
     .slice(0, limit)
     .map((song) => ({
       ...song,

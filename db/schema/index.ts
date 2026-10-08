@@ -548,6 +548,19 @@ export const discoverHiddenSongs = pgTable("discover_hidden_songs", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+/**
+ * "Découvrir" est sur demande : seules les chansons dont le créateur a coché « Partager dans Découvrir » ont une ligne
+ * ici. Une chanson retirée par l'équipe (discover_hidden_songs, hidden_by = "admin") reste masquée même si elle est
+ * partagée.
+ */
+export const discoverSharedSongs = pgTable("discover_shared_songs", {
+  songGroupId: text("song_group_id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export * from "./auth.generated";
 
 export const paymentProviderConfigs = pgTable("payment_provider_configs", {

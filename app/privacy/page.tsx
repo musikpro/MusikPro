@@ -183,7 +183,7 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
               </p>
               <p>
                 {t(
-                  "Par défaut, chaque chanson terminée est aussi proposée dans la bibliothèque Découvrir, visible par les autres utilisateurs connectés, qui peuvent l’écouter sans la télécharger. Votre nom n’est pas affiché, mais le titre contient le prénom du destinataire, l’occasion, le style et le mois. Vous pouvez retirer une chanson de Découvrir à tout moment, et la supprimer pour faire disparaître son lien public. Certaines chansons publiées peuvent être mises en avant sur la page d’accueil.",
+                  "Une chanson n’est proposée dans la bibliothèque Découvrir que si vous choisissez de la partager ; par défaut, rien n’est partagé. Elle est alors visible par les autres utilisateurs connectés, qui peuvent l’écouter sans la télécharger. Votre nom n’est pas affiché, mais le titre contient le prénom du destinataire, l’occasion, le style et le mois. Vous pouvez retirer une chanson de Découvrir à tout moment, et la supprimer pour faire disparaître son lien public. Certaines chansons publiées peuvent être mises en avant sur la page d’accueil.",
                 )}
               </p>
             </>

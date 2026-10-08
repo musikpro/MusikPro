@@ -27,7 +27,9 @@ export default function AdminDiscoverSettingsForm({
             { value: "false", label: "Masquée — la page ne montre aucune chanson" },
           ]}
         />
-        <small>Chaque chanson terminée est ajoutée automatiquement. Son créateur peut la retirer depuis Découvrir.</small>
+        <small>
+          Seules les chansons que leur créateur a choisi de partager sont ajoutées. Il peut la retirer à tout moment.
+        </small>
       </div>
       <div className="admin-editor-field">
         <span>Ordre d’affichage</span>

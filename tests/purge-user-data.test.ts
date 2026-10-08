@@ -29,9 +29,10 @@ describe("purgeUserData", () => {
   it("removes the account's songs, public links, curation rows and draft in one atomic batch", async () => {
     await purgeUserData("user-1");
     expect(batch).toHaveBeenCalledTimes(1);
-    expect(batch.mock.calls[0][0]).toHaveLength(10);
+    expect(batch.mock.calls[0][0]).toHaveLength(11);
     expect(new Set(deleted)).toEqual(
       new Set([
+        "discover_shared_songs",
         "discover_hidden_songs",
         "landing_song_features",
         "song_publications",
