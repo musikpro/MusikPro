@@ -1,5 +1,6 @@
 "use client";
 
+import { DateInput } from "@/components/ui/date-input";
 import { useDemo } from "./DemoProvider";
 import { InlineNotice } from "@/components/ui/inline-notice";
 import MusikSelect from "./MusikSelect";
@@ -55,7 +56,7 @@ export default function OccasionFieldsSection({
               <input id={inputId} type="number" inputMode="numeric" step={1} min={field.config.min} max={field.config.max} value={value} placeholder={placeholder} aria-invalid={Boolean(error)} onChange={(event) => set(event.target.value)} />
             ) : null}
             {field.type === "date" ? (
-              <input id={inputId} type="date" value={value} aria-invalid={Boolean(error)} onChange={(event) => set(event.target.value)} />
+              <DateInput id={inputId} value={value} aria-invalid={Boolean(error)} onChange={(event) => set(event.target.value)} />
             ) : null}
             {field.type === "select" && field.config.display === "dropdown" ? (
               <MusikSelect
