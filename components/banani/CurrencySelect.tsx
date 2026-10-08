@@ -53,7 +53,7 @@ export default function CurrencySelect({
     const width = Math.min(window.innerWidth - 16, 270);
     setPosition({
       top: rect.bottom + 8,
-      right: Math.max(8, window.innerWidth - rect.right),
+      right: Math.min(Math.max(8, window.innerWidth - rect.right), window.innerWidth - width - 8),
       width,
     });
   }

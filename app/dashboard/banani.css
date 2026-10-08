@@ -7653,21 +7653,20 @@ button.mobile-menu-brand {
 .currency-select {
   position: relative;
   flex: 0 0 auto;
+  margin-left: auto;
 }
 
 .currency-select-trigger {
   display: inline-flex;
-  min-width: 176px;
-  min-height: 48px;
+  min-height: 46px;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   padding: 0 16px;
   border: 1.5px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
   border-radius: 999px;
   background: var(--color-card);
   color: var(--color-foreground);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -7683,7 +7682,7 @@ button.mobile-menu-brand {
 }
 
 .currency-select-flag {
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1;
 }
 
