@@ -55,7 +55,7 @@ export default async function PrivacyPage({ searchParams }: PageProps) {
             <p>
               <LegalEmail
                 text={t(
-                  "MusikPro, service de création de chansons personnalisées accessible sur musikpro.net et dans l’application Android et iPhone, est responsable du traitement des données décrites ici. Pour toute question, écrivez à {email}.",
+                  "La société Kehira, dont le siège est à Abidjan (Côte d’Ivoire), éditrice de MusikPro (service de création de chansons personnalisées accessible sur musikpro.net et dans l’application Android et iPhone), est responsable du traitement des données décrites ici. Pour toute question, écrivez à {email}.",
                 )}
                 email={CONTACT_EMAIL}
               />
