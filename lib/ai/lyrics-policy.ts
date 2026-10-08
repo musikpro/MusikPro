@@ -41,6 +41,23 @@ export function stripLyricsMarkdown(text: string) {
     .trim();
 }
 
+/**
+ * Le modèle écrit parfois une première ligne d'étiquette (« Paroles : Titre », « Lyrics: … », « Titre : … ») : elle n'est
+ * pas chantée et le moteur audio pourrait la lire. Seule cette première ligne étiquetée est retirée ; un titre sans
+ * étiquette et toutes les lignes chantées restent intacts.
+ */
+export function stripLyricsTitleLine(text: string) {
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
+  const first = lines.findIndex((line) => line.trim() !== "");
+  if (first < 0) return text.trim();
+  if (!/^\s*(?:paroles?(?:\s+de\s+(?:la\s+)?chanson)?|lyrics?|titre|title)\s*[:：]/i.test(lines[first])) return text.trim();
+  return lines
+    .slice(first + 1)
+    .join("\n")
+    .replace(/^\n+/, "")
+    .trim();
+}
+
 export function enforceLyricsWordLimit(text: string, limit = LYRICS_MAX_WORDS) {
   const trimmed = text.trim();
   const matches = [...trimmed.matchAll(/\S+/g)];

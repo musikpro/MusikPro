@@ -6,6 +6,7 @@ import {
   enforceLyricsWordLimit,
   LYRICS_MAX_WORDS,
   stripLyricsMarkdown,
+  stripLyricsTitleLine,
   UNKNOWN_WORDS_PRONUNCIATION_RULE,
 } from "./lyrics-policy";
 import { formatAnswersForPrompt } from "@/lib/occasion-fields/answers";
@@ -71,7 +72,7 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string, detail
 
   const instructions = `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. ${UNKNOWN_WORDS_PRONUNCIATION_RULE} N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
   const raw = await runProviderTextTask(provider, instructions, promptFor(task, details));
-  const result = { ...raw, text: enforceLyricsWordLimit(stripLyricsMarkdown(raw.text)) };
+  const result = { ...raw, text: enforceLyricsWordLimit(stripLyricsTitleLine(stripLyricsMarkdown(raw.text))) };
 
   const resultVerdict = await moderateText(result.text, "Paroles de chanson générées");
   if (resultVerdict.flagged) {

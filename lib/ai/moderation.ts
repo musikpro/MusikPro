@@ -63,3 +63,19 @@ export async function moderateText(text: string, label: string): Promise<Moderat
   });
   return parseVerdict(response.output_text.trim());
 }
+
+/**
+ * Modération d'un texte long (paroles envoyées à la génération). `moderateText` ne lit que les 6 000 premiers
+ * caractères : on analyse donc le texte par tranches (5 au plus, soit 30 000 caractères, la limite du schéma), pour
+ * qu'un contenu interdit placé en fin de texte ne passe pas.
+ */
+export async function moderateLongText(text: string, label: string): Promise<ModerationVerdict> {
+  const chunks: string[] = [];
+  for (let start = 0; start < text.length && chunks.length < 5; start += MAX_MODERATION_INPUT_CHARS) {
+    chunks.push(text.slice(start, start + MAX_MODERATION_INPUT_CHARS));
+  }
+  const verdicts = await Promise.all(chunks.map((chunk) => moderateText(chunk, label)));
+  return (
+    verdicts.find((verdict) => verdict.flagged) ?? { flagged: false, reason: null, categories: [] }
+  );
+}

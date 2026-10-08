@@ -32,3 +32,22 @@ describe("stripLyricsMarkdown", () => {
     expect(stripLyricsMarkdown("Ligne 1\nLigne 2")).toBe("Ligne 1\nLigne 2");
   });
 });
+
+describe("stripLyricsTitleLine", () => {
+  it("retire une première ligne étiquetée « Paroles : … » et garde les lignes chantées", async () => {
+    const { stripLyricsTitleLine } = await import("../lib/ai/lyrics-policy");
+    expect(stripLyricsTitleLine("Paroles : Aïcha, mon amour\n\n[Couplet 1]\nTu es ma lumière")).toBe(
+      "[Couplet 1]\nTu es ma lumière",
+    );
+    expect(stripLyricsTitleLine("Lyrics: Test\n[Refrain]\nLa la")).toBe("[Refrain]\nLa la");
+    expect(stripLyricsTitleLine("\nTitre : Joyeux anniversaire\nLigne 1")).toBe("Ligne 1");
+  });
+
+  it("laisse intacts un titre sans étiquette et des paroles normales", async () => {
+    const { stripLyricsTitleLine } = await import("../lib/ai/lyrics-policy");
+    expect(stripLyricsTitleLine("A-wa, Ma Force\n[Couplet 1]\nDix ans")).toBe("A-wa, Ma Force\n[Couplet 1]\nDix ans");
+    expect(stripLyricsTitleLine("[Couplet 1]\nParoles : sans valeur ici")).toBe(
+      "[Couplet 1]\nParoles : sans valeur ici",
+    );
+  });
+});
