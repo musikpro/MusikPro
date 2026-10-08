@@ -1,5 +1,6 @@
 "use client";
 
+import { DateInput } from "@/components/ui/date-input";
 import { useActionState } from "react";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { AdminBackLink } from "@/components/admin/AdminPage";
@@ -88,7 +89,7 @@ export default function AdminCouponForm({
         </label>
         <label className="admin-editor-field">
           <span>Date d’expiration (optionnel)</span>
-          <input name="expiresAt" type="date" defaultValue={expiresAtDefault} />
+          <DateInput name="expiresAt" defaultValue={expiresAtDefault} />
         </label>
         <label className="admin-editor-field is-wide">
           <span>Description (usage interne)</span>

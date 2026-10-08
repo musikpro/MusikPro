@@ -11,6 +11,10 @@ export function getOAuthErrorMessage(code?: string) {
       return t("La connexion Google n’est plus valide. Recommencez la connexion.");
     case "invalid_code":
       return t("Google n’a pas pu valider cette connexion. Recommencez dans quelques instants.");
+    case "native_unavailable":
+      return t(
+        "La connexion Google n’est pas disponible dans l’application pour le moment. Réessayez dans un instant ou connectez-vous avec votre adresse e-mail.",
+      );
     case "oauth_provider_not_found":
       return t("La connexion Google est momentanément indisponible.");
     default:

@@ -11,6 +11,22 @@
   clé) ; il faudrait demander de désinstaller puis réinstaller.
 - Empreinte publique SHA-256 du certificat (déjà dans `public/.well-known/assetlinks.json`) :
   `62:01:95:9E:8B:BE:A1:4A:8A:E3:84:C3:CD:64:C3:EC:A7:B1:21:BA:5A:9F:E0:70:12:5D:5B:8F:1E:7F:BE:15`
+- Empreinte publique SHA-1 (celle que demande Google Cloud pour la connexion Google) :
+  `FC:B0:80:96:8D:B8:FC:52:45:D9:F1:72:5C:26:98:D8:A0:9A:0D:A7`
+
+## Connexion Google dans l'application Android
+
+La connexion Google native vérifie que l'application est bien celle qui est déclarée dans Google Cloud. Sinon le plugin
+renvoie « Account reauth failed » (erreur 16) et la connexion échoue. À faire une fois par clé de signature :
+
+1. Google Cloud Console → projet MusikPro → **API et services → Identifiants → Créer des identifiants → ID client OAuth**.
+2. Type d'application : **Android** ; nom de package : `com.musikpro.app` ; empreinte SHA-1 : celle ci-dessus (la clé de
+   publication). Si l'application est aussi lancée depuis Android Studio, créer un second ID client Android avec la
+   SHA-1 de la clé de debug (`keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`).
+3. Ne rien changer à l'ID client **Web** : c'est lui qui est utilisé comme `webClientId` et dont l'`idToken` est vérifié par le serveur.
+4. **Écran de consentement OAuth** : s'il est en mode « Test », seuls les comptes listés comme utilisateurs de test peuvent se
+   connecter (et leur autorisation expire au bout de 7 jours). Pour tous les clients : le passer en **En production**.
+5. Attendre quelques minutes (propagation Google), désinstaller puis réinstaller l'application, puis retester.
 
 ## Fabriquer et publier une version
 
