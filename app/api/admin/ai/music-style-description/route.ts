@@ -11,7 +11,7 @@ import { classifyAnthropicError, classifyOpenAiError } from "@/lib/ai/errors";
 import { createLogger } from "@/lib/observability/logger";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 const logger = createLogger("admin-ai-music-style-description");
 
 export async function POST(request: Request) {
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
 
   try {
     const result = await generateMusicStyleDescription(parsed.data, session.user.id);
-    return NextResponse.json({ text: result.text });
+    return NextResponse.json({ text: result.text, webSearch: result.webSearch });
   } catch (error) {
     const code = error instanceof Error ? error.message : "AI_REQUEST_FAILED";
     if (code === "AI_PROVIDER_NOT_CONFIGURED")

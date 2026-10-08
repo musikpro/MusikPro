@@ -17,6 +17,7 @@ export default function AdminMusicStyleDescriptionFields({
   const [aiDescription, setAiDescription] = useState(defaultAiDescription);
   const [pending, setPending] = useState<Kind | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [searchNote, setSearchNote] = useState<string | null>(null);
 
   // La génération IA n'affiche volontairement pas de notification toast — seul le bouton
   // « Enregistrer les modifications » doit en déclencher une. Une erreur reste visible
@@ -30,6 +31,7 @@ export default function AdminMusicStyleDescriptionFields({
     }
     setPending(kind);
     setError(null);
+    setSearchNote(null);
     try {
       const response = await fetch("/api/admin/ai/music-style-description", {
         method: "POST",
@@ -40,10 +42,21 @@ export default function AdminMusicStyleDescriptionFields({
           otherDescription: (kind === "client" ? aiDescription : clientDescription) || undefined,
         }),
       });
-      const data: { text?: string; error?: string } = await response.json().catch(() => ({}));
+      const data: { text?: string; error?: string; webSearch?: "used" | "unavailable" | "off" } = await response
+        .json()
+        .catch(() => ({}));
       if (!response.ok || !data.text) throw new Error(data.error || "La génération a échoué.");
       if (kind === "client") setClientDescription(data.text);
-      else setAiDescription(data.text);
+      else {
+        setAiDescription(data.text);
+        setSearchNote(
+          data.webSearch === "used"
+            ? "Consigne rédigée après une recherche sur Internet sur ce style."
+            : data.webSearch === "unavailable"
+              ? "La recherche Internet n’est pas disponible avec ce fournisseur IA : consigne rédigée sans recherche."
+              : null,
+        );
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "La génération a échoué.");
     } finally {
@@ -87,7 +100,11 @@ export default function AdminMusicStyleDescriptionFields({
             disabled={pending !== null}
           >
             <Icon i="bot" size={13} />
-            {pending === "ai" ? "Génération…" : aiDescription.trim() ? "Régénérer" : "Suggérer la consigne"}
+            {pending === "ai"
+              ? "Recherche et génération…"
+              : aiDescription.trim()
+                ? "Régénérer"
+                : "Suggérer la consigne"}
           </button>
         </div>
         <textarea
@@ -97,13 +114,18 @@ export default function AdminMusicStyleDescriptionFields({
           value={aiDescription}
           onChange={(event) => setAiDescription(event.target.value)}
           aria-describedby="music-style-ai-hint"
-          placeholder="BPM 90-110, swing groove, Rhodes keys, warm vocals… (en anglais)"
+          placeholder="Modern Nigerian Afrobeats / Naija Pop, 100-120 BPM, syncopated African grooves, punchy deep bass… (en anglais)"
         />
       </div>
       <small id="music-style-ai-hint" className="admin-editor-field is-wide">
         Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client n’est
         jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
       </small>
+      {searchNote ? (
+        <p className="admin-editor-field is-wide" role="status">
+          {searchNote}
+        </p>
+      ) : null}
       {error ? <p className="admin-field-error admin-editor-field is-wide">{error}</p> : null}
     </>
   );

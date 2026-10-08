@@ -67,8 +67,25 @@ export function TwoFactorChallenge() {
     return () => window.clearInterval(timer);
   }, [context]);
 
-  async function submit(event: FormEvent<HTMLFormElement>) {
+  // Garde synchrone : évite une double vérification (saisie automatique + clic) avant que `busy` ne soit rendu.
+  const verifying = useRef(false);
+
+  // Codes à 6 chiffres (application / e-mail) : la vérification part dès que le dernier chiffre est saisi.
+  // Le code de secours reste validé à la main (longueur variable).
+  useEffect(() => {
+    if (method !== "backup" && code.length === 6 && !busy && !(method === "otp" && secondsLeft <= 0)) {
+      void verify();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- seule la saisie du code déclenche l'envoi
+  }, [code]);
+
+  function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    void verify();
+  }
+
+  async function verify() {
+    if (verifying.current) return;
     setError("");
     setNotice("");
     const parsed = (method === "backup" ? twoFactorBackupCodeSchema : twoFactorCodeSchema).safeParse({ code });
@@ -81,6 +98,7 @@ export function TwoFactorChallenge() {
       setError(t("Ce code a expiré. Demandez un nouveau code."));
       return;
     }
+    verifying.current = true;
     setBusy(true);
     const result =
       method === "otp"
@@ -90,7 +108,13 @@ export function TwoFactorChallenge() {
           : await authClient.twoFactor.verifyTotp({ code: parsed.data.code, trustDevice: false });
     if (result.error) {
       setError(authResultErrorMessage(result.error, t("Code invalide. Vérifiez les chiffres et réessayez.")));
+      verifying.current = false;
       setBusy(false);
+      // Code à 6 chiffres refusé : on le vide pour pouvoir en saisir un autre (et relancer la vérification automatique).
+      if (method !== "backup") {
+        setCode("");
+        requestAnimationFrame(() => inputRef.current?.focus());
+      }
       return;
     }
     goToAuthenticatedSpace();
