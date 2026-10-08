@@ -2693,9 +2693,14 @@
 .pack-purchase-heading {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+.pack-purchase-heading .pack-purchase-title {
+  flex: 1 1 200px;
 }
 
 .pack-currency-select {
@@ -7652,15 +7657,17 @@ button.mobile-menu-brand {
 
 .currency-select-trigger {
   display: inline-flex;
-  min-height: 44px;
+  min-width: 176px;
+  min-height: 48px;
   align-items: center;
-  gap: 8px;
-  padding: 0 12px;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 16px;
   border: 1.5px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
   border-radius: 999px;
   background: var(--color-card);
   color: var(--color-foreground);
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   transition:
@@ -7676,16 +7683,16 @@ button.mobile-menu-brand {
 }
 
 .currency-select-flag {
-  font-size: 18px;
+  font-size: 22px;
   line-height: 1;
 }
 
 .currency-select-auto {
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 999px;
   background: #dcfce7;
   color: #15803d;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
