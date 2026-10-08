@@ -11,6 +11,8 @@ import { submitSongGeneration } from "@/lib/ai/songs";
 import { shareDiscoverSong } from "@/lib/discover/server";
 import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
+import { moderateLongText } from "@/lib/ai/moderation";
+import { stripLyricsTitleLine } from "@/lib/ai/lyrics-policy";
 import { recordSongGroupCharge } from "@/lib/credits/generation-refund";
 import { deductCredits, refundCredits } from "@/lib/credits/service";
 import { deleteCreationDraft } from "@/lib/creation-draft/server";
@@ -87,6 +89,36 @@ export async function POST(request: Request) {
     );
   const input = parsed.data;
 
+  // Les paroles envoyées peuvent avoir été modifiées à la main après la modération de la génération IA : on les
+  // contrôle donc ici, avant tout débit de crédits. Une ligne d'étiquette (« Paroles : … ») n'est pas chantée.
+  const lyrics = stripLyricsTitleLine(input.lyrics);
+  if (!lyrics)
+    return NextResponse.json({ error: "Les paroles sont vides.", code: "LYRICS_EMPTY" }, { status: 422 });
+  try {
+    const verdict = await moderateLongText(lyrics, "Paroles de chanson soumises à la génération (peut-être modifiées)");
+    if (verdict.flagged) {
+      await writeAuditLog({
+        action: "ai.content.blocked_lyrics",
+        actorId: session.user.id,
+        metadata: { categories: verdict.categories, reason: verdict.reason },
+      });
+      return NextResponse.json(
+        {
+          error:
+            "Ces paroles ne respectent pas nos règles de contenu. Modifie-les puis réessaie : aucun crédit n’a été débité.",
+          code: "CONTENT_BLOCKED_LYRICS",
+        },
+        { status: 422 },
+      );
+    }
+  } catch (error) {
+    logger.error("Lyrics moderation unavailable", { error: error instanceof Error ? error.message : "unknown" });
+    return NextResponse.json(
+      { error: "La vérification des paroles est momentanément indisponible. Réessaie : aucun crédit n’a été débité.", code: "MODERATION_UNAVAILABLE" },
+      { status: 503 },
+    );
+  }
+
   let occasionDetails: Awaited<ReturnType<typeof resolveOccasionDetails>>;
   try {
     occasionDetails = await resolveOccasionDetails(input.occasion, input.occasionDetails);
@@ -151,7 +183,7 @@ export async function POST(request: Request) {
         title,
         occasion: input.occasion,
         style,
-        lyrics: input.lyrics,
+        lyrics,
         occasionDetails: occasionDetails.answers.map(({ fieldId, label, value }) => ({ fieldId, label, value })),
         gender,
         instrumental: provider.defaultInstrumental ? 1 : 0,
