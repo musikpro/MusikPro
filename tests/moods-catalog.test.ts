@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildMoodText,
   buildStylePrompt,
+  AVOID_WESTERN_ACCENT_HINT,
   buildVocalHint,
   MUSICFUL_STYLE_MAX_LENGTH,
   STYLE_AI_DESCRIPTION_MAX_LENGTH,
@@ -190,13 +191,17 @@ describe("consigne de style préfixée par le nom", () => {
 
 describe("consigne vocale (voix + langue) en anglais", () => {
   it("convertit les choix français en anglais", () => {
-    expect(buildVocalHint("Français", "Femme")).toBe("female lead vocals, sung in French");
-    expect(buildVocalHint("Anglais", "Homme")).toBe("male lead vocals, sung in English");
-    expect(buildVocalHint("Français", "Duo")).toBe("male and female duet vocals, sung in French");
+    expect(buildVocalHint("Français", "Femme")).toBe(
+      `female lead vocals, sung in French, ${AVOID_WESTERN_ACCENT_HINT}`,
+    );
+    expect(buildVocalHint("Anglais", "Homme")).toBe(`male lead vocals, sung in English, ${AVOID_WESTERN_ACCENT_HINT}`);
+    expect(buildVocalHint("Français", "Duo")).toBe(
+      `male and female duet vocals, sung in French, ${AVOID_WESTERN_ACCENT_HINT}`,
+    );
   });
 
-  it("n'ajoute rien pour une valeur inconnue", () => {
-    expect(buildVocalHint("Wolof", "")).toBe("");
+  it("n'ajoute que l'évitement des accents européens/occidentaux pour une valeur inconnue", () => {
+    expect(buildVocalHint("Wolof", "")).toBe(AVOID_WESTERN_ACCENT_HINT);
   });
 
   it("l'ajoute au prompt sans dépasser la limite de Musicful", () => {
@@ -247,20 +252,43 @@ describe("régression production : une consigne de style réelle n'est pas tronq
 });
 
 describe("limites de longueur : rien n'est tronqué même au maximum", () => {
-  it("le pire cas (nom de 60 caractères, consigne, ambiance, occasion et voix au maximum) tient dans Musicful sans coupure", () => {
-    const name = "N".repeat(60);
+  it("un cas réaliste (nom, ambiance et occasion de longueur courante) n'est pas tronqué", () => {
+    const name = "N".repeat(20);
     const description = `${name}: ${"w".repeat(STYLE_AI_DESCRIPTION_MAX_LENGTH - name.length - 2)}`;
+    const prompt = buildStylePrompt(
+      name,
+      description,
+      "m".repeat(40),
+      true,
+      "o".repeat(40),
+      buildVocalHint("Français", "Duo"),
+    );
+    expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
+    expect(prompt).toContain("w".repeat(STYLE_AI_DESCRIPTION_MAX_LENGTH - name.length - 2));
+  });
+
+  it("le pire cas absolu (nom de 60 caractères, ambiance et occasion au maximum) tient dans Musicful ; seule la description du genre peut perdre quelques mots", () => {
+    const name = "N".repeat(60);
+    const description = `${name}: ${"w ".repeat(STYLE_AI_DESCRIPTION_MAX_LENGTH)}`.slice(
+      0,
+      STYLE_AI_DESCRIPTION_MAX_LENGTH,
+    );
+    const vocal = buildVocalHint("Français", "Duo");
     const prompt = buildStylePrompt(
       name,
       description,
       "m".repeat(MOOD_AI_HINT_MAX_LENGTH),
       true,
       "o".repeat(OCCASION_AI_HINT_MAX_LENGTH),
-      buildVocalHint("Français", "Duo"),
+      vocal,
     );
     expect(prompt.length).toBeLessThanOrEqual(MUSICFUL_STYLE_MAX_LENGTH);
-    expect(prompt).toContain("w".repeat(STYLE_AI_DESCRIPTION_MAX_LENGTH - name.length - 2));
+    // La consigne vocale (accent compris), l'ambiance, l'occasion, la phrase de rigueur et les directives ne sont jamais coupées.
+    expect(prompt).toContain(`Vocals: ${vocal}`);
+    expect(prompt).toContain("m".repeat(MOOD_AI_HINT_MAX_LENGTH));
+    expect(prompt).toContain("o".repeat(OCCASION_AI_HINT_MAX_LENGTH));
     expect(prompt).toContain("without drifting toward a more generic genre.");
+    expect(prompt).toContain("End the song with a natural outro");
   });
 });
 

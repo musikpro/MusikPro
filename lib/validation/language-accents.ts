@@ -15,6 +15,14 @@ export const languageAccentSchema = z.object({
   id: z.string().trim().min(1).max(120).optional(),
   languageCode,
   name: z.string().trim().min(2).max(60),
+  /** Pays de l'accent, en français (« Côte d'Ivoire ») : l'IA le traduit en anglais pour la consigne. */
+  country: z
+    .string()
+    .trim()
+    .max(80)
+    .refine((value) => !/[\r\n]/.test(value), "Le pays tient sur une seule ligne.")
+    .optional()
+    .default(""),
   aiHint: z
     .string()
     .trim()

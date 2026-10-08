@@ -44,6 +44,7 @@ export async function saveLanguageAccent(_previous: AdminActionState, formData: 
     const values = {
       languageCode: parsed.languageCode,
       name: parsed.name,
+      country: parsed.country,
       aiHint: parsed.aiHint,
       active: parsed.active === "true",
       sortOrder: parsed.sortOrder,
