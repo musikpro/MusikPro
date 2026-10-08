@@ -5421,12 +5421,10 @@ span.musik-user-avatar {
   margin-bottom: 10px;
   font-weight: 700;
 }
-/* Mention « (facultatif) » affichée sous le titre d'un champ non obligatoire de la création. */
+/* Mention « (facultatif) » affichée à la suite du titre d'un champ non obligatoire de la création. */
 .optional-hint {
-  display: block;
-  flex-basis: 100%;
-  margin-top: 2px;
-  font-size: 13px;
+  margin-left: 5px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--color-muted-foreground);
 }
