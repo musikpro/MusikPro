@@ -104,6 +104,7 @@ function useDemoState(
   initialPhonePrefixes: PhonePrefixOption[],
   initialDetectedCurrency: CreditCurrencyCode | null,
   currencies: CreditCurrency[],
+  initialDetectedCountry: string | null,
   storeLinks: StoreLinks,
   generationRedirectDelaySeconds: number,
   generationPollIntervalMs: number,
@@ -265,6 +266,8 @@ function useDemoState(
       if (raf2 !== null) window.cancelAnimationFrame(raf2);
     };
   }, [initialDetectedInterfaceLanguage, initialInterfaceLanguages, persistenceId]);
+  // « AUTO » : la monnaie affichée vient de la détection du pays (aucun choix enregistré par le client).
+  const [currencyAuto, setCurrencyAuto] = useState(false);
   useEffect(() => {
     let active = true;
     const savedCurrency = window.localStorage.getItem(`musikpro:currency:${persistenceId}`);
@@ -280,11 +283,19 @@ function useDemoState(
     window.queueMicrotask(() => {
       if (!active) return;
       setChoices((current) => ({ ...current, currency: selected }));
+      setCurrencyAuto(!savedValid && detectedValid);
     });
     return () => {
       active = false;
     };
   }, [initialDetectedCurrency, persistenceId, currencies]);
+  /** Revient à la monnaie détectée : oublie le choix enregistré du client. */
+  const resetCurrencyToAuto = () => {
+    if (!initialDetectedCurrency || !currencies.some((currency) => currency.code === initialDetectedCurrency)) return;
+    window.localStorage.removeItem(`musikpro:currency:${persistenceId}`);
+    setChoices((current) => ({ ...current, currency: initialDetectedCurrency }));
+    setCurrencyAuto(true);
+  };
   const [profile, setProfile] = useState(initialProfile);
   const [balance, setBalance] = useState(defaults.balance);
   // Keeps the displayed credits in sync with the database (payments credited by the gateway webhook,
@@ -539,7 +550,10 @@ function useDemoState(
         withLocalePrefix(window.location.pathname, code) + window.location.search + window.location.hash,
       );
     }
-    if (key === "currency") window.localStorage.setItem(`musikpro:currency:${persistenceId}`, value);
+    if (key === "currency") {
+      window.localStorage.setItem(`musikpro:currency:${persistenceId}`, value);
+      setCurrencyAuto(false);
+    }
     if (key === "phoneCountry") persistPaymentInfo(fields, value);
     if (!creationDraftReady || !["occasion", "genre", "mood", "language", "voice", "recipientRelation"].includes(key)) {
       return;
@@ -953,6 +967,10 @@ function useDemoState(
     setDetail,
     occasionBlocks,
     removeFromDiscover,
+    currencyAuto,
+    resetCurrencyToAuto,
+    detectedCountry: initialDetectedCountry,
+    detectedCurrency: initialDetectedCurrency,
     setSongShared,
     shareToDiscover,
     setShareToDiscover,
@@ -1084,6 +1102,7 @@ export function DemoProvider({
   generationPollIntervalMs = 5_000,
   initialPhonePrefixes,
   initialDetectedCurrency,
+  initialDetectedCountry = null,
   initialCurrencies = DEFAULT_CURRENCIES,
   storeLinks = { googlePlayUrl: null, appStoreUrl: null, hideInApp: true },
 }: {
@@ -1108,6 +1127,7 @@ export function DemoProvider({
   generationPollIntervalMs?: number;
   initialPhonePrefixes: PhonePrefixOption[];
   initialDetectedCurrency: CreditCurrencyCode | null;
+  initialDetectedCountry?: string | null;
   initialCurrencies?: CreditCurrency[];
   storeLinks?: StoreLinks;
 }) {
@@ -1131,6 +1151,7 @@ export function DemoProvider({
     initialPhonePrefixes,
     initialDetectedCurrency,
     initialCurrencies,
+    initialDetectedCountry,
     storeLinks,
     generationRedirectDelaySeconds,
     generationPollIntervalMs,
