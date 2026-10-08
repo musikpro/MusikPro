@@ -101,6 +101,7 @@ export default function StepAdditionalParams() {
         <div className="mb-6">
           <label className="block text-sm font-bold text-foreground mb-3">
             {t("Quel souvenir gardes-tu de cette personne ?")}
+            {" "}
             <span className="optional-hint">{t("(facultatif)")}</span>
           </label>
           <div className="additional-detail-shell bg-card border-2 border-border rounded-xl p-4 relative">

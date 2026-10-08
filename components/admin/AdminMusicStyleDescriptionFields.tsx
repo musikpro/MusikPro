@@ -102,7 +102,7 @@ export default function AdminMusicStyleDescriptionFields({
       </div>
       <small id="music-style-ai-hint" className="admin-editor-field is-wide">
         Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client n’est
-        jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH}
+        jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
       </small>
       {error ? <p className="admin-field-error admin-editor-field is-wide">{error}</p> : null}
     </>

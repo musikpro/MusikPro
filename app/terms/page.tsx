@@ -53,7 +53,7 @@ export default async function TermsPage({ searchParams }: PageProps) {
             <p>
               <LegalEmail
                 text={t(
-                  "MusikPro est un service de création de chansons personnalisées par intelligence artificielle, accessible sur le site musikpro.net et dans l’application Android et iPhone. Il est édité par MusikPro, joignable à l’adresse {email}.",
+                  "MusikPro est un service de création de chansons personnalisées par intelligence artificielle, accessible sur le site musikpro.net et dans l’application Android et iPhone. Il est édité par la société Kehira, dont le siège est à Abidjan (Côte d’Ivoire), joignable à l’adresse {email}.",
                 )}
                 email={CONTACT_EMAIL}
               />

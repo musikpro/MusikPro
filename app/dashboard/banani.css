@@ -5429,7 +5429,7 @@ span.musik-user-avatar {
 }
 /* Mention « (facultatif) » affichée à la suite du titre d'un champ non obligatoire de la création. */
 .optional-hint {
-  margin-left: 5px;
+  margin-left: 1px;
   font-size: 11px;
   font-weight: 400;
   color: var(--color-muted-foreground);
