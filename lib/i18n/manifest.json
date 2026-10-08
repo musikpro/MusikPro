@@ -1,5 +1,6 @@
 [
   "(code {code} appliqué)",
+  "(facultatif)",
   "{count} / {max} caractères",
   "{count} chanson avec paroles",
   "{count} chanson trouvée",
@@ -768,7 +769,7 @@
   "Qualité audio",
   "Que faire si j'ai un problème technique ?",
   "Quel est ton genre préféré ?",
-  "Quel souvenir gardes-tu de cette personne ? (optionnel)",
+  "Quel souvenir gardes-tu de cette personne ?",
   "Quelle est l'occasion ?",
   "Quelle version envoyer ?",
   "Quelle version télécharger ?",
