@@ -8,8 +8,20 @@ import { useAdminActionToast, type AdminActionState } from "@/components/admin/u
 import { apiFetch } from "@/lib/api/client";
 import type { GeneratedSongOption } from "@/lib/trending/admin";
 import type { LandingSongFeatureSection } from "@/lib/landing-features/admin";
+import {
+  hiddenSongLabel,
+  placementsWithout,
+  songAlreadyUsedMessage,
+  type SongPlacements,
+} from "@/lib/featured-songs/placements";
 
-type SongDisplay = { songGroupId: string; title: string; styleLabel: string | null; plays: number; audioUrl: string | null };
+type SongDisplay = {
+  songGroupId: string;
+  title: string;
+  styleLabel: string | null;
+  plays: number;
+  audioUrl: string | null;
+};
 type Values = { id?: string; songGroupId?: string; coverUrlOverride?: string | null };
 
 /**
@@ -29,14 +41,15 @@ export default function AdminLandingSongFeatureForm({
   sectionLabel,
   action,
   songs,
-  usedSongGroupIds,
+  usedPlacements,
   values = {},
 }: {
   section: LandingSongFeatureSection;
   sectionLabel: string;
   action: (previous: AdminActionState, formData: FormData) => Promise<AdminActionState>;
   songs: GeneratedSongOption[];
-  usedSongGroupIds: string[];
+  /** songGroupId → place déjà occupée (landing ou Tendances) : ces chansons ne sont plus proposées. */
+  usedPlacements: SongPlacements;
   values?: Values;
 }) {
   const editing = Boolean(values.id);
@@ -65,9 +78,10 @@ export default function AdminLandingSongFeatureForm({
   const [idLookupPending, setIdLookupPending] = useState(false);
   const [idLookupError, setIdLookupError] = useState("");
 
+  // The card being edited keeps its own song selectable; every other used song is hidden from the picker.
   const usedElsewhere = useMemo(
-    () => new Set(usedSongGroupIds.filter((id) => id !== values.songGroupId)),
-    [usedSongGroupIds, values.songGroupId],
+    () => placementsWithout(usedPlacements, [values.songGroupId]),
+    [usedPlacements, values.songGroupId],
   );
   const allSongs = useMemo(() => {
     const map = new Map<string, SongDisplay>(songs.map((song) => [song.songGroupId, song]));
@@ -76,13 +90,19 @@ export default function AdminLandingSongFeatureForm({
   }, [songs, extraSongs]);
   const options = useMemo(() => {
     return allSongs
-      .filter((song) => !usedElsewhere.has(song.songGroupId))
+      .filter((song) => !usedElsewhere[song.songGroupId])
       .map((song) => ({
         value: song.songGroupId,
         label: `${song.title}${song.styleLabel ? ` — ${song.styleLabel}` : ""} · ${song.plays} écoute${song.plays > 1 ? "s" : ""}`,
       }));
   }, [allSongs, usedElsewhere]);
   const selectedSong = allSongs.find((song) => song.songGroupId === songGroupId) ?? null;
+  // Songs of the recent pool left out of the picker because another place already uses them — listed so
+  // the owner knows why they are missing instead of wondering.
+  const hiddenSongs = useMemo(
+    () => allSongs.filter((song) => usedElsewhere[song.songGroupId]),
+    [allSongs, usedElsewhere],
+  );
 
   const togglePlay = () => {
     const audio = audioRef.current;
@@ -94,8 +114,8 @@ export default function AdminLandingSongFeatureForm({
   const addSongById = async () => {
     const trimmed = idInput.trim();
     if (!trimmed) return;
-    if (usedElsewhere.has(trimmed)) {
-      setIdLookupError("Cette chanson est déjà ajoutée dans une section de la landing page (une chanson n’est utilisable qu’une fois, avec sa version 1 et sa version 2).");
+    if (usedElsewhere[trimmed]) {
+      setIdLookupError(songAlreadyUsedMessage(usedElsewhere[trimmed]));
       return;
     }
     setIdLookupPending(true);
@@ -137,7 +157,12 @@ export default function AdminLandingSongFeatureForm({
               setPlaying(false);
             }}
           />
-          <button type="button" className="admin-secondary-action" disabled={!selectedSong?.audioUrl} onClick={togglePlay}>
+          <button
+            type="button"
+            className="admin-secondary-action"
+            disabled={!selectedSong?.audioUrl}
+            onClick={togglePlay}
+          >
             <Icon i={playing ? "pause" : "play"} size={15} />
             {playing ? "Pause" : "Écouter la chanson"}
           </button>
@@ -158,7 +183,13 @@ export default function AdminLandingSongFeatureForm({
           <small className="admin-field-error">
             {songs.length === 0
               ? "Aucune chanson générée pour l’instant — crée une chanson depuis le tableau de bord client pour pouvoir l’assigner ici."
-              : "Toutes les chansons récentes sont déjà utilisées dans les sections de la landing page — ajoute-en une par identifiant ci-dessous."}
+              : "Toutes les chansons récentes sont déjà utilisées (landing ou Tendances) — ajoute-en une par identifiant ci-dessous."}
+          </small>
+        ) : null}
+        {hiddenSongs.length ? (
+          <small>
+            Déjà utilisées, donc non proposées :{" "}
+            {hiddenSongs.map((song) => hiddenSongLabel(song, usedElsewhere[song.songGroupId])).join(" ; ")}.
           </small>
         ) : null}
       </div>
@@ -196,10 +227,12 @@ export default function AdminLandingSongFeatureForm({
           </button>
         </div>
         <small>
-          Seules les {songs.length} chansons les plus récentes apparaissent dans la liste ci-dessus — pour une
-          chanson plus ancienne, copie son identifiant depuis « Générations » et colle-le ici.
+          Seules les {songs.length} chansons les plus récentes apparaissent dans la liste ci-dessus — pour une chanson
+          plus ancienne, copie son identifiant depuis « Générations » et colle-le ici.
         </small>
-        {idLookupError ? <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p> : null}
+        {idLookupError ? (
+          <p className="admin-trending-empty-hint admin-trending-empty-hint--error">{idLookupError}</p>
+        ) : null}
       </div>
       {/* « Bibliothèque populaire » has no card image: the hidden coverUrlOverride input above keeps any existing value untouched. */}
       {section !== "library" ? (
@@ -229,7 +262,10 @@ export default function AdminLandingSongFeatureForm({
             }}
             onClose={() => setPickerOpen(false)}
           />
-          <small>Sans image, la pochette générée automatiquement pour cette chanson reste utilisée. Choisis une image liée à la musique, cohérente avec l’identité visuelle du site.</small>
+          <small>
+            Sans image, la pochette générée automatiquement pour cette chanson reste utilisée. Choisis une image liée à
+            la musique, cohérente avec l’identité visuelle du site.
+          </small>
         </div>
       ) : null}
       <div className="admin-editor-actions is-wide">

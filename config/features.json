@@ -1027,12 +1027,15 @@
         "app/admin/trending/page.tsx",
         "app/admin/trending/actions.ts",
         "app/api/admin/trending/lookup/route.ts",
-        "components/admin/TrendingPanel.tsx"
+        "components/admin/TrendingPanel.tsx",
+        "lib/featured-songs/placements.ts",
+        "lib/featured-songs/server.ts"
       ],
       "routes": ["/api/admin/trending/lookup"],
       "notes": [
         "L'identifiant d'une génération (songGroupId) n'est affiché que sur /admin/generations; /api/admin/trending/lookup permet de retrouver une chanson par cet identifiant même hors de la liste des générations récentes.",
-        "Choisir une chanson en mode manuel publie automatiquement sa version (publishSongGroup) si elle ne l'était pas déjà, sans changer le widget public /s/[slug]."
+        "Choisir une chanson en mode manuel publie automatiquement sa version (publishSongGroup) si elle ne l'était pas déjà, sans changer le widget public /s/[slug].",
+        "Une chanson ne peut occuper qu'une place parmi « Ils ont créé avec MusikPro », « Bibliothèque populaire » (/admin/landing-features) et « Tendances » : règle partagée dans lib/featured-songs (liste filtrée côté interface, refus côté serveur dans les Server Actions). Seules les chansons nouvellement ajoutées sont contrôlées côté Tendances, pour ne pas bloquer des données plus anciennes."
       ],
       "removalComplexity": "low",
       "dependsOn": ["database", "auth", "real-song-generation-journey"],

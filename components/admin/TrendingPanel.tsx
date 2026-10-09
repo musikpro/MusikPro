@@ -8,6 +8,7 @@ import { setTrendingSettings } from "@/app/admin/trending/actions";
 import { TRENDING_POOL_SIZE, type TrendingSettingsValue } from "@/lib/trending/types";
 import type { GeneratedSongOption } from "@/lib/trending/admin";
 import { apiFetch } from "@/lib/api/client";
+import { hiddenSongLabel, songAlreadyUsedMessage, type SongPlacements } from "@/lib/featured-songs/placements";
 
 type TrendingSongDisplay = {
   songGroupId: string;
@@ -36,10 +37,13 @@ function toDisplay(song: TrendingSongDisplay): TrendingSongDisplay {
 export default function TrendingPanel({
   settings,
   songs,
+  landingPlacements,
 }: {
   settings: TrendingSettingsValue;
   /** Every completed generation platform-wide (published or not) — feeds the picker. */
   songs: GeneratedSongOption[];
+  /** songGroupId → section de la landing qui utilise déjà la chanson : elle n'est plus proposée ici. */
+  landingPlacements: SongPlacements;
 }) {
   const [slots, setSlots] = useState<Slot[]>(() =>
     settings.manualSelection
@@ -100,6 +104,10 @@ export default function TrendingPanel({
       setIdLookupError("Cette chanson est déjà dans ta sélection.");
       return;
     }
+    if (landingPlacements[trimmed]) {
+      setIdLookupError(songAlreadyUsedMessage(landingPlacements[trimmed]));
+      return;
+    }
     if (slots.length >= TRENDING_POOL_SIZE) {
       setIdLookupError(`Les tendances sont limitées à ${TRENDING_POOL_SIZE} chansons.`);
       return;
@@ -123,7 +131,13 @@ export default function TrendingPanel({
     }
   };
 
-  const nextFreeSong = songOptions.find((option) => !slots.some((slot) => slot.songGroupId === option.value));
+  const nextFreeSong = songOptions.find(
+    (option) => !slots.some((slot) => slot.songGroupId === option.value) && !landingPlacements[option.value],
+  );
+  // Songs left out of the pickers because the landing already features them — listed so the owner knows why.
+  const hiddenSongs = allSongs.filter(
+    (song) => landingPlacements[song.songGroupId] && !slots.some((slot) => slot.songGroupId === song.songGroupId),
+  );
   const savedKey = `${settings.manualSelection.join(",")}|${JSON.stringify(settings.coverOverrides)}`;
 
   return (
@@ -152,10 +166,21 @@ export default function TrendingPanel({
               choisir ici.
             </p>
           ) : null}
+          {hiddenSongs.length ? (
+            <p className="admin-trending-empty-hint">
+              Déjà utilisées sur la landing, donc non proposées :{" "}
+              {hiddenSongs.map((song) => hiddenSongLabel(song, landingPlacements[song.songGroupId])).join(" ; ")}.
+            </p>
+          ) : null}
           <div className="admin-trending-picker">
             {slots.map((slot, index) => {
               const usedElsewhere = new Set(slots.filter((_, i) => i !== index).map((entry) => entry.songGroupId));
-              const options = songOptions.filter((option) => !usedElsewhere.has(option.value));
+              // A song already saved on this card stays selectable even if the landing also uses it (older data).
+              const options = songOptions.filter(
+                (option) =>
+                  !usedElsewhere.has(option.value) &&
+                  (!landingPlacements[option.value] || option.value === slot.songGroupId),
+              );
               return (
                 <div key={index} className="admin-trending-slot">
                   <div className="admin-trending-picker-row">

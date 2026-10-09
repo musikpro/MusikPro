@@ -8,6 +8,9 @@ import { actionErrorMessage } from "@/lib/admin/action-state";
 import { writeAuditLog } from "@/lib/security/audit";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { TRENDING_POOL_SIZE } from "@/lib/trending/types";
+import { songAlreadyUsedMessage } from "@/lib/featured-songs/placements";
+import { getLandingSongPlacements } from "@/lib/featured-songs/server";
+import { getTrendingSettings } from "@/lib/trending/settings";
 import { getGeneratedSongOptionById } from "@/lib/trending/admin";
 import { publishSongGroup } from "@/lib/ai/songs";
 
@@ -28,6 +31,17 @@ export async function setTrendingSettings(_previous: AdminActionState, formData:
     });
     if (new Set(parsed.manualSelection).size !== parsed.manualSelection.length) {
       throw new Error("Une même chanson ne peut pas occuper deux cartes.");
+    }
+
+    // Une chanson déjà mise en avant sur la landing (« Ils ont créé avec MusikPro », « Bibliothèque
+    // populaire ») ne peut pas aussi figurer dans Tendances. Seules les chansons ajoutées par cet
+    // enregistrement sont refusées : une chanson déjà présente avant (données plus anciennes) reste modifiable.
+    const alreadySaved = new Set((await getTrendingSettings()).manualSelection);
+    const newlyAdded = parsed.manualSelection.filter((songGroupId) => !alreadySaved.has(songGroupId));
+    if (newlyAdded.length) {
+      const landingPlacements = await getLandingSongPlacements();
+      const conflict = newlyAdded.find((songGroupId) => landingPlacements[songGroupId]);
+      if (conflict) return { ok: false, message: songAlreadyUsedMessage(landingPlacements[conflict]) };
     }
 
     // Manual picks can now come from ANY completed generation, published or not (see
