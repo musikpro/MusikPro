@@ -30,6 +30,8 @@ export default function PaymentScreen() {
     value: prefix.countryCode,
     label: localizeField(prefix.countryName, prefix.translations, "countryName"),
     display: `${prefix.flag} ${prefix.dialCode}`,
+    flag: prefix.flag,
+    trailing: prefix.dialCode,
   }));
 
   useEffect(() => {
@@ -165,7 +167,7 @@ export default function PaymentScreen() {
                   menuClassName="checkout-prefix-menu"
                   ariaLabel={t("Indicatif téléphonique")}
                   portal
-                  portalWidth={126}
+                  portalWidth={288}
                   showOptionLabels={false}
                   showSelectionMark={false}
                   value={selectedCountry}

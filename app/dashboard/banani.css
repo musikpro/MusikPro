@@ -6694,10 +6694,11 @@ span.musik-user-avatar {
 }
 
 .checkout-prefix-menu .musik-select-option {
-  min-height: 40px;
-  justify-content: center;
-  gap: 8px;
-  padding: 7px 9px;
+  min-height: 46px;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
   border: 0;
   background: transparent;
   color: var(--color-foreground);
@@ -6725,6 +6726,37 @@ span.musik-user-avatar {
   font-size: 12px;
   font-weight: 800;
   text-align: center;
+}
+
+.checkout-prefix-menu .musik-select-option-flag {
+  flex: 0 0 auto;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.checkout-prefix-menu .musik-select-option > span.musik-select-option-name {
+  min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 650;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.checkout-prefix-menu .musik-select-option > span.musik-select-option-trailing {
+  min-width: 0;
+  flex: 0 0 auto;
+  color: var(--color-muted-foreground);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.checkout-prefix-menu .musik-select-option.is-highlighted .musik-select-option-trailing,
+.checkout-prefix-menu .musik-select-option[aria-selected="true"] .musik-select-option-trailing {
+  color: var(--color-primary);
 }
 
 .checkout-phone-divider {
