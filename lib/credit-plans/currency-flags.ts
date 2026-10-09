@@ -7,7 +7,7 @@ export function flagFromCountryCode(country: string | null | undefined): string 
 
 /** Pays émetteur de référence de chaque monnaie, pour le drapeau affiché dans le sélecteur de monnaie. */
 const CURRENCY_COUNTRY: Record<string, string> = {
-  XOF: "SN",
+  XOF: "CI",
   XAF: "CM",
   EUR: "FR",
   USD: "US",
@@ -39,7 +39,8 @@ const CURRENCY_COUNTRY: Record<string, string> = {
  * visiteur quand c'est lui qui est à l'origine du choix automatique ; sinon le pays émetteur de référence. 🌍 par défaut.
  */
 export function currencyFlag(code: string, detectedCountry?: string | null, isDetectedCurrency = false): string {
-  if (isDetectedCurrency) {
+  // Le franc CFA ouest-africain (XOF) garde toujours le drapeau de la Côte d'Ivoire, quel que soit le pays détecté.
+  if (isDetectedCurrency && code !== "XOF") {
     const detected = flagFromCountryCode(detectedCountry);
     if (detected) return detected;
   }
