@@ -222,6 +222,13 @@ function useDemoState(
       active = false;
     };
   }, [paymentInfoKey, initialPhonePrefixes]);
+  // Le pays détecté (ou le catalogue d'indicatifs) peut changer après le montage : tant que le client n'a pas
+  // choisi lui-même un indicatif, on suit la détection.
+  useEffect(() => {
+    if (phoneCountryChosen.current) return;
+    const detected = pickInitialPhoneCountry(initialDetectedCountry, initialPhonePrefixes);
+    setChoices((current) => (current.phoneCountry === detected ? current : { ...current, phoneCountry: detected }));
+  }, [initialDetectedCountry, initialPhonePrefixes]);
   useEffect(() => {
     let active = true;
     let restoredChoices: Record<string, string> | null = null;

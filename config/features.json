@@ -4,11 +4,7 @@
     "database": {
       "description": "Neon PostgreSQL + Drizzle",
       "optional": false,
-      "env": [
-        "DATABASE_URL",
-        "DATABASE_URL_DIRECT",
-        "DATABASE_SERVICE_URL"
-      ],
+      "env": ["DATABASE_URL", "DATABASE_URL_DIRECT", "DATABASE_SERVICE_URL"],
       "files": [
         "db/index.ts",
         "db/schema/index.ts",
@@ -42,9 +38,7 @@
         "components/account/DeleteAccountPanel.tsx",
         "app/(auth)/account-deleted/page.tsx"
       ],
-      "routes": [
-        "/api/auth/[...all]"
-      ],
+      "routes": ["/api/auth/[...all]"],
       "notes": [
         "Email/password est optionnel seulement si un autre mode d’auth réel (ex. Google OAuth) est activé.",
         "En production, email/password ne doit pas être activé sans canal de livraison Resend opérationnel lorsque la vérification email est requise.",
@@ -52,34 +46,21 @@
         "Suppression de compte en libre-service (Better Auth user.deleteUser, e-mail de confirmation) : lib/account/purge-user-data.ts efface chansons, liens publics et brouillon avant la suppression ; les paiements restent, détachés du compte. Plan : docs/plans/account-deletion.md."
       ],
       "removalComplexity": "never",
-      "dependsOn": [
-        "database"
-      ]
+      "dependsOn": ["database"]
     },
     "health": {
       "description": "Liveness/readiness backend",
       "optional": false,
       "env": [],
-      "files": [
-        "app/api/health/route.ts",
-        "app/api/readyz/route.ts",
-        "lib/health/readiness.ts"
-      ],
-      "routes": [
-        "/api/health",
-        "/api/readyz"
-      ],
+      "files": ["app/api/health/route.ts", "app/api/readyz/route.ts", "lib/health/readiness.ts"],
+      "routes": ["/api/health", "/api/readyz"],
       "removalComplexity": "never",
-      "dependsOn": [
-        "database"
-      ]
+      "dependsOn": ["database"]
     },
     "payments": {
       "description": "Smart Router + providers africains optionnels + réconciliation",
       "optional": true,
-      "env": [
-        "PAYMENT_WEBHOOK_BASE_URL"
-      ],
+      "env": ["PAYMENT_WEBHOOK_BASE_URL"],
       "files": [
         "lib/payments/routing.ts",
         "lib/billing/reconcile.ts",
@@ -88,15 +69,9 @@
         "lib/payments/health.ts",
         "lib/validation/payment-providers.ts"
       ],
-      "routes": [
-        "/api/payments/checkout",
-        "/api/webhooks/[provider]"
-      ],
+      "routes": ["/api/payments/checkout", "/api/webhooks/[provider]"],
       "removalComplexity": "with-care",
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "dependsOn": ["database", "auth"],
       "disableBehavior": "paymentsEnabled=false + providers=[]; garder le code inerte si aucun paiement n’est requis."
     },
     "payment-bypass-test-mode": {
@@ -122,11 +97,7 @@
       ],
       "routes": [],
       "removalComplexity": "low",
-      "dependsOn": [
-        "database",
-        "auth",
-        "credit-catalog"
-      ],
+      "dependsOn": ["database", "auth", "credit-catalog"],
       "disableBehavior": "Désactiver le mode test depuis /admin/settings (ligne payment_bypass_settings.enabled=false); le parcours de génération redemande alors des crédits/paiement normalement.",
       "notes": [
         "Réservé au rôle admin: app/dashboard/layout.tsx ne lit le flag que pour un compte hasAppRole(role, \"admin\"); un compte client reste inchangé même si le flag global est actif.",
@@ -160,15 +131,9 @@
         "components/banani/PaymentRedirectChariowScreen.tsx",
         "components/banani/DemoProvider.tsx"
       ],
-      "routes": [
-        "/api/payments/coupons/apply"
-      ],
+      "routes": ["/api/payments/coupons/apply"],
       "removalComplexity": "low",
-      "dependsOn": [
-        "database",
-        "auth",
-        "payments"
-      ],
+      "dependsOn": ["database", "auth", "payments"],
       "disableBehavior": "Désactiver ou supprimer les codes depuis /admin/coupons ; sans code actif, l’écran de choix des crédits n’affiche simplement aucune réduction disponible. Le montant facturé reste inchangé (pas de coupon = pas de remise).",
       "notes": [
         "Le montant réduit n’est jamais calculé côté client : app/api/payments/checkout/route.ts revalide le code et recalcule chargedAmount à partir de plan.amount, exactement comme reconcilePayment ne fait jamais confiance à un webhook sans re-vérifier auprès du fournisseur.",
@@ -195,14 +160,9 @@
         "components/admin/AdminSortableGrid.tsx",
         "db/migrations/0005_credit_catalog.sql"
       ],
-      "routes": [
-        "/api/cron/refresh-currency-rates"
-      ],
+      "routes": ["/api/cron/refresh-currency-rates"],
       "removalComplexity": "with-care",
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "dependsOn": ["database", "auth"],
       "notes": [
         "Les taux de change des monnaies en mise à jour automatique sont actualisés chaque jour par app/api/cron/refresh-currency-rates/route.ts (vercel.json, CRON_SECRET requis), avec la même logique que le bouton « Actualiser les taux maintenant » (lib/credit-plans/fx-sync.ts).",
         "Chaque génération consomme 2 crédits et produit deux versions musicales.",
@@ -212,131 +172,72 @@
     "payment-reconciliation-cron": {
       "description": "Rattrapage des paiements asynchrones ou tardifs",
       "optional": true,
-      "env": [
-        "CRON_SECRET"
-      ],
-      "files": [
-        "app/api/cron/reconcile-payments/route.ts",
-        "lib/cron/auth.ts"
-      ],
-      "routes": [
-        "/api/cron/reconcile-payments"
-      ],
+      "env": ["CRON_SECRET"],
+      "files": ["app/api/cron/reconcile-payments/route.ts", "lib/cron/auth.ts"],
+      "routes": ["/api/cron/reconcile-payments"],
       "removalComplexity": "safe-if-payments-disabled",
-      "dependsOn": [
-        "payments"
-      ],
+      "dependsOn": ["payments"],
       "disableBehavior": "Ne pas générer le cron lorsque paymentsEnabled=false."
     },
     "music-jobs-reconciliation-cron": {
       "description": "Rattrapage serveur des générations musicales restées « en cours » (finalisation, échec après délai max, remboursement) quand aucun client n'interroge la page",
       "optional": false,
-      "env": [
-        "CRON_SECRET"
-      ],
-      "files": [
-        "app/api/cron/reconcile-music-jobs/route.ts",
-        "lib/cron/auth.ts"
-      ],
-      "routes": [
-        "/api/cron/reconcile-music-jobs"
-      ],
+      "env": ["CRON_SECRET"],
+      "files": ["app/api/cron/reconcile-music-jobs/route.ts", "lib/cron/auth.ts"],
+      "routes": ["/api/cron/reconcile-music-jobs"],
       "removalComplexity": "safe",
-      "dependsOn": [
-        "database"
-      ]
+      "dependsOn": ["database"]
     },
     "cloudinary": {
       "description": "Upload d'images optionnel avec validation MIME + magic bytes",
       "optional": true,
-      "env": [
-        "CLOUDINARY_CLOUD_NAME",
-        "CLOUDINARY_API_KEY",
-        "CLOUDINARY_API_SECRET"
-      ],
-      "files": [
-        "lib/storage/cloudinary.ts",
-        "app/api/uploads/images/route.ts"
-      ],
-      "routes": [
-        "/api/uploads/images"
-      ],
+      "env": ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"],
+      "files": ["lib/storage/cloudinary.ts", "app/api/uploads/images/route.ts"],
+      "routes": ["/api/uploads/images"],
       "removalComplexity": "safe",
-      "dependsOn": [
-        "auth"
-      ],
+      "dependsOn": ["auth"],
       "disableBehavior": "cloudinaryEnabled=false; la route d’upload reste inerte/non disponible."
     },
     "email": {
       "description": "Emails transactionnels Resend; requis si email/password + vérification/récupération sont activés",
       "optional": "conditional",
-      "env": [
-        "RESEND_API_KEY",
-        "EMAIL_FROM"
-      ],
-      "files": [
-        "lib/email/index.ts"
-      ],
+      "env": ["RESEND_API_KEY", "EMAIL_FROM"],
+      "files": ["lib/email/index.ts"],
       "routes": [],
       "requiredWhen": "AUTH_EMAIL_PASSWORD_ENABLED=true",
       "disableBehavior": "Si Resend est absent, désactiver email/password et utiliser un autre provider d’auth; ne jamais laisser un flux de vérification/récupération sans livraison.",
       "removalComplexity": "conditional",
-      "dependsOn": [
-        "auth"
-      ]
+      "dependsOn": ["auth"]
     },
     "support-email": {
       "description": "Formulaire de support authentifié envoyé à l’équipe MusikPro via Resend",
       "optional": false,
-      "env": [
-        "RESEND_API_KEY",
-        "EMAIL_FROM",
-        "SUPPORT_EMAIL"
-      ],
+      "env": ["RESEND_API_KEY", "EMAIL_FROM", "SUPPORT_EMAIL"],
       "files": [
         "components/banani/ContactSupportScreen.tsx",
         "app/api/support/route.ts",
         "lib/email/index.ts",
         "lib/validation/musikpro-demo.ts"
       ],
-      "routes": [
-        "/api/support"
-      ],
+      "routes": ["/api/support"],
       "removalComplexity": "with-care",
-      "dependsOn": [
-        "auth",
-        "email",
-        "upstash"
-      ]
+      "dependsOn": ["auth", "email", "upstash"]
     },
     "google": {
       "description": "Google OAuth + Search Console",
       "optional": true,
-      "env": [
-        "GOOGLE_CLIENT_ID",
-        "GOOGLE_CLIENT_SECRET"
-      ],
-      "files": [
-        "lib/google/search-console.ts",
-        "app/admin/integrations/google/page.tsx"
-      ],
+      "env": ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"],
+      "files": ["lib/google/search-console.ts", "app/admin/integrations/google/page.tsx"],
       "routes": [],
       "removalComplexity": "safe",
-      "dependsOn": [
-        "auth"
-      ],
+      "dependsOn": ["auth"],
       "disableBehavior": "googleAuth=false/searchConsole=false selon les besoins."
     },
     "seo": {
       "description": "Metadata, sitemap, robots, Open Graph",
       "optional": false,
       "env": [],
-      "files": [
-        "lib/seo/metadata.ts",
-        "app/sitemap.ts",
-        "app/robots.ts",
-        "app/opengraph-image.tsx"
-      ],
+      "files": ["lib/seo/metadata.ts", "app/sitemap.ts", "app/robots.ts", "app/opengraph-image.tsx"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": []
@@ -362,9 +263,7 @@
     "clients-crud-prisma": {
       "description": "CRUD Clients post-Banani avec modèle Prisma Client, routes /api/clients/*, Zod, Better Auth, rate limiting et RLS propriétaire.",
       "optional": true,
-      "env": [
-        "DATABASE_URL"
-      ],
+      "env": ["DATABASE_URL"],
       "files": [
         "prisma/schema.prisma",
         "lib/prisma.ts",
@@ -374,30 +273,20 @@
         "app/api/clients/[id]/route.ts",
         "docs/features/clients-crud.md"
       ],
-      "routes": [
-        "/api/clients",
-        "/api/clients/[id]"
-      ],
+      "routes": ["/api/clients", "/api/clients/[id]"],
       "notes": [
         "La brique est attachée seulement après import des écrans Banani.",
         "Drizzle reste l’ORM principal du kit; Prisma est ciblé sur le CRUD Clients demandé."
       ],
       "removalComplexity": "low",
-      "dependsOn": [
-        "database",
-        "auth",
-        "banani-planner"
-      ],
+      "dependsOn": ["database", "auth", "banani-planner"],
       "disableBehavior": "Si le SaaS ne gère pas de clients, conserver la brique non branchée et ne pas exécuter la migration Prisma."
     },
     "observability-core": {
       "description": "Logs structurés, redaction des secrets et request IDs",
       "optional": false,
       "env": [],
-      "files": [
-        "lib/observability/logger.ts",
-        "lib/observability/request-id.ts"
-      ],
+      "files": ["lib/observability/logger.ts", "lib/observability/request-id.ts"],
       "routes": [],
       "removalComplexity": "never",
       "dependsOn": []
@@ -406,9 +295,7 @@
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,
       "env": [],
-      "files": [
-        "lib/api/client.ts"
-      ],
+      "files": ["lib/api/client.ts"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": []
@@ -431,15 +318,8 @@
     "upstash": {
       "description": "Upstash Redis optionnel pour cache TTL, rate limiting distribué et états temporaires",
       "optional": true,
-      "env": [
-        "UPSTASH_REDIS_REST_URL",
-        "UPSTASH_REDIS_REST_TOKEN"
-      ],
-      "files": [
-        "lib/cache/upstash.ts",
-        "lib/security/rate-limit.ts",
-        "lib/health/readiness.ts"
-      ],
+      "env": ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+      "files": ["lib/cache/upstash.ts", "lib/security/rate-limit.ts", "lib/health/readiness.ts"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": [],
@@ -453,11 +333,7 @@
       "description": "Qualité visuelle permanente : icônes SVG premium cohérentes + blocage Sparkle/Sparklet et glyphes UI génériques",
       "optional": false,
       "env": [],
-      "files": [
-        "components/ui/premium-icon.tsx",
-        "scripts/premium-icon-check.mjs",
-        "docs/ui/premium-icons.md"
-      ],
+      "files": ["components/ui/premium-icon.tsx", "scripts/premium-icon-check.mjs", "docs/ui/premium-icons.md"],
       "routes": [],
       "removalComplexity": "never",
       "dependsOn": []
@@ -482,9 +358,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "observability-core"
-      ]
+      "dependsOn": ["observability-core"]
     },
     "zod-validation-gate": {
       "description": "Validation Zod permanente côté client et serveur : Server Actions, routes API mutantes et formulaires sensibles contrôlés avant CI/livraison.",
@@ -498,9 +372,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "security-baseline-gate"
-      ]
+      "dependsOn": ["security-baseline-gate"]
     },
     "continuous-refactor-gate": {
       "description": "Garde-fou global permanent : autorisation serveur des zones privées, hygiène des réponses paiements, protections requêtes mutantes, identifiants cryptographiques, headers prod/dev et cohérence CI.",
@@ -515,10 +387,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "security-baseline-gate",
-        "zod-validation-gate"
-      ]
+      "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
     },
     "mobileAppPipeline": {
       "description": "Pipeline Android/iOS optionnel après déploiement Web, basé sur Capacitor",
@@ -554,10 +423,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "security-baseline-gate",
-        "zod-validation-gate"
-      ]
+      "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
     },
     "staging-gate": {
       "description": "Staging Vercel obligatoire avant production : Preview isolée, smoke tests, approbation traçable et gate de production.",
@@ -573,10 +439,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "security-baseline-gate",
-        "zod-validation-gate"
-      ]
+      "dependsOn": ["security-baseline-gate", "zod-validation-gate"]
     },
     "claude-code-support": {
       "description": "Compatibilité Claude Code + commandes projet + Computer Use/Browser vérifiable séparément",
@@ -612,10 +475,7 @@
         "components/banani/WorkspaceBalanceCard.tsx"
       ],
       "routes": [],
-      "dependsOn": [
-        "auth",
-        "banani-planner"
-      ],
+      "dependsOn": ["auth", "banani-planner"],
       "removalComplexity": "medium",
       "disableBehavior": "Remplacer les pages et le provider de démonstration par des adaptateurs de données réelles via un plan dédié ; ne pas supprimer auth, billing ou les primitives du kit.",
       "notes": [
@@ -626,10 +486,7 @@
     "music-style-catalog": {
       "description": "Catalogue Neon des styles musicaux piloté par le propriétaire et affiché dans le parcours de création client.",
       "optional": false,
-      "env": [
-        "DATABASE_URL",
-        "DATABASE_SERVICE_URL"
-      ],
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0004_public_sugar_man.sql",
@@ -642,10 +499,7 @@
         "components/banani/StepStyleAndMood.tsx"
       ],
       "routes": [],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "medium",
       "notes": [
         "Les mutations sont réservées aux administrateurs et validées par Zod.",
@@ -655,10 +509,7 @@
     "occasion-catalog": {
       "description": "Catalogue Neon des occasions piloté par le propriétaire et partagé avec les parcours client réel et démo.",
       "optional": false,
-      "env": [
-        "DATABASE_URL",
-        "DATABASE_SERVICE_URL"
-      ],
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0006_tired_franklin_richards.sql",
@@ -674,10 +525,7 @@
         "components/banani/SongCreationStep1Mobile.tsx"
       ],
       "routes": [],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "medium",
       "notes": [
         "Les mutations sont réservées aux administrateurs et validées par Zod.",
@@ -687,10 +535,7 @@
     "language-catalog": {
       "description": "Catalogue Neon partagé des langues de l’interface et des langues de génération des paroles, administrable par le propriétaire.",
       "optional": false,
-      "env": [
-        "DATABASE_URL",
-        "DATABASE_SERVICE_URL"
-      ],
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0010_language_catalog.sql",
@@ -721,13 +566,8 @@
         "lib/i18n/overlay-server.ts",
         "app/api/i18n/overlay/route.ts"
       ],
-      "routes": [
-        "/api/i18n/overlay"
-      ],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "routes": ["/api/i18n/overlay"],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "medium",
       "disableBehavior": "Conserver au minimum le français pour l’interface et les paroles afin que le parcours client reste utilisable.",
       "notes": [
@@ -740,39 +580,43 @@
       ]
     },
     "audio-provider-slots": {
-      "description": "Fournisseurs de génération audio interchangeables : Musicful (historique) et MusicGPT comme second fournisseur, choisis depuis /admin/ai-providers/audio. Un fournisseur s'ajoute via un adaptateur (lib/ai/audio-providers) sans toucher au flux Musicful.",
+      "description": "Fournisseurs de génération audio interchangeables : Musicful (historique), MusicGPT et Replicate (ACE-Step 1.5, MP3 uniquement), choisis depuis /admin/ai-providers/audio. Un fournisseur s'ajoute via un adaptateur (lib/ai/audio-providers) sans toucher au flux Musicful.",
       "optional": false,
-      "env": [
-        "DATABASE_URL",
-        "DATABASE_SERVICE_URL",
-        "APP_SECRETS_ENCRYPTION_KEY"
-      ],
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL", "APP_SECRETS_ENCRYPTION_KEY"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0053_audio_provider_default.sql",
         "lib/ai/audio-providers/catalog.ts",
         "lib/ai/audio-providers/types.ts",
         "lib/ai/audio-providers/musicgpt.ts",
+        "lib/ai/audio-providers/replicate.ts",
+        "lib/ai/audio-providers/replicate-model.ts",
+        "lib/ai/audio-providers/replicate-usage.ts",
+        "lib/ai/audio-providers/replicate-versions-model.ts",
+        "lib/ai/audio-providers/replicate-versions.ts",
+        "lib/validation/replicate-versions.ts",
+        "app/admin/ai-providers/replicate-version-actions.ts",
+        "components/admin/AdminReplicateVersionsPanel.tsx",
+        "app/api/cron/replicate-versions/route.ts",
+        "db/migrations/0074_replicate_model_versions.sql",
         "lib/ai/audio-providers/registry.ts",
         "lib/ai/audio-providers/active.ts",
         "lib/ai/audio-providers/dispatch.ts",
         "lib/ai/audio-providers/webhook.ts",
         "app/api/webhooks/musicgpt/[token]/route.ts",
+        "app/api/webhooks/replicate/[token]/route.ts",
         "db/migrations/0054_audio_provider_webhook_token.sql",
         "lib/ai/musicful.ts",
         "app/admin/ai-providers/audio-actions.ts",
         "app/admin/ai-providers/audio/page.tsx",
         "components/admin/AdminAudioProviderForm.tsx"
       ],
-      "routes": [
-        "/api/webhooks/musicgpt/[token]"
-      ],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "routes": ["/api/webhooks/musicgpt/[token]", "/api/webhooks/replicate/[token]", "/api/cron/replicate-versions"],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "medium",
       "notes": [
+        "Versions ACE-Step (skill v1.1.0) : détection (cron quotidien /api/cron/replicate-versions, lecture seule) → comparaison de schéma → test réel payant consenti → approbation → activation atomique (compare-and-set sur audio_provider_configs.default_model) → retour arrière. Aucune activation automatique ; la version n'est plus éditable dans le formulaire. Tables replicate_model_versions + replicate_model_version_events (audit en ajout seul).",
+        "Replicate (fishaudio/ace-step-1.5, version épinglée) : prédictions asynchrones, audio_format forcé à mp3, webhook vérifié par jeton d'URL ET signature HMAC (secret whsec_ lu via l'API, jamais stocké), lien de sortie temporaire copié sur Cloudinary avant publication (persistAudio), hôte API fixe api.replicate.com, clé validée par GET /v1/account avant remplacement.",
         "Le fournisseur actif est la ligne audio_provider_configs marquée is_default_for_audio ; sans ligne marquée, Musicful reste utilisé.",
         "Les tâches déjà créées restent suivies par le fournisseur enregistré sur chaque job (music_generation_jobs.provider).",
         "Un fournisseur ne peut être choisi comme actif que lorsque son adaptateur est implémenté (catalog.ts, implemented: true)."
@@ -781,10 +625,7 @@
     "discover-library": {
       "description": "Page Découvrir des clients : toutes les chansons terminées y apparaissent automatiquement (chaque créateur peut retirer les siennes) ; le propriétaire règle l'affichage et modère depuis /admin/library. Remplace l'ancien système de collections.",
       "optional": false,
-      "env": [
-        "DATABASE_URL",
-        "DATABASE_SERVICE_URL"
-      ],
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0050_discover_library.sql",
@@ -798,13 +639,8 @@
         "components/admin/AdminDiscoverSongList.tsx",
         "components/banani/DiscoverLibraryScreen.tsx"
       ],
-      "routes": [
-        "/api/songs/[groupId]/discover"
-      ],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "routes": ["/api/songs/[groupId]/discover"],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "medium",
       "notes": [
         "Le retrait par le créateur ne supprime jamais la chanson : elle reste dans « Mes chansons » et garde son lien public.",
@@ -869,12 +705,7 @@
         "/api/admin/ai/accent-hint",
         "/api/admin/ai/phone-prefix"
       ],
-      "dependsOn": [
-        "database",
-        "auth",
-        "api-client",
-        "upstash"
-      ],
+      "dependsOn": ["database", "auth", "api-client", "upstash"],
       "removalComplexity": "medium",
       "disableBehavior": "Désactiver le fournisseur dans l’administration; le reste du SaaS reste disponible et la démo conserve son résultat local. La suggestion de prononciation retombe silencieusement sur l’heuristique locale côté client si le fournisseur est indisponible. Les boutons « Générer avec l’IA » du catalogue de styles musicaux renvoient une erreur 503 explicite si le fournisseur est indisponible; les descriptions restent modifiables manuellement.",
       "notes": [
@@ -888,10 +719,7 @@
     "musicful-audio-generation": {
       "description": "Fournisseur audio Musicful administrable et chiffré : génération de chansons (mode auto), suivi asynchrone des tâches, conversion WAV. Musicful v2 — MP3 Only : le fichier exposé à l’utilisateur (audioUrl) est toujours un MP3 vérifié, transcodé via Cloudinary si nécessaire ; aucune génération/conversion MP4 n’est effectuée.",
       "optional": true,
-      "env": [
-        "APP_SECRETS_ENCRYPTION_KEY",
-        "MUSICFUL_API_KEY"
-      ],
+      "env": ["APP_SECRETS_ENCRYPTION_KEY", "MUSICFUL_API_KEY"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0014_musicful_audio_provider.sql",
@@ -910,16 +738,8 @@
         "app/api/music/jobs/[id]/wav/route.ts",
         ".claude/skills/Musicful-v2-MP3-Only-SKILL.md"
       ],
-      "routes": [
-        "/api/music/generate",
-        "/api/music/jobs/[id]",
-        "/api/music/jobs/[id]/wav"
-      ],
-      "dependsOn": [
-        "database",
-        "auth",
-        "api-client"
-      ],
+      "routes": ["/api/music/generate", "/api/music/jobs/[id]", "/api/music/jobs/[id]/wav"],
+      "dependsOn": ["database", "auth", "api-client"],
       "removalComplexity": "medium",
       "disableBehavior": "Désactiver le fournisseur dans l’administration ; les routes /api/music/* renvoient alors 503 MUSICFUL_NOT_CONFIGURED sans affecter le reste du SaaS.",
       "notes": [
@@ -956,17 +776,8 @@
         "components/banani/SongPlayerScreen.tsx",
         "components/banani/MyLyricsScreen.tsx"
       ],
-      "routes": [
-        "/api/songs",
-        "/api/songs/generate",
-        "/api/songs/[groupId]",
-        "/api/credits/balance"
-      ],
-      "dependsOn": [
-        "database",
-        "auth",
-        "musicful-audio-generation"
-      ],
+      "routes": ["/api/songs", "/api/songs/generate", "/api/songs/[groupId]", "/api/credits/balance"],
+      "dependsOn": ["database", "auth", "musicful-audio-generation"],
       "removalComplexity": "medium",
       "disableBehavior": "Désactiver Musicful dans l’administration ramène /api/songs/generate à une réponse 503 ; l’espace démonstration (/demo) n’est jamais affecté, il conserve son propre flux local factice.",
       "notes": [
@@ -1068,7 +879,12 @@
         "components/banani/NotificationCenterScreen.tsx",
         "components/banani/useRealNotifications.ts"
       ],
-      "routes": ["/api/notifications", "/api/notifications/read", "/api/notifications/preferences", "/api/push/devices"],
+      "routes": [
+        "/api/notifications",
+        "/api/notifications/read",
+        "/api/notifications/preferences",
+        "/api/push/devices"
+      ],
       "dependsOn": ["database", "auth", "real-song-generation-journey"],
       "removalComplexity": "low",
       "disableBehavior": "Retirer l'appel notifySongReady dans lib/ai/music-jobs.ts : plus aucune notification créée, la cloche affiche son état vide. Supprimer FIREBASE_SERVICE_ACCOUNT_JSON coupe seulement les push (la cloche reste). Les tables restent inutilisées.",
@@ -1106,17 +922,8 @@
         "lib/i18n/request-locale.ts",
         "lib/i18n/translate.ts"
       ],
-      "routes": [
-        "/api/songs/[groupId]/publish",
-        "/api/songs/[groupId]/cover",
-        "/api/songs/download"
-      ],
-      "dependsOn": [
-        "database",
-        "auth",
-        "real-song-generation-journey",
-        "cloudinary"
-      ],
+      "routes": ["/api/songs/[groupId]/publish", "/api/songs/[groupId]/cover", "/api/songs/download"],
+      "dependsOn": ["database", "auth", "real-song-generation-journey", "cloudinary"],
       "removalComplexity": "medium",
       "disableBehavior": "Retirer la rangée d'actions du composant carte chanson désactive l'entrée utilisateur ; la table song_publications et la page /s/[slug] peuvent rester en base sans effet de bord (liens déjà publiés restent lisibles). Aucun impact sur le parcours de génération/paiement (real-song-generation-journey).",
       "notes": [
@@ -1129,10 +936,7 @@
     "funnel-tracking": {
       "description": "Page /admin/funnel branchée sur de vraies données Neon : comptes créés, créations commencées (funnel_events), paiements confirmés et générations terminées (music_generation_jobs), avec taux de conversion réels entre chaque étape.",
       "optional": false,
-      "env": [
-        "DATABASE_SERVICE_URL",
-        "CRON_SECRET"
-      ],
+      "env": ["DATABASE_SERVICE_URL", "CRON_SECRET"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0024_huge_mentallo.sql",
@@ -1143,13 +947,8 @@
         "app/api/cron/funnel-retention/route.ts",
         "scripts/generate-vercel-cron.mjs"
       ],
-      "routes": [
-        "/api/cron/funnel-retention"
-      ],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "routes": ["/api/cron/funnel-retention"],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "low",
       "disableBehavior": "Retirer l’appel writeFunnelEvent() de app/dashboard/create/page.tsx arrête la collecte ; la carte « Créations commencées » retombe alors à 0 sans casser le reste de la page.",
       "notes": [
@@ -1183,9 +982,7 @@
     "ai-provider-credits": {
       "description": "Page /admin/ai-credits affichant les crédits fournisseurs IA sans quitter MusikPro : solde Musicful (déjà récupéré via Tester la connexion) et dépenses Anthropic du mois en cours via l’API Coût Admin Anthropic.",
       "optional": true,
-      "env": [
-        "APP_SECRETS_ENCRYPTION_KEY"
-      ],
+      "env": ["APP_SECRETS_ENCRYPTION_KEY"],
       "files": [
         "db/schema/index.ts",
         "db/migrations/0026_damp_vin_gonzales.sql",
@@ -1197,10 +994,7 @@
         "components/admin/AdminShell.tsx"
       ],
       "routes": [],
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "dependsOn": ["database", "auth"],
       "removalComplexity": "low",
       "disableBehavior": "Retirer le lien « Crédits fournisseurs IA » de AdminShell.tsx masque le menu ; la page /admin/ai-credits reste accessible par URL directe mais n’affiche que des placeholders si aucune clé n’est configurée.",
       "notes": [
@@ -1233,12 +1027,7 @@
         "Aucune donnée fictive : occasions/styles/tarifs/bibliothèque proviennent des mêmes repositories que le dashboard et /admin."
       ],
       "removalComplexity": "low",
-      "dependsOn": [
-        "banani-planner",
-        "occasion-catalog",
-        "music-style-catalog",
-        "credit-catalog"
-      ],
+      "dependsOn": ["banani-planner", "occasion-catalog", "music-style-catalog", "credit-catalog"],
       "disableBehavior": "Sans cette feature, / retombe sur un titre/description minimal (comportement précédent)."
     },
     "admin-trending-menu": {
@@ -1253,29 +1042,19 @@
         "app/api/admin/trending/lookup/route.ts",
         "components/admin/TrendingPanel.tsx"
       ],
-      "routes": [
-        "/api/admin/trending/lookup"
-      ],
+      "routes": ["/api/admin/trending/lookup"],
       "notes": [
         "L'identifiant d'une génération (songGroupId) n'est affiché que sur /admin/generations; /api/admin/trending/lookup permet de retrouver une chanson par cet identifiant même hors de la liste des générations récentes.",
         "Choisir une chanson en mode manuel publie automatiquement sa version (publishSongGroup) si elle ne l'était pas déjà, sans changer le widget public /s/[slug]."
       ],
       "removalComplexity": "low",
-      "dependsOn": [
-        "database",
-        "auth",
-        "real-song-generation-journey"
-      ],
+      "dependsOn": ["database", "auth", "real-song-generation-journey"],
       "disableBehavior": "Sans cette feature, la landing page retombe sur les chansons publiées les plus écoutées telles qu'affichées par défaut (comportement précédent du bloc tendances)."
     },
     "admin-media-library": {
       "description": "Menu Médias du tableau de bord propriétaire — médiathèque Cloudinary réutilisable (pochettes de chansons et autres visuels) : chaque import est converti en AVIF et recompressé sous 2 Mo automatiquement, sans nouvelle table (liste/suppression via l'API Admin Cloudinary).",
       "optional": true,
-      "env": [
-        "CLOUDINARY_CLOUD_NAME",
-        "CLOUDINARY_API_KEY",
-        "CLOUDINARY_API_SECRET"
-      ],
+      "env": ["CLOUDINARY_CLOUD_NAME", "CLOUDINARY_API_KEY", "CLOUDINARY_API_SECRET"],
       "files": [
         "lib/storage/cloudinary.ts",
         "lib/media/admin.ts",
@@ -1286,20 +1065,14 @@
         "app/api/admin/media/route.ts",
         "app/api/admin/media/upload/route.ts"
       ],
-      "routes": [
-        "/api/admin/media",
-        "/api/admin/media/upload"
-      ],
+      "routes": ["/api/admin/media", "/api/admin/media/upload"],
       "notes": [
         "Dossier Cloudinary dédié `media-library/`, distinct du dossier `users/{id}` utilisé par /api/uploads/images pour les envois côté client.",
         "La compression AVIF (q_auto puis, si besoin, réduction de largeur) est appliquée dans uploadImageToCloudinary, donc profite aussi à l'envoi de pochette déjà existant sur /admin/landing-features.",
         "Aucune table dédiée : la liste/suppression passe par l'API Admin Cloudinary (resources/destroy), pas par la base de données."
       ],
       "removalComplexity": "low",
-      "dependsOn": [
-        "database",
-        "auth"
-      ],
+      "dependsOn": ["database", "auth"],
       "disableBehavior": "Sans cette feature, le menu Médias disparaît; les formulaires qui uploadent déjà leur propre image (ex. Chansons mises en avant) continuent de fonctionner via /api/uploads/images, désormais toujours compressé en AVIF sous 2 Mo."
     },
     "ai-development-quality-gate": {
@@ -1320,9 +1093,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "continuous-refactor-gate"
-      ],
+      "dependsOn": ["continuous-refactor-gate"],
       "notes": [
         "Ne crée pas un second système de règles : CLAUDE.md est la source de vérité unique.",
         "Le handoff généré ne lit ni n’affiche les secrets de .env.local."
@@ -1341,10 +1112,7 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "zod-validation-gate",
-        "security-baseline-gate"
-      ]
+      "dependsOn": ["zod-validation-gate", "security-baseline-gate"]
     },
     "critical-flow-quality": {
       "description": "Registre de parcours critiques et tests ciblés pour auth, validation, RBAC, multi-tenant, rate limiting, mutations, paiements et uploads.",
@@ -1358,25 +1126,17 @@
       ],
       "routes": [],
       "removalComplexity": "never",
-      "dependsOn": [
-        "auth",
-        "zod-validation-gate"
-      ]
+      "dependsOn": ["auth", "zod-validation-gate"]
     },
     "accessibility-ux-quality": {
       "description": "Gate statique accessibilité/UX complétant Mobile First, SEO, Design et Premium Icon Gate sans imposer de nouvelle dépendance.",
       "optional": false,
       "env": [],
-      "files": [
-        "scripts/accessibility-ux-check.mjs",
-        "docs/quality/accessibility-ux.md"
-      ],
+      "files": ["scripts/accessibility-ux-check.mjs", "docs/quality/accessibility-ux.md"],
       "routes": [],
       "removalComplexity": "safe",
       "dependsOn": [],
-      "notes": [
-        "Les contrôles visuels clavier/contraste/reflow restent NON VÉRIFIÉS sans test navigateur réel."
-      ]
+      "notes": ["Les contrôles visuels clavier/contraste/reflow restent NON VÉRIFIÉS sans test navigateur réel."]
     },
     "exclusive-song-playback": {
       "description": "Lecture exclusive des chansons : une seule à la fois sur une page (landing, tableau de bord client, page publique, aperçus admin), réglable depuis /admin/settings.",
@@ -1392,9 +1152,7 @@
       ],
       "routes": [],
       "removalComplexity": "safe",
-      "dependsOn": [
-        "database"
-      ],
+      "dependsOn": ["database"],
       "disableBehavior": "Désactiver le réglage dans /admin/settings (ou ne pas appliquer la migration 0065 : l'absence de ligne vaut « activé »). La musique d'ambiance (data-audio-role=\"ambient\") est exclue car AmbientPlayerContext la gère.",
       "notes": [
         "Un seul écouteur global `play` monté dans app/layout.tsx : ne pas dupliquer ce mécanisme dans chaque lecteur.",

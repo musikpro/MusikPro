@@ -6,7 +6,14 @@ import { createLogger } from "@/lib/observability/logger";
 import { writeAuditLog } from "@/lib/security/audit";
 import { refundSongGroupIfFailed } from "@/lib/credits/generation-refund";
 import { getAudioProviderConfig } from "../musicful";
-import { ensureVerifiedMp3, getJobForUser, pollMusicJob, submitSongGroupJobs, type Mp3Resolution } from "../music-jobs";
+import {
+  ensureVerifiedMp3,
+  getJobForUser,
+  persistRemoteMp3,
+  pollMusicJob,
+  submitSongGroupJobs,
+  type Mp3Resolution,
+} from "../music-jobs";
 import { getAudioProviderDefinition } from "./catalog";
 import { getAudioWebhookUrl } from "./webhook";
 import { getAudioAdapter } from "./registry";
@@ -144,7 +151,9 @@ async function advanceJobForProvider(jobId: string, userId: string) {
     const isFailed = task.state === "failed";
     const mp3: Mp3Resolution =
       task.state === "completed" && task.audioUrl
-        ? await ensureVerifiedMp3(task.audioUrl, job.id)
+        ? task.persistAudio
+          ? await persistRemoteMp3(task.audioUrl, job.id)
+          : await ensureVerifiedMp3(task.audioUrl, job.id)
         : { url: null, mimeType: null, normalized: false, reason: "audio_not_ready" };
     const isCompleted = !isFailed && Boolean(mp3.url);
     // Same guard as the Musicful flow: a job whose audio never verifies must not poll forever.

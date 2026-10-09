@@ -26,6 +26,12 @@
       "rateLimit": "scheduler-exempt",
       "markers": ["verifyCronRequest(request)"]
     },
+    "app/api/cron/replicate-versions/route.ts": {
+      "auth": "cron-secret",
+      "validation": "no-user-body",
+      "rateLimit": "scheduler-exempt",
+      "markers": ["verifyCronRequest(request)"]
+    },
     "app/api/cron/refresh-currency-rates/route.ts": {
       "auth": "cron-secret",
       "validation": "no-user-body",
@@ -401,6 +407,12 @@
       "validation": "provider-webhook-verifier",
       "rateLimit": "distributed-or-fail-closed",
       "markers": ["verifyAudioWebhookToken", "rejectOversizedRequest", "rateLimit("]
+    },
+    "app/api/webhooks/replicate/[token]/route.ts": {
+      "auth": "provider-signature",
+      "validation": "provider-webhook-verifier",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["verifyAudioWebhookToken", "verifyReplicateWebhookSignature", "rejectOversizedRequest", "rateLimit("]
     }
   }
 }

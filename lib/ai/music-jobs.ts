@@ -416,6 +416,30 @@ export async function ensureVerifiedMp3(candidateUrl: string, jobId: string): Pr
   }
 }
 
+/**
+ * Providers whose delivery link is temporary (Replicate: about one hour) cannot have it stored as the
+ * song's final URL. Cloudinary fetches the file server-side and re-encodes it to a genuine MP3 under a
+ * stable per-job id (idempotent: a replayed webhook or poll overwrites the same asset). Without durable
+ * storage the job is never completed: an expiring link must not become the final one.
+ */
+export async function persistRemoteMp3(candidateUrl: string, jobId: string): Promise<Mp3Resolution> {
+  if (!isCloudinaryConfigured()) {
+    logger.error("Temporary provider audio cannot be persisted: Cloudinary is not configured", { jobId });
+    return { url: null, mimeType: null, normalized: false, reason: "persistent_storage_not_configured" };
+  }
+  try {
+    const stored = await transcodeRemoteAudioToMp3(candidateUrl, {
+      folder: `${process.env.CLOUDINARY_FOLDER || "africa-saas-kit"}/replicate-audio`,
+      publicId: `job-${jobId}`,
+    });
+    return { url: stored.url, mimeType: "audio/mpeg", normalized: true, reason: null };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "unknown";
+    logger.error("Temporary provider audio could not be persisted", { jobId, error: message });
+    return { url: null, mimeType: null, normalized: false, reason: `persist_failed:${message.slice(0, 120)}` };
+  }
+}
+
 export async function pollMusicJob(jobId: string, userId: string) {
   const job = await getOwnedJob(jobId, userId);
   if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId)
