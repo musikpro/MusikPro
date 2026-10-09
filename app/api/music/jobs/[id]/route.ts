@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { MusicJobOwnershipError, pollMusicJob } from "@/lib/ai/music-jobs";
+import { pollJobForProvider } from "@/lib/ai/audio-providers/dispatch";
+import { MusicJobOwnershipError } from "@/lib/ai/music-jobs";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 
 export const runtime = "nodejs";
@@ -23,7 +24,7 @@ export async function GET(request: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Trop de requêtes. Réessaie dans un instant." }, { status: 429 });
 
   try {
-    const job = await pollMusicJob(parsedId.data, session.user.id);
+    const job = await pollJobForProvider(parsedId.data, session.user.id);
     return NextResponse.json({
       jobId: job.id,
       status: job.status,
