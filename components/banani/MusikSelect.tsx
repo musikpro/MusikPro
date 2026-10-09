@@ -27,6 +27,8 @@ export default function MusikSelect({
   showSelectionMark = true,
   portal = false,
   portalWidth,
+  portalAlign = "end",
+  portalAnchorSelector,
   menuClassName = "",
   ariaInvalid = false,
   describedBy,
@@ -43,6 +45,10 @@ export default function MusikSelect({
   showSelectionMark?: boolean;
   portal?: boolean;
   portalWidth?: number;
+  /** « start » : le menu en portail s'aligne sur le bord gauche du déclencheur et s'ouvre vers la droite ; « end » (défaut) : bord droit. */
+  portalAlign?: "start" | "end";
+  /** Sélecteur CSS d'un ancêtre dont le bord gauche sert de référence à l'alignement « start » (ex. le champ entier). */
+  portalAnchorSelector?: string;
   menuClassName?: string;
   ariaInvalid?: boolean;
   describedBy?: string;
@@ -94,6 +100,8 @@ export default function MusikSelect({
     if (portal && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
       const width = portalWidth ?? rect.width;
+      const anchor = portalAnchorSelector ? triggerRef.current.closest(portalAnchorSelector) : null;
+      const startEdge = (anchor ?? triggerRef.current).getBoundingClientRect().left;
       // Estimated height mirrors .musik-select-menu's own cap (max-height: 264px, ~40px rows) —
       // a trigger near the bottom of the viewport (e.g. the mobile menu's language selector)
       // would otherwise always drop the menu below the fold, out of view.
@@ -102,7 +110,10 @@ export default function MusikSelect({
       const openAbove = availableBelow < Math.min(160, estimatedHeight) && rect.top > availableBelow;
       setPortalPosition({
         top: openAbove ? Math.max(8, rect.top - estimatedHeight - 7) : rect.bottom + 7,
-        left: Math.min(window.innerWidth - width - 8, Math.max(8, rect.right - width)),
+        left: Math.min(
+          window.innerWidth - width - 8,
+          Math.max(8, portalAlign === "start" ? startEdge : rect.right - width),
+        ),
         width,
       });
     }
