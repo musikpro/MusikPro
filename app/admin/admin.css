@@ -7224,3 +7224,72 @@ body:has(.admin-app),
     transition: none;
   }
 }
+
+/* Renommer une chanson (/admin/generations) — largeur portée par le th, comme la colonne Identifiant. */
+.admin-generation-song-col {
+  width: 300px;
+}
+.admin-song-title {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 240px;
+}
+.admin-song-title-edit {
+  flex: none;
+}
+.admin-song-title-edit {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--admin-line, rgba(0, 0, 0, 0.12));
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.admin-song-title-edit:hover,
+.admin-song-title-edit:focus-visible {
+  background: rgba(0, 0, 0, 0.05);
+}
+.admin-song-title-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 260px;
+}
+.admin-song-title-form input[name="title"] {
+  flex: 1 1 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--admin-line, rgba(0, 0, 0, 0.2));
+  border-radius: 8px;
+  font: inherit;
+}
+.admin-song-title-save,
+.admin-song-title-cancel {
+  white-space: nowrap;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 8px;
+  font: inherit;
+  cursor: pointer;
+}
+.admin-song-title-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: #f26a21;
+  color: #fff;
+  font-weight: 600;
+}
+.admin-song-title-cancel {
+  border: 1px solid var(--admin-line, rgba(0, 0, 0, 0.2));
+  background: transparent;
+  color: inherit;
+}

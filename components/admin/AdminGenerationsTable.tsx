@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react";
 import Icon from "@/components/banani/Icon";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
+import AdminSongTitleEditor from "@/components/admin/AdminSongTitleEditor";
 
 export type AdminGenerationRow = {
   id: string;
@@ -142,7 +143,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
             <tr>
               <th>Date</th>
               <th>Utilisateur</th>
-              <th>Chanson</th>
+              <th className="admin-generation-song-col">Chanson</th>
               <th className="admin-generation-id-col">Identifiant</th>
               <th>Style</th>
               <th>Fournisseur</th>
@@ -160,7 +161,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
                 <td data-label="Date">{new Date(row.createdAt).toLocaleString("fr-FR")}</td>
                 <td data-label="Utilisateur">{row.userEmail ?? "Compte supprimé"}</td>
                 <td className="admin-table-primary" data-label="Chanson">
-                  <strong>{row.title ?? "Sans titre"}</strong>
+                  <AdminSongTitleEditor jobId={row.id} title={row.title} />
                   <small>
                     {row.occasion ?? "Occasion non précisée"}
                     {row.versionLabel ? ` · ${row.versionLabel}` : ""}
