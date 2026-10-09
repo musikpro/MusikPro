@@ -34,11 +34,6 @@ export type AudioTaskSnapshot = {
   state: "processing" | "completed" | "failed";
   /** Direct URL of the finished audio (any format: MusikPro verifies/transcodes it to MP3 itself). */
   audioUrl?: string | null;
-  /**
-   * true = `audioUrl` is a temporary provider link (Replicate: about one hour): MusikPro must copy the MP3 to its own
-   * durable storage before exposing it, instead of just verifying it.
-   */
-  persistAudio?: boolean;
   coverUrl?: string | null;
   durationSeconds?: number | null;
   providerSongId?: string | null;

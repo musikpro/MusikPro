@@ -1,7 +1,6 @@
 import "server-only";
 import { getAudioProviderDefinition } from "./catalog";
 import { musicGptAudioAdapter } from "./musicgpt";
-import { replicateAudioAdapter } from "./replicate";
 import type { AudioProviderAdapter } from "./types";
 
 /**
@@ -11,7 +10,6 @@ import type { AudioProviderAdapter } from "./types";
  */
 const adapters: Record<string, AudioProviderAdapter> = {
   musicgpt: musicGptAudioAdapter,
-  replicate: replicateAudioAdapter,
 };
 
 export function getAudioAdapter(providerId: string): AudioProviderAdapter | null {

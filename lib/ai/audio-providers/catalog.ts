@@ -6,8 +6,6 @@
  * (/admin/ai-providers/audio), the per-provider settings row (`audio_provider_configs`, keyed by `id`)
  * and the generation/polling flow (dispatch.ts) all follow this list.
  */
-import { REPLICATE_DEFAULT_VERSION } from "./replicate-model";
-
 export type AudioProviderDefinition = {
   id: string;
   label: string;
@@ -36,18 +34,6 @@ export const AUDIO_PROVIDERS: readonly AudioProviderDefinition[] = [
     description: "Music AI V2 : génération de chansons (modèles v6, v6-pro, v7, v7-pro), sortie MP3 uniquement.",
     implemented: true,
     defaults: { apiBaseUrl: "https://api.musicgpt.com/api/public", model: "v7", envKey: "MUSICGPT_API_KEY" },
-  },
-  {
-    id: "replicate",
-    label: "Replicate",
-    description:
-      "ACE-Step 1.5 (fishaudio/ace-step-1.5) : prédictions asynchrones, sortie MP3 uniquement, copie durable du fichier avant l’expiration du lien Replicate.",
-    implemented: true,
-    defaults: {
-      apiBaseUrl: "https://api.replicate.com",
-      model: REPLICATE_DEFAULT_VERSION,
-      envKey: "REPLICATE_API_TOKEN",
-    },
   },
 ];
 
