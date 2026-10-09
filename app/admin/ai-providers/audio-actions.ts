@@ -10,6 +10,7 @@ import { encryptSecret } from "@/lib/ai/secrets";
 import { getAudioProviderConfig } from "@/lib/ai/musicful";
 import { getAudioProviderDefinition, isKnownAudioProviderId } from "@/lib/ai/audio-providers/catalog";
 import { getAudioAdapter } from "@/lib/ai/audio-providers/registry";
+import { REPLICATE_API_BASE, resolveReplicateVersion } from "@/lib/ai/audio-providers/replicate-model";
 import { regenerateAudioWebhookToken } from "@/lib/ai/audio-providers/webhook";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
@@ -50,11 +51,36 @@ export async function saveAudioProviderSettings(
     if (enabled && !(encrypted || current?.apiKeyCiphertext)) {
       return { ok: false, message: `Ajoute la clé API de ${definition.label} avant de l’activer.` };
     }
-    if (enabled && !parsed.apiBaseUrl) return { ok: false, message: "Renseigne l’URL de l’API avant d’activer ce fournisseur." };
+    if (enabled && !parsed.apiBaseUrl)
+      return { ok: false, message: "Renseigne l’URL de l’API avant d’activer ce fournisseur." };
+    const isReplicate = definition.id === "replicate";
+    if (isReplicate) {
+      // The new key is checked with the free /account call BEFORE it replaces the stored one.
+      if (submittedApiKey) {
+        const adapter = getAudioAdapter(definition.id);
+        try {
+          await adapter?.testConnection?.({
+            apiKey: submittedApiKey,
+            baseUrl: REPLICATE_API_BASE,
+            model: definition.defaults.model,
+            timeoutMs: 15_000,
+            maxRetries: 0,
+          });
+        } catch {
+          return {
+            ok: false,
+            message: "Clé Replicate refusée : la connexion a échoué, la clé précédente est conservée.",
+          };
+        }
+      }
+    }
     const values = {
       enabled,
-      apiBaseUrl: parsed.apiBaseUrl,
-      defaultModel: parsed.defaultModel,
+      // Replicate's host is fixed (the key is only ever sent to api.replicate.com), whatever the form says.
+      apiBaseUrl: isReplicate ? definition.defaults.apiBaseUrl : parsed.apiBaseUrl,
+      // The Replicate version is never taken from this form: it only changes through the owner-approved
+      // activation / rollback flow (lib/ai/audio-providers/replicate-versions.ts).
+      defaultModel: isReplicate ? resolveReplicateVersion(current?.defaultModel) : parsed.defaultModel,
       defaultInstrumental: parsed.defaultInstrumental === "true",
       defaultGender: parsed.defaultGender || null,
       requestTimeoutMs: parsed.requestTimeoutMs,
@@ -90,7 +116,10 @@ export async function saveAudioProviderSettings(
     refresh();
     return { ok: true, message: `Configuration ${definition.label} enregistrée.` };
   } catch (error) {
-    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer la configuration du fournisseur.") };
+    return {
+      ok: false,
+      message: actionErrorMessage(error, "Impossible d’enregistrer la configuration du fournisseur."),
+    };
   }
 }
 
@@ -165,7 +194,10 @@ export async function testAudioProviderConnection(
   }
 }
 
-export async function removeAudioProviderKey(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+export async function removeAudioProviderKey(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
     const { provider } = providerIdSchema.parse(Object.fromEntries(formData));
@@ -212,7 +244,10 @@ export async function removeAudioProviderKey(_previous: AdminActionState, formDa
 }
 
 /** Chooses the provider that receives new song generations. */
-export async function setActiveAudioProvider(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+export async function setActiveAudioProvider(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
     const { provider } = providerIdSchema.parse(Object.fromEntries(formData));
@@ -225,7 +260,10 @@ export async function setActiveAudioProvider(_previous: AdminActionState, formDa
     }
     const resolved = await getAudioProviderConfig(definition.id);
     if (!resolved.enabled || !resolved.apiKey) {
-      return { ok: false, message: `Active ${definition.label} et enregistre sa clé API avant d’en faire le fournisseur actif.` };
+      return {
+        ok: false,
+        message: `Active ${definition.label} et enregistre sa clé API avant d’en faire le fournisseur actif.`,
+      };
     }
     const database = getServiceDb();
     if (resolved.config) {

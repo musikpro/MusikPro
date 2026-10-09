@@ -74,6 +74,7 @@ export default function AdminAudioProviderForm({
   lastTest,
   encryptionReady,
   webhook,
+  replicate,
 }: {
   providerId: string;
   label: string;
@@ -84,6 +85,11 @@ export default function AdminAudioProviderForm({
   encryptionReady: boolean;
   /** Set for providers that call back: `url` is null until a token exists; `httpsReady` = public HTTPS origin configured. */
   webhook?: { url: string | null; httpsReady: boolean };
+  /** Replicate only: fixed host, model version instead of a model name, MP3-only badge, durable storage + usage panels. */
+  replicate?: {
+    storageReady: boolean;
+    usage: { predictions: number; succeeded: number; failed: number; gpuSeconds: number; last30Days: number };
+  };
 }) {
   return (
     <section className="admin-panel admin-editor-card">
@@ -95,6 +101,53 @@ export default function AdminAudioProviderForm({
           {settings.enabled && settings.apiKeyLast4 ? "Actif" : "Inactif"}
         </span>
       </div>
+
+      {replicate ? (
+        <>
+          <div className="admin-status is-success" role="status">
+            Sortie : MP3 uniquement
+          </div>
+          {replicate.storageReady ? null : (
+            <div className="admin-secret-setup" role="status">
+              <span className="admin-secret-setup-icon">
+                <Icon i="shield-check" size={20} />
+              </span>
+              <div>
+                <strong>Stockage durable du MP3 non configuré</strong>
+                <p>
+                  Les liens Replicate expirent après environ une heure : sans Cloudinary (
+                  <code>CLOUDINARY_CLOUD_NAME</code>, <code>CLOUDINARY_API_KEY</code>,{" "}
+                  <code>CLOUDINARY_API_SECRET</code>), aucune chanson Replicate ne peut être livrée.
+                </p>
+              </div>
+            </div>
+          )}
+          <dl className="admin-info-grid">
+            <div>
+              <dt>Prédictions (total)</dt>
+              <dd>{replicate.usage.predictions}</dd>
+            </div>
+            <div>
+              <dt>Réussies / échouées</dt>
+              <dd>
+                {replicate.usage.succeeded} / {replicate.usage.failed}
+              </dd>
+            </div>
+            <div>
+              <dt>Temps GPU cumulé</dt>
+              <dd>{Math.round(replicate.usage.gpuSeconds)} s</dd>
+            </div>
+            <div>
+              <dt>Prédictions sur 30 jours</dt>
+              <dd>{replicate.usage.last30Days}</dd>
+            </div>
+          </dl>
+          <small>
+            Le coût en dollars se lit sur replicate.com/account/billing (facturé au temps GPU réel) ; MusikPro ne
+            l’estime pas pour ne pas afficher un montant inventé.
+          </small>
+        </>
+      ) : null}
 
       {implemented ? null : (
         <div className="admin-source-notice" role="status">
@@ -170,11 +223,24 @@ export default function AdminAudioProviderForm({
             defaultValue={settings.apiBaseUrl}
             placeholder="https://api.exemple.com"
             maxLength={300}
+            readOnly={Boolean(replicate)}
           />
         </label>
         <label className="admin-editor-field">
-          <span>Modèle par défaut</span>
-          <input name="defaultModel" defaultValue={settings.defaultModel} maxLength={120} placeholder="ex. v7" />
+          <span>{replicate ? "Version du modèle fishaudio/ace-step-1.5" : "Modèle par défaut"}</span>
+          <input
+            name="defaultModel"
+            defaultValue={settings.defaultModel}
+            maxLength={120}
+            placeholder="ex. v7"
+            readOnly={Boolean(replicate)}
+          />
+          {replicate ? (
+            <small>
+              Lecture seule : la version ne change que par le panneau « Versions ACE-Step » (vérification, test,
+              approbation, activation).
+            </small>
+          ) : null}
         </label>
         <label className="admin-editor-field">
           <span>État du fournisseur</span>
@@ -257,7 +323,11 @@ export default function AdminAudioProviderForm({
           value={settings.versionsPerGeneration}
           min={1}
           max={3}
-          hint="Le coût reste de 2 crédits par génération."
+          hint={
+            replicate
+              ? "Chaque version est une prédiction Replicate facturée séparément ; le client paie toujours 2 crédits."
+              : "Le coût reste de 2 crédits par génération."
+          }
         />
         <NumberField
           name="redirectDelaySeconds"
@@ -292,7 +362,7 @@ export default function AdminAudioProviderForm({
             <small>
               {webhook.httpsReady
                 ? "Secret : ne le partage pas. Sans webhook, MusikPro suit quand même les chansons par interrogation régulière."
-                : "Configure NEXT_PUBLIC_APP_URL avec l’adresse HTTPS publique du SaaS : MusicGPT refuse les liens non HTTPS."}
+                : "Configure NEXT_PUBLIC_APP_URL avec l’adresse HTTPS publique du SaaS : le fournisseur refuse les liens non HTTPS."}
             </small>
           </label>
           <AdminActionForm action={regenerateAudioProviderWebhook}>
