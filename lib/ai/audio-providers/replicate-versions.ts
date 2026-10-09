@@ -12,6 +12,7 @@ import { getAudioProviderConfig } from "@/lib/ai/musicful";
 import { writeAuditLog } from "@/lib/security/audit";
 import { replicateRequest } from "./replicate";
 import {
+  REPLICATE_DEFAULT_VERSION,
   REPLICATE_MODEL,
   isReplicateDeliveryUrl,
   isReplicatePredictionId,
@@ -147,16 +148,27 @@ async function analyseAndStore(
   const candidate = extractSchemas(remote.openapi);
   const schemaHash = hashSchemas(candidate);
   const report = assessCompatibility(candidate, remote.openapi);
+  // The diff only depends on the two immutable version hashes: skip the extra Replicate call (and the large
+  // OpenAPI parse) when this exact schema was already analysed.
+  const [known] = await database
+    .select({ schemaHash: replicateModelVersions.schemaHash, diff: replicateModelVersions.diff })
+    .from(replicateModelVersions)
+    .where(eq(replicateModelVersions.version, remote.id))
+    .limit(1);
   let diff: unknown = null;
-  try {
-    const active = await fetchVersion(context, context.activeVersion);
-    if (active)
-      diff = diffSchemas(extractSchemas(active.openapi), candidate, {
-        active: active.openapi,
-        candidate: remote.openapi,
-      });
-  } catch {
-    diff = null; // the active version may have been removed from Replicate: the comparison is simply unavailable
+  if (known?.schemaHash === schemaHash && known.diff) {
+    diff = known.diff;
+  } else {
+    try {
+      const active = await fetchVersion(context, context.activeVersion);
+      if (active)
+        diff = diffSchemas(extractSchemas(active.openapi), candidate, {
+          active: active.openapi,
+          candidate: remote.openapi,
+        });
+    } catch {
+      diff = null; // the active version may have been removed from Replicate: the comparison is simply unavailable
+    }
   }
   const checks = { items: report.checks, blockers: report.blockers };
   const now = new Date();
@@ -192,7 +204,18 @@ async function analyseAndStore(
     .limit(1);
   if (!existing) return { created: false, compatibility: report.compatibility };
   const sameContract = existing.schemaHash === schemaHash && existing.compatibility === report.compatibility;
-  if (sameContract) {
+  // Bookkeeping rows (written at activation with no hash) and already-activated versions keep their status and
+  // approval: a version hash is immutable on Replicate, so only the missing hash is filled in.
+  const bookkeeping =
+    existing.schemaHash === null ||
+    existing.activatedAt !== null ||
+    ["superseded", "rolled_back"].includes(existing.status);
+  if (bookkeeping && !sameContract) {
+    await database
+      .update(replicateModelVersions)
+      .set({ schemaHash: existing.schemaHash ?? schemaHash, lastCheckedAt: now, diff, checks, updatedAt: now })
+      .where(eq(replicateModelVersions.version, remote.id));
+  } else if (sameContract) {
     await database
       .update(replicateModelVersions)
       .set({ lastCheckedAt: now, diff, checks, updatedAt: now })
@@ -236,7 +259,7 @@ export async function checkForUpdates(actorId: string | null): Promise<VersionAc
     const latest = await fetchLatest(context);
     if (!latest) return fail("Réponse Replicate illisible : la version active est inchangée.");
     if (latest.id === context.activeVersion) {
-      await recordEvent({ version: latest.id, event: "checked", actorId, result: { outcome: "identical" } });
+      // No event/audit row for an unchanged version: the daily cron would add ~365 uninformative rows a year.
       return ok("Aucune nouvelle version : la version active est la plus récente.");
     }
     const result = await analyseAndStore(context, latest, actorId);
@@ -303,7 +326,11 @@ export async function validateVersion(
     }
     await database
       .update(replicateModelVersions)
-      .set({ status: row.status === "approved" ? "approved" : "tested", testedAt: new Date(), updatedAt: new Date() })
+      .set({
+        status: ["approved", "superseded", "rolled_back"].includes(row.status) ? row.status : "tested",
+        testedAt: new Date(),
+        updatedAt: new Date(),
+      })
       .where(eq(replicateModelVersions.version, version));
     await recordEvent({
       version,
@@ -337,6 +364,9 @@ export async function validateVersion(
         and(
           eq(replicateModelVersions.version, version),
           sql`(${replicateModelVersions.probeStatus} <> 'running' or ${replicateModelVersions.updatedAt} < now() - interval '30 minutes')`,
+          // Atomic with the claim: no other version may hold a fresh running probe.
+          sql`not exists (select 1 from replicate_model_versions o where o.probe_status = 'running'
+            and o.version <> ${version} and o.updated_at >= now() - interval '30 minutes')`,
         ),
       )
       .returning({ version: replicateModelVersions.version });
@@ -495,7 +525,14 @@ async function swapActiveVersion(expected: string, next: string): Promise<boolea
   const swapped = await getServiceDb()
     .update(audioProviderConfigs)
     .set({ defaultModel: next, updatedAt: new Date() })
-    .where(and(eq(audioProviderConfigs.provider, "replicate"), eq(audioProviderConfigs.defaultModel, expected)))
+    .where(
+      and(
+        eq(audioProviderConfigs.provider, "replicate"),
+        // Same normalisation as resolveReplicateVersion(): a null/legacy/upper-case stored value resolves to a hash.
+        sql`(case when lower(trim(coalesce(${audioProviderConfigs.defaultModel}, ''))) ~ '^[a-f0-9]{64}$'
+          then lower(trim(${audioProviderConfigs.defaultModel})) else ${REPLICATE_DEFAULT_VERSION} end) = ${expected}`,
+      ),
+    )
     .returning({ id: audioProviderConfigs.id });
   return swapped.length > 0;
 }

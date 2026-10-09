@@ -2,7 +2,7 @@ import { verifyCronRequest } from "@/lib/cron/auth";
 import { checkForUpdates } from "@/lib/ai/audio-providers/replicate-versions";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
+export const maxDuration = 90;
 
 /**
  * Daily DETECTION of new ACE-Step versions (skill Replicate-MusikPro-MP3 v1.1.0 §16.4). It only reads Replicate's

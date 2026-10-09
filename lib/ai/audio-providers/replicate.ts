@@ -16,6 +16,9 @@ import {
   pickReplicateOutputUrl,
   resolveReplicateVersion,
 } from "./replicate-model";
+import { createLogger } from "@/lib/observability/logger";
+
+const logger = createLogger("replicate-adapter");
 
 /**
  * Replicate adapter (skill: .claude/skills/Replicate-MusikPro-MP3-SKILL.md), model `fishaudio/ace-step-1.5`.
@@ -92,6 +95,20 @@ export const replicateAudioAdapter: AudioProviderAdapter = {
         taskIds.push(id);
         raws.push({ id, status: asRecord(result.value)?.status ?? null });
       }
+    }
+    // A rejected POST (e.g. timeout) may still have been accepted and billed by Replicate: it is untracked, so the
+    // operator must be able to see it. Only the HTTP status/message is logged (never the request or the key).
+    const rejected = results.filter((result): result is PromiseRejectedResult => result.status === "rejected");
+    if (rejected.length) {
+      logger.error("Replicate prediction POST rejected, possible untracked billed prediction", {
+        requested: count,
+        accepted: taskIds.length,
+        rejected: rejected.map((failure) =>
+          failure.reason instanceof ReplicateApiError
+            ? { status: failure.reason.status, message: failure.reason.message }
+            : { message: failure.reason instanceof Error ? failure.reason.name : "unknown" },
+        ),
+      });
     }
     if (!taskIds.length) {
       const failure = results.find((result): result is PromiseRejectedResult => result.status === "rejected");
