@@ -292,7 +292,7 @@ export default function AdminAudioProviderForm({
             <small>
               {webhook.httpsReady
                 ? "Secret : ne le partage pas. Sans webhook, MusikPro suit quand même les chansons par interrogation régulière."
-                : "Configure NEXT_PUBLIC_APP_URL avec l’adresse HTTPS publique du SaaS : MusicGPT refuse les liens non HTTPS."}
+                : "Configure NEXT_PUBLIC_APP_URL avec l’adresse HTTPS publique du SaaS : le fournisseur refuse les liens non HTTPS."}
             </small>
           </label>
           <AdminActionForm action={regenerateAudioProviderWebhook}>
