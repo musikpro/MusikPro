@@ -26,6 +26,16 @@ export function resolvePhoneCountry(choice: string, prefixes: PhoneRule[]): stri
   return prefixes.some((prefix) => prefix.countryCode === choice) ? choice : (prefixes[0]?.countryCode ?? "");
 }
 
+/** Indicatif proposé au départ : le pays détecté s'il a un préfixe actif, sinon le repli (« CI » historique). */
+export function pickInitialPhoneCountry(
+  detectedCountry: string | null | undefined,
+  prefixes: Pick<PhoneRule, "countryCode">[],
+  fallback = "CI",
+): string {
+  const detected = (detectedCountry ?? "").trim().toUpperCase();
+  return detected && prefixes.some((prefix) => prefix.countryCode === detected) ? detected : fallback;
+}
+
 export function buildDemoPaymentDraftSchema(prefixes: PhoneRule[]) {
   const codes = new Set(prefixes.map((p) => p.countryCode));
   const fallback = prefixes[0]?.countryCode ?? "";
@@ -37,6 +47,8 @@ export function buildDemoPaymentDraftSchema(prefixes: PhoneRule[]) {
       .string()
       .catch(fallback)
       .transform((value) => (codes.has(value) ? value : fallback)),
+    /** Vrai quand le client a lui-même choisi l'indicatif : un choix manuel prime sur la détection du pays. */
+    phoneCountryChosen: z.boolean().optional().catch(undefined),
   });
 }
 
@@ -52,7 +64,11 @@ export function buildDemoPaymentSchema(prefixes: PhoneRule[]) {
     .superRefine(({ phoneCountry, phone }, context) => {
       const rule = rules.get(phoneCountry);
       if (!rule) {
-        context.addIssue({ code: "custom", path: ["phoneCountry"], message: i18nKey("Indicatif téléphonique invalide.") });
+        context.addIssue({
+          code: "custom",
+          path: ["phoneCountry"],
+          message: i18nKey("Indicatif téléphonique invalide."),
+        });
         return;
       }
       if (phone.length !== rule.digits) {

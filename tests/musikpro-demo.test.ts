@@ -7,6 +7,7 @@ import {
   demoSupportSchema,
   buildDemoPaymentSchema,
   buildDemoPaymentDraftSchema,
+  pickInitialPhoneCountry,
   resolvePhoneCountry,
   demoProfileSchema,
   DEMO_LYRICS_MAX_WORDS,
@@ -54,7 +55,13 @@ describe("frontières des saisies de démonstration MusikPro", () => {
   });
   it("borne les paroles et les détails en mots, y compris les sauts de ligne", () => {
     expect(demoLyricsSchema.safeParse(Array(DEMO_LYRICS_MAX_WORDS).fill("mot").join("\n")).success).toBe(true);
-    expect(demoLyricsSchema.safeParse(Array(DEMO_LYRICS_MAX_WORDS + 1).fill("mot").join(" ")).success).toBe(false);
+    expect(
+      demoLyricsSchema.safeParse(
+        Array(DEMO_LYRICS_MAX_WORDS + 1)
+          .fill("mot")
+          .join(" "),
+      ).success,
+    ).toBe(false);
     expect(demoDetailSchema.safeParse("a".repeat(250)).success).toBe(true);
     expect(demoDetailSchema.safeParse("a".repeat(251)).success).toBe(false);
     expect(demoDetailSchema.safeParse("").success).toBe(true);
@@ -89,26 +96,24 @@ describe("frontières des saisies de démonstration MusikPro", () => {
   it("ne plante pas avec une liste de préfixes vide", () => {
     const schema = buildDemoPaymentSchema([]);
     expect(
-      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CI", phone: "0708807015" })
-        .success,
+      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CI", phone: "0708807015" }).success,
     ).toBe(false);
   });
   it("valide un pays ajouté après coup, absent des 10 pays d’origine", () => {
     const rulesWithNewCountry = [...testPhoneRules, { countryCode: "CM", digits: 9, placeholder: "612345678" }];
     const schema = buildDemoPaymentSchema(rulesWithNewCountry);
     expect(
-      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CM", phone: "612345678" })
-        .success,
+      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CM", phone: "612345678" }).success,
     ).toBe(true);
     expect(
-      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CM", phone: "61234567" })
-        .success,
+      schema.safeParse({ name: "Awa Koné", email: "awa@example.com", phoneCountry: "CM", phone: "61234567" }).success,
     ).toBe(false);
   });
   it("retombe sur le premier préfixe valide quand le brouillon restauré est invalide ou absent", () => {
     const draftSchema = buildDemoPaymentDraftSchema(testPhoneRules);
-    expect(draftSchema.parse({ name: "Awa", email: "awa@example.com", phone: "0708807015", phoneCountry: "XX" }))
-      .toHaveProperty("phoneCountry", "CI");
+    expect(
+      draftSchema.parse({ name: "Awa", email: "awa@example.com", phone: "0708807015", phoneCountry: "XX" }),
+    ).toHaveProperty("phoneCountry", "CI");
     expect(draftSchema.parse({}).phoneCountry).toBe("CI");
   });
   it("ne plante pas quand on construit un brouillon avec une liste de préfixes vide", () => {
@@ -147,5 +152,19 @@ describe("câblage coverUrl dans DemoProvider (mode réel)", () => {
     );
     expect(source).toContain("coverUrl: song.coverUrl,");
     expect(source).toContain("coverUrl: string | null;");
+  });
+});
+
+describe("pickInitialPhoneCountry", () => {
+  const rules = [{ countryCode: "CI" }, { countryCode: "BF" }];
+
+  it("propose l'indicatif du pays détecté quand il est actif", () => {
+    expect(pickInitialPhoneCountry("BF", rules)).toBe("BF");
+    expect(pickInitialPhoneCountry(" bf ", rules)).toBe("BF");
+  });
+
+  it("retombe sur CI sans pays détecté ou sans préfixe pour ce pays", () => {
+    expect(pickInitialPhoneCountry(null, rules)).toBe("CI");
+    expect(pickInitialPhoneCountry("FR", rules)).toBe("CI");
   });
 });
