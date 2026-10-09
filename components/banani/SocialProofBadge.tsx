@@ -37,7 +37,7 @@ export default function SocialProofBadge({ className = "" }: { className?: strin
         </span>
       </div>
       <p className="font-headings font-bold text-foreground">
-        {t("Chansons générées par plus de 308 000 personnes")}
+        {t("Utilisé par plus de 120k utilisateurs")}
       </p>
     </div>
   );
