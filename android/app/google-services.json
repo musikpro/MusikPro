@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "528966956906",
+    "project_id": "musikpro-a1127",
+    "storage_bucket": "musikpro-a1127.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:528966956906:android:5a9e003fc9bb1bba585713",
+        "android_client_info": {
+          "package_name": "com.musikpro.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDgJHMIy5bXxtgNrQDLK4RduPP2UNq5AOs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
