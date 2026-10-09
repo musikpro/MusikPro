@@ -168,6 +168,8 @@ export default function PaymentScreen() {
                   ariaLabel={t("Indicatif téléphonique")}
                   portal
                   portalWidth={288}
+                  portalAlign="start"
+                  portalAnchorSelector=".checkout-input-shell"
                   showOptionLabels={false}
                   showSelectionMark={false}
                   value={selectedCountry}
