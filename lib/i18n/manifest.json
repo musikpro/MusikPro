@@ -588,6 +588,7 @@
   "Le mot de passe est trop court.",
   "Le mot de passe est trop long.",
   "Le nom MusikPro, le logo, le site, l’application, les textes de l’interface, le design et le code appartiennent à MusikPro ou à ses concédants. Ces conditions ne vous donnent aucun droit sur eux, en dehors du droit d’utiliser le service conformément à ces conditions.",
+  "Le nom ne peut pas contenir les caractères < ou >.",
   "Le numéro de téléphone n’est pas valide pour ce pays. Vérifie-le et réessaie.",
   "Le paiement Chariow n’a pas pu démarrer.",
   "Le paiement est réalisé sur la page de notre partenaire Chariow (Mobile Money et autres moyens de paiement qu’il propose). Les crédits sont ajoutés à votre solde uniquement après confirmation du paiement par le partenaire. MusikPro ne reçoit ni ne conserve vos numéros de carte ou codes secrets. Les crédits n’ont pas de valeur monétaire, ne sont ni transférables ni échangeables contre de l’argent, et n’ont pas de date d’expiration à ce jour ; ils sont perdus si votre compte est supprimé.",

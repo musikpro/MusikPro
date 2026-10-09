@@ -19,6 +19,7 @@ import {
 } from "@/lib/auth/session-policy";
 import { APIError } from "better-auth/api";
 import { assertServerOnlyEnv, requireEnv } from "@/lib/security/env";
+import { userNameSchema } from "@/lib/validation/auth";
 
 assertServerOnlyEnv();
 
@@ -59,6 +60,24 @@ export const auth = betterAuth({
   // à partir de la connexion (les hooks ci-dessous raccourcissent la création et empêchent le renouvellement).
   session: { expiresIn: CLIENT_SESSION_SECONDS, updateAge: SESSION_REFRESH_SECONDS },
   databaseHooks: {
+    // Revalidation serveur du nom (inscription email/mot de passe, OAuth, création admin) : le schéma Zod
+    // partagé n'est aujourd'hui appliqué que côté client (components/auth-form.tsx) ; Better Auth n'imposant
+    // par défaut qu'une chaîne non vide, ce hook garantit la même règle (longueur, pas de `<`/`>`/caractères
+    // de contrôle) quelle que soit la voie d'entrée. Un nom hors gabarit est tronqué/nettoyé plutôt que
+    // rejeté en bloc, pour ne jamais casser une connexion Google dont le profil renverrait un nom inattendu.
+    user: {
+      create: {
+        before: async (user) => {
+          const candidate = typeof user.name === "string" ? user.name : "";
+          const sanitized = candidate
+            .replace(/[\u0000-\u001F\u007F<>]/g, "")
+            .trim()
+            .slice(0, 120);
+          const parsed = userNameSchema.safeParse(sanitized.length >= 2 ? sanitized : "Utilisateur");
+          return { data: { ...user, name: parsed.success ? parsed.data : "Utilisateur" } };
+        },
+      },
+    },
     session: {
       create: {
         before: async (session, ctx) => {

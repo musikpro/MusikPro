@@ -25,13 +25,16 @@ export const backupCodeSchema = z
   .regex(/^[A-Za-z0-9-]+$/, i18nKey("Saisissez un code de secours valide."));
 
 export const loginSchema = z.object({ email: emailSchema, password: passwordSchema });
-export const registerSchema = loginSchema.extend({
-  name: z
-    .string()
-    .trim()
-    .min(2, i18nKey("Indiquez votre nom (2 caractères minimum)."))
-    .max(120, i18nKey("Votre nom est trop long.")),
-});
+// Autorise lettres accentuées, chiffres, espaces et ponctuation usuelle d'un nom ; interdit les délimiteurs de
+// balisage (< >) et les caractères de contrôle — défense en profondeur si ce nom est un jour rendu via du HTML
+// non échappé (export, e-mail, PDF…), en plus de l'échappement React déjà en place à l'affichage.
+export const userNameSchema = z
+  .string()
+  .trim()
+  .min(2, i18nKey("Indiquez votre nom (2 caractères minimum)."))
+  .max(120, i18nKey("Votre nom est trop long."))
+  .regex(/^[^\u0000-\u001F\u007F<>]*$/u, i18nKey("Le nom ne peut pas contenir les caractères < ou >."));
+export const registerSchema = loginSchema.extend({ name: userNameSchema });
 export const registerIdentitySchema = registerSchema.pick({ name: true, email: true });
 export const forgotPasswordSchema = z.object({ email: emailSchema });
 export const resetPasswordSchema = z.object({ password: passwordSchema, token: z.string().min(1).max(4096) });
