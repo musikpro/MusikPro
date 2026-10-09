@@ -7670,8 +7670,8 @@ button.mobile-menu-brand {
   display: inline-flex;
   min-height: 46px;
   align-items: center;
-  gap: 8px;
-  padding: 0 10px;
+  gap: 3px;
+  padding: 6px 8px;
   border: 1.5px solid color-mix(in srgb, var(--color-primary) 22%, var(--color-border));
   border-radius: 999px;
   background: var(--color-card);
