@@ -2,11 +2,12 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { paymentBypassSettings, localizationSettings, playbackSettings } from "@/db/schema";
+import { adminDisplaySettings, paymentBypassSettings, localizationSettings, playbackSettings } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { PLAYBACK_SETTINGS_TAG } from "@/lib/settings/playback";
+import { GENERATIONS_PER_PAGE_MAX, GENERATIONS_PER_PAGE_MIN } from "@/lib/settings/admin-display-constants";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 const paymentBypassSchema = z.object({ enabled: z.boolean() });
@@ -164,6 +165,46 @@ export async function setExclusivePlayback(_previous: AdminActionState, formData
         ? "Lecture exclusive activée : une seule chanson à la fois."
         : "Lecture exclusive désactivée : plusieurs chansons peuvent jouer ensemble.",
     };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const generationsPerPageSchema = z.object({
+  generationsPerPage: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(GENERATIONS_PER_PAGE_MIN, `Minimum ${GENERATIONS_PER_PAGE_MIN} chansons par page.`)
+    .max(GENERATIONS_PER_PAGE_MAX, `Maximum ${GENERATIONS_PER_PAGE_MAX} chansons par page.`),
+});
+
+/** Nombre de chansons par page dans /admin/generations (défaut 50). */
+export async function setGenerationsPerPage(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = generationsPerPageSchema.parse({ generationsPerPage: formData.get("generationsPerPage") });
+    const fields = {
+      generationsPerPage: parsed.generationsPerPage,
+      updatedBy: session.user.id,
+      updatedAt: new Date(),
+    };
+    await getServiceDb()
+      .insert(adminDisplaySettings)
+      .values({ id: "global", ...fields })
+      .onConflictDoUpdate({ target: adminDisplaySettings.id, set: fields });
+    await writeAuditLog({
+      action: "admin_display.generations_per_page.updated",
+      actorId: session.user.id,
+      targetType: "admin_display_settings",
+      targetId: "global",
+      metadata: { generationsPerPage: parsed.generationsPerPage },
+    });
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin/generations");
+    return { ok: true, message: `Affichage : ${parsed.generationsPerPage} chansons par page.` };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
   }

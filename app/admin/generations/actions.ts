@@ -7,6 +7,10 @@ import { requireAdmin } from "@/lib/auth/session";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { renamedVersionTitles, stripVersionSuffix } from "@/lib/ai/song-title";
 import { writeAuditLog } from "@/lib/security/audit";
+import { z } from "zod";
+import { listGenerationsPage } from "@/lib/admin/generations";
+import { GENERATION_STATUS_FILTERS, type GenerationsPage } from "@/lib/admin/generations-types";
+import { getGenerationsPerPage } from "@/lib/settings/admin-display";
 import { renameSongSchema } from "@/lib/validation/song-title";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
@@ -75,5 +79,28 @@ export async function renameSong(_previous: AdminActionState, formData: FormData
     };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de renommer cette chanson.") };
+  }
+}
+
+const pageRequestSchema = z.object({
+  page: z.number().int().min(1).max(100_000),
+  status: z.enum(GENERATION_STATUS_FILTERS),
+  query: z.string().trim().max(120),
+});
+
+/**
+ * Une page de générations à la demande (changement de page, filtre ou recherche sans recharger la page).
+ * La taille de page vient du réglage serveur (Paramètres > Général), jamais du navigateur.
+ */
+export async function fetchGenerationsPage(
+  input: z.input<typeof pageRequestSchema>,
+): Promise<{ ok: true; data: GenerationsPage } | { ok: false; message: string }> {
+  try {
+    await requireAdmin();
+    const parsed = pageRequestSchema.parse(input);
+    const pageSize = await getGenerationsPerPage();
+    return { ok: true, data: await listGenerationsPage({ ...parsed, pageSize }) };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de charger les générations.") };
   }
 }

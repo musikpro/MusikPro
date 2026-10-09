@@ -7227,7 +7227,16 @@ body:has(.admin-app),
 
 /* Renommer une chanson (/admin/generations) — largeur portée par le th, comme la colonne Identifiant. */
 .admin-generation-song-col {
-  width: 300px;
+  width: 240px;
+}
+
+/* Le badge de statut reste sur une ligne et la colonne Date a sa propre largeur : la colonne Chanson élargie ne doit pas les couper. */
+.admin-generations-table .admin-status {
+  white-space: nowrap;
+}
+
+.admin-generation-date-col {
+  width: 140px;
 }
 .admin-song-title {
   display: flex;
@@ -7292,4 +7301,316 @@ body:has(.admin-app),
   border: 1px solid var(--admin-line, rgba(0, 0, 0, 0.2));
   background: transparent;
   color: inherit;
+}
+
+/* -------------------------------------------------------------------------- */
+/* /admin/generations — une carte par version sur mobile                      */
+/*                                                                            */
+/* La règle générique des tableaux admin transforme chaque cellule en grille   */
+/* « libellé | valeur » : une cellule qui contient plusieurs éléments (texte,  */
+/* <br>, <small>) éclatait donc en cases séparées. Ici : cartes lisibles —     */
+/* titre et statut en tête, infos en deux colonnes, identifiant en pied —      */
+/* et la barre latérale reprend la couleur du statut.                          */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  .admin-generations-table tr {
+    --generation-accent: #d6cfc7;
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px 16px;
+    padding: 16px 14px 16px 16px;
+    border-left: 4px solid var(--generation-accent);
+  }
+
+  .admin-generations-table tr[data-status="completed"] {
+    --generation-accent: #2f8f5b;
+  }
+
+  .admin-generations-table tr:is([data-status="failed"], [data-status="cancelled"]) {
+    --generation-accent: #d9473f;
+  }
+
+  .admin-generations-table tr:is([data-status="queued"], [data-status="submitting"], [data-status="processing"]) {
+    --generation-accent: #f26a21;
+  }
+
+  .admin-generations-table td[data-label] {
+    display: block;
+    min-width: 0;
+    min-height: 0;
+    padding: 0;
+    border-bottom: 0;
+    font-size: 12px;
+    line-height: 1.4;
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-generations-table td[data-label]::before {
+    display: block;
+    margin-bottom: 3px;
+  }
+
+  .admin-generations-table td[data-label] :is(strong, small) {
+    text-align: left;
+  }
+
+  .admin-generations-table td[data-label] br {
+    display: none;
+  }
+
+  .admin-generations-table td[data-label] small {
+    display: block;
+    margin-top: 2px;
+    color: var(--admin-muted);
+    font-size: 11px;
+  }
+
+  /* Titre, statut et écoute n'ont pas besoin de libellé : leur place suffit à les identifier. */
+  .admin-generations-table :is(td[data-label="Chanson"], td[data-label="Statut"], td[data-label="Écoute"])::before {
+    display: none;
+  }
+
+  .admin-generations-table td[data-label="Chanson"] {
+    order: 1;
+    grid-column: 1 / -1;
+    padding-right: 52px;
+    font-size: 15px;
+  }
+
+  .admin-generations-table td[data-label="Chanson"] strong {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+
+  .admin-generations-table td[data-label="Statut"] {
+    order: 2;
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 10px;
+  }
+
+  .admin-generations-table td[data-label="Statut"] small {
+    margin-top: 0;
+  }
+
+  .admin-generations-table td[data-label="Écoute"] {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    order: 3;
+  }
+
+  .admin-generations-table .admin-generation-play {
+    width: 44px;
+    height: 44px;
+  }
+
+  .admin-generations-table td[data-label="Date"] {
+    order: 4;
+  }
+
+  .admin-generations-table td[data-label="Durée"] {
+    order: 5;
+  }
+
+  .admin-generations-table td[data-label="Style"] {
+    order: 6;
+    white-space: normal;
+  }
+
+  .admin-generations-table td[data-label="Délai"] {
+    order: 7;
+  }
+
+  .admin-generations-table td[data-label="Utilisateur"] {
+    order: 8;
+  }
+
+  .admin-generations-table td[data-label="Fournisseur"] {
+    order: 9;
+  }
+
+  .admin-generations-table td[data-label="Identifiant"] {
+    order: 10;
+    grid-column: 1 / -1;
+    padding-top: 12px;
+    border-top: 1px solid #eee9e3;
+  }
+
+  /* Éditeur de titre : toute la largeur de la carte, et crayon discret mais assez grand pour le pouce. */
+  .admin-generations-table .admin-song-title {
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  .admin-generations-table .admin-song-title-edit {
+    width: 44px;
+    height: 44px;
+    margin: -10px 0 -10px -4px;
+    border-color: transparent;
+  }
+
+  .admin-generations-table .admin-song-title-form {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Colonne Date : la date, puis l'heure en dessous (jamais sur la même ligne). */
+.admin-generation-date {
+  white-space: nowrap;
+}
+.admin-generation-date span,
+.admin-generation-date small {
+  display: block;
+}
+.admin-generation-date small {
+  margin-top: 2px;
+  color: var(--admin-muted, #6b6560);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Liste paginée : chargement discret sans saut de mise en page. */
+.admin-generations-panel {
+  scroll-margin-top: 16px;
+}
+.admin-data-table-wrap {
+  transition: opacity 0.15s ease;
+}
+.admin-data-table-wrap.is-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.admin-generations-error {
+  margin: 12px 0 0;
+  color: #b3261e;
+  font-weight: 600;
+}
+
+/* Pagination partagée du tableau de bord propriétaire. */
+.admin-pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--admin-border, #e8e3dc);
+}
+.admin-pagination-summary {
+  margin: 0;
+  color: var(--admin-muted, #6b6560);
+  font-size: 0.9rem;
+}
+.admin-pagination-summary strong {
+  color: inherit;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.admin-pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-pagination-pages {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.admin-pagination-pages button,
+.admin-pagination-step {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--admin-border, #e8e3dc);
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+.admin-pagination-pages button:hover:not(:disabled):not(.is-current),
+.admin-pagination-step:hover:not(:disabled) {
+  border-color: #f26a21;
+  background: #fff6f0;
+}
+.admin-pagination-pages button.is-current {
+  border-color: #f26a21;
+  background: #f26a21;
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(242, 106, 33, 0.28);
+  cursor: default;
+}
+.admin-pagination-pages button:focus-visible,
+.admin-pagination-step:focus-visible {
+  outline: 3px solid rgba(242, 106, 33, 0.45);
+  outline-offset: 2px;
+}
+.admin-pagination-step:disabled,
+.admin-pagination-pages button:disabled:not(.is-current) {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.admin-pagination-gap {
+  min-width: 24px;
+  text-align: center;
+  color: var(--admin-muted, #6b6560);
+}
+.admin-pagination-compact {
+  display: none;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 767px) {
+  .admin-pagination {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    /* La barre de navigation fixe du bas ne doit pas masquer la pagination. */
+    margin-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  }
+  .admin-pagination-controls {
+    justify-content: space-between;
+  }
+  .admin-pagination-pages {
+    display: none;
+  }
+  .admin-pagination-compact {
+    display: inline;
+  }
+  .admin-pagination-step {
+    min-height: 44px;
+  }
+  .admin-generations-table td[data-label="Date"] span,
+  .admin-generations-table td[data-label="Date"] small {
+    display: inline;
+    margin: 0 4px 0 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-data-table-wrap,
+  .admin-pagination-pages button,
+  .admin-pagination-step {
+    transition: none;
+  }
 }

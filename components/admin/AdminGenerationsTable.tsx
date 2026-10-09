@@ -1,32 +1,23 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Icon from "@/components/banani/Icon";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
+import AdminPagination from "@/components/admin/AdminPagination";
 import AdminSongTitleEditor from "@/components/admin/AdminSongTitleEditor";
+import { fetchGenerationsPage } from "@/app/admin/generations/actions";
+import type { AdminGenerationRow, GenerationStatusFilter, GenerationsPage } from "@/lib/admin/generations-types";
 
-export type AdminGenerationRow = {
-  id: string;
-  songGroupId: string | null;
-  userEmail: string | null;
-  title: string | null;
-  occasion: string | null;
-  /** Full AI-directive prompt sent to Musicful (see lib/ai/songs.ts:extractGenreLabel) — kept for the hover tooltip, never rendered directly. */
-  style: string | null;
-  styleLabel: string | null;
-  versionLabel: string | null;
-  status: string;
-  provider: string;
-  model: string;
-  durationSeconds: number | null;
-  audioUrl: string | null;
-  failureReason: string | null;
-  /** Raw numeric `status` last reported by the provider (Musicful: 0 = finished, 4 observed on failed tasks). */
-  providerStatus: number | null;
-  /** Seconds from creation to the final state, or to now while still pending. */
-  elapsedSeconds: number | null;
-  createdAt: string;
-};
+export type { AdminGenerationRow };
+
+const STATUS_FILTER_OPTIONS: [GenerationStatusFilter, string][] = [
+  ["all", "Toutes"],
+  ["completed", "Terminées"],
+  ["processing", "En cours"],
+  ["failed", "Échouées"],
+];
+
+const SEARCH_DEBOUNCE_MS = 300;
 
 /** A pending job older than this is flagged as slow — Musicful usually delivers within ~5 minutes. */
 const SLOW_PENDING_SECONDS = 300;
@@ -57,12 +48,64 @@ function formatElapsed(seconds: number | null) {
   return `${Math.floor(seconds / 60)} min ${String(seconds % 60).padStart(2, "0")} s`;
 }
 
-export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationRow[] }) {
+function formatDay(iso: string) {
+  return new Date(iso).toLocaleDateString("fr-FR");
+}
+
+function formatTime(iso: string) {
+  return new Date(iso).toLocaleTimeString("fr-FR");
+}
+
+export default function AdminGenerationsTable({ initial }: { initial: GenerationsPage }) {
+  const [data, setData] = useState<GenerationsPage>(initial);
   const [query, setQuery] = useState("");
-  const [status, setStatus] = useState("all");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [status, setStatus] = useState<GenerationStatusFilter>("all");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [isLoading, startTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const panelRef = useRef<HTMLElement | null>(null);
+  const requestId = useRef(0);
   const showToast = useAdminToast();
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedQuery(query.trim()), SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
+  /** Charge une page sans recharger l'écran ; seule la réponse la plus récente est appliquée. */
+  const load = useCallback(
+    (page: number, filters: { status: GenerationStatusFilter; query: string }, scrollToTop: boolean) => {
+      const current = ++requestId.current;
+      startTransition(async () => {
+        const result = await fetchGenerationsPage({ page, status: filters.status, query: filters.query });
+        if (current !== requestId.current) return;
+        if (!result.ok) {
+          setLoadError(result.message);
+          showToast({ message: result.message, tone: "error" });
+          return;
+        }
+        setLoadError(null);
+        setData(result.data);
+        if (scrollToTop) {
+          const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          panelRef.current?.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
+        }
+      });
+    },
+    [showToast],
+  );
+
+  // Changement de filtre ou de recherche : retour à la page 1 (sans défiler, on est déjà sur la barre d'outils).
+  const firstRun = useRef(true);
+  useEffect(() => {
+    if (firstRun.current) {
+      firstRun.current = false;
+      return;
+    }
+    load(1, { status, query: debouncedQuery }, false);
+  }, [status, debouncedQuery, load]);
 
   const copyId = async (songGroupId: string) => {
     try {
@@ -76,17 +119,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
     }
   };
 
-  const filtered = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase("fr");
-    return rows.filter(
-      (row) =>
-        (status === "all" || row.status === status) &&
-        (!needle ||
-          `${row.userEmail ?? ""} ${row.title ?? ""} ${row.occasion ?? ""} ${row.style ?? ""}`
-            .toLocaleLowerCase("fr")
-            .includes(needle)),
-    );
-  }, [query, rows, status]);
+  const rows = data.rows;
 
   const playRow = (row: AdminGenerationRow) => {
     const audio = audioRef.current;
@@ -102,7 +135,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
   };
 
   return (
-    <section className="admin-panel admin-table-panel">
+    <section ref={panelRef} className="admin-panel admin-table-panel admin-generations-panel" aria-busy={isLoading}>
       <audio ref={audioRef} onPause={() => setPlayingId(null)} onEnded={() => setPlayingId(null)} className="sr-only" />
       <div className="admin-catalog-toolbar admin-table-toolbar">
         <label className="admin-search-field">
@@ -120,12 +153,7 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
           ) : null}
         </label>
         <div className="admin-filter-tabs">
-          {[
-            ["all", "Toutes"],
-            ["completed", "Terminées"],
-            ["processing", "En cours"],
-            ["failed", "Échouées"],
-          ].map(([value, label]) => (
+          {STATUS_FILTER_OPTIONS.map(([value, label]) => (
             <button
               type="button"
               key={value}
@@ -137,11 +165,11 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
           ))}
         </div>
       </div>
-      <div className="admin-data-table-wrap">
-        <table className="admin-data-table">
+      <div className={`admin-data-table-wrap${isLoading ? " is-loading" : ""}`}>
+        <table className="admin-data-table admin-generations-table">
           <thead>
             <tr>
-              <th>Date</th>
+              <th className="admin-generation-date-col">Date</th>
               <th>Utilisateur</th>
               <th className="admin-generation-song-col">Chanson</th>
               <th className="admin-generation-id-col">Identifiant</th>
@@ -156,12 +184,19 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
             </tr>
           </thead>
           <tbody>
-            {filtered.map((row) => (
-              <tr key={row.id}>
-                <td data-label="Date">{new Date(row.createdAt).toLocaleString("fr-FR")}</td>
+            {rows.map((row) => (
+              <tr key={row.id} data-status={row.status}>
+                <td data-label="Date" className="admin-generation-date">
+                  <span>{formatDay(row.createdAt)}</span>
+                  <small>{formatTime(row.createdAt)}</small>
+                </td>
                 <td data-label="Utilisateur">{row.userEmail ?? "Compte supprimé"}</td>
                 <td className="admin-table-primary" data-label="Chanson">
-                  <AdminSongTitleEditor jobId={row.id} title={row.title} />
+                  <AdminSongTitleEditor
+                    jobId={row.id}
+                    title={row.title}
+                    onRenamed={() => load(data.page, { status, query: debouncedQuery }, false)}
+                  />
                   <small>
                     {row.occasion ?? "Occasion non précisée"}
                     {row.versionLabel ? ` · ${row.versionLabel}` : ""}
@@ -237,13 +272,27 @@ export default function AdminGenerationsTable({ rows }: { rows: AdminGenerationR
           </tbody>
         </table>
       </div>
-      {!filtered.length ? (
+      {!rows.length ? (
         <div className="admin-empty-state">
           <Icon i="music-2" size={22} />
           <strong>Aucune génération trouvée</strong>
           <p>Modifie la recherche ou le statut.</p>
         </div>
       ) : null}
+      {loadError ? (
+        <p className="admin-generations-error" role="alert">
+          {loadError}
+        </p>
+      ) : null}
+      <AdminPagination
+        page={data.page}
+        pageCount={data.pageCount}
+        pageSize={data.pageSize}
+        total={data.total}
+        itemLabel="générations"
+        disabled={isLoading}
+        onPageChange={(page) => load(page, { status, query: debouncedQuery }, true)}
+      />
     </section>
   );
 }

@@ -10,11 +10,23 @@ import { useAdminActionToast, type AdminActionState } from "@/components/admin/u
  * toutes les versions de la chanson (voir renameSong) ; le résultat passe par le toast admin habituel.
  * Un `useActionState` local referme l'éditeur après un enregistrement réussi.
  */
-export default function AdminSongTitleEditor({ jobId, title }: { jobId: string; title: string | null }) {
+export default function AdminSongTitleEditor({
+  jobId,
+  title,
+  onRenamed,
+}: {
+  jobId: string;
+  title: string | null;
+  /** Appelé après un renommage réussi (la liste paginée se recharge pour afficher le nouveau titre). */
+  onRenamed?: () => void;
+}) {
   const [editing, setEditing] = useState(false);
   const [state, formAction, pending] = useActionState<AdminActionState, FormData>(async (previous, formData) => {
     const result = await renameSong(previous, formData);
-    if (result?.ok) setEditing(false);
+    if (result?.ok) {
+      setEditing(false);
+      onRenamed?.();
+    }
     return result;
   }, null);
   useAdminActionToast(state);
