@@ -652,7 +652,10 @@ export const pushDevices = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
   },
-  (table) => [uniqueIndex("push_devices_token_idx").on(table.token), index("push_devices_user_idx").on(table.userId)],
+  (table) => [
+    uniqueIndex("push_devices_token_idx").on(table.token),
+    index("push_devices_user_idx").on(table.userId),
+  ],
 );
 
 /** Préférences de notification d'un utilisateur. Absence de ligne = tout activé. */
@@ -691,9 +694,7 @@ export const appReleases = pgTable(
   },
   (table) => [
     uniqueIndex("app_releases_platform_build_idx").on(table.platform, table.build),
-    uniqueIndex("app_releases_one_published_idx")
-      .on(table.platform)
-      .where(sql`${table.published}`),
+    uniqueIndex("app_releases_one_published_idx").on(table.platform).where(sql`${table.published}`),
   ],
 );
 
@@ -1041,59 +1042,4 @@ export const phonePrefixes = pgTable(
   (table) => ({
     activeOrderIndex: index("phone_prefixes_active_order_idx").on(table.active, table.sortOrder),
   }),
-);
-
-/**
- * Replicate / ACE-Step version registry (skill Replicate-MusikPro-MP3 v1.1.0, §16). One row per version hash seen
- * on Replicate. The ACTIVE version is not stored here: it stays `audio_provider_configs.default_model`
- * (provider "replicate"), the value every new prediction already reads. A row only records what was detected,
- * compared and tested; a detection never changes the active version.
- */
-export const replicateModelVersions = pgTable(
-  "replicate_model_versions",
-  {
-    version: text("version").primaryKey(),
-    model: text("model").notNull().default("fishaudio/ace-step-1.5"),
-    /** detected | tested | approved | blocked | superseded | rolled_back (the live "active" flag is derived, never stored). */
-    status: text("status").notNull().default("detected"),
-    /** compatible | requires_code_review | incompatible | unknown */
-    compatibility: text("compatibility").notNull().default("unknown"),
-    mp3Validated: boolean("mp3_validated").notNull().default(false),
-    /** SHA-256 of the canonicalised OpenAPI Input/Output schemas; activation requires it to be unchanged. */
-    schemaHash: text("schema_hash"),
-    /** Field-level differences against the active version (no secret, no user text). */
-    diff: jsonb("diff"),
-    /** Result of each static contract check. */
-    checks: jsonb("checks"),
-    /** Paid probe prediction (owner-consented): pending | running | passed | failed. */
-    probeStatus: text("probe_status").notNull().default("none"),
-    probePredictionId: text("probe_prediction_id"),
-    probeError: text("probe_error"),
-    sourceCreatedAt: timestamp("source_created_at"),
-    detectedAt: timestamp("detected_at").defaultNow().notNull(),
-    lastCheckedAt: timestamp("last_checked_at").defaultNow().notNull(),
-    testedAt: timestamp("tested_at"),
-    approvedBy: text("approved_by").references(() => user.id, { onDelete: "set null" }),
-    approvedAt: timestamp("approved_at"),
-    activatedBy: text("activated_by").references(() => user.id, { onDelete: "set null" }),
-    activatedAt: timestamp("activated_at"),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  },
-  (table) => [index("replicate_model_versions_detected_idx").on(table.detectedAt)],
-);
-
-/** Append-only audit trail of the version lifecycle (detected, checked, tested, approved, activated, rolled back). */
-export const replicateModelVersionEvents = pgTable(
-  "replicate_model_version_events",
-  {
-    id: text("id").primaryKey(),
-    version: text("version").notNull(),
-    event: text("event").notNull(),
-    actorId: text("actor_id").references(() => user.id, { onDelete: "set null" }),
-    previousVersion: text("previous_version"),
-    schemaHash: text("schema_hash"),
-    result: jsonb("result"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [index("replicate_model_version_events_version_idx").on(table.version, table.createdAt)],
 );

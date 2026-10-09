@@ -12,9 +12,6 @@ import { AUDIO_PROVIDERS, getAudioProviderDefinition } from "@/lib/ai/audio-prov
 import { getActiveAudioProviderId } from "@/lib/ai/audio-providers/active";
 import { isCloudinaryConfigured } from "@/lib/storage/cloudinary";
 import { getAudioWebhookUrl } from "@/lib/ai/audio-providers/webhook";
-import { getReplicateUsage } from "@/lib/ai/audio-providers/replicate-usage";
-import { getVersionOverview } from "@/lib/ai/audio-providers/replicate-versions";
-import AdminReplicateVersionsPanel from "@/components/admin/AdminReplicateVersionsPanel";
 import { setActiveAudioProvider } from "../audio-actions";
 
 export default async function AdminAudioProviderPage() {
@@ -26,15 +23,9 @@ export default async function AdminAudioProviderPage() {
   const encryptionReady = Boolean(process.env.APP_SECRETS_ENCRYPTION_KEY);
   const otherProviders = AUDIO_PROVIDERS.filter((provider) => provider.id !== "musicful");
   const webhookUrls = Object.fromEntries(
-    await Promise.all(
-      otherProviders.map(async (provider) => [provider.id, await getAudioWebhookUrl(provider.id)] as const),
-    ),
+    await Promise.all(otherProviders.map(async (provider) => [provider.id, await getAudioWebhookUrl(provider.id)] as const)),
   );
-  const replicateUsage = await getReplicateUsage();
-  const replicateVersions = await getVersionOverview();
-  const httpsReady = /^https:/.test(
-    process.env.PAYMENT_WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "",
-  );
+  const httpsReady = /^https:/.test(process.env.PAYMENT_WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL || process.env.BETTER_AUTH_URL || "");
   return (
     <AdminPage>
       <AdminBackLink href="/admin/ai-providers" label="Toutes les capacités IA" />
@@ -159,11 +150,6 @@ export default async function AdminAudioProviderPage() {
                 implemented={provider.implemented}
                 encryptionReady={encryptionReady}
                 webhook={{ url: webhookUrls[provider.id] ?? null, httpsReady }}
-                replicate={
-                  provider.id === "replicate"
-                    ? { storageReady: isCloudinaryConfigured(), usage: replicateUsage }
-                    : undefined
-                }
                 settings={{
                   enabled: row?.enabled ?? false,
                   apiKeyLast4: row?.apiKeyLast4 ?? null,
@@ -190,7 +176,6 @@ export default async function AdminAudioProviderPage() {
                   summary: row?.providerCredits ?? null,
                 }}
               />
-              {provider.id === "replicate" ? <AdminReplicateVersionsPanel overview={replicateVersions} /> : null}
             </AdminTabPanel>
           );
         })}

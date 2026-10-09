@@ -6,15 +6,8 @@ import { createLogger } from "@/lib/observability/logger";
 import { writeAuditLog } from "@/lib/security/audit";
 import { refundSongGroupIfFailed } from "@/lib/credits/generation-refund";
 import { getAudioProviderConfig } from "../musicful";
-import {
-  ensureVerifiedMp3,
-  getJobForUser,
-  persistRemoteMp3,
-  pollMusicJob,
-  submitSongGroupJobs,
-  type Mp3Resolution,
-} from "../music-jobs";
-import { getAudioProviderDefinition } from "./catalog";
+import { ensureVerifiedMp3, getJobForUser, pollMusicJob, submitSongGroupJobs, type Mp3Resolution } from "../music-jobs";
+import { getAudioProviderDefinition, isKnownAudioProviderId } from "./catalog";
 import { getAudioWebhookUrl } from "./webhook";
 import { getAudioAdapter } from "./registry";
 import type { AudioProviderRuntimeConfig } from "./types";
@@ -138,6 +131,22 @@ export async function pollJobForProvider(jobId: string, userId: string) {
 
 async function advanceJobForProvider(jobId: string, userId: string) {
   const job = await getJobForUser(jobId, userId);
+  // A job created for a provider that no longer exists (e.g. removed from the catalog) must never fall back to
+  // Musicful: its task id means nothing there. It is closed as failed (the caller then refunds the credits once).
+  if (!isKnownAudioProviderId(job.provider)) {
+    if (job.status === "completed" || job.status === "failed" || job.status === "cancelled") return job;
+    const values = {
+      status: "failed" as const,
+      failureReason: "provider_removed",
+      failedAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await getServiceDb()
+      .update(musicGenerationJobs)
+      .set(values)
+      .where(and(eq(musicGenerationJobs.id, job.id), eq(musicGenerationJobs.userId, userId)));
+    return { ...job, ...values };
+  }
   if (getAudioProviderDefinition(job.provider).id === "musicful") return pollMusicJob(jobId, userId);
   if (job.status === "completed" || job.status === "failed" || job.status === "cancelled" || !job.providerTaskId)
     return job;
@@ -151,9 +160,7 @@ async function advanceJobForProvider(jobId: string, userId: string) {
     const isFailed = task.state === "failed";
     const mp3: Mp3Resolution =
       task.state === "completed" && task.audioUrl
-        ? task.persistAudio
-          ? await persistRemoteMp3(task.audioUrl, job.id)
-          : await ensureVerifiedMp3(task.audioUrl, job.id)
+        ? await ensureVerifiedMp3(task.audioUrl, job.id)
         : { url: null, mimeType: null, normalized: false, reason: "audio_not_ready" };
     const isCompleted = !isFailed && Boolean(mp3.url);
     // Same guard as the Musicful flow: a job whose audio never verifies must not poll forever.
