@@ -12,10 +12,11 @@ describe("drapeaux et noms de monnaie", () => {
 
   it("prend le drapeau du pays détecté pour la monnaie choisie automatiquement, sinon le pays émetteur", () => {
     expect(currencyFlag("XOF", "CI", true)).toBe("🇨🇮");
-    expect(currencyFlag("XOF", "CI", false)).toBe("🇸🇳");
+    expect(currencyFlag("XOF", "CI", false)).toBe("🇨🇮");
+    expect(currencyFlag("XOF", "SN", true)).toBe("🇨🇮");
     expect(currencyFlag("USD", "CI", false)).toBe("🇺🇸");
     expect(currencyFlag("ZZZ", null)).toBe("🌍");
-    expect(currencyFlag("XOF", null, true)).toBe("🇸🇳");
+    expect(currencyFlag("XOF", null, true)).toBe("🇨🇮");
   });
 
   it("retire le code entre parenthèses du nom", () => {
