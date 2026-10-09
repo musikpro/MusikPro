@@ -26,10 +26,11 @@ export default function CountryDetectionPanel({
         <div>
           <h2>Détection de pays (Country.is)</h2>
           <p>
-            Détecte le pays du visiteur pour choisir automatiquement la langue de l’interface (l’association pays →
-            langue reste gérée sur la page Langues). Sur Vercel, l’en-tête fourni par la plateforme est utilisé en
-            priorité : aucun appel à country.is dans ce cas. Sinon, l’IP est résolue via country.is puis mise en cache
-            pendant la durée choisie ci-dessous, pour éviter de réinterroger l’API tant qu’un visiteur est déjà connu.
+            Détection unique et partagée : le pays du visiteur sert à choisir automatiquement la langue de l’interface,
+            la monnaie (pastille AUTO) et l’indicatif téléphonique du paiement. Les associations pays → langue et pays →
+            monnaie restent gérées sur la page Langues, et les indicatifs sur la page Préfixes téléphoniques. Sur
+            Vercel, l’en-tête fourni par la plateforme est utilisé en priorité : aucun appel à country.is dans ce cas.
+            Sinon, l’IP est résolue via country.is puis mise en cache pendant la durée choisie ci-dessous.
           </p>
         </div>
         <span className={`admin-status ${automaticDetectionEnabled ? "is-success" : "is-pending"}`}>

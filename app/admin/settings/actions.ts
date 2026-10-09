@@ -88,9 +88,14 @@ export async function setCountryDetectionSettings(
       targetId: "global",
       metadata: fields,
     });
-    ["/admin/settings", "/admin/languages", "/dashboard", "/dashboard/create/parameters", "/demo"].forEach((path) =>
-      revalidatePath(path),
-    );
+    [
+      "/admin/settings",
+      "/admin/languages",
+      "/admin/phone-prefixes",
+      "/dashboard",
+      "/dashboard/create/parameters",
+      "/demo",
+    ].forEach((path) => revalidatePath(path));
     return { ok: true, message: "Réglages de détection du pays enregistrés." };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ces réglages.") };

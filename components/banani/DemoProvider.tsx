@@ -7,7 +7,11 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { authClient } from "@/lib/auth/client";
 import { dashboardHref, normalizeDashboardPath } from "@/lib/demo/routing";
 import { getWorkspaceDefaults } from "@/lib/demo/workspace-defaults";
-import { demoCreationChoicesSchema, buildDemoPaymentDraftSchema } from "@/lib/validation/musikpro-demo";
+import {
+  demoCreationChoicesSchema,
+  buildDemoPaymentDraftSchema,
+  pickInitialPhoneCountry,
+} from "@/lib/validation/musikpro-demo";
 import { CREDITS_PER_GENERATION, type CreditPlanOption } from "@/lib/credit-plans/catalog";
 import { DEFAULT_CURRENCIES, type CreditCurrency, type CreditCurrencyCode } from "@/lib/credit-plans/currency";
 import type { OccasionOption } from "@/lib/occasions/catalog";
@@ -158,7 +162,7 @@ function useDemoState(
     theme: "Clair",
     appLanguage: "Français",
     currency: "XOF",
-    phoneCountry: "CI",
+    phoneCountry: pickInitialPhoneCountry(initialDetectedCountry, initialPhonePrefixes),
     recipientRelation: "",
   });
   const [details, setDetails] = useState<Record<string, string>>({});
@@ -169,6 +173,8 @@ function useDemoState(
   const [creationDraftReady, setCreationDraftReady] = useState(false);
   const creationDraftKey = `musikpro:creation-draft:v1:${persistenceId}`;
   const paymentInfoKey = `musikpro:payment-info:v1:${persistenceId}`;
+  // Le client a choisi lui-même l'indicatif (sinon il suit le pays détecté).
+  const phoneCountryChosen = useRef(false);
   const persistPaymentInfo = (nextFields: Record<string, string>, phoneCountry: string) => {
     try {
       window.localStorage.setItem(
@@ -178,6 +184,7 @@ function useDemoState(
           email: nextFields["payment.email"] ?? "",
           phone: nextFields["payment.phone"] ?? "",
           phoneCountry,
+          phoneCountryChosen: phoneCountryChosen.current,
         }),
       );
     } catch {
@@ -200,6 +207,10 @@ function useDemoState(
               "payment.email": restored.email,
               "payment.phone": restored.phone,
             }));
+            // Anciennes sauvegardes sans indicateur : un indicatif différent du repli historique « CI » est un vrai choix.
+            const chosen = restored.phoneCountryChosen ?? restored.phoneCountry !== "CI";
+            if (!chosen) return;
+            phoneCountryChosen.current = true;
             setChoices((current) => ({ ...current, phoneCountry: restored.phoneCountry }));
           });
         }
@@ -351,7 +362,9 @@ function useDemoState(
   // qui se perdrait au rechargement. La démo garde ses favoris locaux.
   const versionFavorites = isDemo
     ? demoVersionFavorites
-    : songs.flatMap((song) => song.versions.flatMap((version, index) => (version.liked ? [`${song.id}|${index}`] : [])));
+    : songs.flatMap((song) =>
+        song.versions.flatMap((version, index) => (version.liked ? [`${song.id}|${index}`] : [])),
+      );
   const favorites = isDemo
     ? demoFavorites
     : songs.filter((song) => song.versions.some((version) => version.liked)).map((song) => song.id);
@@ -424,7 +437,9 @@ function useDemoState(
       setRemovedDiscoverIds((prev) => [...prev, songGroupId]);
       notify(t("Chanson retirée de Découvrir."));
     } catch (error) {
-      notify(error instanceof ApiClientError ? error.message : t("Impossible de retirer cette chanson pour le moment."));
+      notify(
+        error instanceof ApiClientError ? error.message : t("Impossible de retirer cette chanson pour le moment."),
+      );
     }
   };
   /** Interrupteur « Partager dans Découvrir » d'une chanson de « Mes chansons » (compte réel). */
@@ -554,7 +569,10 @@ function useDemoState(
       window.localStorage.setItem(`musikpro:currency:${persistenceId}`, value);
       setCurrencyAuto(false);
     }
-    if (key === "phoneCountry") persistPaymentInfo(fields, value);
+    if (key === "phoneCountry") {
+      phoneCountryChosen.current = true;
+      persistPaymentInfo(fields, value);
+    }
     if (!creationDraftReady || !["occasion", "genre", "mood", "language", "voice", "recipientRelation"].includes(key)) {
       return;
     }
@@ -623,9 +641,7 @@ function useDemoState(
     const apply = (liked: boolean) =>
       setSongs((prev) =>
         prev.map((s) =>
-          s.id !== song.id
-            ? s
-            : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked } : v)) },
+          s.id !== song.id ? s : { ...s, versions: s.versions.map((v, i) => (i === index ? { ...v, liked } : v)) },
         ),
       );
     apply(nextLiked);
@@ -844,7 +860,11 @@ function useDemoState(
   const startRealGeneration = async (): Promise<{ songGroupId: string } | null> => {
     if (!paymentBypassEnabled && balance < CREDITS_PER_GENERATION) {
       router.push(href("/dashboard/credits"));
-      notify(translateTemplate("Il faut {credits} crédits pour lancer une génération musicale.", { credits: CREDITS_PER_GENERATION }));
+      notify(
+        translateTemplate("Il faut {credits} crédits pour lancer une génération musicale.", {
+          credits: CREDITS_PER_GENERATION,
+        }),
+      );
       return null;
     }
     try {
