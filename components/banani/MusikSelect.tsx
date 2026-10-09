@@ -9,6 +9,9 @@ export type MusikSelectOption = {
   value: string;
   label: string;
   display?: string;
+  /** Liste « détaillée » : drapeau à gauche, nom du pays, puis valeur courte (ex. indicatif) alignée à droite. */
+  flag?: string;
+  trailing?: string;
 };
 
 export default function MusikSelect({
@@ -143,17 +146,31 @@ export default function MusikSelect({
           key={option.value}
           type="button"
           role="option"
-          aria-label={option.label}
+          aria-label={option.trailing ? `${option.label} ${option.trailing}` : option.label}
           aria-selected={option.value === value}
           className={`musik-select-option ${index === highlighted ? "is-highlighted" : ""}`}
           onPointerMove={() => setHighlighted(index)}
           onClick={() => choose(option.value)}
         >
-          {showOptionDisplays && option.display && (
-            <span className="musik-select-option-display">{option.display}</span>
+          {option.trailing ? (
+            <>
+              {option.flag && (
+                <span className="musik-select-option-flag" aria-hidden="true">
+                  {option.flag}
+                </span>
+              )}
+              <span className="musik-select-option-name">{option.label}</span>
+              <span className="musik-select-option-trailing">{option.trailing}</span>
+            </>
+          ) : (
+            <>
+              {showOptionDisplays && option.display && (
+                <span className="musik-select-option-display">{option.display}</span>
+              )}
+              {showOptionLabels && <span>{option.label}</span>}
+              {showSelectionMark && option.value === value && <Icon i="check" size={15} />}
+            </>
           )}
-          {showOptionLabels && <span>{option.label}</span>}
-          {showSelectionMark && option.value === value && <Icon i="check" size={15} />}
         </button>
       ))}
     </div>
