@@ -1,5 +1,5 @@
 "use server";
-import { purgeUserData } from "@/lib/account/purge-user-data";
+import { trashUser } from "@/lib/trash/users";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
@@ -87,27 +87,39 @@ export async function setRole(_previous: AdminActionState, formData: FormData): 
 }
 
 const deleteUserSchema = z.object({ userId: z.string().min(1).max(120) });
+/** Met un compte à la corbeille : suspendu et masqué, restaurable depuis /admin/corbeille jusqu'à la purge automatique. */
 export async function deleteUser(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
     const adminSession = await requireAdmin();
-    // Same reasoning as setRole above: better-auth's "remove-user" permission is also literal
-    // "admin"-only.
+    // Same reasoning as setRole above: better-auth's "ban-user" permission is also literal "admin"-only.
     if (!hasAppRole((adminSession.user as { role?: string }).role, "admin"))
       throw new Error("Seul un Super Admin peut supprimer un compte.");
     const parsed = deleteUserSchema.parse(Object.fromEntries(formData));
     if (parsed.userId === adminSession.user.id)
       throw new Error("Vous ne pouvez pas supprimer votre propre compte depuis cet écran.");
-    // Mêmes données que la suppression en libre-service : sans cela, histoires et liens publics resteraient orphelins.
-    await purgeUserData(parsed.userId);
-    await auth.api.removeUser({ body: parsed, headers: await headers() });
+    const [target] = await getServiceDb()
+      .select({ role: user.role })
+      .from(user)
+      .where(eq(user.id, parsed.userId))
+      .limit(1);
+    if (!target) return { ok: false, message: "Compte introuvable : il a peut-être déjà été supprimé." };
+    if (target.role === "admin") {
+      const [{ value: superAdminCount }] = await getServiceDb()
+        .select({ value: count() })
+        .from(user)
+        .where(eq(user.role, "admin"));
+      if (Number(superAdminCount) <= 1) throw new Error("Impossible de supprimer le dernier compte Super Admin.");
+    }
+    await trashUser({ userId: parsed.userId, deletedBy: adminSession.user.id, headers: await headers() });
     await writeAuditLog({
-      action: "user.deleted",
+      action: "user.trashed",
       actorId: adminSession.user.id,
       targetType: "user",
       targetId: parsed.userId,
     });
     revalidatePath("/admin/users");
-    return { ok: true, message: "Compte utilisateur supprimé." };
+    revalidatePath("/admin/corbeille");
+    return { ok: true, message: "Compte mis à la corbeille : il est suspendu et restaurable depuis la Corbeille." };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer ce compte utilisateur.") };
   }

@@ -10,14 +10,14 @@ export default function AdminDeleteUserButton({ email }: { email: string }) {
       onClick={(event) => {
         if (
           !window.confirm(
-            `Supprimer définitivement le compte « ${email} » ? Cette action est irréversible et retire l’accès, l’abonnement et les crédits liés à ce compte.`,
+            `Mettre le compte « ${email} » à la corbeille ? Il est suspendu immédiatement (plus de connexion) et disparaît de la liste. Tu pourras le restaurer depuis la Corbeille jusqu’à sa suppression définitive automatique.`,
           )
         )
           event.preventDefault();
       }}
     >
       <Icon i="trash" size={15} />
-      Supprimer
+      Mettre à la corbeille
     </button>
   );
 }

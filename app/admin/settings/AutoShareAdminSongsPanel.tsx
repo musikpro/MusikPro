@@ -1,7 +1,7 @@
 import Icon from "@/components/banani/Icon";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminButton from "@/components/admin/AdminButton";
-import { setAutoShareAdminSongs } from "./actions";
+import { setAutoShareAdminSongs, shareAdminSongsToDiscover } from "./actions";
 
 export default function AutoShareAdminSongsPanel({ enabled }: { enabled: boolean }) {
   return (
@@ -35,6 +35,28 @@ export default function AutoShareAdminSongsPanel({ enabled }: { enabled: boolean
           <AdminButton type="submit" variant="primary">
             <Icon i="save" size={15} />
             Enregistrer
+          </AdminButton>
+        </div>
+      </AdminActionForm>
+      <AdminActionForm
+        action={shareAdminSongsToDiscover}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 8,
+          marginTop: 16,
+          paddingTop: 16,
+          borderTop: "1px solid var(--admin-border)",
+        }}
+      >
+        <p className="admin-muted-note" style={{ margin: 0 }}>
+          Rattrapage : ajoute à Découvrir toutes les chansons terminées déjà créées par des comptes administrateurs. Les
+          chansons des clients ne sont pas touchées, et celles que tu as retirées de Découvrir y restent retirées.
+        </p>
+        <div className="admin-btn-row">
+          <AdminButton type="submit" variant="secondary">
+            <Icon i="library" size={15} />
+            Ajouter les chansons des administrateurs à Découvrir
           </AdminButton>
         </div>
       </AdminActionForm>

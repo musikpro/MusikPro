@@ -1063,3 +1063,42 @@ export const phonePrefixes = pgTable(
     activeOrderIndex: index("phone_prefixes_active_order_idx").on(table.active, table.sortOrder),
   }),
 );
+
+
+/** Réglage unique : combien de jours une chanson ou un compte supprimé reste en corbeille avant la purge automatique. */
+export const trashSettings = pgTable("trash_settings", {
+  id: text("id").primaryKey().default("global"),
+  songsRetentionDays: integer("songs_retention_days").notNull().default(30),
+  usersRetentionDays: integer("users_retention_days").notNull().default(30),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/**
+ * Corbeille des chansons : instantané JSON de la chanson (toutes ses versions et ce qui la référence) retiré des
+ * tables actives. `song_key` = identifiant du groupe, ou `job:<id>` pour une génération ancienne sans groupe.
+ */
+export const trashedSongs = pgTable("trashed_songs", {
+  songKey: text("song_key").primaryKey(),
+  title: text("title"),
+  ownerId: text("owner_id"),
+  ownerEmail: text("owner_email"),
+  versions: integer("versions").notNull().default(1),
+  snapshot: jsonb("snapshot").notNull(),
+  deletedBy: text("deleted_by"),
+  deletedAt: timestamp("deleted_at").defaultNow().notNull(),
+});
+
+/**
+ * Corbeille des utilisateurs : le compte est suspendu (jamais supprimé) tant qu'il est ici ; il disparaît de la liste
+ * Utilisateurs. La purge définitive supprime le compte ; la ligne part avec lui (cascade).
+ */
+export const trashedUsers = pgTable("trashed_users", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  deletedBy: text("deleted_by"),
+  previousBanned: boolean("previous_banned").notNull().default(false),
+  previousBanReason: text("previous_ban_reason"),
+  deletedAt: timestamp("deleted_at").defaultNow().notNull(),
+});

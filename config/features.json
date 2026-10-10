@@ -609,6 +609,35 @@
         "Un fournisseur ne peut être choisi comme actif que lorsque son adaptateur est implémenté (catalog.ts, implemented: true)."
       ]
     },
+    "owner-trash": {
+      "description": "Corbeille du tableau de bord propriétaire : une chanson ou un compte supprimé est restaurable depuis /admin/corbeille puis purgé automatiquement après un délai réglable dans Paramètres > Général (30 jours par défaut, séparément pour les chansons et les comptes).",
+      "optional": false,
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL", "CRON_SECRET"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0080_trash.sql",
+        "lib/trash/retention.ts",
+        "lib/trash/settings.ts",
+        "lib/trash/songs.ts",
+        "lib/trash/users.ts",
+        "app/admin/corbeille/page.tsx",
+        "app/admin/corbeille/actions.ts",
+        "app/admin/corbeille/loading.tsx",
+        "app/admin/settings/TrashRetentionPanel.tsx",
+        "components/admin/AdminTrashPurgeButton.tsx",
+        "app/api/cron/purge-trash/route.ts",
+        "docs/plans/corbeille-chansons-utilisateurs.md"
+      ],
+      "routes": ["/api/cron/purge-trash"],
+      "dependsOn": ["database", "auth"],
+      "removalComplexity": "medium",
+      "notes": [
+        "Chanson : instantané JSON dans trashed_songs, retirée des tables actives (aucune lecture existante modifiée) ; restauration = réinsertion.",
+        "Compte : suspendu (banni) et masqué de la liste Utilisateurs, jamais supprimé avant la purge ; crédits et abonnements intacts.",
+        "La suppression de compte en libre-service par le client reste immédiate et définitive (exigence des stores).",
+        "Un compte administrateur n'est jamais purgé automatiquement."
+      ]
+    },
     "discover-library": {
       "description": "Page Découvrir des clients : toutes les chansons terminées y apparaissent automatiquement (chaque créateur peut retirer les siennes) ; le propriétaire règle l'affichage et modère depuis /admin/library. Remplace l'ancien système de collections.",
       "optional": false,
@@ -619,7 +648,6 @@
         "db/migrations/0072_discover_opt_in.sql",
         "db/migrations/0079_discover_auto_share_admin.sql",
         "lib/discover/auto-share.ts",
-        "lib/admin/song-delete.ts",
         "app/admin/settings/AutoShareAdminSongsPanel.tsx",
         "components/admin/AdminDeleteSongButton.tsx",
         "lib/discover/types.ts",

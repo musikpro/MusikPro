@@ -8,8 +8,11 @@ import { escapeLike } from "./generations";
 import { clampPage, pageCount } from "./pagination";
 import type { UserStateFilter, UsersPage } from "./users-types";
 
+/** Les comptes mis à la corbeille ne figurent plus dans la liste Utilisateurs (ils sont dans /admin/corbeille). */
+const NOT_IN_TRASH = sql`not exists (select 1 from trashed_users where trashed_users.user_id = ${user.id})`;
+
 function filterCondition(state: UserStateFilter, query: string): SQL | undefined {
-  const conditions: SQL[] = [];
+  const conditions: SQL[] = [NOT_IN_TRASH];
   if (state === "active") conditions.push(sql`coalesce(${user.banned}, false) = false`);
   else if (state === "inactive") conditions.push(sql`coalesce(${user.banned}, false) = true`);
   const needle = query.trim();
@@ -88,6 +91,7 @@ export async function getUsersStats(customRoleSlugs: string[]): Promise<UsersSta
       admins: sql<number>`(count(*) filter (where string_to_array(replace(coalesce(${user.role}, 'user'), ' ', ''), ',') && array[${slugList}]::text[]))::int`,
       suspended: sql<number>`(count(*) filter (where coalesce(${user.banned}, false)))::int`,
     })
-    .from(user);
+    .from(user)
+    .where(NOT_IN_TRASH);
   return row ?? { total: 0, verified: 0, admins: 0, suspended: 0 };
 }

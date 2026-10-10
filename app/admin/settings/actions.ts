@@ -8,11 +8,14 @@ import {
   paymentBypassSettings,
   localizationSettings,
   playbackSettings,
+  trashSettings,
 } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { PLAYBACK_SETTINGS_TAG } from "@/lib/settings/playback";
+import { shareAllAdminSongs } from "@/lib/discover/server";
+import { TRASH_RETENTION_MAX_DAYS, TRASH_RETENTION_MIN_DAYS } from "@/lib/trash/retention";
 import {
   GENERATIONS_PER_PAGE_MAX,
   GENERATIONS_PER_PAGE_MIN,
@@ -260,6 +263,76 @@ export async function setAutoShareAdminSongs(
       message: parsed.enabled
         ? "Les chansons des administrateurs seront ajoutées automatiquement à Découvrir."
         : "Les chansons des administrateurs ne sont plus ajoutées automatiquement à Découvrir.",
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+/** Rattrapage : place dans Découvrir toutes les chansons terminées des comptes administrateurs. */
+export async function shareAdminSongsToDiscover(): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const added = await shareAllAdminSongs();
+    await writeAuditLog({
+      action: "discover.admin_songs.bulk_shared",
+      actorId: session.user.id,
+      targetType: "discover_settings",
+      targetId: "global",
+      metadata: { added },
+    });
+    revalidatePath("/admin/generations");
+    revalidatePath("/admin/library");
+    revalidatePath("/dashboard", "layout");
+    revalidatePath("/demo/discover");
+    return {
+      ok: true,
+      message: added
+        ? `${added} chanson${added > 1 ? "s" : ""} d’administrateur ajoutée${added > 1 ? "s" : ""} à Découvrir.`
+        : "Toutes les chansons des administrateurs sont déjà dans Découvrir.",
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’ajouter les chansons des administrateurs.") };
+  }
+}
+
+const trashRetentionSchema = z.object({
+  songsRetentionDays: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(TRASH_RETENTION_MIN_DAYS, `Minimum ${TRASH_RETENTION_MIN_DAYS} jour.`)
+    .max(TRASH_RETENTION_MAX_DAYS, `Maximum ${TRASH_RETENTION_MAX_DAYS} jours.`),
+  usersRetentionDays: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(TRASH_RETENTION_MIN_DAYS, `Minimum ${TRASH_RETENTION_MIN_DAYS} jour.`)
+    .max(TRASH_RETENTION_MAX_DAYS, `Maximum ${TRASH_RETENTION_MAX_DAYS} jours.`),
+});
+
+/** Délai (en jours) avant la suppression automatique des chansons et des comptes qui sont dans la corbeille. */
+export async function setTrashRetention(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = trashRetentionSchema.parse({
+      songsRetentionDays: formData.get("songsRetentionDays"),
+      usersRetentionDays: formData.get("usersRetentionDays"),
+    });
+    const fields = { ...parsed, updatedBy: session.user.id, updatedAt: new Date() };
+    await getServiceDb()
+      .insert(trashSettings)
+      .values({ id: "global", ...fields })
+      .onConflictDoUpdate({ target: trashSettings.id, set: fields });
+    await writeAuditLog({
+      action: "trash.retention.updated",
+      actorId: session.user.id,
+      targetType: "trash_settings",
+      targetId: "global",
+      metadata: parsed,
+    });
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin/corbeille");
+    return {
+      ok: true,
+      message: `Corbeille : chansons conservées ${parsed.songsRetentionDays} jours, comptes ${parsed.usersRetentionDays} jours.`,
     };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
