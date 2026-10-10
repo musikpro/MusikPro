@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, type CSSProperties, type ReactNode } from "react";
+import { useActionState, useEffect, useRef, type CSSProperties, type ReactNode } from "react";
 import { useAdminActionToast, type AdminActionState } from "./useAdminActionToast";
 
 /**
@@ -14,16 +14,26 @@ export default function AdminActionForm({
   id,
   className,
   style,
+  onSuccess,
   children,
 }: {
   action: (previous: AdminActionState, data: FormData) => Promise<AdminActionState>;
   id?: string;
   className?: string;
   style?: CSSProperties;
+  /** Appelé après une action réussie (ex. recharger une liste paginée côté serveur). */
+  onSuccess?: () => void;
   children: ReactNode;
 }) {
   const [state, formAction] = useActionState<AdminActionState, FormData>(action, null);
   useAdminActionToast(state);
+  const onSuccessRef = useRef(onSuccess);
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  });
+  useEffect(() => {
+    if (state?.ok) onSuccessRef.current?.();
+  }, [state]);
   return (
     <form id={id} action={formAction} className={className} style={style}>
       {children}
