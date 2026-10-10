@@ -6,8 +6,8 @@ import { getServiceDb } from "@/db";
 import { landingSongFeatures } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { getGeneratedSongOptionById, listRecentGeneratedSongsForAdmin } from "@/lib/trending/admin";
+import { getFeaturedSongPlacements } from "@/lib/featured-songs/server";
 import {
-  listLandingSongFeatures,
   LANDING_SONG_FEATURE_SECTION_LABELS,
   LANDING_SONG_POOL_SIZE,
   type LandingSongFeatureSection,
@@ -22,10 +22,9 @@ export default async function AdminEditLandingSongFeaturePage({ params }: { para
   const [row] = await getServiceDb().select().from(landingSongFeatures).where(eq(landingSongFeatures.id, id)).limit(1);
   if (!row) notFound();
   const section = row.section as LandingSongFeatureSection;
-  const [recentSongs, showcaseRows, libraryRows] = await Promise.all([
+  const [recentSongs, usedPlacements] = await Promise.all([
     listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
-    listLandingSongFeatures("showcase"),
-    listLandingSongFeatures("library"),
+    getFeaturedSongPlacements(),
   ]);
   // The card's current song can have aged out of the "most recent" window above — resolve it
   // directly so the picker still shows its real title instead of a blank "Sélectionner".
@@ -49,7 +48,7 @@ export default async function AdminEditLandingSongFeaturePage({ params }: { para
           sectionLabel={SECTION_LABELS[section]}
           action={updateLandingSongFeature}
           songs={songs}
-          usedSongGroupIds={[...showcaseRows, ...libraryRows].map((r) => r.songGroupId)}
+          usedPlacements={usedPlacements}
           values={{ id: row.id, songGroupId: row.songGroupId, coverUrlOverride: row.coverUrlOverride }}
         />
       </section>

@@ -17,6 +17,8 @@ import {
   MAX_LANDING_SONG_FEATURES_PER_SECTION,
   type LandingSongFeatureSection,
 } from "@/lib/landing-features/admin";
+import { songAlreadyUsedMessage } from "@/lib/featured-songs/placements";
+import { getTrendingSongPlacements } from "@/lib/featured-songs/server";
 import { getGeneratedSongOptionById } from "@/lib/trending/admin";
 import { publishSongGroup } from "@/lib/ai/songs";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
@@ -70,12 +72,11 @@ async function publishPickedSong(songGroupId: string): Promise<void> {
   await publishSongGroup(option.userId, option.songGroupId, option.jobId);
 }
 
-function songAlreadyUsedMessage(section: string) {
-  const label = LANDING_SONG_FEATURE_SECTION_LABELS[section as LandingSongFeatureSection] ?? section;
-  return `Cette chanson est déjà ajoutée dans « ${label} » (une chanson n’est utilisable qu’une fois, avec sa version 1 et sa version 2).`;
-}
-
-/** A song (both of its versions share one songGroupId) can feature only once: returns the section already using it, if any. */
+/**
+ * A song (both of its versions share one songGroupId) can feature only once across the landing
+ * sections AND the client dashboard's « Tendances » widget: returns the name of the place already
+ * using it, if any.
+ */
 async function findSectionUsingSong(songGroupId: string, excludeId?: string): Promise<string | null> {
   const rows = await getServiceDb()
     .select({ section: landingSongFeatures.section })
@@ -86,7 +87,9 @@ async function findSectionUsingSong(songGroupId: string, excludeId?: string): Pr
         : eq(landingSongFeatures.songGroupId, songGroupId),
     )
     .limit(1);
-  return rows[0]?.section ?? null;
+  if (rows[0])
+    return LANDING_SONG_FEATURE_SECTION_LABELS[rows[0].section as LandingSongFeatureSection] ?? rows[0].section;
+  return (await getTrendingSongPlacements())[songGroupId] ?? null;
 }
 
 export async function createLandingSongFeature(
@@ -99,11 +102,18 @@ export async function createLandingSongFeature(
     const database = getServiceDb();
 
     const existing = await database
-      .select({ id: landingSongFeatures.id, songGroupId: landingSongFeatures.songGroupId, sortOrder: landingSongFeatures.sortOrder })
+      .select({
+        id: landingSongFeatures.id,
+        songGroupId: landingSongFeatures.songGroupId,
+        sortOrder: landingSongFeatures.sortOrder,
+      })
       .from(landingSongFeatures)
       .where(eq(landingSongFeatures.section, parsed.section));
     if (existing.length >= MAX_LANDING_SONG_FEATURES_PER_SECTION)
-      return { ok: false, message: `Cette section affiche déjà ${MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes au maximum.` };
+      return {
+        ok: false,
+        message: `Cette section affiche déjà ${MAX_LANDING_SONG_FEATURES_PER_SECTION} cartes au maximum.`,
+      };
     const usedIn = await findSectionUsingSong(parsed.songGroupId);
     if (usedIn) return { ok: false, message: songAlreadyUsedMessage(usedIn) };
     await publishPickedSong(parsed.songGroupId);

@@ -5,6 +5,7 @@ import AdminLandingSongFeatureSortableGrid from "@/components/admin/AdminLanding
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
 import { listRecentGeneratedSongsForAdmin } from "@/lib/trending/admin";
+import { getFeaturedSongPlacements } from "@/lib/featured-songs/server";
 import {
   listLandingSongFeatures,
   LANDING_SONG_FEATURE_SECTION_LABELS,
@@ -20,20 +21,19 @@ const SECTION_DESCRIPTIONS: Record<LandingSongFeatureSection, string> = {
   library: "Cartes affichées dans la section « Bibliothèque populaire » de la page d’accueil publique.",
 };
 
-export default async function AdminLandingFeaturesPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>;
-}) {
+export default async function AdminLandingFeaturesPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   await requireAdmin();
   const { tab } = await searchParams;
   // The edit page links back with ?tab=<section>, so the owner returns to the tab they came from
   // instead of always landing on the first one.
-  const defaultTab = LANDING_SONG_FEATURE_SECTIONS.find((section) => section === tab) ?? LANDING_SONG_FEATURE_SECTIONS[0];
-  const [songs, showcaseRows, libraryRows] = await Promise.all([
+  const defaultTab =
+    LANDING_SONG_FEATURE_SECTIONS.find((section) => section === tab) ?? LANDING_SONG_FEATURE_SECTIONS[0];
+  const [songs, showcaseRows, libraryRows, usedPlacements] = await Promise.all([
     listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
     listLandingSongFeatures("showcase"),
     listLandingSongFeatures("library"),
+    // Landing + Tendances : une chanson déjà mise en avant quelque part n'est plus proposée ailleurs.
+    getFeaturedSongPlacements(),
   ]);
   const rowsBySection = { showcase: showcaseRows, library: libraryRows };
 
@@ -75,7 +75,7 @@ export default async function AdminLandingFeaturesPage({
                   sectionLabel={label}
                   action={createLandingSongFeature}
                   songs={songs}
-                  usedSongGroupIds={[...showcaseRows, ...libraryRows].map((row) => row.songGroupId)}
+                  usedPlacements={usedPlacements}
                 />
               </section>
               {rows.length ? (

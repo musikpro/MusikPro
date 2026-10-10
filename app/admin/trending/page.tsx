@@ -2,6 +2,7 @@ import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import TrendingPanel from "@/components/admin/TrendingPanel";
 import { requireAdmin } from "@/lib/auth/session";
 import { getTrendingSettings } from "@/lib/trending/settings";
+import { getLandingSongPlacements } from "@/lib/featured-songs/server";
 import {
   getGeneratedSongOptionById,
   listRecentGeneratedSongsForAdmin,
@@ -13,9 +14,11 @@ const RECENT_SONGS_LIMIT = 10;
 
 export default async function AdminTrendingPage() {
   await requireAdmin();
-  const [settings, recentSongs] = await Promise.all([
+  const [settings, recentSongs, landingPlacements] = await Promise.all([
     getTrendingSettings(),
     listRecentGeneratedSongsForAdmin(RECENT_SONGS_LIMIT),
+    // Chansons déjà mises en avant sur la landing : elles ne sont plus proposées dans Tendances.
+    getLandingSongPlacements(),
   ]);
   // A pick can age out of the "most recent" window — resolve those individually so their label
   // still renders instead of a blank picker.
@@ -33,7 +36,7 @@ export default async function AdminTrendingPage() {
         title="Tendances"
         description="Choisis à la main les deux chansons du widget « Tendances » du tableau de bord client, et attribue à chacune sa pochette depuis la page Médias."
       />
-      <TrendingPanel settings={settings} songs={songs} />
+      <TrendingPanel settings={settings} songs={songs} landingPlacements={landingPlacements} />
     </AdminPage>
   );
 }
