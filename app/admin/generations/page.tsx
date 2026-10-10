@@ -26,7 +26,7 @@ export default async function AdminGenerationsPage() {
         title="Générations"
         description="Suis les chansons produites, leur statut, leur durée et leur qualité."
       />
-      <section className="admin-metric-row">
+      <section className="admin-metric-row admin-metrics-compact">
         <AdminMetric
           icon="music-2"
           value={stats.total.toLocaleString("fr-FR")}

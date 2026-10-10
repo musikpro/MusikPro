@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { clampPage, pageCount, pageRange, pageWindow } from "@/lib/admin/pagination";
-import { GENERATIONS_PER_PAGE_DEFAULT, normalizeGenerationsPerPage } from "@/lib/settings/admin-display-constants";
+import {
+  GENERATIONS_PER_PAGE_DEFAULT,
+  USERS_PER_PAGE_DEFAULT,
+  normalizeGenerationsPerPage,
+  normalizeUsersPerPage,
+} from "@/lib/settings/admin-display-constants";
 
 describe("pagination", () => {
   it("calcule le nombre de pages", () => {
@@ -34,5 +39,15 @@ describe("normalizeGenerationsPerPage", () => {
     expect(normalizeGenerationsPerPage(5)).toBe(10);
     expect(normalizeGenerationsPerPage(9999)).toBe(200);
     expect(normalizeGenerationsPerPage(25)).toBe(25);
+  });
+});
+
+describe("normalizeUsersPerPage", () => {
+  it("garde 50 par défaut et borne les valeurs", () => {
+    expect(normalizeUsersPerPage(undefined)).toBe(USERS_PER_PAGE_DEFAULT);
+    expect(normalizeUsersPerPage("x")).toBe(USERS_PER_PAGE_DEFAULT);
+    expect(normalizeUsersPerPage(3)).toBe(10);
+    expect(normalizeUsersPerPage(5000)).toBe(200);
+    expect(normalizeUsersPerPage(30)).toBe(30);
   });
 });

@@ -62,6 +62,7 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [status, setStatus] = useState<GenerationStatusFilter>("all");
   const [playingId, setPlayingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, startTransition] = useTransition();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -87,6 +88,7 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
           return;
         }
         setLoadError(null);
+        setExpandedId(null);
         setData(result.data);
         if (scrollToTop) {
           const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -181,11 +183,14 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
               <th>
                 <span className="sr-only">Écoute</span>
               </th>
+              <th className="admin-generation-toggle-col">
+                <span className="sr-only">Détails</span>
+              </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((row) => (
-              <tr key={row.id} data-status={row.status}>
+              <tr key={row.id} data-status={row.status} data-expanded={expandedId === row.id}>
                 <td data-label="Date" className="admin-generation-date">
                   <span>{formatDay(row.createdAt)}</span>
                   <small>{formatTime(row.createdAt)}</small>
@@ -265,6 +270,18 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                     className="admin-generation-play"
                   >
                     <Icon i={playingId === row.id ? "pause" : "play"} size={15} />
+                  </button>
+                </td>
+                <td className="admin-generation-toggle-cell">
+                  <button
+                    type="button"
+                    className="admin-generation-toggle"
+                    aria-expanded={expandedId === row.id}
+                    aria-label={`${expandedId === row.id ? "Masquer" : "Afficher"} les détails de ${row.title ?? "cette version"}`}
+                    onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
+                  >
+                    {expandedId === row.id ? "Masquer les détails" : "Détails"}
+                    <Icon i="chevron-down" size={16} />
                   </button>
                 </td>
               </tr>

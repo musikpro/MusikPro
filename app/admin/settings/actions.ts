@@ -7,7 +7,12 @@ import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { PLAYBACK_SETTINGS_TAG } from "@/lib/settings/playback";
-import { GENERATIONS_PER_PAGE_MAX, GENERATIONS_PER_PAGE_MIN } from "@/lib/settings/admin-display-constants";
+import {
+  GENERATIONS_PER_PAGE_MAX,
+  GENERATIONS_PER_PAGE_MIN,
+  USERS_PER_PAGE_MAX,
+  USERS_PER_PAGE_MIN,
+} from "@/lib/settings/admin-display-constants";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 const paymentBypassSchema = z.object({ enabled: z.boolean() });
@@ -170,24 +175,30 @@ export async function setExclusivePlayback(_previous: AdminActionState, formData
   }
 }
 
-const generationsPerPageSchema = z.object({
+const displayPageSizesSchema = z.object({
   generationsPerPage: z.coerce
     .number({ error: "Nombre invalide." })
     .int("Entier attendu.")
     .min(GENERATIONS_PER_PAGE_MIN, `Minimum ${GENERATIONS_PER_PAGE_MIN} chansons par page.`)
     .max(GENERATIONS_PER_PAGE_MAX, `Maximum ${GENERATIONS_PER_PAGE_MAX} chansons par page.`),
+  usersPerPage: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(USERS_PER_PAGE_MIN, `Minimum ${USERS_PER_PAGE_MIN} comptes par page.`)
+    .max(USERS_PER_PAGE_MAX, `Maximum ${USERS_PER_PAGE_MAX} comptes par page.`),
 });
 
-/** Nombre de chansons par page dans /admin/generations (défaut 50). */
-export async function setGenerationsPerPage(
-  _previous: AdminActionState,
-  formData: FormData,
-): Promise<AdminActionState> {
+/** Éléments par page des listes Générations (chansons) et Utilisateurs (comptes) du tableau de bord propriétaire (défaut 50). */
+export async function setDisplayPageSizes(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
-    const parsed = generationsPerPageSchema.parse({ generationsPerPage: formData.get("generationsPerPage") });
+    const parsed = displayPageSizesSchema.parse({
+      generationsPerPage: formData.get("generationsPerPage"),
+      usersPerPage: formData.get("usersPerPage"),
+    });
     const fields = {
       generationsPerPage: parsed.generationsPerPage,
+      usersPerPage: parsed.usersPerPage,
       updatedBy: session.user.id,
       updatedAt: new Date(),
     };
@@ -196,15 +207,19 @@ export async function setGenerationsPerPage(
       .values({ id: "global", ...fields })
       .onConflictDoUpdate({ target: adminDisplaySettings.id, set: fields });
     await writeAuditLog({
-      action: "admin_display.generations_per_page.updated",
+      action: "admin_display.page_sizes.updated",
       actorId: session.user.id,
       targetType: "admin_display_settings",
       targetId: "global",
-      metadata: { generationsPerPage: parsed.generationsPerPage },
+      metadata: { generationsPerPage: parsed.generationsPerPage, usersPerPage: parsed.usersPerPage },
     });
     revalidatePath("/admin/settings");
     revalidatePath("/admin/generations");
-    return { ok: true, message: `Affichage : ${parsed.generationsPerPage} chansons par page.` };
+    revalidatePath("/admin/users");
+    return {
+      ok: true,
+      message: `Affichage : ${parsed.generationsPerPage} chansons et ${parsed.usersPerPage} comptes par page.`,
+    };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
   }

@@ -652,10 +652,7 @@ export const pushDevices = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     lastSeenAt: timestamp("last_seen_at").defaultNow().notNull(),
   },
-  (table) => [
-    uniqueIndex("push_devices_token_idx").on(table.token),
-    index("push_devices_user_idx").on(table.userId),
-  ],
+  (table) => [uniqueIndex("push_devices_token_idx").on(table.token), index("push_devices_user_idx").on(table.userId)],
 );
 
 /** Préférences de notification d'un utilisateur. Absence de ligne = tout activé. */
@@ -664,6 +661,16 @@ export const notificationPreferences = pgTable("notification_preferences", {
     .primaryKey()
     .references(() => user.id, { onDelete: "cascade" }),
   songReady: boolean("song_ready").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/** Numéro de paiement mobile mémorisé après un premier paiement réussi : proposé d'office aux achats suivants. */
+export const paymentProfiles = pgTable("payment_profiles", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => user.id, { onDelete: "cascade" }),
+  phoneLocal: text("phone_local").notNull(),
+  phoneCountry: text("phone_country").notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
@@ -694,7 +701,9 @@ export const appReleases = pgTable(
   },
   (table) => [
     uniqueIndex("app_releases_platform_build_idx").on(table.platform, table.build),
-    uniqueIndex("app_releases_one_published_idx").on(table.platform).where(sql`${table.published}`),
+    uniqueIndex("app_releases_one_published_idx")
+      .on(table.platform)
+      .where(sql`${table.published}`),
   ],
 );
 
@@ -706,10 +715,11 @@ export const playbackSettings = pgTable("playback_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-/** Réglage global unique : affichage du tableau de bord propriétaire (nombre de chansons par page sur /admin/generations). Absence de ligne = 50. */
+/** Réglage global unique : affichage du tableau de bord propriétaire (nombre de chansons par page sur /admin/generations et de comptes par page sur /admin/users). Absence de ligne = 50. */
 export const adminDisplaySettings = pgTable("admin_display_settings", {
   id: text("id").primaryKey().default("global"),
   generationsPerPage: integer("generations_per_page").notNull().default(50),
+  usersPerPage: integer("users_per_page").notNull().default(50),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -7,12 +7,13 @@ import { requireAdmin } from "@/lib/auth/session";
 import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
 import { ADMIN_ROLES, ADMIN_ROLE_META, isAdminRole } from "@/lib/auth/permissions";
 import { listCustomRoles } from "@/lib/auth/custom-roles";
+import { getUsersPerPage } from "@/lib/settings/admin-display";
 
 export default async function AdminUsersPage() {
   await requireAdmin();
   const db = getServiceDb();
   const users = await db.select().from(user).orderBy(desc(user.createdAt)).limit(200);
-  const customRolesList = await listCustomRoles();
+  const [customRolesList, pageSize] = await Promise.all([listCustomRoles(), getUsersPerPage()]);
   const adminSlugs = customRolesList.map((role) => `custom:${role.id}`);
   const roleOptions = [
     { value: "user", label: "Utilisateur" },
@@ -51,6 +52,7 @@ export default async function AdminUsersPage() {
         />
       </section>
       <AdminUsersTable
+        pageSize={pageSize}
         twoFactorAvailable={ownerTwoFactorEnabled()}
         roleOptions={roleOptions}
         rows={users.map((entry) => ({
