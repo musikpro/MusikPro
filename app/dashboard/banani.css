@@ -7854,3 +7854,17 @@ button.mobile-menu-brand {
     transition: none;
   }
 }
+
+/* Cibles tactiles du tunnel de création : 44 px minimum de haut sur téléphone. */
+@media (max-width: 767px) {
+  button.create-touch-target {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .currency-select .currency-select-trigger {
+    min-height: 44px;
+  }
+}
