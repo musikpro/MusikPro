@@ -7684,11 +7684,184 @@ body:has(.admin-app),
       [data-label="Durée"],
       [data-label="Style"],
       [data-label="Délai"],
-      [data-label="Utilisateur"],
+      [data-label="Statut"],
       [data-label="Fournisseur"],
       [data-label="Identifiant"]
     ) {
     display: none;
+  }
+
+  /* Replié : la date et l'e-mail restent côte à côte sous le titre. */
+  .admin-generations-table td[data-label="Utilisateur"] {
+    order: 4;
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Générations sur ordinateur : mêmes lignes repliables que sur mobile.        */
+/* Replié : date, e-mail, titre et écoute ; le reste apparaît au dépliage.     */
+/* -------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .admin-generations-table,
+  .admin-generations-table tbody {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-generations-table thead {
+    display: none;
+  }
+
+  .admin-generations-table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .admin-generations-table tr {
+    --generation-accent: #d6cfc7;
+    display: grid;
+    grid-template-columns: 130px minmax(0, 1fr) minmax(0, 1.6fr) auto auto;
+    align-items: center;
+    gap: 10px 18px;
+    padding: 12px 16px 12px 18px;
+    border: 1px solid var(--admin-border);
+    border-left: 4px solid var(--generation-accent);
+    border-radius: 14px;
+    background: #fff;
+    box-shadow: 0 7px 20px rgb(70 43 23 / 5%);
+  }
+
+  .admin-generations-table tr[data-status="completed"] {
+    --generation-accent: #2f8f5b;
+  }
+
+  .admin-generations-table tr:is([data-status="failed"], [data-status="cancelled"]) {
+    --generation-accent: #d9473f;
+  }
+
+  .admin-generations-table tr:is([data-status="queued"], [data-status="submitting"], [data-status="processing"]) {
+    --generation-accent: #f26a21;
+  }
+
+  .admin-generations-table td {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .admin-generations-table td[data-label="Date"] {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .admin-generations-table td[data-label="Utilisateur"] {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: 13px;
+  }
+
+  .admin-generations-table td[data-label="Chanson"] {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .admin-generations-table td[data-label="Écoute"] {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .admin-generations-table td.admin-generation-toggle-cell {
+    display: block;
+    grid-column: 5;
+    grid-row: 1;
+  }
+
+  .admin-generations-table .admin-song-title {
+    min-width: 0;
+    justify-content: flex-start;
+  }
+
+  /* Replié : seuls date, e-mail, titre, écoute et bouton « Détails » sont affichés. */
+  .admin-generations-table
+    tr:not([data-expanded="true"])
+    td:is(
+      [data-label="Durée"],
+      [data-label="Style"],
+      [data-label="Délai"],
+      [data-label="Statut"],
+      [data-label="Fournisseur"],
+      [data-label="Identifiant"]
+    ) {
+    display: none;
+  }
+
+  /* Déplié : les détails passent en dessous, sur une grille de libellé / valeur. */
+  .admin-generations-table
+    tr[data-expanded="true"]
+    td:is(
+      [data-label="Durée"],
+      [data-label="Style"],
+      [data-label="Délai"],
+      [data-label="Statut"],
+      [data-label="Fournisseur"],
+      [data-label="Identifiant"]
+    ) {
+    display: block;
+    grid-row: 2;
+    padding-top: 12px;
+    border-top: 1px solid #eee9e3;
+    font-size: 13px;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Statut"] {
+    grid-column: 1;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Durée"] {
+    grid-column: 2;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Style"] {
+    grid-column: 3;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Fournisseur"] {
+    grid-column: 4 / 6;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Délai"] {
+    grid-column: 1;
+    grid-row: 3;
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Identifiant"] {
+    grid-column: 2 / -1;
+    grid-row: 3;
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .admin-generations-table
+    tr[data-expanded="true"]
+    td:is(
+      [data-label="Durée"],
+      [data-label="Style"],
+      [data-label="Délai"],
+      [data-label="Statut"],
+      [data-label="Fournisseur"],
+      [data-label="Identifiant"]
+    )::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 3px;
+    color: var(--admin-muted);
+    font-size: 10px;
+    font-weight: 850;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 }
 
@@ -7852,5 +8025,39 @@ body:has(.admin-app),
     max-width: none;
     min-height: 48px;
     justify-content: center;
+  }
+}
+
+/* Indicateurs compacts aussi sur ordinateur (Utilisateurs et Générations) : une seule rangée basse. */
+@media (min-width: 768px) {
+  :is(.admin-users-metrics, .admin-metrics-compact) {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 12px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric {
+    min-height: 0;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric .admin-stat-icon {
+    width: 40px;
+    height: 40px;
+    flex: 0 0 40px;
+    margin: 0;
+    border-radius: 12px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric strong {
+    font-size: 24px;
+    line-height: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  /* Largeur fixe : le libellé « Masquer les détails » ne décale plus le titre en dépliant. */
+  .admin-generations-table .admin-generation-toggle {
+    min-width: 168px;
   }
 }
