@@ -7759,6 +7759,11 @@ body:has(.admin-app),
     grid-row: 3;
     border-top: 0;
     padding-top: 0;
+    text-align: right;
+  }
+
+  .admin-users-table td[data-cell="actions"] .admin-table-actions {
+    justify-content: flex-end;
   }
 }
 
