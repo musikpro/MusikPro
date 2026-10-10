@@ -1,42 +1,34 @@
-import { desc } from "drizzle-orm";
-import { getServiceDb } from "@/db";
-import { user } from "@/db/schema";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import AdminUsersTable from "@/components/admin/AdminUsersTable";
 import { requireAdmin } from "@/lib/auth/session";
 import { ownerTwoFactorEnabled } from "@/lib/auth/owner-two-factor";
-import { ADMIN_ROLES, ADMIN_ROLE_META, isAdminRole } from "@/lib/auth/permissions";
+import { ADMIN_ROLES, ADMIN_ROLE_META } from "@/lib/auth/permissions";
 import { listCustomRoles } from "@/lib/auth/custom-roles";
+import { getUsersStats, listUsersPage } from "@/lib/admin/users";
 import { getUsersPerPage } from "@/lib/settings/admin-display";
 
 export default async function AdminUsersPage() {
   await requireAdmin();
-  const db = getServiceDb();
-  const users = await db.select().from(user).orderBy(desc(user.createdAt)).limit(200);
   const [customRolesList, pageSize] = await Promise.all([listCustomRoles(), getUsersPerPage()]);
-  const adminSlugs = customRolesList.map((role) => `custom:${role.id}`);
+  const [stats, initial] = await Promise.all([
+    getUsersStats(customRolesList.map((role) => `custom:${role.id}`)),
+    listUsersPage({ page: 1, pageSize, state: "all", query: "" }),
+  ]);
   const roleOptions = [
     { value: "user", label: "Utilisateur" },
     ...ADMIN_ROLES.map((role) => ({ value: role, label: ADMIN_ROLE_META[role].label })),
     ...customRolesList.map((role) => ({ value: `custom:${role.id}`, label: role.name })),
   ];
-  const verified = users.filter((entry) => entry.emailVerified).length;
-  const admins = users.filter((entry) => isAdminRole(entry.role, adminSlugs)).length;
-  const suspended = users.filter((entry) => entry.banned).length;
+  const { total, verified, admins, suspended } = stats;
   return (
     <AdminPage>
       <AdminPageHeader
         eyebrow="Comptes"
         title="Utilisateurs"
-        description={`${users.length.toLocaleString("fr-FR")} comptes récents chargés depuis Neon.`}
+        description={`${total.toLocaleString("fr-FR")} ${total > 1 ? "comptes" : "compte"}, du plus récent au plus ancien.`}
       />
       <section className="admin-metric-row admin-users-metrics">
-        <AdminMetric
-          icon="users"
-          value={users.length.toLocaleString("fr-FR")}
-          label="Comptes affichés"
-          note="Limite 200"
-        />
+        <AdminMetric icon="users" value={total.toLocaleString("fr-FR")} label="Comptes" note="Depuis le début" />
         <AdminMetric
           icon="badge-check"
           value={verified.toLocaleString("fr-FR")}
@@ -51,21 +43,7 @@ export default async function AdminUsersPage() {
           tone={suspended ? "warning" : "success"}
         />
       </section>
-      <AdminUsersTable
-        pageSize={pageSize}
-        twoFactorAvailable={ownerTwoFactorEnabled()}
-        roleOptions={roleOptions}
-        rows={users.map((entry) => ({
-          id: entry.id,
-          name: entry.name,
-          email: entry.email,
-          createdAt: entry.createdAt.toISOString(),
-          verified: entry.emailVerified,
-          twoFactor: Boolean(entry.twoFactorEnabled),
-          role: entry.role ?? "user",
-          banned: Boolean(entry.banned),
-        }))}
-      />
+      <AdminUsersTable initial={initial} roleOptions={roleOptions} twoFactorAvailable={ownerTwoFactorEnabled()} />
     </AdminPage>
   );
 }

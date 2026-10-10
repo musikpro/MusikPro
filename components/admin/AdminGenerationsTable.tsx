@@ -4,6 +4,8 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Icon from "@/components/banani/Icon";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
 import AdminPagination from "@/components/admin/AdminPagination";
+import AdminRowToggle from "@/components/admin/AdminRowToggle";
+import AdminTableToolbar from "@/components/admin/AdminTableToolbar";
 import AdminSongTitleEditor from "@/components/admin/AdminSongTitleEditor";
 import { fetchGenerationsPage } from "@/app/admin/generations/actions";
 import type { AdminGenerationRow, GenerationStatusFilter, GenerationsPage } from "@/lib/admin/generations-types";
@@ -139,36 +141,17 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
   return (
     <section ref={panelRef} className="admin-panel admin-table-panel admin-generations-panel" aria-busy={isLoading}>
       <audio ref={audioRef} onPause={() => setPlayingId(null)} onEnded={() => setPlayingId(null)} className="sr-only" />
-      <div className="admin-catalog-toolbar admin-table-toolbar">
-        <label className="admin-search-field">
-          <Icon i="search" size={17} />
-          <span className="sr-only">Rechercher une génération</span>
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Utilisateur, titre, occasion ou style…"
-          />
-          {query ? (
-            <button type="button" aria-label="Effacer la recherche" onClick={() => setQuery("")}>
-              <Icon i="x" size={15} />
-            </button>
-          ) : null}
-        </label>
-        <div className="admin-filter-tabs">
-          {STATUS_FILTER_OPTIONS.map(([value, label]) => (
-            <button
-              type="button"
-              key={value}
-              className={status === value ? "is-active" : undefined}
-              onClick={() => setStatus(value)}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <AdminTableToolbar
+        query={query}
+        onQueryChange={setQuery}
+        searchLabel="Rechercher une génération"
+        placeholder="Utilisateur, titre, occasion ou style…"
+        filters={STATUS_FILTER_OPTIONS}
+        activeFilter={status}
+        onFilterChange={setStatus}
+      />
       <div className={`admin-data-table-wrap${isLoading ? " is-loading" : ""}`}>
-        <table className="admin-data-table admin-generations-table">
+        <table className="admin-data-table admin-row-table admin-generations-table">
           <thead>
             <tr>
               <th className="admin-generation-date-col">Date</th>
@@ -183,7 +166,7 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
               <th>
                 <span className="sr-only">Écoute</span>
               </th>
-              <th className="admin-generation-toggle-col">
+              <th className="admin-row-toggle-col">
                 <span className="sr-only">Détails</span>
               </th>
             </tr>
@@ -210,7 +193,7 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                     <small className="admin-generation-failure">{row.failureReason}</small>
                   ) : null}
                 </td>
-                <td data-label="Identifiant">
+                <td data-label="Identifiant" data-detail="Identifiant">
                   {row.songGroupId ? (
                     <button
                       type="button"
@@ -226,16 +209,23 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                     "—"
                   )}
                 </td>
-                <td className="admin-generation-style" data-label="Style" title={row.style ?? undefined}>
+                <td
+                  className="admin-generation-style"
+                  data-label="Style"
+                  data-detail="Style"
+                  title={row.style ?? undefined}
+                >
                   {row.styleLabel ?? "—"}
                 </td>
-                <td data-label="Fournisseur">
+                <td data-label="Fournisseur" data-detail="Fournisseur">
                   {row.provider}
                   <br />
                   <small>{row.model}</small>
                 </td>
-                <td data-label="Durée">{formatDuration(row.durationSeconds)}</td>
-                <td data-label="Statut">
+                <td data-label="Durée" data-detail="Durée">
+                  {formatDuration(row.durationSeconds)}
+                </td>
+                <td data-label="Statut" data-detail="Statut">
                   <span className={`admin-status ${statusTone(row.status)}`}>
                     {STATUS_LABELS[row.status] ?? row.status}
                   </span>
@@ -246,7 +236,7 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                     </small>
                   ) : null}
                 </td>
-                <td data-label="Délai">
+                <td data-label="Délai" data-detail="Délai">
                   {formatElapsed(row.elapsedSeconds)}
                   {!["completed", "failed", "cancelled"].includes(row.status) &&
                   (row.elapsedSeconds ?? 0) > SLOW_PENDING_SECONDS ? (
@@ -272,17 +262,12 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                     <Icon i={playingId === row.id ? "pause" : "play"} size={15} />
                   </button>
                 </td>
-                <td className="admin-generation-toggle-cell">
-                  <button
-                    type="button"
-                    className="admin-generation-toggle"
-                    aria-expanded={expandedId === row.id}
-                    aria-label={`${expandedId === row.id ? "Masquer" : "Afficher"} les détails de ${row.title ?? "cette version"}`}
-                    onClick={() => setExpandedId(expandedId === row.id ? null : row.id)}
-                  >
-                    {expandedId === row.id ? "Masquer les détails" : "Détails"}
-                    <Icon i="chevron-down" size={16} />
-                  </button>
+                <td className="admin-row-toggle-cell">
+                  <AdminRowToggle
+                    expanded={expandedId === row.id}
+                    label={row.title ?? "cette version"}
+                    onToggle={() => setExpandedId(expandedId === row.id ? null : row.id)}
+                  />
                 </td>
               </tr>
             ))}

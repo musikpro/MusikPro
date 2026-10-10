@@ -8,6 +8,9 @@ import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
+import { listUsersPage } from "@/lib/admin/users";
+import { USER_STATE_FILTERS, type UsersPage } from "@/lib/admin/users-types";
+import { getUsersPerPage } from "@/lib/settings/admin-display";
 import { count, eq } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { user, customRoles } from "@/db/schema";
@@ -107,5 +110,28 @@ export async function deleteUser(_previous: AdminActionState, formData: FormData
     return { ok: true, message: "Compte utilisateur supprimé." };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer ce compte utilisateur.") };
+  }
+}
+
+const usersPageRequestSchema = z.object({
+  page: z.number().int().min(1).max(100_000),
+  state: z.enum(USER_STATE_FILTERS),
+  query: z.string().trim().max(120),
+});
+
+/**
+ * Une page de comptes à la demande (changement de page, filtre ou recherche sans recharger l'écran).
+ * La taille de page vient du réglage serveur (Paramètres > Général), jamais du navigateur.
+ */
+export async function fetchUsersPage(
+  input: z.input<typeof usersPageRequestSchema>,
+): Promise<{ ok: true; data: UsersPage } | { ok: false; message: string }> {
+  try {
+    await requireAdmin();
+    const parsed = usersPageRequestSchema.parse(input);
+    const pageSize = await getUsersPerPage();
+    return { ok: true, data: await listUsersPage({ ...parsed, pageSize }) };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de charger les utilisateurs.") };
   }
 }
