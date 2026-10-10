@@ -540,6 +540,20 @@
       "when": 1791578440824,
       "tag": "0076_admin_display_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1791590000000,
+      "tag": "0077_admin_users_per_page",
+      "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1791600000000,
+      "tag": "0078_payment_profiles",
+      "breakpoints": true
     }
   ]
 }

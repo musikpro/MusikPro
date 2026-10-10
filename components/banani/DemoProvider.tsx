@@ -112,6 +112,7 @@ function useDemoState(
   storeLinks: StoreLinks,
   generationRedirectDelaySeconds: number,
   generationPollIntervalMs: number,
+  savedPaymentPhone: { phoneLocal: string; phoneCountry: string } | null,
 ) {
   const router = useRouter();
   const browserPathname = usePathname();
@@ -218,10 +219,22 @@ function useDemoState(
     } catch {
       window.localStorage.removeItem(paymentInfoKey);
     }
+    // Le numéro mémorisé sur le compte prime sur le navigateur : il suit le client sur tous ses appareils.
+    if (
+      savedPaymentPhone &&
+      initialPhonePrefixes.some((prefix) => prefix.countryCode === savedPaymentPhone.phoneCountry)
+    ) {
+      window.queueMicrotask(() => {
+        if (!active) return;
+        setFields((current) => ({ ...current, "payment.phone": savedPaymentPhone.phoneLocal }));
+        phoneCountryChosen.current = true;
+        setChoices((current) => ({ ...current, phoneCountry: savedPaymentPhone.phoneCountry }));
+      });
+    }
     return () => {
       active = false;
     };
-  }, [paymentInfoKey, initialPhonePrefixes]);
+  }, [paymentInfoKey, initialPhonePrefixes, savedPaymentPhone]);
   // Le pays détecté (ou le catalogue d'indicatifs) peut changer après le montage : tant que le client n'a pas
   // choisi lui-même un indicatif, on suit la détection.
   useEffect(() => {
@@ -1131,6 +1144,7 @@ export function DemoProvider({
   initialDetectedCurrency,
   initialDetectedCountry = null,
   initialCurrencies = DEFAULT_CURRENCIES,
+  initialSavedPaymentPhone = null,
   storeLinks = { googlePlayUrl: null, appStoreUrl: null, hideInApp: true },
 }: {
   children: ReactNode;
@@ -1156,6 +1170,8 @@ export function DemoProvider({
   initialDetectedCurrency: CreditCurrencyCode | null;
   initialDetectedCountry?: string | null;
   initialCurrencies?: CreditCurrency[];
+  /** Numéro mémorisé côté serveur après un premier paiement : prérempli sur tous les appareils du compte. */
+  initialSavedPaymentPhone?: { phoneLocal: string; phoneCountry: string } | null;
   storeLinks?: StoreLinks;
 }) {
   const state = useDemoState(
@@ -1182,6 +1198,7 @@ export function DemoProvider({
     storeLinks,
     generationRedirectDelaySeconds,
     generationPollIntervalMs,
+    initialSavedPaymentPhone,
   );
   useI18nOverlay();
   const [offline, setOffline] = useState(false);

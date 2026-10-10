@@ -14,6 +14,7 @@ import { couponCodeSchema } from "@/lib/validation/coupons";
 import { clientIp, rateLimit } from "@/lib/security/rate-limit";
 import { getSecurityLevel, securityPolicy } from "@/lib/security/config";
 import { writeAuditLog } from "@/lib/security/audit";
+import { savePaymentProfile } from "@/lib/payments/profile";
 import { publicCheckoutResult } from "@/lib/payments/public-result";
 import { rejectCrossSiteMutation, rejectOversizedRequest, requireContentType } from "@/lib/security/request-guards";
 
@@ -202,6 +203,9 @@ export async function POST(request: Request) {
           providerCurrency: result.money?.currency,
         })
         .where(eq(payments.id, paymentId));
+      // Le fournisseur a accepté le numéro : on le mémorise pour ne plus le redemander aux prochains paiements.
+      if (body.phoneLocal && body.phoneCountry && /^\d{4,25}$/.test(body.phoneLocal))
+        await savePaymentProfile(session.user.id, { phoneLocal: body.phoneLocal, phoneCountry: body.phoneCountry });
       await writeAuditLog({
         action: "payment.checkout.created",
         actorId: session.user.id,

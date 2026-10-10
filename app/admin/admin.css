@@ -7614,3 +7614,243 @@ body:has(.admin-app),
     transition: none;
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/* Cartes repliables sur mobile : Générations (détails) et Utilisateurs (fiche) */
+/* -------------------------------------------------------------------------- */
+.admin-generation-toggle-col,
+.admin-generation-toggle-cell {
+  display: none;
+}
+
+.admin-generation-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.admin-generation-toggle svg,
+.admin-user-mobile-chevron svg {
+  transition: transform 0.18s ease;
+}
+
+.admin-generation-toggle[aria-expanded="true"] svg,
+.admin-user-mobile-card[data-expanded="true"] .admin-user-mobile-chevron svg {
+  transform: rotate(180deg);
+}
+
+.admin-generation-toggle:focus-visible,
+.admin-user-mobile-summary:focus-visible {
+  outline: 3px solid rgba(242, 106, 33, 0.45);
+  outline-offset: 2px;
+}
+
+@media (max-width: 767px) {
+  .admin-generations-table td.admin-generation-toggle-cell {
+    display: flex;
+    grid-column: 2;
+    order: 5;
+    justify-content: flex-end;
+    align-self: center;
+    padding: 0;
+    border-bottom: 0;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] td.admin-generation-toggle-cell {
+    grid-column: 1 / -1;
+    order: 11;
+    justify-content: stretch;
+  }
+
+  .admin-generations-table tr[data-expanded="true"] .admin-generation-toggle {
+    width: 100%;
+  }
+
+  /* Replié : titre, statut, écoute et date seulement ; le reste apparaît au dépliage. */
+  .admin-generations-table
+    tr:not([data-expanded="true"])
+    td:is(
+      [data-label="Durée"],
+      [data-label="Style"],
+      [data-label="Délai"],
+      [data-label="Utilisateur"],
+      [data-label="Fournisseur"],
+      [data-label="Identifiant"]
+    ) {
+    display: none;
+  }
+}
+
+.admin-user-mobile-summary {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 56px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-user-mobile-identity {
+  display: grid;
+  min-width: 0;
+}
+
+.admin-user-mobile-identity strong,
+.admin-user-mobile-identity small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-user-mobile-identity strong {
+  font-size: 14px;
+}
+
+.admin-user-mobile-identity small {
+  margin-top: 3px;
+  color: var(--admin-muted);
+  font-size: 11px;
+}
+
+.admin-user-mobile-chevron {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  color: var(--admin-muted);
+}
+
+.admin-user-mobile-details {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #eee9e3;
+}
+
+.admin-user-mobile-details[hidden] {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  /* Indicateurs en deux colonnes compactes : l'essentiel de l'écran revient à la liste. */
+  :is(.admin-users-metrics, .admin-metrics-compact) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric {
+    min-height: 0;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric .admin-stat-icon {
+    width: 38px;
+    height: 38px;
+    flex: 0 0 38px;
+    margin: 0;
+    border-radius: 12px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric strong {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric span:not(.admin-stat-icon) {
+    margin-top: 4px;
+    font-size: 11px;
+  }
+
+  :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric small {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-generation-toggle svg,
+  .admin-user-mobile-chevron svg {
+    transition: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-user-mobile-details .admin-table-actions {
+    display: grid;
+    gap: 10px;
+  }
+
+  .admin-user-mobile-details .admin-style-delete {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    font-size: 13px;
+  }
+}
+
+/* Paramètres : les panneaux de réglage s'adaptent au téléphone (en-tête empilé, champs et boutons pleine largeur). */
+@media (max-width: 767px) {
+  .admin-settings-grid .admin-provider-heading {
+    grid-template-columns: 42px minmax(0, 1fr);
+    align-items: start;
+    gap: 10px 12px;
+  }
+
+  .admin-settings-grid .admin-provider-heading > .admin-status {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .admin-settings-grid .admin-provider-heading h2 {
+    font-size: 17px;
+    line-height: 1.25;
+  }
+
+  .admin-settings-grid .admin-provider-heading p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .admin-settings-grid .admin-editor-field input {
+    min-height: 48px;
+    font-size: 16px;
+  }
+
+  .admin-settings-grid .admin-btn-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .admin-settings-grid .admin-btn-row > .admin-btn,
+  .admin-settings-grid .admin-btn-row > * {
+    justify-self: stretch;
+    width: 100%;
+    max-width: none;
+    min-height: 48px;
+    justify-content: center;
+  }
+}
