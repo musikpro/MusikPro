@@ -19,6 +19,8 @@ export type AdminGenerationRow = {
   /** Seconds from creation to the final state, or to now while still pending. */
   elapsedSeconds: number | null;
   createdAt: string;
+  /** Vrai quand la chanson est visible dans Découvrir ; null pour une génération sans groupe (non gérable). */
+  inDiscover: boolean | null;
 };
 
 export const GENERATION_STATUS_FILTERS = ["all", "completed", "processing", "failed"] as const;

@@ -8,7 +8,8 @@ import { getActiveAudioProvider } from "@/lib/ai/musicful";
 import { getAudioProviderDefinition } from "@/lib/ai/audio-providers/catalog";
 import { buildVocalHint, resolveStylePrompt } from "@/lib/ai/style-prompt";
 import { submitSongGeneration } from "@/lib/ai/songs";
-import { shareDiscoverSong } from "@/lib/discover/server";
+import { getAutoShareAdminSongs, shareDiscoverSong } from "@/lib/discover/server";
+import { shouldAutoShareSong } from "@/lib/discover/auto-share";
 import { buildSongTitle } from "@/lib/ai/song-title";
 import { songGenerateRequestSchema } from "@/lib/validation/ai";
 import { moderateLongText } from "@/lib/ai/moderation";
@@ -92,8 +93,7 @@ export async function POST(request: Request) {
   // Les paroles envoyées peuvent avoir été modifiées à la main après la modération de la génération IA : on les
   // contrôle donc ici, avant tout débit de crédits. Une ligne d'étiquette (« Paroles : … ») n'est pas chantée.
   const lyrics = stripLyricsTitleLine(input.lyrics);
-  if (!lyrics)
-    return NextResponse.json({ error: "Les paroles sont vides.", code: "LYRICS_EMPTY" }, { status: 422 });
+  if (!lyrics) return NextResponse.json({ error: "Les paroles sont vides.", code: "LYRICS_EMPTY" }, { status: 422 });
   try {
     const verdict = await moderateLongText(lyrics, "Paroles de chanson soumises à la génération (peut-être modifiées)");
     if (verdict.flagged) {
@@ -114,7 +114,10 @@ export async function POST(request: Request) {
   } catch (error) {
     logger.error("Lyrics moderation unavailable", { error: error instanceof Error ? error.message : "unknown" });
     return NextResponse.json(
-      { error: "La vérification des paroles est momentanément indisponible. Réessaie : aucun crédit n’a été débité.", code: "MODERATION_UNAVAILABLE" },
+      {
+        error: "La vérification des paroles est momentanément indisponible. Réessaie : aucun crédit n’a été débité.",
+        code: "MODERATION_UNAVAILABLE",
+      },
       { status: 503 },
     );
   }
@@ -213,7 +216,13 @@ export async function POST(request: Request) {
       metadata: { occasion: input.occasion, style, versionsSubmitted: succeeded },
     });
     // Partage sur demande : le créateur a coché « Partager dans Découvrir » (ne bloque jamais la génération).
-    if (input.shareToDiscover) await shareDiscoverSong(songGroupId, session.user.id).catch(() => undefined);
+    // Les chansons d'un compte administrateur y vont d'office quand le réglage « Paramètres > Général » est actif.
+    const autoShare = shouldAutoShareSong({
+      role: (session.user as { role?: string | null }).role,
+      enabled: await getAutoShareAdminSongs(),
+    });
+    if (input.shareToDiscover || autoShare)
+      await shareDiscoverSong(songGroupId, session.user.id).catch(() => undefined);
     // La chanson est lancée : le brouillon de création n'a plus lieu d'être (ne lève jamais).
     await deleteCreationDraft(session.user.id);
     return NextResponse.json({ songGroupId, newBalance });

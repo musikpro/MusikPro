@@ -17,3 +17,12 @@ export const renameSongSchema = z.object({
   jobId: z.string().trim().min(1).max(120),
   title: songTitleSchema,
 });
+
+/** Identifiant d'une version générée, reçu d'un formulaire du tableau de bord propriétaire. */
+export const songJobIdSchema = z.object({ jobId: z.string().trim().min(1).max(120) });
+
+/** Ajout ou retrait d'une chanson de Découvrir depuis /admin/generations. */
+export const songDiscoverSchema = z.object({
+  songGroupId: z.string().trim().min(1).max(120),
+  visible: z.enum(["true", "false"]),
+});

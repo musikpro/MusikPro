@@ -4,6 +4,7 @@ import { and, desc, eq, ilike, notInArray, or, sql, type SQL } from "drizzle-orm
 import { getServiceDb } from "@/db";
 import { musicGenerationJobs, user } from "@/db/schema";
 import { extractGenreLabel } from "@/lib/ai/songs";
+import { listDiscoverVisibility } from "@/lib/discover/server";
 import { clampPage, pageCount } from "./pagination";
 import type { AdminGenerationRow, GenerationsPage, GenerationStatusFilter } from "./generations-types";
 
@@ -84,6 +85,7 @@ export async function listGenerationsPage(input: {
     .limit(input.pageSize)
     .offset((page - 1) * input.pageSize);
 
+  const visibility = await listDiscoverVisibility(rows.flatMap((row) => (row.songGroupId ? [row.songGroupId] : [])));
   const mapped: AdminGenerationRow[] = rows.map((row) => ({
     id: row.id,
     songGroupId: row.songGroupId,
@@ -102,6 +104,7 @@ export async function listGenerationsPage(input: {
     providerStatus: row.providerStatus,
     elapsedSeconds: elapsedSeconds(row),
     createdAt: row.createdAt.toISOString(),
+    inDiscover: row.songGroupId ? (visibility.get(row.songGroupId) ?? false) : null,
   }));
   return { rows: mapped, total, page, pageSize: input.pageSize, pageCount: pageCount(total, input.pageSize) };
 }
