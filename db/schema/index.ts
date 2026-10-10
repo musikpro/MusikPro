@@ -535,6 +535,8 @@ export const discoverSettings = pgTable("discover_settings", {
   /** "recent" (newest first) or "popular" (most played first). */
   sortBy: text("sort_by").notNull().default("recent"),
   maxItems: integer("max_items").notNull().default(60),
+  /** Quand c'est vrai, les chansons créées par un compte administrateur sont placées dans Découvrir dès la génération. */
+  autoShareAdminSongs: boolean("auto_share_admin_songs").notNull().default(true),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -11,7 +11,9 @@ import { z } from "zod";
 import { listGenerationsPage } from "@/lib/admin/generations";
 import { GENERATION_STATUS_FILTERS, type GenerationsPage } from "@/lib/admin/generations-types";
 import { getGenerationsPerPage } from "@/lib/settings/admin-display";
-import { renameSongSchema } from "@/lib/validation/song-title";
+import { renameSongSchema, songDiscoverSchema, songJobIdSchema } from "@/lib/validation/song-title";
+import { deleteSongByJobId } from "@/lib/admin/song-delete";
+import { setSongDiscoverVisibility, shareAllAdminSongs } from "@/lib/discover/server";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 /**
@@ -102,5 +104,89 @@ export async function fetchGenerationsPage(
     return { ok: true, data: await listGenerationsPage({ ...parsed, pageSize }) };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de charger les générations.") };
+  }
+}
+
+function refreshSongPages() {
+  revalidatePath("/admin/generations");
+  revalidatePath("/admin/library");
+  revalidatePath("/admin/landing-features");
+  revalidatePath("/admin/trending");
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/demo/discover");
+  revalidatePath("/");
+}
+
+/** Supprime définitivement une chanson (toutes ses versions) et ce qui la référence — action irréversible, confirmée côté interface. */
+export async function deleteSong(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const { jobId } = songJobIdSchema.parse(Object.fromEntries(formData));
+    const deleted = await deleteSongByJobId(jobId);
+    if (!deleted) return { ok: false, message: "Chanson introuvable : elle a peut-être déjà été supprimée." };
+    await writeAuditLog({
+      action: "song.deleted",
+      actorId: session.user.id,
+      targetType: "song_group",
+      targetId: deleted.songGroupId ?? jobId,
+      metadata: { title: stripVersionSuffix(deleted.title ?? ""), versions: deleted.versions },
+    });
+    refreshSongPages();
+    return {
+      ok: true,
+      message: deleted.versions > 1 ? `Chanson supprimée (${deleted.versions} versions).` : "Chanson supprimée.",
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer cette chanson.") };
+  }
+}
+
+/** Ajoute une chanson à la page Découvrir des clients, ou l'en retire. */
+export async function setSongDiscover(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = songDiscoverSchema.parse(Object.fromEntries(formData));
+    const visible = parsed.visible === "true";
+    const done = await setSongDiscoverVisibility(parsed.songGroupId, visible);
+    if (!done)
+      return {
+        ok: false,
+        message: "Chanson introuvable ou sans propriétaire : impossible de la placer dans Découvrir.",
+      };
+    await writeAuditLog({
+      action: visible ? "discover.song.restored" : "discover.song.removed",
+      actorId: session.user.id,
+      targetType: "song_group",
+      targetId: parsed.songGroupId,
+      metadata: { by: "admin", from: "generations" },
+    });
+    refreshSongPages();
+    return { ok: true, message: visible ? "Chanson ajoutée à Découvrir." : "Chanson retirée de Découvrir." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de modifier Découvrir pour cette chanson.") };
+  }
+}
+
+/** Rattrapage : place dans Découvrir toutes les chansons terminées des comptes administrateurs. */
+export async function shareAdminSongsToDiscover(): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const added = await shareAllAdminSongs();
+    await writeAuditLog({
+      action: "discover.admin_songs.bulk_shared",
+      actorId: session.user.id,
+      targetType: "discover_settings",
+      targetId: "global",
+      metadata: { added },
+    });
+    refreshSongPages();
+    return {
+      ok: true,
+      message: added
+        ? `${added} chanson${added > 1 ? "s" : ""} d’administrateur ajoutée${added > 1 ? "s" : ""} à Découvrir.`
+        : "Toutes les chansons des administrateurs sont déjà dans Découvrir.",
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’ajouter les chansons des administrateurs.") };
   }
 }

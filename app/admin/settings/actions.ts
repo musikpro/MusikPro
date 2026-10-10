@@ -2,7 +2,13 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
-import { adminDisplaySettings, paymentBypassSettings, localizationSettings, playbackSettings } from "@/db/schema";
+import {
+  adminDisplaySettings,
+  discoverSettings,
+  paymentBypassSettings,
+  localizationSettings,
+  playbackSettings,
+} from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
 import { actionErrorMessage } from "@/lib/admin/action-state";
@@ -219,6 +225,41 @@ export async function setDisplayPageSizes(_previous: AdminActionState, formData:
     return {
       ok: true,
       message: `Affichage : ${parsed.generationsPerPage} chansons et ${parsed.usersPerPage} comptes par page.`,
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const autoShareAdminSongsSchema = z.object({ enabled: z.boolean() });
+
+/** Ajoute (ou non) d'office à Découvrir les chansons générées par les comptes administrateurs. */
+export async function setAutoShareAdminSongs(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = autoShareAdminSongsSchema.parse({ enabled: String(formData.get("enabled") || "") === "true" });
+    const fields = { autoShareAdminSongs: parsed.enabled, updatedBy: session.user.id, updatedAt: new Date() };
+    await getServiceDb()
+      .insert(discoverSettings)
+      .values({ id: "global", ...fields })
+      .onConflictDoUpdate({ target: discoverSettings.id, set: fields });
+    await writeAuditLog({
+      action: "discover.auto_share_admin_songs.updated",
+      actorId: session.user.id,
+      targetType: "discover_settings",
+      targetId: "global",
+      metadata: { enabled: parsed.enabled },
+    });
+    revalidatePath("/admin/settings");
+    revalidatePath("/admin/library");
+    return {
+      ok: true,
+      message: parsed.enabled
+        ? "Les chansons des administrateurs seront ajoutées automatiquement à Découvrir."
+        : "Les chansons des administrateurs ne sont plus ajoutées automatiquement à Découvrir.",
     };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };

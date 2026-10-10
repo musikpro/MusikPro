@@ -7504,7 +7504,8 @@ body:has(.admin-app),
       [data-label="Délai"],
       [data-label="Statut"],
       [data-label="Fournisseur"],
-      [data-label="Identifiant"]
+      [data-label="Identifiant"],
+      [data-label="Actions"]
     ) {
     display: none;
   }
@@ -7959,5 +7960,75 @@ body:has(.admin-app),
   :is(.admin-users-metrics, .admin-metrics-compact) .admin-compact-metric strong {
     font-size: 24px;
     line-height: 1;
+  }
+}
+
+/* Générations : rattrapage Découvrir, et actions de la chanson dans le menu « Détails ». */
+.admin-generations-bulk {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  margin: 0 0 12px;
+}
+
+.admin-generations-bulk small {
+  color: var(--admin-muted);
+  font-size: 12px;
+}
+
+.admin-generations-bulk-button,
+.admin-generation-discover {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid var(--admin-border);
+  border-radius: 13px;
+  background: #fff;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-generation-discover:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.admin-generations-table td[data-label="Actions"] .admin-table-actions {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+@media (min-width: 768px) {
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Actions"] {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    text-align: right;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-generations-table tr[data-expanded="true"] td[data-label="Actions"] {
+    grid-column: 1 / -1;
+    order: 10;
+  }
+
+  .admin-generations-table td[data-label="Actions"] .admin-table-actions {
+    display: grid;
+    gap: 10px;
+  }
+
+  .admin-generations-table td[data-label="Actions"] :is(.admin-generation-discover, .admin-style-delete) {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
   }
 }

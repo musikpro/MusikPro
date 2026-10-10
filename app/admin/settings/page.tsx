@@ -11,19 +11,28 @@ import CountryDetectionPanel from "./CountryDetectionPanel";
 import SchedulerPanel from "./SchedulerPanel";
 import PlaybackPanel from "./PlaybackPanel";
 import DisplayPageSizesPanel from "./DisplayPageSizesPanel";
+import AutoShareAdminSongsPanel from "./AutoShareAdminSongsPanel";
+import { getAutoShareAdminSongs } from "@/lib/discover/server";
 import { getAdminDisplaySettings } from "@/lib/settings/admin-display";
 import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
 
 export default async function AdminSettingsPage() {
   await requireAdmin();
-  const [bypassStatus, localizationRows, schedulerStatus, exclusivePlaybackEnabled, displaySettings] =
-    await Promise.all([
-      getPaymentBypassStatus(),
-      getServiceDb().select().from(localizationSettings).limit(1),
-      getSchedulerStatus(),
-      isExclusivePlaybackEnabled(),
-      getAdminDisplaySettings(),
-    ]);
+  const [
+    bypassStatus,
+    localizationRows,
+    schedulerStatus,
+    exclusivePlaybackEnabled,
+    displaySettings,
+    autoShareAdminSongs,
+  ] = await Promise.all([
+    getPaymentBypassStatus(),
+    getServiceDb().select().from(localizationSettings).limit(1),
+    getSchedulerStatus(),
+    isExclusivePlaybackEnabled(),
+    getAdminDisplaySettings(),
+    getAutoShareAdminSongs(),
+  ]);
   const localization = localizationRows[0];
 
   return (
@@ -48,6 +57,7 @@ export default async function AdminSettingsPage() {
               generationsPerPage={displaySettings.generationsPerPage}
               usersPerPage={displaySettings.usersPerPage}
             />
+            <AutoShareAdminSongsPanel enabled={autoShareAdminSongs} />
             <CountryDetectionPanel
               automaticDetectionEnabled={localization?.automaticDetectionEnabled ?? true}
               cacheTtlHours={Math.round((localization?.countryCacheTtlSeconds ?? 604800) / 3600)}

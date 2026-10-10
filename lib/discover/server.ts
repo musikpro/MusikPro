@@ -1,8 +1,9 @@
 import "server-only";
 
-import { asc, desc, eq, inArray, isNotNull, and } from "drizzle-orm";
+import { asc, desc, eq, inArray, isNotNull, and, sql } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { discoverHiddenSongs, discoverSettings, discoverSharedSongs, musicGenerationJobs } from "@/db/schema";
+import { discoverHiddenSongs, discoverSettings, discoverSharedSongs, musicGenerationJobs, user } from "@/db/schema";
+import { ADMIN_ROLES } from "@/lib/auth/permissions";
 import { extractGenreLabel } from "@/lib/ai/songs";
 import { stripVersionSuffix } from "@/lib/ai/song-title";
 import {
@@ -188,4 +189,99 @@ export async function restoreDiscoverSong(songGroupId: string, byAdmin: boolean)
   if (row.hiddenBy === "admin" && !byAdmin) return false;
   await database.delete(discoverHiddenSongs).where(inArray(discoverHiddenSongs.songGroupId, [songGroupId]));
   return true;
+}
+
+/** Réglage « ajouter automatiquement les chansons des administrateurs à Découvrir » (actif par défaut). */
+export async function getAutoShareAdminSongs(): Promise<boolean> {
+  try {
+    const [row] = await getServiceDb()
+      .select({ value: discoverSettings.autoShareAdminSongs })
+      .from(discoverSettings)
+      .where(eq(discoverSettings.id, "global"))
+      .limit(1);
+    return row?.value ?? true;
+  } catch {
+    return true;
+  }
+}
+
+/** Vrai pour les chansons réellement visibles dans Découvrir : partagées et non retirées par l'équipe ou le créateur. */
+export async function listDiscoverVisibility(songGroupIds: string[]): Promise<Map<string, boolean>> {
+  const ids = Array.from(new Set(songGroupIds.filter(Boolean)));
+  const result = new Map<string, boolean>(ids.map((id) => [id, false]));
+  if (!ids.length) return result;
+  const database = getServiceDb();
+  const [shared, hidden] = await Promise.all([
+    database
+      .select({ id: discoverSharedSongs.songGroupId })
+      .from(discoverSharedSongs)
+      .where(inArray(discoverSharedSongs.songGroupId, ids)),
+    database
+      .select({ id: discoverHiddenSongs.songGroupId })
+      .from(discoverHiddenSongs)
+      .where(inArray(discoverHiddenSongs.songGroupId, ids)),
+  ]);
+  const hiddenIds = new Set(hidden.map((row) => row.id));
+  for (const row of shared) result.set(row.id, !hiddenIds.has(row.id));
+  return result;
+}
+
+/**
+ * Le propriétaire ajoute (ou retire) une chanson de Découvrir depuis /admin/generations. Ajouter = partager au nom
+ * du créateur puis lever un éventuel retrait ; retirer = masquer côté équipe (la chanson et son lien public restent).
+ * Renvoie false quand la chanson est introuvable.
+ */
+export async function setSongDiscoverVisibility(songGroupId: string, visible: boolean): Promise<boolean> {
+  const [job] = await getServiceDb()
+    .select({ userId: musicGenerationJobs.userId })
+    .from(musicGenerationJobs)
+    .where(eq(musicGenerationJobs.songGroupId, songGroupId))
+    .limit(1);
+  if (!job) return false;
+  if (!visible) {
+    await hideDiscoverSong(songGroupId, "admin");
+    return true;
+  }
+  if (!job.userId) return false;
+  await shareDiscoverSong(songGroupId, job.userId);
+  await restoreDiscoverSong(songGroupId, true);
+  return true;
+}
+
+/**
+ * Rattrapage : place dans Découvrir toutes les chansons terminées créées par des comptes administrateurs. Ne lève
+ * pas les retraits décidés par l'équipe (elles restent masquées) et ne touche jamais aux chansons des clients.
+ * Renvoie le nombre de chansons ajoutées.
+ */
+export async function shareAllAdminSongs(): Promise<number> {
+  const database = getServiceDb();
+  const adminRoles = sql.join(
+    (ADMIN_ROLES as string[]).map((role) => sql`${role}`),
+    sql`, `,
+  );
+  const rows = await database
+    .selectDistinctOn([musicGenerationJobs.songGroupId], {
+      songGroupId: musicGenerationJobs.songGroupId,
+      userId: musicGenerationJobs.userId,
+    })
+    .from(musicGenerationJobs)
+    .innerJoin(user, eq(musicGenerationJobs.userId, user.id))
+    .where(
+      and(
+        eq(musicGenerationJobs.status, "completed"),
+        isNotNull(musicGenerationJobs.songGroupId),
+        isNotNull(musicGenerationJobs.audioUrl),
+        sql`(string_to_array(replace(coalesce(${user.role}, 'user'), ' ', ''), ',') && array[${adminRoles}]::text[] or coalesce(${user.role}, '') like '%custom:%')`,
+      ),
+    );
+  const values = rows.flatMap((row) =>
+    row.songGroupId && row.userId ? [{ songGroupId: row.songGroupId, userId: row.userId }] : [],
+  );
+  if (!values.length) return 0;
+  const inserted = await database
+    .insert(discoverSharedSongs)
+    .values(values)
+    .onConflictDoNothing()
+    .returning({ id: discoverSharedSongs.songGroupId });
+  return inserted.length;
 }

@@ -7,7 +7,14 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminRowToggle from "@/components/admin/AdminRowToggle";
 import AdminTableToolbar from "@/components/admin/AdminTableToolbar";
 import AdminSongTitleEditor from "@/components/admin/AdminSongTitleEditor";
-import { fetchGenerationsPage } from "@/app/admin/generations/actions";
+import {
+  deleteSong,
+  fetchGenerationsPage,
+  setSongDiscover,
+  shareAdminSongsToDiscover,
+} from "@/app/admin/generations/actions";
+import AdminActionForm from "@/components/admin/AdminActionForm";
+import AdminDeleteSongButton from "@/components/admin/AdminDeleteSongButton";
 import type { AdminGenerationRow, GenerationStatusFilter, GenerationsPage } from "@/lib/admin/generations-types";
 
 export type { AdminGenerationRow };
@@ -150,6 +157,20 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
         activeFilter={status}
         onFilterChange={setStatus}
       />
+      <AdminActionForm
+        action={shareAdminSongsToDiscover}
+        className="admin-generations-bulk"
+        onSuccess={() => load(data.page, { status, query: debouncedQuery }, false)}
+      >
+        <button type="submit" className="admin-generations-bulk-button">
+          <Icon i="library" size={15} />
+          Ajouter les chansons des administrateurs à Découvrir
+        </button>
+        <small>
+          Rattrape les chansons déjà créées par les comptes administrateurs. Les chansons des clients ne sont pas
+          touchées.
+        </small>
+      </AdminActionForm>
       <div className={`admin-data-table-wrap${isLoading ? " is-loading" : ""}`}>
         <table className="admin-data-table admin-row-table admin-generations-table">
           <thead>
@@ -245,6 +266,35 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                       Plus lent que d’habitude
                     </small>
                   ) : null}
+                </td>
+                <td data-label="Actions" data-detail="Actions">
+                  <div className="admin-table-actions">
+                    {row.songGroupId ? (
+                      <AdminActionForm
+                        action={setSongDiscover}
+                        onSuccess={() => load(data.page, { status, query: debouncedQuery }, false)}
+                      >
+                        <input type="hidden" name="songGroupId" value={row.songGroupId} />
+                        <input type="hidden" name="visible" value={row.inDiscover ? "false" : "true"} />
+                        <button
+                          type="submit"
+                          className="admin-generation-discover"
+                          disabled={row.status !== "completed"}
+                          title={row.status !== "completed" ? "Disponible une fois la chanson terminée" : undefined}
+                        >
+                          <Icon i={row.inDiscover ? "eye-off" : "library"} size={15} />
+                          {row.inDiscover ? "Retirer de Découvrir" : "Ajouter à Découvrir"}
+                        </button>
+                      </AdminActionForm>
+                    ) : null}
+                    <AdminActionForm
+                      action={deleteSong}
+                      onSuccess={() => load(data.page, { status, query: debouncedQuery }, false)}
+                    >
+                      <input type="hidden" name="jobId" value={row.id} />
+                      <AdminDeleteSongButton title={row.title ?? "cette chanson"} versions={row.songGroupId ? 2 : 1} />
+                    </AdminActionForm>
+                  </div>
                 </td>
                 <td data-label="Écoute">
                   <button
