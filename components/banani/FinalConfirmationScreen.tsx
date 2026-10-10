@@ -90,7 +90,7 @@ export default function FinalConfirmationScreen() {
             type="button"
             data-demo-ready="true"
             onClick={() => demo.go("/dashboard/create/lyrics")}
-            className="text-xs text-primary font-semibold mt-2"
+            className="create-touch-target text-xs text-primary font-semibold"
           >
             {t("Voir les paroles complètes")}
           </button>

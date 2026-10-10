@@ -170,7 +170,7 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
               data-demo-ready="true"
               onClick={() => demo.go("/dashboard/notifications")}
               aria-label={t("Notifications")}
-              className="relative"
+              className="relative create-touch-target justify-center"
             >
               <Icon i="bell" size={20} className="text-muted-foreground" />
               <div className="absolute -top-1 -right-1 w-2 h-2 bg-primary rounded-full" />
@@ -247,7 +247,7 @@ export default function SongCreationGenre({ genres }: { genres: MusicStyleOption
               type="button"
               data-demo-ready="true"
               onClick={() => demo.go("/dashboard")}
-              className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm font-medium"
+              className="create-touch-target gap-2 text-muted-foreground hover:text-foreground text-sm font-medium"
             >
               <Icon i="arrow-left" size={16} />
               {t("Retour")}
