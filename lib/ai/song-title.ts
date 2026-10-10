@@ -26,3 +26,19 @@ export function withVersionSuffix(title: string, versionNumber: number): string 
 export function stripVersionSuffix(title: string): string {
   return title.replace(VERSION_SUFFIX, "");
 }
+
+/**
+ * Nouveaux titres stockés quand le propriétaire renomme une chanson : chaque version garde son suffixe
+ * « — Version N » (numéro lu dans versionLabel, sinon son rang), pour que l'affichage groupé reste identique.
+ * Un suffixe de version saisi par erreur dans le nouveau titre est retiré.
+ */
+export function renamedVersionTitles(
+  newTitle: string,
+  versions: ReadonlyArray<{ id: string; versionLabel: string | null }>,
+): Array<{ id: string; title: string }> {
+  const base = stripVersionSuffix(newTitle.trim()).trim();
+  return versions.map((version, index) => {
+    const labelled = version.versionLabel?.match(/(\d+)/);
+    return { id: version.id, title: withVersionSuffix(base, labelled ? Number(labelled[1]) : index + 1) };
+  });
+}

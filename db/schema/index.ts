@@ -706,6 +706,14 @@ export const playbackSettings = pgTable("playback_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+/** Réglage global unique : affichage du tableau de bord propriétaire (nombre de chansons par page sur /admin/generations). Absence de ligne = 50. */
+export const adminDisplaySettings = pgTable("admin_display_settings", {
+  id: text("id").primaryKey().default("global"),
+  generationsPerPage: integer("generations_per_page").notNull().default(50),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 /** Réglage global unique : la chanson jouée en fond sonore sur l'accueil du tableau de bord (démo et comptes réels). */
 export const ambientBackgroundTrack = pgTable("ambient_background_track", {
   id: text("id").primaryKey().default("global"),

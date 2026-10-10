@@ -533,6 +533,13 @@
       "when": 1791556672643,
       "tag": "0075_remove_replicate",
       "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1791578440824,
+      "tag": "0076_admin_display_settings",
+      "breakpoints": true
     }
   ]
 }
