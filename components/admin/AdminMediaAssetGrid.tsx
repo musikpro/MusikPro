@@ -48,7 +48,7 @@ export default function AdminMediaAssetGrid({ assets }: { assets: MediaAsset[] }
         <article key={asset.publicId} className="admin-catalog-card admin-media-card">
           <div className="admin-catalog-card-head">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={asset.url} alt="" className="admin-media-thumb" />
+            <img src={asset.url} alt="" className="admin-media-thumb" loading="lazy" decoding="async" />
           </div>
           <small>
             {formatBytes(asset.bytes)}
