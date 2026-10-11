@@ -714,7 +714,6 @@
         "app/admin/ai-providers/actions.ts",
         "components/admin/AdminAiProviderForm.tsx",
         "components/admin/AdminToast.tsx",
-        "components/admin/AdminAiCapabilityPlaceholder.tsx",
         "components/banani/StepRecipient.tsx",
         "components/banani/DemoProvider.tsx"
       ],
