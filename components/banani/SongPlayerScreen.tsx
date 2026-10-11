@@ -129,7 +129,7 @@ export default function SongPlayerScreen() {
           <div className="w-56 h-56 rounded-3xl overflow-hidden shadow-2xl">
             {currentSong.cover ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={currentSong.cover} alt="" className="w-full h-full object-cover" />
+              <img src={currentSong.cover} alt="" className="w-full h-full object-cover" decoding="async" />
             ) : currentSong.img ? (
               <Image ar="1:1" prompt={currentSong.img} className="w-full h-full object-cover" />
             ) : (

@@ -1,7 +1,11 @@
 "use client";
 import Link from "next/link";
 import { useActionState } from "react";
-import { deleteLandingSongFeature, reorderLandingLibraryFeatures, reorderLandingShowcaseFeatures } from "@/app/admin/landing-features/actions";
+import {
+  deleteLandingSongFeature,
+  reorderLandingLibraryFeatures,
+  reorderLandingShowcaseFeatures,
+} from "@/app/admin/landing-features/actions";
 import Icon from "@/components/banani/Icon";
 import { useAdminActionToast, type AdminActionState } from "@/components/admin/useAdminActionToast";
 import AdminDeleteLandingSongFeatureButton from "./AdminDeleteLandingSongFeatureButton";
@@ -39,7 +43,13 @@ export default function AdminLandingSongFeatureSortableGrid({
           <div className="admin-catalog-card-head">
             {row.coverUrlOverride ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={row.coverUrlOverride} alt="" className="admin-landing-feature-thumb" />
+              <img
+                src={row.coverUrlOverride}
+                alt=""
+                className="admin-landing-feature-thumb"
+                loading="lazy"
+                decoding="async"
+              />
             ) : (
               <span className="admin-catalog-icon" aria-hidden="true">
                 <Icon i="music-2" size={18} />

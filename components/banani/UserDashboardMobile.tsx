@@ -279,7 +279,13 @@ export default function UserDashboardMobile({ trending }: { trending: TrendingSo
               ) : null}
               {t2.coverUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={t2.coverUrl} alt="" className="w-full aspect-square object-cover" />
+                <img
+                  src={t2.coverUrl}
+                  alt=""
+                  className="w-full aspect-square object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               ) : t2.coverPrompt ? (
                 <Image ar="1:1" prompt={t2.coverPrompt} className="w-full" />
               ) : (

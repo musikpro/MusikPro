@@ -217,7 +217,13 @@ export default function TrendingPanel({
                   <div className="admin-trending-slot-cover">
                     {slot.cover ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={slot.cover} alt="" className="admin-landing-feature-cover-preview" />
+                      <img
+                        src={slot.cover}
+                        alt=""
+                        className="admin-landing-feature-cover-preview"
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
                       <p className="admin-trending-empty-hint">
                         Aucune pochette : la carte affichera le logo MusikPro. Choisis une image pour la remplacer.
