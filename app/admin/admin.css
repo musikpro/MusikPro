@@ -6589,7 +6589,7 @@ body:has(.admin-app),
 
 .admin-currency-row {
   display: grid;
-  grid-template-columns: 170px minmax(150px, 1.6fr) 90px minmax(150px, 1fr) 80px 56px auto;
+  grid-template-columns: 170px minmax(110px, 1.2fr) 80px minmax(160px, 1.1fr) 70px 48px 260px;
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
@@ -6611,6 +6611,38 @@ body:has(.admin-app),
 
 .admin-currency-row.is-hidden {
   opacity: 0.6;
+}
+
+/* Glisser-déposer des monnaies (AdminCurrencySortableList) : poignée à gauche de la ligne, liste en une colonne. */
+.admin-catalog-grid.admin-currency-sortable {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+
+.admin-currency-row.has-handle {
+  padding-left: 62px;
+}
+
+.admin-currency-sortable > [data-sortable-id] > .admin-currency-row {
+  height: 100%;
+}
+
+.admin-currency-sortable .admin-sortable-overlay-handle {
+  top: 50%;
+  right: auto;
+  left: 12px;
+  transform: translateY(-50%);
+}
+
+.admin-currency-row.is-dragging {
+  border-color: var(--admin-primary);
+  opacity: 0.62;
+}
+
+.admin-currency-row.is-drop-target {
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px rgb(244 95 32 / 14%);
 }
 
 .admin-currency-id {
@@ -6661,7 +6693,7 @@ body:has(.admin-app),
   min-width: 0;
 }
 
-@media (max-width: 1100px) {
+@media (max-width: 1300px) {
   .admin-currency-row {
     grid-template-columns: 1fr 1fr;
   }
@@ -6682,7 +6714,9 @@ body:has(.admin-app),
     font-weight: 700;
     text-transform: uppercase;
   }
+}
 
+@media (max-width: 1100px) {
   .admin-currency-add {
     grid-template-columns: 1fr 1fr;
   }

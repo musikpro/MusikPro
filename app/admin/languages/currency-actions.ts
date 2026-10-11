@@ -1,6 +1,6 @@
 "use server";
 
-import { count, eq } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
@@ -208,4 +208,46 @@ export async function syncCurrencyRates(_previous: AdminActionState, _formData: 
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’actualiser les taux de change.") };
   }
+}
+
+const reorderCurrenciesSchema = z.object({
+  order: z
+    .string()
+    .max(5000)
+    .transform((value, context) => {
+      try {
+        return JSON.parse(value) as unknown;
+      } catch {
+        context.addIssue({ code: "custom", message: "Ordre invalide." });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.array(codeSchema).min(1).max(200))
+    .refine((codes) => new Set(codes).size === codes.length, "Chaque monnaie doit apparaître une seule fois."),
+});
+
+/**
+ * Nouvel ordre d'affichage des monnaies (glisser-déposer, composant commun AdminSortableGrid). Il règle l'ordre du
+ * sélecteur de la page crédits du client et des listes du tableau de bord ; la monnaie par défaut peut être déplacée.
+ */
+export async function reorderCurrencies(formData: FormData) {
+  const session = await requireAdmin();
+  const { order } = reorderCurrenciesSchema.parse(Object.fromEntries(formData));
+  const database = getServiceDb();
+  const existing = await database.select({ code: currencies.code }).from(currencies);
+  const existingCodes = new Set(existing.map((row) => row.code));
+  if (order.length !== existingCodes.size || order.some((code) => !existingCodes.has(code)))
+    throw new Error("La liste des monnaies a changé. Recharge la page avant de recommencer.");
+  const orderedRows = JSON.stringify(order.map((code, index) => ({ code, sort_order: (index + 1) * 10 })));
+  await database.execute(
+    sql`update ${currencies} set sort_order = ordered.sort_order, updated_at = now() from jsonb_to_recordset(${orderedRows}::jsonb) as ordered(code text, sort_order integer) where ${currencies.code} = ordered.code`,
+  );
+  await writeAuditLog({
+    action: "currency.reordered",
+    actorId: session.user.id,
+    targetType: "currency_catalog",
+    targetId: "global",
+    metadata: { order },
+  });
+  refresh();
 }
