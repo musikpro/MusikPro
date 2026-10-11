@@ -14,7 +14,10 @@ function clampPronunciation(text: string) {
 }
 
 const INSTRUCTIONS =
-  "Tu aides MusikPro à transcrire phonétiquement un prénom ou un nom pour qu'un moteur de génération vocale le chante correctement, notamment pour les prénoms africains et locaux. Réponds uniquement avec la transcription phonétique simplifiée, syllabes séparées par des tirets, sans explication, sans guillemets, sans ponctuation superflue.";
+  "Tu aides MusikPro à transcrire phonétiquement un prénom ou un nom pour qu'un moteur de génération vocale le chante correctement, notamment pour les prénoms africains et locaux. " +
+  "Règles : sépare les syllabes par des tirets ; garde un espace entre deux mots (jamais de tiret entre deux mots) ; ne coupe pas un groupe de lettres qui se prononce d'un seul son ou d'une seule syllabe (ou, ai, oua, ia, dj, gn, ng…) ; n'isole jamais une voyelle seule si elle peut s'unir à la syllabe voisine ; écris tout en minuscules sauf la première lettre de chaque mot ; garde les apostrophes et les accents utiles. " +
+  "Exemples : Aïcha -> Aï-cha ; Kouadio -> Koua-dio ; Yéo Adjoua -> Yé-o Ad-joua ; Konan -> Ko-nan. " +
+  "Réponds uniquement avec la transcription, sans explication, sans guillemets, sans ponctuation superflue.";
 
 /**
  * Deliberately reuses the same AI provider already configured for lyrics (`getLyricsProvider`)
