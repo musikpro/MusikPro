@@ -575,6 +575,13 @@
       "when": 1791690376685,
       "tag": "0081_visible_music_styles",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1791690377685,
+      "tag": "0082_display_limits",
+      "breakpoints": true
     }
   ]
 }

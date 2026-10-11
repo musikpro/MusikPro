@@ -19,6 +19,7 @@ type Props = {
   languageOptions: LandingLanguageOption[];
   occasions: LandingOccasion[];
   musicStyles: LandingStyle[];
+  musicStylesHasMore?: boolean;
   showcaseSongs: LandingTrendingSong[];
   librarySongs: LandingTrendingSong[];
   heroHeadline: string;
@@ -62,6 +63,7 @@ export default function LandingPageDesktop({
   languageOptions,
   occasions,
   musicStyles,
+  musicStylesHasMore = false,
   showcaseSongs,
   librarySongs,
   heroHeadline,
@@ -300,6 +302,14 @@ export default function LandingPageDesktop({
                 {s.label}
               </span>
             ))}
+            {musicStylesHasMore ? (
+              <span
+                aria-hidden="true"
+                className="px-5 py-2.5 rounded-xl text-base font-semibold border bg-card text-muted-foreground border-border"
+              >
+                …
+              </span>
+            ) : null}
           </Reveal>
         </section>
       ) : null}

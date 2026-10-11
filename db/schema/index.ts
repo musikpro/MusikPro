@@ -724,6 +724,11 @@ export const adminDisplaySettings = pgTable("admin_display_settings", {
   usersPerPage: integer("users_per_page").notNull().default(50),
   /** Styles musicaux montrés d'emblée à l'étape « style et ambiance » du parcours de création (le reste se déroule). */
   visibleMusicStyles: integer("visible_music_styles").notNull().default(9),
+  // Limites d'affichage côté client (landing + Tendances), réglées depuis le tableau de bord propriétaire.
+  landingShowcaseTitleMaxChars: integer("landing_showcase_title_max_chars").notNull().default(40),
+  landingLibraryTitleMaxChars: integer("landing_library_title_max_chars").notNull().default(40),
+  trendingTitleMaxChars: integer("trending_title_max_chars").notNull().default(40),
+  landingMusicStylesMaxCount: integer("landing_music_styles_max_count").notNull().default(12),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

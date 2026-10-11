@@ -17,6 +17,8 @@ import { getActiveOccasions } from "@/lib/occasions/server";
 import { getActiveMusicStyles } from "@/lib/music-styles/server";
 import { CREDITS_PER_GENERATION, VERSIONS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 import { getLandingLibrarySongs, getLandingShowcaseSongs } from "@/lib/landing-features/server";
+import { getDisplayLimits } from "@/lib/settings/display-limits";
+import { truncateTitle } from "@/lib/settings/display-limits-constants";
 import { getActiveHeroAnimatedTexts } from "@/lib/hero-animated-texts/server";
 import { getHeroSettings } from "@/lib/hero-animation/settings";
 import { getActiveLanguageCatalog } from "@/lib/languages/server";
@@ -92,6 +94,7 @@ export default async function Home() {
     heroAnimatedTexts,
     heroSettings,
     languageCatalog,
+    displayLimits,
   ] = await Promise.all([
     getActiveOccasions(),
     getActiveMusicStyles(),
@@ -100,6 +103,7 @@ export default async function Home() {
     getActiveHeroAnimatedTexts(),
     getHeroSettings(),
     languageCatalogPromise,
+    getDisplayLimits(),
     cookieLanguageCode || urlLocaleCode ? Promise.resolve(null) : detectCurrency(requestHeaders),
   ]);
 
@@ -137,7 +141,8 @@ export default async function Home() {
     emoji: o.emoji,
     label: localizeFieldForLocale(o.name, o.translations, "name", locale),
   }));
-  const landingMusicStyles = musicStyles.map((s) => ({
+  // Seuls les premiers styles sont montrés (réglage propriétaire) ; « … » indique qu'il y en a d'autres.
+  const landingMusicStyles = musicStyles.slice(0, displayLimits.landingMusicStylesMaxCount).map((s) => ({
     id: s.id,
     label: localizeFieldForLocale(s.name, s.translations, "name", locale),
   }));
@@ -166,8 +171,15 @@ export default async function Home() {
     languageOptions,
     occasions: landingOccasions,
     musicStyles: landingMusicStyles,
-    showcaseSongs,
-    librarySongs,
+    musicStylesHasMore: musicStyles.length > displayLimits.landingMusicStylesMaxCount,
+    showcaseSongs: showcaseSongs.map((song) => ({
+      ...song,
+      displayTitle: truncateTitle(song.title, displayLimits.landingShowcaseTitleMaxChars),
+    })),
+    librarySongs: librarySongs.map((song) => ({
+      ...song,
+      displayTitle: truncateTitle(song.title, displayLimits.landingLibraryTitleMaxChars),
+    })),
     heroHeadline,
     heroTexts: landingHeroTexts,
     heroAnimationType: heroSettings.animationType,

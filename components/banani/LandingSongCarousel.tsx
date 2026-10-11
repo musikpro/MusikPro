@@ -91,7 +91,7 @@ export default function LandingSongCarousel({
                   decoding="async"
                 />
                 <div className="landing-carousel-shade">
-                  <p className="landing-carousel-title">{song.title}</p>
+                  <p className="landing-carousel-title">{song.displayTitle ?? song.title}</p>
                   {song.style || song.occasion ? (
                     <p className="landing-carousel-meta">{[song.style, song.occasion].filter(Boolean).join(" · ")}</p>
                   ) : null}
@@ -113,7 +113,7 @@ export default function LandingSongCarousel({
                   decoding="async"
                 />
                 <div className="landing-carousel-shade">
-                  <p className="landing-carousel-title">{song.title}</p>
+                  <p className="landing-carousel-title">{song.displayTitle ?? song.title}</p>
                   {song.style || song.occasion ? (
                     <p className="landing-carousel-meta">{[song.style, song.occasion].filter(Boolean).join(" · ")}</p>
                   ) : null}

@@ -9,6 +9,8 @@ export type LandingFeaturedSong = {
   songGroupId: string;
   slug: string;
   title: string;
+  /** Titre coupé à la longueur réglée par le propriétaire (« … » au bout) ; `title` reste le titre complet. */
+  displayTitle?: string;
   plays: number;
   coverUrl: string | null;
   style: string | null;

@@ -47,6 +47,8 @@ const trendingCards = [
 type TrendCard = {
   key: string;
   title: string;
+  /** Titre raccourci (réglage propriétaire) pour la carte ; `title` reste complet pour lecteur et accessibilité. */
+  displayTitle?: string;
   playsLabel: string;
   coverPrompt: string | null;
   coverUrl?: string | null;
@@ -68,6 +70,7 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
     : trending.map((song) => ({
         key: song.slug,
         title: song.title,
+        displayTitle: song.displayTitle,
         playsLabel: formatPlays(song.plays),
         coverPrompt: null,
         coverUrl: song.coverUrl,
@@ -325,7 +328,7 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                       </div>
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-3">
-                      <p className="text-white font-bold text-sm">{tc.title}</p>
+                      <p className="text-white font-bold text-sm">{tc.displayTitle ?? tc.title}</p>
                       <p className="text-white/70 text-xs flex items-center gap-1">
                         <Icon i="headphones" size={10} /> {tc.playsLabel}
                       </p>

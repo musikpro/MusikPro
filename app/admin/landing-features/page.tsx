@@ -14,7 +14,13 @@ import {
   MAX_LANDING_SONG_FEATURES_PER_SECTION,
   type LandingSongFeatureSection,
 } from "@/lib/landing-features/admin";
+import DisplayLimitsPanel from "@/components/admin/DisplayLimitsPanel";
+import { getDisplayLimits } from "@/lib/settings/display-limits";
+import { TITLE_MAX_CHARS_MAX, TITLE_MAX_CHARS_MIN } from "@/lib/settings/display-limits-constants";
+import { setLandingTitleLimits } from "@/app/admin/settings/actions";
 import { createLandingSongFeature } from "./actions";
+
+const DISPLAY_TAB = "display";
 
 const SECTION_DESCRIPTIONS: Record<LandingSongFeatureSection, string> = {
   showcase: "Cartes affichées dans la section « Ils ont créé avec MusikPro » de la page d’accueil publique.",
@@ -27,13 +33,16 @@ export default async function AdminLandingFeaturesPage({ searchParams }: { searc
   // The edit page links back with ?tab=<section>, so the owner returns to the tab they came from
   // instead of always landing on the first one.
   const defaultTab =
-    LANDING_SONG_FEATURE_SECTIONS.find((section) => section === tab) ?? LANDING_SONG_FEATURE_SECTIONS[0];
-  const [songs, showcaseRows, libraryRows, usedPlacements] = await Promise.all([
+    tab === DISPLAY_TAB
+      ? DISPLAY_TAB
+      : (LANDING_SONG_FEATURE_SECTIONS.find((section) => section === tab) ?? LANDING_SONG_FEATURE_SECTIONS[0]);
+  const [songs, showcaseRows, libraryRows, usedPlacements, displayLimits] = await Promise.all([
     listRecentGeneratedSongsForAdmin(LANDING_SONG_POOL_SIZE),
     listLandingSongFeatures("showcase"),
     listLandingSongFeatures("library"),
     // Landing + Tendances : une chanson déjà mise en avant quelque part n'est plus proposée ailleurs.
     getFeaturedSongPlacements(),
+    getDisplayLimits(),
   ]);
   const rowsBySection = { showcase: showcaseRows, library: libraryRows };
 
@@ -47,10 +56,13 @@ export default async function AdminLandingFeaturesPage({ searchParams }: { searc
       <AdminTabs
         ariaLabel="Sections de la landing page"
         defaultTab={defaultTab}
-        tabs={LANDING_SONG_FEATURE_SECTIONS.map((section) => ({
-          id: section,
-          label: LANDING_SONG_FEATURE_SECTION_LABELS[section],
-        }))}
+        tabs={[
+          ...LANDING_SONG_FEATURE_SECTIONS.map((section) => ({
+            id: section,
+            label: LANDING_SONG_FEATURE_SECTION_LABELS[section],
+          })),
+          { id: DISPLAY_TAB, label: "Affichage des titres" },
+        ]}
       >
         {LANDING_SONG_FEATURE_SECTIONS.map((section) => {
           const rows = rowsBySection[section];
@@ -90,6 +102,31 @@ export default async function AdminLandingFeaturesPage({ searchParams }: { searc
             </AdminTabPanel>
           );
         })}
+        <AdminTabPanel id={DISPLAY_TAB}>
+          <DisplayLimitsPanel
+            title="Longueur des titres"
+            description="Nombre maximal de caractères affichés pour le titre d’une chanson sur la landing. Au-delà, le titre est coupé et terminé par « … », ce qui laisse la pochette visible. Le titre complet reste visible sur la page de la chanson."
+            action={setLandingTitleLimits}
+            fields={[
+              {
+                name: "showcase",
+                label: "« Ils ont créé avec MusikPro »",
+                value: displayLimits.landingShowcaseTitleMaxChars,
+                min: TITLE_MAX_CHARS_MIN,
+                max: TITLE_MAX_CHARS_MAX,
+                unit: "caractères",
+              },
+              {
+                name: "library",
+                label: "« Bibliothèque populaire »",
+                value: displayLimits.landingLibraryTitleMaxChars,
+                min: TITLE_MAX_CHARS_MIN,
+                max: TITLE_MAX_CHARS_MAX,
+                unit: "caractères",
+              },
+            ]}
+          />
+        </AdminTabPanel>
       </AdminTabs>
     </AdminPage>
   );
