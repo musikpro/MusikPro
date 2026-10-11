@@ -32,7 +32,7 @@ export default function SocialProofBadge({ className = "" }: { className?: strin
             className={`w-11 h-11 rounded-full border-2 border-background object-cover ${idx > 0 ? "-ml-3" : ""}`}
           />
         ))}
-        <span className="-ml-3 flex h-11 w-11 items-center justify-center rounded-full border-2 border-background bg-secondary text-xs font-bold text-primary">
+        <span className="-ml-3 flex h-11 w-11 items-center justify-center rounded-full border-2 border-background bg-secondary text-xs font-bold text-secondary-foreground">
           +998
         </span>
       </div>

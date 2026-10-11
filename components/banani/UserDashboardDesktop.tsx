@@ -218,7 +218,7 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                     e.preventDefault();
                     demo.go("/dashboard/songs");
                   }}
-                  className="text-sm font-semibold text-primary"
+                  className="text-sm font-semibold text-secondary-foreground"
                 >
                   {t("Voir tout")}
                 </a>
