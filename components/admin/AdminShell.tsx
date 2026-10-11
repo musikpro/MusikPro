@@ -76,7 +76,10 @@ const navigation: Array<{ title: string; items: NavItem[] }> = [
   },
   {
     title: "Paramètres",
-    items: [{ href: "/admin/settings", icon: "settings", label: "Paramètres généraux" }],
+    items: [
+      { href: "/admin/corbeille", icon: "trash", label: "Corbeille" },
+      { href: "/admin/settings", icon: "settings", label: "Paramètres généraux" },
+    ],
   },
 ];
 

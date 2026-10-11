@@ -7964,20 +7964,6 @@ body:has(.admin-app),
 }
 
 /* Générations : rattrapage Découvrir, et actions de la chanson dans le menu « Détails ». */
-.admin-generations-bulk {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  margin: 0 0 12px;
-}
-
-.admin-generations-bulk small {
-  color: var(--admin-muted);
-  font-size: 12px;
-}
-
-.admin-generations-bulk-button,
 .admin-generation-discover {
   display: inline-flex;
   min-height: 44px;
@@ -8030,5 +8016,14 @@ body:has(.admin-app),
     width: 100%;
     min-height: 44px;
     justify-content: center;
+  }
+}
+
+/* Corbeille : les boutons d'une ligne restent côte à côte, alignés à droite sur ordinateur. */
+@media (min-width: 768px) {
+  .admin-data-table td[data-label="Actions"] .admin-table-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }

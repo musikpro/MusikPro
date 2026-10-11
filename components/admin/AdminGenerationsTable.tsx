@@ -7,12 +7,7 @@ import AdminPagination from "@/components/admin/AdminPagination";
 import AdminRowToggle from "@/components/admin/AdminRowToggle";
 import AdminTableToolbar from "@/components/admin/AdminTableToolbar";
 import AdminSongTitleEditor from "@/components/admin/AdminSongTitleEditor";
-import {
-  deleteSong,
-  fetchGenerationsPage,
-  setSongDiscover,
-  shareAdminSongsToDiscover,
-} from "@/app/admin/generations/actions";
+import { deleteSong, fetchGenerationsPage, setSongDiscover } from "@/app/admin/generations/actions";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminDeleteSongButton from "@/components/admin/AdminDeleteSongButton";
 import type { AdminGenerationRow, GenerationStatusFilter, GenerationsPage } from "@/lib/admin/generations-types";
@@ -157,20 +152,6 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
         activeFilter={status}
         onFilterChange={setStatus}
       />
-      <AdminActionForm
-        action={shareAdminSongsToDiscover}
-        className="admin-generations-bulk"
-        onSuccess={() => load(data.page, { status, query: debouncedQuery }, false)}
-      >
-        <button type="submit" className="admin-generations-bulk-button">
-          <Icon i="library" size={15} />
-          Ajouter les chansons des administrateurs à Découvrir
-        </button>
-        <small>
-          Rattrape les chansons déjà créées par les comptes administrateurs. Les chansons des clients ne sont pas
-          touchées.
-        </small>
-      </AdminActionForm>
       <div className={`admin-data-table-wrap${isLoading ? " is-loading" : ""}`}>
         <table className="admin-data-table admin-row-table admin-generations-table">
           <thead>

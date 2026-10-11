@@ -10,14 +10,14 @@ export default function AdminDeleteSongButton({ title, versions }: { title: stri
       onClick={(event) => {
         if (
           !window.confirm(
-            `Supprimer définitivement la chanson « ${title} »${versions > 1 ? ` et ses ${versions} versions` : ""} ? Elle disparaît du compte du client, de Découvrir, de la page d’accueil et de son lien public. Cette action est irréversible.`,
+            `Mettre la chanson « ${title} »${versions > 1 ? ` et ses ${versions} versions` : ""} à la corbeille ? Elle disparaît du compte du client, de Découvrir, de la page d’accueil et de son lien public, mais tu peux la restaurer depuis la Corbeille jusqu’à sa suppression automatique.`,
           )
         )
           event.preventDefault();
       }}
     >
       <Icon i="trash" size={15} />
-      Supprimer la chanson
+      Mettre à la corbeille
     </button>
   );
 }

@@ -12,6 +12,8 @@ import SchedulerPanel from "./SchedulerPanel";
 import PlaybackPanel from "./PlaybackPanel";
 import DisplayPageSizesPanel from "./DisplayPageSizesPanel";
 import AutoShareAdminSongsPanel from "./AutoShareAdminSongsPanel";
+import TrashRetentionPanel from "./TrashRetentionPanel";
+import { getTrashRetention } from "@/lib/trash/settings";
 import { getAutoShareAdminSongs } from "@/lib/discover/server";
 import { getAdminDisplaySettings } from "@/lib/settings/admin-display";
 import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
@@ -25,6 +27,7 @@ export default async function AdminSettingsPage() {
     exclusivePlaybackEnabled,
     displaySettings,
     autoShareAdminSongs,
+    trashRetention,
   ] = await Promise.all([
     getPaymentBypassStatus(),
     getServiceDb().select().from(localizationSettings).limit(1),
@@ -32,6 +35,7 @@ export default async function AdminSettingsPage() {
     isExclusivePlaybackEnabled(),
     getAdminDisplaySettings(),
     getAutoShareAdminSongs(),
+    getTrashRetention(),
   ]);
   const localization = localizationRows[0];
 
@@ -58,6 +62,10 @@ export default async function AdminSettingsPage() {
               usersPerPage={displaySettings.usersPerPage}
             />
             <AutoShareAdminSongsPanel enabled={autoShareAdminSongs} />
+            <TrashRetentionPanel
+              songsRetentionDays={trashRetention.songsRetentionDays}
+              usersRetentionDays={trashRetention.usersRetentionDays}
+            />
             <CountryDetectionPanel
               automaticDetectionEnabled={localization?.automaticDetectionEnabled ?? true}
               cacheTtlHours={Math.round((localization?.countryCacheTtlSeconds ?? 604800) / 3600)}
