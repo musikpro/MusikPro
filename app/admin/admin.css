@@ -8027,3 +8027,22 @@ body:has(.admin-app),
     justify-content: flex-end;
   }
 }
+
+/* Filtres des listes : une seule ligne qu'on fait glisser de gauche à droite (jamais empilés les uns sous les autres). */
+.admin-table-toolbar > * {
+  min-width: 0;
+}
+
+.admin-table-toolbar .admin-filter-tabs {
+  max-width: 100%;
+  flex-wrap: nowrap;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.admin-table-toolbar .admin-filter-tabs button {
+  white-space: nowrap;
+  scroll-snap-align: start;
+}
