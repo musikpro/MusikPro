@@ -13,11 +13,11 @@
   --color-primary: #f26522;
   --color-primary-foreground: #ffffff;
   --color-secondary: #fde8d8;
-  --color-secondary-foreground: #f26522;
+  --color-secondary-foreground: #ad4513;
   --color-coral: #f4845f;
   --color-coral-foreground: #ffffff;
   --color-muted: #ede8e2;
-  --color-muted-foreground: #8c8782;
+  --color-muted-foreground: #6b645f;
   --color-success: #22c55e;
   --color-success-foreground: #ffffff;
   --color-card: #ffffff;
@@ -945,7 +945,7 @@
   font:
     11px/1.5 "DM Sans",
     sans-serif;
-  color: #8c8782;
+  color: #6b645f;
 }
 
 @media (max-width: 1099px) {

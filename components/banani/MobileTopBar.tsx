@@ -51,7 +51,7 @@ export default function MobileTopBar({ credits = 0 }) {
             className="flex items-center gap-1 bg-secondary px-3 py-1.5 rounded-xl"
           >
             <Icon i="crown" size={14} className="text-primary" />
-            <span className="text-sm font-semibold text-primary">
+            <span className="text-sm font-semibold text-secondary-foreground">
               {credits} {t("crédits")}
             </span>
           </button>
