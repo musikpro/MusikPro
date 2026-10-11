@@ -1,6 +1,8 @@
 "use client";
-import { translate as t, localizeField } from "@/lib/i18n/translate";
+import { useState } from "react";
+import { translate as t, translateTemplate, localizeField } from "@/lib/i18n/translate";
 import type { MusicStyleOption } from "@/lib/music-styles/catalog";
+import { VISIBLE_MUSIC_STYLES_DEFAULT, splitVisibleStyles } from "@/lib/music-styles/visible";
 import { useDemo } from "./DemoProvider";
 
 export const displayName = "Étape 4 — Choisis le style et l'ambiance";
@@ -10,9 +12,21 @@ import StepProgressBar from "./StepProgressBar";
 import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 
-export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[] }) {
+export default function StepStyleAndMood({
+  genres,
+  visibleCount = VISIBLE_MUSIC_STYLES_DEFAULT,
+}: {
+  genres: MusicStyleOption[];
+  /** Styles montrés d'emblée (réglage Paramètres > Général) ; les autres se déroulent. */
+  visibleCount?: number;
+}) {
   const demo = useDemo();
   const hasSelectedGenre = genres.some((genre) => genre.name === demo.choices.genre);
+  const { initial, more, startsExpanded } = splitVisibleStyles(genres, visibleCount, demo.choices.genre);
+  // Tant que le client n'a pas touché à la barre, la liste est dépliée seulement si son style choisi est caché.
+  const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
+  const expanded = userExpanded ?? startsExpanded;
+  const shownGenres = expanded ? [...initial, ...more] : initial;
   // Ambiances gérées par le propriétaire (menu admin « Ambiances ») ; le nom français reste la valeur choisie.
   const moods = demo.moods;
   // Garde-fou : sans aucune ambiance active, on ne bloque pas le parcours sur un choix impossible.
@@ -44,8 +58,8 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
         {/* Genre/Style Section */}
         <div className="mb-6">
           <h2 className="text-sm font-bold text-foreground mb-3">{t("Genre musical")}</h2>
-          <div className="creation-genre-grid grid grid-cols-3 gap-2">
-            {genres.map((genre) => (
+          <div id="creation-genre-grid" className="creation-genre-grid grid grid-cols-3 gap-2">
+            {shownGenres.map((genre) => (
               <button
                 type="button"
                 data-demo-ready="true"
@@ -75,6 +89,26 @@ export default function StepStyleAndMood({ genres }: { genres: MusicStyleOption[
               </div>
             ) : null}
           </div>
+          {more.length ? (
+            <button
+              type="button"
+              data-demo-ready="true"
+              className="creation-genre-more"
+              aria-expanded={expanded}
+              aria-controls="creation-genre-grid"
+              onClick={() => setUserExpanded(!expanded)}
+            >
+              <span className="creation-genre-more-text">
+                <strong>{expanded ? t("Voir moins de styles musicaux") : t("Voir plus de styles musicaux")}</strong>
+                {expanded ? null : (
+                  <small>{translateTemplate("{count} autres styles à découvrir", { count: more.length })}</small>
+                )}
+              </span>
+              <span className="creation-genre-more-icon" data-expanded={expanded}>
+                <Icon i="chevron-down" size={18} />
+              </span>
+            </button>
+          ) : null}
         </div>
 
         {/* Mood/Ambiance Section */}

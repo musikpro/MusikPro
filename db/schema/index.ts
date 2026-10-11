@@ -722,6 +722,8 @@ export const adminDisplaySettings = pgTable("admin_display_settings", {
   id: text("id").primaryKey().default("global"),
   generationsPerPage: integer("generations_per_page").notNull().default(50),
   usersPerPage: integer("users_per_page").notNull().default(50),
+  /** Styles musicaux montrés d'emblée à l'étape « style et ambiance » du parcours de création (le reste se déroule). */
+  visibleMusicStyles: integer("visible_music_styles").notNull().default(9),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -1063,7 +1065,6 @@ export const phonePrefixes = pgTable(
     activeOrderIndex: index("phone_prefixes_active_order_idx").on(table.active, table.sortOrder),
   }),
 );
-
 
 /** Réglage unique : combien de jours une chanson ou un compte supprimé reste en corbeille avant la purge automatique. */
 export const trashSettings = pgTable("trash_settings", {
