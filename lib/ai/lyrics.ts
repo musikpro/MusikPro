@@ -12,11 +12,14 @@ import {
 import { formatAnswersForPrompt } from "@/lib/occasion-fields/answers";
 import type { ResolvedAnswer } from "@/lib/occasion-fields/types";
 import { moderateText } from "./moderation";
+import { buildLyricsGuidanceBlock, type LyricsGuidance } from "./lyrics-guidance";
+import { resolveLyricsGuidance } from "./lyrics-guidance-server";
 import { writeAuditLog } from "@/lib/security/audit";
 
-export function promptFor(task: AiLyricsTask, details: ResolvedAnswer[] = []) {
+export function promptFor(task: AiLyricsTask, details: ResolvedAnswer[] = [], guidance: Partial<LyricsGuidance> = {}) {
   const input = task.input;
   const personalised = formatAnswersForPrompt(details);
+  const guidanceBlock = buildLyricsGuidanceBlock({ occasion: input.occasion, style: input.genre }, guidance);
   const context = [
     `Occasion: ${input.occasion}`,
     `Histoire racontée par l'utilisateur: ${input.story}`,
@@ -31,6 +34,7 @@ export function promptFor(task: AiLyricsTask, details: ResolvedAnswer[] = []) {
     `Voix du chanteur: ${input.voice}`,
     `Détails supplémentaires: ${input.additionalDetails || "aucun"}`,
     ...(personalised ? [personalised] : []),
+    ...(guidanceBlock ? [guidanceBlock] : []),
   ].join("\n");
   if (task.task === "lyrics.extend") {
     return `${context}\n\nParoles actuelles:\n${task.input.lyrics}\n\nRallonge ces paroles avec des sections cohérentes, sans répéter inutilement le texte existant, et termine par un court outro qui referme la chanson en douceur (par exemple une reprise atténuée du refrain ou une dernière phrase conclusive) plutôt qu'une fin abrupte. Retourne la chanson complète et reste sous ${LYRICS_MAX_WORDS} mots au total.\n\n${UNKNOWN_WORDS_PRONUNCIATION_RULE}`;
@@ -52,7 +56,11 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string, detail
     throw new Error("AI_CAPABILITY_DISABLED");
   }
 
-  const requestText = [task.input.story, task.input.additionalDetails, task.input.recipientName, task.input.senderName,
+  const requestText = [
+    task.input.story,
+    task.input.additionalDetails,
+    task.input.recipientName,
+    task.input.senderName,
     ...details.map((answer) => answer.value),
   ]
     .filter(Boolean)
@@ -70,8 +78,9 @@ export async function runLyricsTask(task: AiLyricsTask, actorId?: string, detail
     throw new Error("CONTENT_BLOCKED_REQUEST");
   }
 
-  const instructions = `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. ${UNKNOWN_WORDS_PRONUNCIATION_RULE} N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
-  const raw = await runProviderTextTask(provider, instructions, promptFor(task, details));
+  const instructions = `Tu es le parolier de MusikPro. Respecte fidèlement chaque paramètre fourni, sans en ignorer aucun. La relation détermine le ton et le vocabulaire. La prononciation fournie détermine la forme chantée du nom. Quand des consignes d'écriture du catalogue sont fournies, applique-les : celle de l'occasion règle le fond et le ton, celle du style musical règle la forme (rythme des phrases, vocabulaire, structure). ${UNKNOWN_WORDS_PRONUNCIATION_RULE} N'invente pas de faits personnels sensibles. Retourne uniquement les paroles finales, sans commentaire ni balise Markdown, avec un maximum absolu de ${LYRICS_MAX_WORDS} mots et une longueur adaptée à une chanson de 4 minutes maximum.`;
+  const guidance = await resolveLyricsGuidance(task.input.occasion, task.input.genre);
+  const raw = await runProviderTextTask(provider, instructions, promptFor(task, details, guidance));
   const result = { ...raw, text: enforceLyricsWordLimit(stripLyricsTitleLine(stripLyricsMarkdown(raw.text))) };
 
   const resultVerdict = await moderateText(result.text, "Paroles de chanson générées");

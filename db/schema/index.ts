@@ -201,6 +201,8 @@ export const musicStyles = pgTable(
     description: text("description").notNull(),
     /** Description technique envoyée en priorité à l'IA génératrice de musique (Musicful) — voir lib/ai/style-prompt.ts. */
     aiDescription: text("ai_description").notNull().default(""),
+    /** Consigne d'écriture des paroles propre à ce style (forme, vocabulaire, métrique), envoyée à l'IA des paroles — voir lib/ai/lyrics-guidance.ts. Jamais montrée au client. */
+    lyricsGuidance: text("lyrics_guidance").notNull().default(""),
     icon: text("icon").notNull().default("music-2"),
     tone: text("tone").notNull().default("orange"),
     active: boolean("active").notNull().default(true),
@@ -225,6 +227,8 @@ export const occasions = pgTable(
     emoji: text("emoji").notNull().default("🎉"),
     /** Consigne anglaise envoyée à Musicful pour cette occasion (jamais montrée au client). Vide : rien n'est envoyé. */
     aiHint: text("ai_hint").notNull().default(""),
+    /** Consigne d'écriture des paroles propre à cette occasion (fond, ton, thèmes), envoyée à l'IA des paroles — voir lib/ai/lyrics-guidance.ts. Jamais montrée au client. */
+    lyricsGuidance: text("lyrics_guidance").notNull().default(""),
     active: boolean("active").notNull().default(true),
     sortOrder: integer("sort_order").notNull().default(100),
     /** Affiche le bloc « La personne concernée » à l'étape « Personnalise ta chanson » (faux pour un spot publicitaire). */

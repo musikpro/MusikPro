@@ -12,6 +12,7 @@ import {
   type OccasionActionState,
 } from "@/app/admin/occasions/actions";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
+import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
 
 type OccasionFormValues = {
@@ -20,6 +21,7 @@ type OccasionFormValues = {
   description?: string;
   emoji?: string;
   aiHint?: string;
+  lyricsGuidance?: string;
   active?: boolean;
   sortOrder?: number;
 };
@@ -38,6 +40,7 @@ export default function AdminOccasionForm({
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [aiHint, setAiHint] = useState(values.aiHint ?? "");
+  const [lyricsGuidance, setLyricsGuidance] = useState(values.lyricsGuidance ?? "");
   const [suggesting, startSuggest] = useTransition();
   const [suggestingDescription, startSuggestDescription] = useTransition();
   const suggestDescription = () => {
@@ -131,6 +134,22 @@ export default function AdminOccasionForm({
             <Icon i="bot" size={15} />
             {suggesting ? "Suggestion…" : "Suggérer la consigne"}
           </button>
+        </label>
+        <label className="admin-editor-field is-wide">
+          <span>Consigne pour l’IA des paroles (français, facultative)</span>
+          <small>
+            Guide le fond et le ton des paroles pour cette occasion (thèmes à aborder, registre, ce qu’il faut éviter).
+            Envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne d’occasion.{" "}
+            {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
+          </small>
+          <textarea
+            name="lyricsGuidance"
+            rows={4}
+            maxLength={LYRICS_GUIDANCE_MAX_LENGTH}
+            value={lyricsGuidance}
+            onChange={(event) => setLyricsGuidance(event.target.value)}
+            placeholder="Ex. Ton chaleureux et festif, féliciter pour l’âge fêté, évoquer les souvenirs et les vœux pour l’année à venir, finir sur un refrain de joyeux anniversaire."
+          />
         </label>
         <div className="admin-editor-field">
           <span>État</span>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Icon from "@/components/banani/Icon";
+import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { STYLE_AI_DESCRIPTION_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
 
 type Kind = "client" | "ai";
@@ -9,12 +10,15 @@ type Kind = "client" | "ai";
 export default function AdminMusicStyleDescriptionFields({
   defaultClientDescription = "",
   defaultAiDescription = "",
+  defaultLyricsGuidance = "",
 }: {
   defaultClientDescription?: string;
   defaultAiDescription?: string;
+  defaultLyricsGuidance?: string;
 }) {
   const [clientDescription, setClientDescription] = useState(defaultClientDescription);
   const [aiDescription, setAiDescription] = useState(defaultAiDescription);
+  const [lyricsGuidance, setLyricsGuidance] = useState(defaultLyricsGuidance);
   const [pending, setPending] = useState<Kind | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [searchNote, setSearchNote] = useState<string | null>(null);
@@ -120,6 +124,23 @@ export default function AdminMusicStyleDescriptionFields({
       <small id="music-style-ai-hint" className="admin-editor-field is-wide">
         Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client n’est
         jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
+      </small>
+      <div className="admin-editor-field is-wide">
+        <span>Consigne pour l’IA des paroles (français, facultative)</span>
+        <textarea
+          name="lyricsGuidance"
+          maxLength={LYRICS_GUIDANCE_MAX_LENGTH}
+          rows={4}
+          value={lyricsGuidance}
+          onChange={(event) => setLyricsGuidance(event.target.value)}
+          aria-describedby="music-style-lyrics-hint"
+          placeholder="Ex. Phrases courtes et percutantes, rimes internes, vocabulaire de rue, expressions en nouchi, refrain scandé et facile à reprendre…"
+        />
+      </div>
+      <small id="music-style-lyrics-hint" className="admin-editor-field is-wide">
+        Cette consigne guide l’écriture des paroles (flow, métrique, vocabulaire, structure adaptés à ce style). Elle
+        est envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne de style.{" "}
+        {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
       </small>
       {searchNote ? (
         <p className="admin-editor-field is-wide" role="status">

@@ -7,6 +7,7 @@ import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { occasions } from "@/db/schema";
 import { requireAdmin } from "@/lib/auth/session";
+import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { isOccasionEmoji, OCCASION_AI_HINT_MAX_LENGTH, OCCASION_STORY_MAX_LENGTHS } from "@/lib/occasions/catalog";
 import {
   generateOccasionAiHint,
@@ -26,6 +27,12 @@ const occasionFormSchema = z.object({
     .string()
     .trim()
     .max(OCCASION_AI_HINT_MAX_LENGTH, `${OCCASION_AI_HINT_MAX_LENGTH} caractères maximum.`)
+    .optional()
+    .default(""),
+  lyricsGuidance: z
+    .string()
+    .trim()
+    .max(LYRICS_GUIDANCE_MAX_LENGTH, `${LYRICS_GUIDANCE_MAX_LENGTH} caractères maximum.`)
     .optional()
     .default(""),
   active: z.enum(["true", "false"]),
@@ -108,6 +115,7 @@ export async function updateOccasion(_previous: OccasionActionState, formData: F
         description: parsed.description,
         emoji: parsed.emoji,
         aiHint: parsed.aiHint,
+        lyricsGuidance: parsed.lyricsGuidance,
         active: parsed.active === "true",
         sortOrder: parsed.sortOrder,
         updatedAt: new Date(),
