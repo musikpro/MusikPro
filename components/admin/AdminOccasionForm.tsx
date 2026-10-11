@@ -11,6 +11,7 @@ import {
   suggestOccasionDescription,
   type OccasionActionState,
 } from "@/app/admin/occasions/actions";
+import { suggestLyricsGuidance } from "@/app/admin/lyrics-guidance/actions";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
 import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
@@ -43,6 +44,27 @@ export default function AdminOccasionForm({
   const [lyricsGuidance, setLyricsGuidance] = useState(values.lyricsGuidance ?? "");
   const [suggesting, startSuggest] = useTransition();
   const [suggestingDescription, startSuggestDescription] = useTransition();
+  const [suggestingLyrics, startSuggestLyrics] = useTransition();
+  const suggestLyrics = () => {
+    const name = nameRef.current?.value.trim() ?? "";
+    if (name.length < 2) {
+      showToast({ message: "Saisis d’abord le nom de l’occasion.", tone: "error" });
+      return;
+    }
+    startSuggestLyrics(async () => {
+      const result = await suggestLyricsGuidance({
+        kind: "occasion",
+        name,
+        description: descriptionRef.current?.value.trim() ?? "",
+      });
+      if (result.ok) {
+        setLyricsGuidance(result.text);
+        showToast({ message: "Consigne suggérée : relis-la puis enregistre.", tone: "success" });
+      } else {
+        showToast({ message: result.message, tone: "error" });
+      }
+    });
+  };
   const suggestDescription = () => {
     const name = nameRef.current?.value.trim() ?? "";
     if (name.length < 2) {
@@ -150,6 +172,14 @@ export default function AdminOccasionForm({
             onChange={(event) => setLyricsGuidance(event.target.value)}
             placeholder="Ex. Ton chaleureux et festif, féliciter pour l’âge fêté, évoquer les souvenirs et les vœux pour l’année à venir, finir sur un refrain de joyeux anniversaire."
           />
+          <button type="button" className="admin-secondary-action" onClick={suggestLyrics} disabled={suggestingLyrics}>
+            <Icon i="bot" size={15} />
+            {suggestingLyrics
+              ? "Suggestion…"
+              : lyricsGuidance.trim()
+                ? "Régénérer la consigne"
+                : "Suggérer la consigne"}
+          </button>
         </label>
         <div className="admin-editor-field">
           <span>État</span>

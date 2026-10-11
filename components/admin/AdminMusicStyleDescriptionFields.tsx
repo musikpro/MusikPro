@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { suggestLyricsGuidance } from "@/app/admin/lyrics-guidance/actions";
 import Icon from "@/components/banani/Icon";
 import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { STYLE_AI_DESCRIPTION_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
 
-type Kind = "client" | "ai";
+type Kind = "client" | "ai" | "lyrics";
 
 export default function AdminMusicStyleDescriptionFields({
   defaultClientDescription = "",
@@ -37,6 +38,12 @@ export default function AdminMusicStyleDescriptionFields({
     setError(null);
     setSearchNote(null);
     try {
+      if (kind === "lyrics") {
+        const result = await suggestLyricsGuidance({ kind: "style", name: styleName, description: clientDescription });
+        if (!result.ok) throw new Error(result.message);
+        setLyricsGuidance(result.text);
+        return;
+      }
       const response = await fetch("/api/admin/ai/music-style-description", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,7 +133,18 @@ export default function AdminMusicStyleDescriptionFields({
         jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
       </small>
       <div className="admin-editor-field is-wide">
-        <span>Consigne pour l’IA des paroles (français, facultative)</span>
+        <div className="admin-field-label-row">
+          <span>Consigne pour l’IA des paroles (français, facultative)</span>
+          <button
+            type="button"
+            className="admin-btn admin-btn-secondary admin-btn-sm"
+            onClick={(event) => generate("lyrics", event.currentTarget.form)}
+            disabled={pending !== null}
+          >
+            <Icon i="bot" size={13} />
+            {pending === "lyrics" ? "Génération…" : lyricsGuidance.trim() ? "Régénérer" : "Suggérer la consigne"}
+          </button>
+        </div>
         <textarea
           name="lyricsGuidance"
           maxLength={LYRICS_GUIDANCE_MAX_LENGTH}
