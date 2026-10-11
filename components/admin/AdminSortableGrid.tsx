@@ -30,6 +30,8 @@ export default function AdminSortableGrid<T extends SortableItem>({
   itemLabel,
   renderItem,
   renderPreview,
+  header,
+  hint = "Saisis une carte par sa poignée pour changer l’ordre.",
 }: {
   items: T[];
   onReorder: (formData: FormData) => Promise<void>;
@@ -37,6 +39,10 @@ export default function AdminSortableGrid<T extends SortableItem>({
   itemLabel: (item: T) => string;
   renderItem: (item: T, context: RenderItemContext) => ReactNode;
   renderPreview: (item: T) => ReactNode;
+  /** Affiché entre la barre d'état et la liste (ex. en-têtes de colonnes d'une liste en lignes). */
+  header?: ReactNode;
+  /** Consigne affichée au repos dans la barre d'état. */
+  hint?: string;
 }) {
   const [items, setItems] = useState(initialItems);
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -182,9 +188,10 @@ export default function AdminSortableGrid<T extends SortableItem>({
               ? "L’ordre n’a pas pu être enregistré. La liste précédente a été restaurée."
               : saved
                 ? "Nouvel ordre enregistré"
-                : "Saisis une carte par sa poignée pour changer l’ordre."}
+                : hint}
         </span>
       </div>
+      {header}
       <section className={`admin-catalog-grid ${className} ${isPending ? "is-saving" : ""}`}>
         {items.map((item, index) => (
           <div key={item.id} data-sortable-id={item.id}>
