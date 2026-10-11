@@ -309,7 +309,13 @@ export default function MySongsGenerated() {
                 <div className="flex items-center gap-2 mb-1">
                   {song.coverUrl ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={song.coverUrl} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
+                    <img
+                      src={song.coverUrl}
+                      alt=""
+                      className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                      loading="lazy"
+                      decoding="async"
+                    />
                   ) : null}
                   <h2 className="font-headings font-bold text-base text-foreground truncate">{song.title}</h2>
                 </div>

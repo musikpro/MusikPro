@@ -80,7 +80,7 @@ export default function LandingLibraryCard({
         <div className="landing-library-cover">
           {song.coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={song.coverUrl} alt="" draggable={false} />
+            <img src={song.coverUrl} alt="" draggable={false} loading="lazy" decoding="async" />
           ) : (
             <span className="landing-icon-gradient landing-library-cover-fallback">
               <Icon i="music-2" size={large ? 24 : 20} className="text-white" />

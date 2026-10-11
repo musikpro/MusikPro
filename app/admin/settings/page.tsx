@@ -13,9 +13,10 @@ import PlaybackPanel from "./PlaybackPanel";
 import DisplayPageSizesPanel from "./DisplayPageSizesPanel";
 import AutoShareAdminSongsPanel from "./AutoShareAdminSongsPanel";
 import TrashRetentionPanel from "./TrashRetentionPanel";
+import VisibleMusicStylesPanel from "./VisibleMusicStylesPanel";
 import { getTrashRetention } from "@/lib/trash/settings";
 import { getAutoShareAdminSongs } from "@/lib/discover/server";
-import { getAdminDisplaySettings } from "@/lib/settings/admin-display";
+import { getAdminDisplaySettings, getVisibleMusicStyles } from "@/lib/settings/admin-display";
 import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
 
 export default async function AdminSettingsPage() {
@@ -28,6 +29,7 @@ export default async function AdminSettingsPage() {
     displaySettings,
     autoShareAdminSongs,
     trashRetention,
+    visibleMusicStyles,
   ] = await Promise.all([
     getPaymentBypassStatus(),
     getServiceDb().select().from(localizationSettings).limit(1),
@@ -36,6 +38,7 @@ export default async function AdminSettingsPage() {
     getAdminDisplaySettings(),
     getAutoShareAdminSongs(),
     getTrashRetention(),
+    getVisibleMusicStyles(),
   ]);
   const localization = localizationRows[0];
 
@@ -61,6 +64,7 @@ export default async function AdminSettingsPage() {
               generationsPerPage={displaySettings.generationsPerPage}
               usersPerPage={displaySettings.usersPerPage}
             />
+            <VisibleMusicStylesPanel visibleMusicStyles={visibleMusicStyles} />
             <AutoShareAdminSongsPanel enabled={autoShareAdminSongs} />
             <TrashRetentionPanel
               songsRetentionDays={trashRetention.songsRetentionDays}

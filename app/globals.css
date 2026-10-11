@@ -795,7 +795,7 @@ button {
 .legal-brand {
   display: inline-flex;
   font-weight: 800;
-  color: #f45d22;
+  color: #ad4513;
   margin-bottom: 40px;
 }
 .legal-eyebrow {
@@ -803,7 +803,7 @@ button {
   letter-spacing: 0.14em;
   font-size: 0.75rem;
   font-weight: 800;
-  color: #7a716d;
+  color: #6b645f;
   margin: 0 0 10px;
 }
 .legal-hero h1 {
@@ -821,7 +821,7 @@ button {
 }
 .legal-updated {
   font-size: 0.88rem;
-  color: #8a817c;
+  color: #6b645f;
   margin: 0;
 }
 .legal-notice {
@@ -1111,7 +1111,8 @@ button {
   --auth-input: #f3efe9;
   --auth-primary: #f26522;
   --auth-secondary: #fde8d8;
-  --auth-muted: #8c8782;
+  --auth-muted: #6b645f;
+  --auth-link: #ad4513;
   min-height: 100dvh;
   background: var(--auth-bg);
   color: var(--auth-fg);
@@ -1331,7 +1332,7 @@ button {
 .auth-options > a,
 .auth-legal a,
 .auth-switch a {
-  color: var(--auth-primary);
+  color: var(--auth-link);
   font-weight: 700;
 }
 .auth-check {

@@ -82,7 +82,14 @@ export default function LandingSongCarousel({
                 }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={song.coverUrl ?? undefined} alt="" className="landing-carousel-cover" draggable={false} />
+                <img
+                  src={song.coverUrl ?? undefined}
+                  alt=""
+                  className="landing-carousel-cover"
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="landing-carousel-shade">
                   <p className="landing-carousel-title">{song.displayTitle ?? song.title}</p>
                   {song.style || song.occasion ? (
@@ -97,7 +104,14 @@ export default function LandingSongCarousel({
                 aria-label={song.title}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={song.coverUrl ?? undefined} alt="" className="landing-carousel-cover" draggable={false} />
+                <img
+                  src={song.coverUrl ?? undefined}
+                  alt=""
+                  className="landing-carousel-cover"
+                  draggable={false}
+                  loading="lazy"
+                  decoding="async"
+                />
                 <div className="landing-carousel-shade">
                   <p className="landing-carousel-title">{song.displayTitle ?? song.title}</p>
                   {song.style || song.occasion ? (

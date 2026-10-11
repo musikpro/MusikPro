@@ -221,7 +221,7 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                     e.preventDefault();
                     demo.go("/dashboard/songs");
                   }}
-                  className="text-sm font-semibold text-primary"
+                  className="text-sm font-semibold text-secondary-foreground"
                 >
                   {t("Voir tout")}
                 </a>
@@ -312,7 +312,13 @@ export default function UserDashboardDesktop({ trending }: { trending: TrendingS
                     ) : null}
                     {tc.coverUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={tc.coverUrl} alt="" className="w-full h-full object-cover" />
+                      <img
+                        src={tc.coverUrl}
+                        alt=""
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : tc.coverPrompt ? (
                       <Image ar="16:9" prompt={tc.coverPrompt} className="w-full h-full object-cover" />
                     ) : (

@@ -22,6 +22,7 @@ import {
   USERS_PER_PAGE_MAX,
   USERS_PER_PAGE_MIN,
 } from "@/lib/settings/admin-display-constants";
+import { VISIBLE_MUSIC_STYLES_MAX, VISIBLE_MUSIC_STYLES_MIN } from "@/lib/music-styles/visible";
 import {
   MUSIC_STYLES_MAX_COUNT_MAX,
   MUSIC_STYLES_MAX_COUNT_MIN,
@@ -340,6 +341,42 @@ export async function setTrashRetention(_previous: AdminActionState, formData: F
       ok: true,
       message: `Corbeille : chansons conservées ${parsed.songsRetentionDays} jours, comptes ${parsed.usersRetentionDays} jours.`,
     };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const visibleMusicStylesSchema = z.object({
+  visibleMusicStyles: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(VISIBLE_MUSIC_STYLES_MIN, `Minimum ${VISIBLE_MUSIC_STYLES_MIN} styles.`)
+    .max(VISIBLE_MUSIC_STYLES_MAX, `Maximum ${VISIBLE_MUSIC_STYLES_MAX} styles.`),
+});
+
+/** Nombre de styles musicaux visibles d'emblée dans le parcours de création ; les autres se déroulent (défaut 9). */
+export async function setVisibleMusicStyles(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = visibleMusicStylesSchema.parse({ visibleMusicStyles: formData.get("visibleMusicStyles") });
+    const fields = { visibleMusicStyles: parsed.visibleMusicStyles, updatedBy: session.user.id, updatedAt: new Date() };
+    await getServiceDb()
+      .insert(adminDisplaySettings)
+      .values({ id: "global", ...fields })
+      .onConflictDoUpdate({ target: adminDisplaySettings.id, set: fields });
+    await writeAuditLog({
+      action: "admin_display.visible_music_styles.updated",
+      actorId: session.user.id,
+      targetType: "admin_display_settings",
+      targetId: "global",
+      metadata: { visibleMusicStyles: parsed.visibleMusicStyles },
+    });
+    revalidatePath("/admin/settings");
+    revalidatePath("/dashboard/create/style");
+    return { ok: true, message: `Parcours de création : ${parsed.visibleMusicStyles} styles visibles d’emblée.` };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
   }

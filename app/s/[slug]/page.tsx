@@ -56,7 +56,7 @@ export default async function PublicSongPage({ params }: Params) {
           <div className="psp-cover">
             {song.coverUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={song.coverUrl} alt={song.title} />
+              <img src={song.coverUrl} alt={song.title} decoding="async" fetchPriority="high" />
             ) : (
               <div className="psp-cover-placeholder">
                 <Icon i="music-2" size={40} />
@@ -87,8 +87,7 @@ export default async function PublicSongPage({ params }: Params) {
         </Link>
       </div>
       <p className="psp-footer">
-        {t("Créé avec")}{" "}
-        <Link href="/">MusikPro</Link>
+        {t("Créé avec")} <Link href="/">MusikPro</Link>
       </p>
     </main>
   );

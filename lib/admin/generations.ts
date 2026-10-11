@@ -1,8 +1,8 @@
 import "server-only";
 
-import { and, desc, eq, ilike, notInArray, or, sql, type SQL } from "drizzle-orm";
+import { and, desc, eq, ilike, isNotNull, notInArray, or, sql, type SQL } from "drizzle-orm";
 import { getServiceDb } from "@/db";
-import { musicGenerationJobs, user } from "@/db/schema";
+import { discoverHiddenSongs, discoverSharedSongs, musicGenerationJobs, user } from "@/db/schema";
 import { extractGenreLabel } from "@/lib/ai/songs";
 import { listDiscoverVisibility } from "@/lib/discover/server";
 import { clampPage, pageCount } from "./pagination";
@@ -22,11 +22,23 @@ export function escapeLike(value: string): string {
   return value.replace(/[\\%_]/g, (character) => `\\${character}`);
 }
 
+/** Visible dans Découvrir : partagée et non retirée — même règle que `listDiscoverVisibility`, exprimée en SQL pour filtrer. */
+const inDiscoverCondition = sql`exists (select 1 from ${discoverSharedSongs} where ${discoverSharedSongs.songGroupId} = ${musicGenerationJobs.songGroupId}) and not exists (select 1 from ${discoverHiddenSongs} where ${discoverHiddenSongs.songGroupId} = ${musicGenerationJobs.songGroupId})`;
+
 function filterCondition(status: GenerationStatusFilter, query: string): SQL | undefined {
   const conditions: SQL[] = [];
   if (status === "completed") conditions.push(eq(musicGenerationJobs.status, "completed"));
   else if (status === "failed") conditions.push(eq(musicGenerationJobs.status, "failed"));
   else if (status === "processing") conditions.push(notInArray(musicGenerationJobs.status, [...TERMINAL_STATUSES]));
+  else if (status === "in_discover") conditions.push(inDiscoverCondition);
+  else if (status === "not_in_discover") {
+    // Chansons terminées qu'on peut ajouter : un groupe existe (sinon le bouton est indisponible) et elles n'y sont pas.
+    conditions.push(
+      eq(musicGenerationJobs.status, "completed"),
+      isNotNull(musicGenerationJobs.songGroupId),
+      sql`not (${inDiscoverCondition})`,
+    );
+  }
   const needle = query.trim();
   if (needle) {
     const pattern = `%${escapeLike(needle)}%`;

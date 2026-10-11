@@ -60,7 +60,13 @@ export default function DiscoverLibraryScreen() {
               <div key={song.id} className="rounded-xl overflow-hidden relative group">
                 {cover ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={cover} alt="" className="w-full aspect-square object-cover" />
+                  <img
+                    src={cover}
+                    alt=""
+                    className="w-full aspect-square object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : song.img ? (
                   <Image ar="1:1" prompt={song.img} className="w-full" />
                 ) : (
