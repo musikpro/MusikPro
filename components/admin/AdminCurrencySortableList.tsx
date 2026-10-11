@@ -37,6 +37,7 @@ export default function AdminCurrencySortableList({
         items={items}
         onReorder={reorderCurrencies}
         className="admin-currency-sortable"
+        contain
         hint="Saisis une monnaie par sa poignée pour changer l’ordre."
         header={
           <div className="admin-currency-row is-head has-handle" aria-hidden="true">

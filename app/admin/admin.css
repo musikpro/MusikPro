@@ -4363,6 +4363,22 @@ body:has(.admin-app),
   color: var(--admin-primary);
 }
 
+/* Mode `contain` d'AdminSortableGrid : l'aperçu reste dans la boîte de la liste (positionné dans la liste, jamais en fixed). */
+.admin-sortable-box {
+  position: relative;
+}
+
+.admin-style-drag-preview.is-contained {
+  position: absolute;
+  right: 0;
+  left: 0;
+  width: auto;
+  min-height: 0;
+  padding-block: 0;
+  box-sizing: border-box;
+  transform: none;
+}
+
 .admin-music-style-card.is-dragging {
   z-index: 2;
   border-color: var(--admin-primary);

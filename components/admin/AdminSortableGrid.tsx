@@ -2,10 +2,21 @@
 
 import type { CSSProperties, PointerEvent as ReactPointerEvent, ReactNode } from "react";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import Icon from "@/components/banani/Icon";
 
 type SortableItem = { id: string };
-type DragPreview<T> = { item: T; x: number; y: number; offsetX: number; offsetY: number; width: number };
+type DragPreview<T> = {
+  item: T;
+  x: number;
+  y: number;
+  offsetX: number;
+  offsetY: number;
+  width: number;
+  height: number;
+  /** Boîte de la liste au moment du dernier mouvement (mode `contain`). */
+  box: { top: number; height: number } | null;
+};
 type RenderItemContext = {
   index: number;
   count: number;
@@ -23,6 +34,13 @@ function moveItem<T extends SortableItem>(items: T[], activeId: string, targetId
   return next;
 }
 
+/** Position verticale de l'aperçu dans la boîte de la liste, bornée à ses limites (mode `contain`). */
+function containedTop(preview: Pick<DragPreview<unknown>, "y" | "offsetY" | "height" | "box">): number {
+  if (!preview.box) return 0;
+  const top = preview.y - preview.offsetY - preview.box.top;
+  return Math.min(Math.max(0, top), Math.max(0, preview.box.height - preview.height));
+}
+
 export default function AdminSortableGrid<T extends SortableItem>({
   items: initialItems,
   onReorder,
@@ -31,6 +49,7 @@ export default function AdminSortableGrid<T extends SortableItem>({
   renderItem,
   renderPreview,
   header,
+  contain = false,
   hint = "Saisis une carte par sa poignée pour changer l’ordre.",
 }: {
   items: T[];
@@ -41,6 +60,11 @@ export default function AdminSortableGrid<T extends SortableItem>({
   renderPreview: (item: T) => ReactNode;
   /** Affiché entre la barre d'état et la liste (ex. en-têtes de colonnes d'une liste en lignes). */
   header?: ReactNode;
+  /**
+   * Liste en lignes : l'aperçu glissé reste dans la boîte de la liste (axe vertical verrouillé, bornes haute et basse)
+   * au lieu de suivre le curseur n'importe où dans la fenêtre.
+   */
+  contain?: boolean;
   /** Consigne affichée au repos dans la barre d'état. */
   hint?: string;
 }) {
@@ -55,6 +79,15 @@ export default function AdminSortableGrid<T extends SortableItem>({
   const pointerDrag = useRef<{ id: string; pointerId: number; previous: T[] } | null>(null);
   const pointerTargetId = useRef<string | null>(null);
   const pointerListenersCleanup = useRef<(() => void) | null>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const boxRef = useRef<HTMLDivElement>(null);
+  // L'aperçu est en `position: fixed` : à l'intérieur d'un `.admin-panel` (animation d'entrée qui garde une transform)
+  // il se positionnerait par rapport au panneau et non à la fenêtre. On le rend donc dans `.admin-app` (qui porte aussi
+  // les variables CSS `--admin-*`), hors de tout panneau.
+  const [previewHost, setPreviewHost] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    setPreviewHost(statusRef.current?.closest<HTMLElement>(".admin-app") ?? document.body);
+  }, []);
 
   useEffect(() => {
     if (pointerDrag.current || isPending) return;
@@ -127,8 +160,16 @@ export default function AdminSortableGrid<T extends SortableItem>({
     const handlePointerMove = (pointerEvent: PointerEvent) => {
       if (pointerDrag.current?.pointerId !== pointerEvent.pointerId) return;
       pointerEvent.preventDefault();
+      const box = boxRef.current?.getBoundingClientRect();
       setDragPreview((current) =>
-        current ? { ...current, x: pointerEvent.clientX, y: pointerEvent.clientY } : current,
+        current
+          ? {
+              ...current,
+              x: pointerEvent.clientX,
+              y: pointerEvent.clientY,
+              box: box ? { top: box.top, height: box.height } : current.box,
+            }
+          : current,
       );
       const nextTargetId = document
         .elementFromPoint(pointerEvent.clientX, pointerEvent.clientY)
@@ -174,12 +215,16 @@ export default function AdminSortableGrid<T extends SortableItem>({
       offsetX: event.clientX - rect.left,
       offsetY: event.clientY - rect.top,
       width: rect.width,
+      height: rect.height,
+      box: boxRef.current
+        ? { top: boxRef.current.getBoundingClientRect().top, height: boxRef.current.getBoundingClientRect().height }
+        : null,
     });
   };
 
   return (
     <>
-      <div className="admin-sort-status" aria-live="polite">
+      <div ref={statusRef} className="admin-sort-status" aria-live="polite">
         <Icon i="grip-vertical" size={15} />
         <span>
           {isPending
@@ -192,50 +237,64 @@ export default function AdminSortableGrid<T extends SortableItem>({
         </span>
       </div>
       {header}
-      <section className={`admin-catalog-grid ${className} ${isPending ? "is-saving" : ""}`}>
-        {items.map((item, index) => (
-          <div key={item.id} data-sortable-id={item.id}>
-            {renderItem(item, {
-              index,
-              count: items.length,
-              dragging: draggedId === item.id,
-              dropTarget: targetId === item.id && draggedId !== item.id,
-            })}
-            <button
-              type="button"
-              className="admin-style-drag-handle admin-sortable-overlay-handle"
-              aria-label={`Déplacer ${itemLabel(item)}. Position ${index + 1} sur ${items.length}.`}
-              title="Maintenir et glisser pour changer l’ordre"
-              disabled={isPending}
-              onPointerDown={(event) => startPointerDrag(item, event)}
-              onKeyDown={(event) => {
-                if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
-                event.preventDefault();
-                const targetIndex = event.key === "ArrowUp" ? index - 1 : index + 1;
-                const target = items[targetIndex];
-                if (target) moveAndPersist(item.id, target.id);
-              }}
-            >
-              <Icon i="grip-vertical" size={20} />
-            </button>
+      <div ref={boxRef} className={contain ? "admin-sortable-box" : undefined}>
+        <section className={`admin-catalog-grid ${className} ${isPending ? "is-saving" : ""}`}>
+          {items.map((item, index) => (
+            <div key={item.id} data-sortable-id={item.id}>
+              {renderItem(item, {
+                index,
+                count: items.length,
+                dragging: draggedId === item.id,
+                dropTarget: targetId === item.id && draggedId !== item.id,
+              })}
+              <button
+                type="button"
+                className="admin-style-drag-handle admin-sortable-overlay-handle"
+                aria-label={`Déplacer ${itemLabel(item)}. Position ${index + 1} sur ${items.length}.`}
+                title="Maintenir et glisser pour changer l’ordre"
+                disabled={isPending}
+                onPointerDown={(event) => startPointerDrag(item, event)}
+                onKeyDown={(event) => {
+                  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
+                  event.preventDefault();
+                  const targetIndex = event.key === "ArrowUp" ? index - 1 : index + 1;
+                  const target = items[targetIndex];
+                  if (target) moveAndPersist(item.id, target.id);
+                }}
+              >
+                <Icon i="grip-vertical" size={20} />
+              </button>
+            </div>
+          ))}
+        </section>
+        {contain && dragPreview ? (
+          <div
+            className="admin-style-drag-preview is-contained"
+            aria-hidden="true"
+            style={{ top: containedTop(dragPreview), height: dragPreview.height }}
+          >
+            {renderPreview(dragPreview.item)}
           </div>
-        ))}
-      </section>
-      {dragPreview ? (
-        <div
-          className="admin-style-drag-preview"
-          aria-hidden="true"
-          style={
-            {
-              left: dragPreview.x - dragPreview.offsetX,
-              top: dragPreview.y - dragPreview.offsetY,
-              width: dragPreview.width,
-            } as CSSProperties
-          }
-        >
-          {renderPreview(dragPreview.item)}
-        </div>
-      ) : null}
+        ) : null}
+      </div>
+      {!contain && dragPreview && previewHost
+        ? createPortal(
+            <div
+              className="admin-style-drag-preview"
+              aria-hidden="true"
+              style={
+                {
+                  left: dragPreview.x - dragPreview.offsetX,
+                  top: dragPreview.y - dragPreview.offsetY,
+                  width: dragPreview.width,
+                } as CSSProperties
+              }
+            >
+              {renderPreview(dragPreview.item)}
+            </div>,
+            previewHost,
+          )
+        : null}
     </>
   );
 }
