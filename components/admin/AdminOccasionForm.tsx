@@ -157,7 +157,7 @@ export default function AdminOccasionForm({
             {suggesting ? "Suggestion…" : "Suggérer la consigne"}
           </button>
         </label>
-        <label className="admin-editor-field is-wide">
+        <label className="admin-editor-field">
           <span>Consigne pour l’IA des paroles (français, facultative)</span>
           <small>
             Guide le fond et le ton des paroles pour cette occasion (thèmes à aborder, registre, ce qu’il faut éviter).

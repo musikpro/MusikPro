@@ -127,12 +127,12 @@ export default function AdminMusicStyleDescriptionFields({
           aria-describedby="music-style-ai-hint"
           placeholder="Modern Nigerian Afrobeats / Naija Pop, 100-120 BPM, syncopated African grooves, punchy deep bass… (en anglais)"
         />
+        <small id="music-style-ai-hint">
+          Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client
+          n’est jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
+        </small>
       </div>
-      <small id="music-style-ai-hint" className="admin-editor-field is-wide">
-        Seule cette consigne en anglais (précédée du nom du style) est envoyée à Musicful ; la description client n’est
-        jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
-      </small>
-      <div className="admin-editor-field is-wide">
+      <div className="admin-editor-field admin-editor-field-col2">
         <div className="admin-field-label-row">
           <span>Consigne pour l’IA des paroles (français, facultative)</span>
           <button
@@ -154,12 +154,12 @@ export default function AdminMusicStyleDescriptionFields({
           aria-describedby="music-style-lyrics-hint"
           placeholder="Ex. Phrases courtes et percutantes, rimes internes, vocabulaire de rue, expressions en nouchi, refrain scandé et facile à reprendre…"
         />
+        <small id="music-style-lyrics-hint">
+          Cette consigne guide l’écriture des paroles (flow, métrique, vocabulaire, structure adaptés à ce style). Elle
+          est envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne de style.{" "}
+          {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
+        </small>
       </div>
-      <small id="music-style-lyrics-hint" className="admin-editor-field is-wide">
-        Cette consigne guide l’écriture des paroles (flow, métrique, vocabulaire, structure adaptés à ce style). Elle
-        est envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne de style.{" "}
-        {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
-      </small>
       {searchNote ? (
         <p className="admin-editor-field is-wide" role="status">
           {searchNote}
