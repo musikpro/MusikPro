@@ -23,7 +23,14 @@ export type AdminGenerationRow = {
   inDiscover: boolean | null;
 };
 
-export const GENERATION_STATUS_FILTERS = ["all", "completed", "processing", "failed"] as const;
+export const GENERATION_STATUS_FILTERS = [
+  "all",
+  "completed",
+  "processing",
+  "failed",
+  "in_discover",
+  "not_in_discover",
+] as const;
 export type GenerationStatusFilter = (typeof GENERATION_STATUS_FILTERS)[number];
 
 export type GenerationsPage = {

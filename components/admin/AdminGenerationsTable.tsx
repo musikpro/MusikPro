@@ -19,6 +19,8 @@ const STATUS_FILTER_OPTIONS: [GenerationStatusFilter, string][] = [
   ["completed", "Terminées"],
   ["processing", "En cours"],
   ["failed", "Échouées"],
+  ["in_discover", "Dans Découvrir"],
+  ["not_in_discover", "Hors Découvrir"],
 ];
 
 const SEARCH_DEBOUNCE_MS = 300;
