@@ -77,7 +77,7 @@ export default function AdminMusicStyleDescriptionFields({
 
   return (
     <>
-      <div className="admin-editor-field">
+      <div className="admin-editor-field admin-style-client-field">
         <div className="admin-field-label-row">
           <span>Description client</span>
           <button
@@ -101,7 +101,7 @@ export default function AdminMusicStyleDescriptionFields({
           placeholder="Décris le rythme et l’ambiance proposés au client"
         />
       </div>
-      <div className="admin-editor-field">
+      <div className="admin-editor-field admin-style-ai-field">
         <div className="admin-field-label-row">
           <span>Consigne pour l’IA musicale (anglais)</span>
           <button
@@ -121,7 +121,7 @@ export default function AdminMusicStyleDescriptionFields({
         <textarea
           name="aiDescription"
           maxLength={STYLE_AI_DESCRIPTION_MAX_LENGTH}
-          rows={4}
+          rows={9}
           value={aiDescription}
           onChange={(event) => setAiDescription(event.target.value)}
           aria-describedby="music-style-ai-hint"
@@ -132,7 +132,7 @@ export default function AdminMusicStyleDescriptionFields({
           n’est jamais transmise. {aiDescription.length}/{STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères
         </small>
       </div>
-      <div className="admin-editor-field admin-editor-field-col2">
+      <div className="admin-editor-field admin-style-lyrics-field">
         <div className="admin-field-label-row">
           <span>Consigne pour l’IA des paroles (français, facultative)</span>
           <button

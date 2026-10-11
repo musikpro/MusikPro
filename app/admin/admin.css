@@ -3730,9 +3730,21 @@
     grid-column: 1 / -1;
   }
 
-  /* Champ placé dans la deuxième colonne (ex. consigne paroles à droite de la consigne musicale). */
-  .admin-editor-field.admin-editor-field-col2 {
+  /* Page style musical : consigne musicale (longue) à gauche sur deux lignes ; description client et consigne
+     paroles empilées à droite, sans cellule vide. Les deux premières lignes sont nom/position. */
+  .admin-editor-field.admin-style-ai-field {
+    grid-column: 1;
+    grid-row: 2 / span 2;
+  }
+
+  .admin-editor-field.admin-style-client-field {
     grid-column: 2;
+    grid-row: 2;
+  }
+
+  .admin-editor-field.admin-style-lyrics-field {
+    grid-column: 2;
+    grid-row: 3;
   }
 
   .admin-check-grid {
