@@ -5,6 +5,9 @@ vi.mock("@/lib/ai/provider", () => ({ getLyricsProvider: vi.fn() }));
 vi.mock("@/lib/ai/text-generation", () => ({ runProviderTextTask: vi.fn() }));
 vi.mock("@/lib/ai/moderation", () => ({ moderateText: vi.fn() }));
 vi.mock("@/lib/security/audit", () => ({ writeAuditLog: vi.fn() }));
+vi.mock("@/lib/ai/lyrics-guidance-server", () => ({
+  resolveLyricsGuidance: vi.fn().mockResolvedValue({ occasion: "", style: "" }),
+}));
 
 import { promptFor } from "@/lib/ai/lyrics";
 import { aiLyricsTaskSchema } from "@/lib/validation/ai";

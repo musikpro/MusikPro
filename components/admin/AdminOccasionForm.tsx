@@ -11,7 +11,9 @@ import {
   suggestOccasionDescription,
   type OccasionActionState,
 } from "@/app/admin/occasions/actions";
+import { suggestLyricsGuidance } from "@/app/admin/lyrics-guidance/actions";
 import { useAdminToast } from "@/components/admin/AdminToastProvider";
+import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { OCCASION_AI_HINT_MAX_LENGTH } from "@/lib/occasions/catalog";
 
 type OccasionFormValues = {
@@ -20,6 +22,7 @@ type OccasionFormValues = {
   description?: string;
   emoji?: string;
   aiHint?: string;
+  lyricsGuidance?: string;
   active?: boolean;
   sortOrder?: number;
 };
@@ -38,8 +41,30 @@ export default function AdminOccasionForm({
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
   const [aiHint, setAiHint] = useState(values.aiHint ?? "");
+  const [lyricsGuidance, setLyricsGuidance] = useState(values.lyricsGuidance ?? "");
   const [suggesting, startSuggest] = useTransition();
   const [suggestingDescription, startSuggestDescription] = useTransition();
+  const [suggestingLyrics, startSuggestLyrics] = useTransition();
+  const suggestLyrics = () => {
+    const name = nameRef.current?.value.trim() ?? "";
+    if (name.length < 2) {
+      showToast({ message: "Saisis d’abord le nom de l’occasion.", tone: "error" });
+      return;
+    }
+    startSuggestLyrics(async () => {
+      const result = await suggestLyricsGuidance({
+        kind: "occasion",
+        name,
+        description: descriptionRef.current?.value.trim() ?? "",
+      });
+      if (result.ok) {
+        setLyricsGuidance(result.text);
+        showToast({ message: "Consigne suggérée : relis-la puis enregistre.", tone: "success" });
+      } else {
+        showToast({ message: result.message, tone: "error" });
+      }
+    });
+  };
   const suggestDescription = () => {
     const name = nameRef.current?.value.trim() ?? "";
     if (name.length < 2) {
@@ -130,6 +155,30 @@ export default function AdminOccasionForm({
           <button type="button" className="admin-secondary-action" onClick={suggest} disabled={suggesting}>
             <Icon i="bot" size={15} />
             {suggesting ? "Suggestion…" : "Suggérer la consigne"}
+          </button>
+        </label>
+        <label className="admin-editor-field is-wide">
+          <span>Consigne pour l’IA des paroles (français, facultative)</span>
+          <small>
+            Guide le fond et le ton des paroles pour cette occasion (thèmes à aborder, registre, ce qu’il faut éviter).
+            Envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne d’occasion.{" "}
+            {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
+          </small>
+          <textarea
+            name="lyricsGuidance"
+            rows={4}
+            maxLength={LYRICS_GUIDANCE_MAX_LENGTH}
+            value={lyricsGuidance}
+            onChange={(event) => setLyricsGuidance(event.target.value)}
+            placeholder="Ex. Ton chaleureux et festif, féliciter pour l’âge fêté, évoquer les souvenirs et les vœux pour l’année à venir, finir sur un refrain de joyeux anniversaire."
+          />
+          <button type="button" className="admin-secondary-action" onClick={suggestLyrics} disabled={suggestingLyrics}>
+            <Icon i="bot" size={15} />
+            {suggestingLyrics
+              ? "Suggestion…"
+              : lyricsGuidance.trim()
+                ? "Régénérer la consigne"
+                : "Suggérer la consigne"}
           </button>
         </label>
         <div className="admin-editor-field">

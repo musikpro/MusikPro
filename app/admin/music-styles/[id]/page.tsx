@@ -39,6 +39,7 @@ export default async function AdminEditMusicStylePage({ params }: { params: Prom
           <AdminMusicStyleDescriptionFields
             defaultClientDescription={style.description}
             defaultAiDescription={style.aiDescription}
+            defaultLyricsGuidance={style.lyricsGuidance}
           />
           <AdminMusicStyleVisualPicker defaultIcon={style.icon} defaultTone={style.tone} />
           <div className="admin-editor-field is-wide">

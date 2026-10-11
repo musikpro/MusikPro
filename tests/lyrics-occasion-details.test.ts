@@ -5,6 +5,9 @@ vi.mock("@/lib/ai/provider", () => ({ getLyricsProvider: vi.fn() }));
 vi.mock("@/lib/ai/text-generation", () => ({ runProviderTextTask: vi.fn() }));
 vi.mock("@/lib/ai/moderation", () => ({ moderateText: vi.fn() }));
 vi.mock("@/lib/security/audit", () => ({ writeAuditLog: vi.fn() }));
+vi.mock("@/lib/ai/lyrics-guidance-server", () => ({
+  resolveLyricsGuidance: vi.fn().mockResolvedValue({ occasion: "", style: "" }),
+}));
 
 import { promptFor } from "@/lib/ai/lyrics";
 import { aiLyricsTaskSchema, songGenerateRequestSchema } from "@/lib/validation/ai";
@@ -19,7 +22,14 @@ const input = {
 };
 
 const answers: ResolvedAnswer[] = [
-  { fieldId: "p", key: "product_name", label: "Nom du produit", type: "short_text", value: "Café Soleil", aiHint: "Repeat it in the chorus." },
+  {
+    fieldId: "p",
+    key: "product_name",
+    label: "Nom du produit",
+    type: "short_text",
+    value: "Café Soleil",
+    aiHint: "Repeat it in the chorus.",
+  },
 ];
 
 describe("occasionDetails in schemas", () => {
@@ -31,7 +41,9 @@ describe("occasionDetails in schemas", () => {
 
   it("rejects more than 8 answers and over-long values", () => {
     const many = Array.from({ length: 9 }, (_, i) => ({ fieldId: `f${i}`, value: "x" }));
-    expect(aiLyricsTaskSchema.safeParse({ task: "lyrics.generate", input: { ...input, occasionDetails: many } }).success).toBe(false);
+    expect(
+      aiLyricsTaskSchema.safeParse({ task: "lyrics.generate", input: { ...input, occasionDetails: many } }).success,
+    ).toBe(false);
     expect(
       aiLyricsTaskSchema.safeParse({
         task: "lyrics.generate",

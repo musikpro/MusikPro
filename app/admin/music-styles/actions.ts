@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { musicStyles } from "@/db/schema";
+import { LYRICS_GUIDANCE_MAX_LENGTH } from "@/lib/ai/lyrics-guidance";
 import { STYLE_AI_DESCRIPTION_MAX_LENGTH } from "@/lib/ai/style-prompt-builder";
 import { requireAdmin } from "@/lib/auth/session";
 import { MUSIC_STYLE_ICONS, MUSIC_STYLE_TONES } from "@/lib/music-styles/catalog";
@@ -18,6 +19,12 @@ const musicStyleFormSchema = z.object({
     .string()
     .trim()
     .max(STYLE_AI_DESCRIPTION_MAX_LENGTH, `${STYLE_AI_DESCRIPTION_MAX_LENGTH} caractères maximum.`)
+    .optional()
+    .default(""),
+  lyricsGuidance: z
+    .string()
+    .trim()
+    .max(LYRICS_GUIDANCE_MAX_LENGTH, `${LYRICS_GUIDANCE_MAX_LENGTH} caractères maximum.`)
     .optional()
     .default(""),
   icon: z.enum(MUSIC_STYLE_ICONS),
@@ -135,6 +142,7 @@ export async function updateMusicStyle(
         slug,
         description: parsed.description,
         aiDescription: parsed.aiDescription,
+        lyricsGuidance: parsed.lyricsGuidance,
         icon: parsed.icon,
         tone: parsed.tone,
         active: parsed.active === "true",
