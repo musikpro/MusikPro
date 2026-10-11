@@ -5,11 +5,15 @@ import { getServiceDb } from "@/db";
 import { musicGenerationJobs, songPublications } from "@/db/schema";
 import { extractGenreLabel } from "@/lib/ai/songs";
 import { getTrendingSettings } from "./settings";
+import { getDisplayLimits } from "@/lib/settings/display-limits";
+import { truncateTitle } from "@/lib/settings/display-limits-constants";
 import { TRENDING_COUNT } from "./types";
 
 export type TrendingSong = {
   slug: string;
   title: string;
+  /** Titre coupé à la longueur réglée dans /admin/trending (« … » au bout) ; `title` reste complet. */
+  displayTitle: string;
   plays: number;
   coverUrl: string | null;
   style: string | null;
@@ -18,7 +22,11 @@ export type TrendingSong = {
   audioUrl: string | null;
 };
 
-async function manualPool(songGroupIds: string[], covers: Record<string, string>): Promise<TrendingSong[]> {
+async function manualPool(
+  songGroupIds: string[],
+  covers: Record<string, string>,
+  titleMaxChars: number,
+): Promise<TrendingSong[]> {
   if (songGroupIds.length === 0) return [];
   const database = getServiceDb();
   const rows = await database
@@ -42,6 +50,7 @@ async function manualPool(songGroupIds: string[], covers: Record<string, string>
     .map((row) => ({
       slug: row.slug,
       title: row.title || "Chanson MusikPro",
+      displayTitle: truncateTitle(row.title || "Chanson MusikPro", titleMaxChars),
       plays: row.plays,
       coverUrl: covers[row.songGroupId] ?? null,
       style: extractGenreLabel(row.style),
@@ -60,7 +69,8 @@ async function manualPool(songGroupIds: string[], covers: Record<string, string>
 export async function getTrendingSongs(): Promise<TrendingSong[]> {
   try {
     const settings = await getTrendingSettings();
-    const pool = await manualPool(settings.manualSelection, settings.coverOverrides);
+    const { trendingTitleMaxChars } = await getDisplayLimits();
+    const pool = await manualPool(settings.manualSelection, settings.coverOverrides, trendingTitleMaxChars);
     return pool.slice(0, TRENDING_COUNT);
   } catch {
     return [];

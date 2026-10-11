@@ -25,6 +25,8 @@ type Props = {
   languageOptions: LandingLanguageOption[];
   occasions: LandingOccasion[];
   musicStyles: LandingStyle[];
+  /** Vrai quand le propriétaire limite le nombre de styles affichés : la liste se termine alors par « … ». */
+  musicStylesHasMore?: boolean;
   showcaseSongs: LandingTrendingSong[];
   librarySongs: LandingTrendingSong[];
   heroHeadline: string;
@@ -68,6 +70,7 @@ export default function LandingPageMobile({
   languageOptions,
   occasions,
   musicStyles,
+  musicStylesHasMore = false,
   showcaseSongs,
   librarySongs,
   heroHeadline,
@@ -264,6 +267,14 @@ export default function LandingPageMobile({
                 {s.label}
               </span>
             ))}
+            {musicStylesHasMore ? (
+              <span
+                aria-hidden="true"
+                className="px-4 py-2 rounded-xl text-sm font-semibold border bg-card text-muted-foreground border-border"
+              >
+                …
+              </span>
+            ) : null}
           </Reveal>
         </section>
       ) : null}

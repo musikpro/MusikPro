@@ -717,11 +717,16 @@ export const playbackSettings = pgTable("playback_settings", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-/** Réglage global unique : affichage du tableau de bord propriétaire (nombre de chansons par page sur /admin/generations et de comptes par page sur /admin/users). Absence de ligne = 50. */
+/** Réglage global unique : affichage du tableau de bord propriétaire (nombre de chansons par page sur /admin/generations et de comptes par page sur /admin/users). Absence de ligne = 50. Porte aussi les limites d'affichage client (longueur des titres, nombre de styles sur la landing). */
 export const adminDisplaySettings = pgTable("admin_display_settings", {
   id: text("id").primaryKey().default("global"),
   generationsPerPage: integer("generations_per_page").notNull().default(50),
   usersPerPage: integer("users_per_page").notNull().default(50),
+  // Limites d'affichage côté client (landing + Tendances), réglées depuis le tableau de bord propriétaire.
+  landingShowcaseTitleMaxChars: integer("landing_showcase_title_max_chars").notNull().default(40),
+  landingLibraryTitleMaxChars: integer("landing_library_title_max_chars").notNull().default(40),
+  trendingTitleMaxChars: integer("trending_title_max_chars").notNull().default(40),
+  landingMusicStylesMaxCount: integer("landing_music_styles_max_count").notNull().default(12),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -22,6 +22,12 @@ import {
   USERS_PER_PAGE_MAX,
   USERS_PER_PAGE_MIN,
 } from "@/lib/settings/admin-display-constants";
+import {
+  MUSIC_STYLES_MAX_COUNT_MAX,
+  MUSIC_STYLES_MAX_COUNT_MIN,
+  TITLE_MAX_CHARS_MAX,
+  TITLE_MAX_CHARS_MIN,
+} from "@/lib/settings/display-limits-constants";
 import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 
 const paymentBypassSchema = z.object({ enabled: z.boolean() });
@@ -334,6 +340,115 @@ export async function setTrashRetention(_previous: AdminActionState, formData: F
       ok: true,
       message: `Corbeille : chansons conservées ${parsed.songsRetentionDays} jours, comptes ${parsed.usersRetentionDays} jours.`,
     };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const titleMaxCharsField = (label: string) =>
+  z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(TITLE_MAX_CHARS_MIN, `${label} : minimum ${TITLE_MAX_CHARS_MIN} caractères.`)
+    .max(TITLE_MAX_CHARS_MAX, `${label} : maximum ${TITLE_MAX_CHARS_MAX} caractères.`);
+
+/** Enregistre un sous-ensemble des limites d'affichage client (ligne globale unique, créée au besoin). */
+async function saveDisplayLimits(
+  adminId: string,
+  fields: Partial<{
+    landingShowcaseTitleMaxChars: number;
+    landingLibraryTitleMaxChars: number;
+    trendingTitleMaxChars: number;
+    landingMusicStylesMaxCount: number;
+  }>,
+  auditAction: string,
+) {
+  const values = { ...fields, updatedBy: adminId, updatedAt: new Date() };
+  await getServiceDb()
+    .insert(adminDisplaySettings)
+    .values({ id: "global", ...values })
+    .onConflictDoUpdate({ target: adminDisplaySettings.id, set: values });
+  await writeAuditLog({
+    action: auditAction,
+    actorId: adminId,
+    targetType: "admin_display_settings",
+    targetId: "global",
+    metadata: fields,
+  });
+  revalidatePath("/", "layout");
+  revalidatePath("/dashboard", "layout");
+}
+
+const landingTitleLimitsSchema = z.object({
+  showcase: titleMaxCharsField("Ils ont créé avec MusikPro"),
+  library: titleMaxCharsField("Bibliothèque populaire"),
+});
+
+/** Longueur maximale des titres affichés dans les deux sections de chansons de la landing. */
+export async function setLandingTitleLimits(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = landingTitleLimitsSchema.parse({
+      showcase: formData.get("showcase"),
+      library: formData.get("library"),
+    });
+    await saveDisplayLimits(
+      session.user.id,
+      { landingShowcaseTitleMaxChars: parsed.showcase, landingLibraryTitleMaxChars: parsed.library },
+      "admin_display.landing_title_limits.updated",
+    );
+    revalidatePath("/admin/landing-features");
+    return {
+      ok: true,
+      message: `Titres de la landing limités à ${parsed.showcase} caractères (créations) et ${parsed.library} (bibliothèque).`,
+    };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const trendingTitleLimitSchema = z.object({ maxChars: titleMaxCharsField("Tendances") });
+
+/** Longueur maximale des titres du widget « Tendances » du tableau de bord client. */
+export async function setTrendingTitleLimit(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = trendingTitleLimitSchema.parse({ maxChars: formData.get("maxChars") });
+    await saveDisplayLimits(
+      session.user.id,
+      { trendingTitleMaxChars: parsed.maxChars },
+      "admin_display.trending_title_limit.updated",
+    );
+    revalidatePath("/admin/trending");
+    return { ok: true, message: `Titres de « Tendances » limités à ${parsed.maxChars} caractères.` };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const landingMusicStylesLimitSchema = z.object({
+  maxCount: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(MUSIC_STYLES_MAX_COUNT_MIN, `Minimum ${MUSIC_STYLES_MAX_COUNT_MIN} styles.`)
+    .max(MUSIC_STYLES_MAX_COUNT_MAX, `Maximum ${MUSIC_STYLES_MAX_COUNT_MAX} styles.`),
+});
+
+/** Nombre de styles musicaux montrés dans « Tous les styles africains » de la landing (le reste devient « … »). */
+export async function setLandingMusicStylesLimit(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = landingMusicStylesLimitSchema.parse({ maxCount: formData.get("maxCount") });
+    await saveDisplayLimits(
+      session.user.id,
+      { landingMusicStylesMaxCount: parsed.maxCount },
+      "admin_display.landing_styles_limit.updated",
+    );
+    revalidatePath("/admin/music-styles");
+    return { ok: true, message: `Landing : ${parsed.maxCount} styles musicaux affichés, puis « … ».` };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
   }

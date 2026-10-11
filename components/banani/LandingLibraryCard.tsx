@@ -89,7 +89,7 @@ export default function LandingLibraryCard({
         </div>
         <div className="landing-library-text">
           <Link href={`/s/${song.slug}`} className="landing-library-title">
-            {song.title}
+            {song.displayTitle ?? song.title}
           </Link>
           {detail ? <p className="landing-library-detail">{detail}</p> : null}
         </div>
