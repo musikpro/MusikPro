@@ -11,7 +11,8 @@ import { getChariowConfiguration } from "@/lib/payments/chariow-config";
 import { listChariowProducts } from "@/lib/payments/providers/chariow";
 import { PaymentProviderHttpError } from "@/lib/payments/provider-base";
 import { paymentWebhookUrl } from "@/lib/payments/webhook-url";
-import { deletePlanMapping, saveChariowProvider, savePlanMapping } from "../actions";
+import AdminChariowProducts from "@/components/admin/AdminChariowProducts";
+import { saveChariowProvider } from "../actions";
 
 function InfoTip({ text }: { text: string }) {
   return (
@@ -172,126 +173,22 @@ export default async function ChariowProviderPage() {
               </div>
             </div>
           </div>
-          <AdminActionForm action={savePlanMapping} className="admin-product-create-form">
-            <input type="hidden" name="provider" value="chariow" />
-            <div className="admin-editor-field">
-              <span>
-                Offre MusikPro <InfoTip text="Choisis l’offre de crédits qui déclenchera ce produit Chariow." />
-              </span>
-              <AdminSelect
-                name="planId"
-                ariaLabel="Offre MusikPro"
-                options={allPlans.map((plan) => ({ value: plan.id, label: plan.name }))}
-              />
-            </div>
-            <label className="admin-editor-field">
-              <span>
-                Nom personnalisé{" "}
-                <InfoTip text="Nom interne libre. Tu peux le modifier à tout moment sans changer le code ni le nom de l’offre." />
-              </span>
-              <input name="productName" placeholder="Ex. Pack Découverte Chariow" required />
-            </label>
-            {chariowProductOptions.length ? (
-              <div className="admin-editor-field">
-                <span>
-                  Produit Chariow{" "}
-                  <InfoTip text="Détecté automatiquement depuis ton compte Chariow (clé API enregistrée ci-dessus). Recharge la page après avoir créé un nouveau produit côté Chariow." />
-                </span>
-                <AdminSelect
-                  name="externalProductId"
-                  ariaLabel="Produit Chariow"
-                  options={[{ value: "", label: "— Sélectionner un produit —" }, ...chariowProductOptions]}
-                />
-              </div>
-            ) : (
-              <label className="admin-editor-field">
-                <span>
-                  Identifiant du produit{" "}
-                  <InfoTip
-                    text={
-                      chariowProductsError
-                        ? `La détection automatique a échoué (${chariowProductsReason}). Saisis l’identifiant exact copié depuis ton espace Chariow.`
-                        : "Identifiant exact du produit copié depuis ton espace Chariow. La détection automatique nécessite d’enregistrer d’abord la clé API ci-dessus."
-                    }
-                  />
-                </span>
-                <input name="externalProductId" placeholder="prod_..." required />
-              </label>
-            )}
-            <button className="admin-form-submit" type="submit">
-              <Icon i="plus" size={16} />
-              Ajouter le produit
-            </button>
-          </AdminActionForm>
-          <div className="admin-mapping-list">
-            {chariowMappings.length ? (
-              chariowMappings.map((mapping) => {
-                const metadata = (mapping.metadata || {}) as { productName?: string };
-                const plan = planMap.get(mapping.planId);
-                const editFormId = `chariow-mapping-edit-${mapping.id}`;
-                const deleteFormId = `chariow-mapping-delete-${mapping.id}`;
-                return (
-                  <div key={mapping.id} className="admin-product-row">
-                    <AdminActionForm id={editFormId} action={savePlanMapping} className="admin-product-edit-form">
-                      <input type="hidden" name="previousPlanId" value={mapping.planId} />
-                      <input type="hidden" name="provider" value="chariow" />
-                      <div className="admin-editor-field">
-                        <span>Offre MusikPro</span>
-                        <AdminSelect
-                          name="planId"
-                          ariaLabel={`Offre MusikPro de ${metadata.productName || plan?.name || "ce produit"}`}
-                          defaultValue={mapping.planId}
-                          options={allPlans.map((entry) => ({ value: entry.id, label: entry.name }))}
-                        />
-                      </div>
-                      <label>
-                        <span>Nom du produit</span>
-                        <input
-                          name="productName"
-                          defaultValue={metadata.productName || plan?.name || "Produit Chariow"}
-                          required
-                        />
-                      </label>
-                      <label>
-                        <span>Identifiant Chariow</span>
-                        <input name="externalProductId" defaultValue={mapping.externalProductId || ""} required />
-                      </label>
-                    </AdminActionForm>
-                    <AdminActionForm id={deleteFormId} action={deletePlanMapping}>
-                      <input type="hidden" name="planId" value={mapping.planId} />
-                      <input type="hidden" name="provider" value="chariow" />
-                    </AdminActionForm>
-                    <div className="admin-product-actions">
-                      <button
-                        type="submit"
-                        form={editFormId}
-                        className="admin-secondary-action"
-                        aria-label={`Enregistrer ${metadata.productName || plan?.name || "le produit"}`}
-                      >
-                        <Icon i="save" size={15} />
-                        Modifier
-                      </button>
-                      <button
-                        type="submit"
-                        form={deleteFormId}
-                        className="admin-secondary-action is-danger"
-                        aria-label={`Supprimer ${metadata.productName || plan?.name || "le produit"}`}
-                      >
-                        <Icon i="trash-2" size={15} />
-                        Supprimer
-                      </button>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="admin-empty-state">
-                <Icon i="package-open" size={22} />
-                <strong>Aucun produit configuré</strong>
-                <p>Ajoute ton premier produit Chariow avec le formulaire ci-dessus.</p>
-              </div>
-            )}
-          </div>
+          <AdminChariowProducts
+            plans={allPlans.map((plan) => ({ id: plan.id, name: plan.name }))}
+            productOptions={chariowProductOptions}
+            productsError={chariowProductsError}
+            productsReason={chariowProductsReason}
+            mappings={chariowMappings.map((mapping) => {
+              const metadata = (mapping.metadata || {}) as { productName?: string };
+              const plan = planMap.get(mapping.planId);
+              return {
+                planId: mapping.planId,
+                planName: plan?.name || mapping.planId,
+                productName: metadata.productName || plan?.name || "Produit Chariow",
+                externalProductId: mapping.externalProductId || "",
+              };
+            })}
+          />
         </section>
       </div>
     </AdminPage>

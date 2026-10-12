@@ -8128,3 +8128,47 @@ body:has(.admin-app),
   white-space: nowrap;
   scroll-snap-align: start;
 }
+
+/* Produits Chariow : « Modifier » charge la ligne dans le formulaire du haut. */
+.admin-product-edit-banner {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--admin-foreground);
+  background: var(--admin-background);
+  border: 1px dashed var(--admin-border);
+  font-size: 10px;
+}
+
+.admin-product-create-form input.admin-input-locked {
+  color: var(--admin-muted);
+  background: var(--admin-surface);
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.admin-product-form-actions {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 8px;
+}
+
+.admin-product-summary {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  font-size: 10px;
+}
+
+.admin-product-summary code {
+  overflow-wrap: anywhere;
+  color: var(--admin-muted);
+  font-size: 9px;
+}
+
+.admin-product-row.is-editing {
+  border-color: var(--admin-accent, #f26522);
+}
