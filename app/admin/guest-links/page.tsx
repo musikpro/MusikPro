@@ -7,6 +7,8 @@ import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
 import { siteBaseUrl } from "@/lib/guest-links/base-url";
 import { listGuestLinks } from "@/lib/guest-links/server";
+import { getGuestLinkStats } from "@/lib/guest-links/stats";
+import { emptyGuestLinkStats } from "@/lib/guest-links/stats-summary";
 import { guestLinkUrl } from "@/lib/validation/guest-links";
 import { toggleGuestLinkAction, trashGuestLinkAction } from "./actions";
 
@@ -15,9 +17,30 @@ const DESTINATION_LABELS: Record<string, string> = {
   dashboard: "Tableau de bord invité",
 };
 
+function GuestLinkEntries({ stats }: { stats: ReturnType<typeof emptyGuestLinkStats> }) {
+  if (!stats.total) return <small>Aucune entrée</small>;
+  return (
+    <>
+      <strong>{stats.total.toLocaleString("fr-FR")}</strong>
+      <small style={{ display: "block" }}>
+        {stats.last7Days.toLocaleString("fr-FR")} sur 7 j · {stats.last30Days.toLocaleString("fr-FR")} sur 30 j
+      </small>
+      <small style={{ display: "block" }}>
+        {stats.returningVisits.toLocaleString("fr-FR")} retour{stats.returningVisits > 1 ? "s" : ""}
+        {stats.lastEntryAt ? ` · dernière le ${stats.lastEntryAt.toLocaleDateString("fr-FR")}` : ""}
+      </small>
+      {stats.topSources.length ? (
+        <small style={{ display: "block" }}>
+          {stats.topSources.map((item) => `${item.source} (${item.entries})`).join(", ")}
+        </small>
+      ) : null}
+    </>
+  );
+}
+
 export default async function AdminGuestLinksPage() {
   await requireAdmin();
-  const rows = await listGuestLinks();
+  const [rows, stats] = await Promise.all([listGuestLinks(), getGuestLinkStats().catch(() => null)]);
   const baseUrl = siteBaseUrl();
   const activeCount = rows.filter((row) => row.active).length;
   return (
@@ -35,17 +58,23 @@ export default async function AdminGuestLinksPage() {
           value={(rows.length - activeCount).toLocaleString("fr-FR")}
           label="Liens désactivés"
         />
+        {stats ? (
+          <AdminMetric
+            icon="users"
+            value={[...stats.values()].reduce((sum, item) => sum + item.last7Days, 0).toLocaleString("fr-FR")}
+            label="Entrées sur 7 jours"
+          />
+        ) : null}
       </section>
-      <div className="admin-source-notice">
-        <Icon i="info" size={18} />
-        <div>
-          <strong>Étape 1 sur 4 : gestion des liens</strong>
-          <p>
-            Les liens sont enregistrés dès maintenant. Ils ouvriront le parcours invité quand les étapes suivantes
-            (entrée publique, portail de connexion) seront déployées.
-          </p>
+      {!stats ? (
+        <div className="admin-source-notice">
+          <Icon i="info" size={18} />
+          <div>
+            <strong>Statistiques indisponibles</strong>
+            <p>Les compteurs d’entrées n’ont pas pu être lus. Les liens restent utilisables.</p>
+          </div>
         </div>
-      </div>
+      ) : null}
       {rows.length ? (
         <section className="admin-panel admin-table-panel">
           <div className="admin-data-table-wrap">
@@ -55,6 +84,7 @@ export default async function AdminGuestLinksPage() {
                   <th>Lien</th>
                   <th>Destination</th>
                   <th>État</th>
+                  <th>Entrées</th>
                   <th>Créé le</th>
                   <th>
                     <span className="sr-only">Actions</span>
@@ -76,6 +106,9 @@ export default async function AdminGuestLinksPage() {
                         <span className={`admin-status ${row.active ? "is-success" : "is-pending"}`}>
                           {row.active ? "Actif" : "Désactivé"}
                         </span>
+                      </td>
+                      <td data-label="Entrées">
+                        {stats ? <GuestLinkEntries stats={stats.get(row.id) ?? emptyGuestLinkStats()} /> : "—"}
                       </td>
                       <td data-label="Créé le">{row.createdAt.toLocaleDateString("fr-FR")}</td>
                       <td data-label="Actions">
