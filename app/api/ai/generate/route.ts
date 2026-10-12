@@ -9,6 +9,8 @@ import { classifyAnthropicError, classifyOpenAiError } from "@/lib/ai/errors";
 import { ANSWER_ERROR_MESSAGES } from "@/lib/occasion-fields/answers";
 import { OccasionDetailsError, resolveOccasionDetails } from "@/lib/occasion-fields/server";
 import { createLogger } from "@/lib/observability/logger";
+import { hasCreditsForLyrics } from "@/lib/credits/lyrics-gate";
+import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -35,6 +37,16 @@ export async function POST(request: Request) {
       { error: "Paramètres de paroles invalides.", details: parsed.error.flatten() },
       { status: 400 },
     );
+  // Paroles facturées par le fournisseur IA : pas de génération sans les crédits d'une chanson (rien n'est débité ici).
+  if (!(await hasCreditsForLyrics(session.user.id, (session.user as { role?: string }).role))) {
+    return NextResponse.json(
+      {
+        error: `Il faut au moins ${CREDITS_PER_GENERATION} crédits pour générer tes paroles et ta chanson.`,
+        code: "INSUFFICIENT_CREDITS",
+      },
+      { status: 402 },
+    );
+  }
   let details: Awaited<ReturnType<typeof resolveOccasionDetails>>["answers"] = [];
   try {
     details = (await resolveOccasionDetails(parsed.data.input.occasion, parsed.data.input.occasionDetails)).answers;
