@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import { getPrivatePageMetadata } from "@/lib/seo/metadata";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { NativeBottomNav } from "@/components/mobile/native-bottom-nav";
-import { isDemoRequest, requireUser } from "@/lib/auth/session";
+import { isDemoRequest, isGuestRequest, requireUser } from "@/lib/auth/session";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { DemoProvider } from "@/components/banani/DemoProvider";
 import CreationDraftSync from "@/components/banani/CreationDraftSync";
+import GuestDraftSync from "@/components/banani/GuestDraftSync";
+import GuestDraftMigrate from "@/components/banani/GuestDraftMigrate";
 import NativePushRegistrar from "@/components/native/NativePushRegistrar";
 import { eq } from "drizzle-orm";
 import { db, userQuery } from "@/db";
@@ -55,6 +57,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // Authoritative server-side guard for every current and future /dashboard page.
   const session = await requireUser();
   const demo = await isDemoRequest();
+  // Visiteur sans compte (lien invité) : jamais d'accès à la base pour lui (ni solde, ni chansons, ni profil de paiement).
+  const guest = !demo && (await isGuestRequest());
   const requestHeaders = await headers();
   const preferredLanguageCode = await readLanguagePreference();
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
@@ -98,7 +102,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
     getActiveRecipientRelations({ demo }),
     getActiveOccasionFields({ demo }),
     // Real accounts only: the demo library is the static showcase data of DemoProvider.
-    demo ? Promise.resolve([]) : listDiscoverSongs(session.user.id),
+    demo || guest ? Promise.resolve([]) : listDiscoverSongs(session.user.id),
     languageCatalogPromise,
     languageCatalogPromise.then((catalog) => resolveUrlLanguage(urlLocaleCode, catalog.interfaceLanguages) ?? null),
     getActivePhonePrefixes({ demo }),
@@ -108,14 +112,14 @@ export default async function DashboardLayout({ children }: { children: React.Re
     getMusicfulVersionsPerGeneration(),
     getMusicfulGenerationScreenSettings(),
     getEffectiveStoreLinks(),
-    demo
+    demo || guest
       ? Promise.resolve(0)
       : userQuery(
           session.user.id,
           db.select({ balance: credits.balance }).from(credits).where(eq(credits.userId, session.user.id)).limit(1),
         ).then((rows) => Number(rows[0]?.balance ?? 0)),
     detectCountryCode(requestHeaders),
-    demo ? Promise.resolve(null) : getPaymentProfile(session.user.id),
+    demo || guest ? Promise.resolve(null) : getPaymentProfile(session.user.id),
   ]);
   // The language comes from the URL prefix; one that is not an active catalog language is a 404.
   if (!detectedInterfaceLanguage) notFound();
@@ -125,7 +129,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const t = (text: string) => translateForLocale(text, locale);
   return (
     <DemoProvider
-      mode={demo ? "demo" : "real"}
+      mode={demo ? "demo" : guest ? "guest" : "real"}
       initialBalance={balance}
       paymentBypassEnabled={paymentBypassEnabled}
       versionsPerGeneration={versionsPerGeneration}
@@ -147,16 +151,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
       initialDetectedCountry={detectedCountry}
       initialSavedPaymentPhone={savedPaymentPhone}
       initialCurrencies={currencyOptions}
-      persistenceId={demo ? "demo" : session.user.id}
+      persistenceId={demo ? "demo" : guest ? "guest" : session.user.id}
       initialProfile={{
         name: session.user.name,
         email: session.user.email,
-        location: demo ? t("Visite guidée MusikPro") : t("Compte MusikPro"),
+        location: demo ? t("Visite guidée MusikPro") : guest ? t("Visiteur MusikPro") : t("Compte MusikPro"),
       }}
     >
       {children}
-      <CreationDraftSync />
-      {!demo && <NativePushRegistrar />}
+      {guest ? <GuestDraftSync /> : <CreationDraftSync />}
+      {!demo && !guest && <NativePushRegistrar />}
+      {!demo && !guest && <GuestDraftMigrate />}
       <MobileBottomNav />
       <NativeBottomNav />
     </DemoProvider>

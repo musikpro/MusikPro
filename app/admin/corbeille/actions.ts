@@ -6,18 +6,21 @@ import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { actionErrorMessage } from "@/lib/admin/action-state";
 import { requireAdmin } from "@/lib/auth/session";
 import { hasAppRole } from "@/lib/auth/permissions";
+import { purgeGuestLink, restoreGuestLink } from "@/lib/guest-links/server";
 import { writeAuditLog } from "@/lib/security/audit";
 import { purgeTrashedSong, restoreTrashedSong } from "@/lib/trash/songs";
 import { purgeTrashedUser, restoreTrashedUser } from "@/lib/trash/users";
 
 const songKeySchema = z.object({ songKey: z.string().trim().min(1).max(160) });
 const userIdSchema = z.object({ userId: z.string().trim().min(1).max(120) });
+const guestLinkIdSchema = z.object({ id: z.string().trim().min(1).max(120) });
 
 function refresh() {
   revalidatePath("/admin/corbeille");
   revalidatePath("/admin/generations");
   revalidatePath("/admin/users");
   revalidatePath("/admin/library");
+  revalidatePath("/admin/guest-links");
   revalidatePath("/dashboard", "layout");
   revalidatePath("/");
 }
@@ -93,5 +96,49 @@ export async function purgeUser(_previous: AdminActionState, formData: FormData)
     return { ok: true, message: "Compte supprimé définitivement." };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer ce compte.") };
+  }
+}
+
+export async function restoreGuestLinkFromTrash(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const { id } = guestLinkIdSchema.parse(Object.fromEntries(formData));
+    const restored = await restoreGuestLink(id);
+    if (!restored) return { ok: false, message: "Ce lien n’est plus dans la corbeille." };
+    await writeAuditLog({
+      action: "guest_link.restored",
+      actorId: session.user.id,
+      targetType: "guest_link",
+      targetId: id,
+      metadata: { slug: restored.slug },
+    });
+    refresh();
+    return { ok: true, message: "Lien restauré. Il reste désactivé : réactive-le quand tu veux." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de restaurer ce lien.") };
+  }
+}
+
+export async function purgeGuestLinkFromTrash(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const { id } = guestLinkIdSchema.parse(Object.fromEntries(formData));
+    if (!(await purgeGuestLink(id))) return { ok: false, message: "Ce lien n’est plus dans la corbeille." };
+    await writeAuditLog({
+      action: "guest_link.purged",
+      actorId: session.user.id,
+      targetType: "guest_link",
+      targetId: id,
+    });
+    refresh();
+    return { ok: true, message: "Lien supprimé définitivement." };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer ce lien.") };
   }
 }

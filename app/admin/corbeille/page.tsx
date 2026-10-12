@@ -5,12 +5,22 @@ import AdminTrashPurgeButton from "@/components/admin/AdminTrashPurgeButton";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
 import { requireAdmin } from "@/lib/auth/session";
+import { siteBaseUrl } from "@/lib/guest-links/base-url";
+import { listTrashedGuestLinks } from "@/lib/guest-links/server";
 import { stripVersionSuffix } from "@/lib/ai/song-title";
 import { daysRemaining, purgeDate } from "@/lib/trash/retention";
 import { getTrashRetention } from "@/lib/trash/settings";
 import { listTrashedSongs } from "@/lib/trash/songs";
 import { listTrashedUsers } from "@/lib/trash/users";
-import { purgeSong, purgeUser, restoreSong, restoreUser } from "./actions";
+import { guestLinkUrl } from "@/lib/validation/guest-links";
+import {
+  purgeGuestLinkFromTrash,
+  purgeSong,
+  purgeUser,
+  restoreGuestLinkFromTrash,
+  restoreSong,
+  restoreUser,
+} from "./actions";
 
 function formatDay(date: Date) {
   return date.toLocaleDateString("fr-FR");
@@ -29,24 +39,32 @@ function Remaining({ deletedAt, retentionDays }: { deletedAt: Date; retentionDay
 
 export default async function AdminTrashPage() {
   await requireAdmin();
-  const [songs, users, retention] = await Promise.all([listTrashedSongs(), listTrashedUsers(), getTrashRetention()]);
+  const [songs, users, guestLinks, retention] = await Promise.all([
+    listTrashedSongs(),
+    listTrashedUsers(),
+    listTrashedGuestLinks(),
+    getTrashRetention(),
+  ]);
+  const baseUrl = siteBaseUrl();
 
   return (
     <AdminPage>
       <AdminPageHeader
         eyebrow="Sécurité"
         title="Corbeille"
-        description={`Les chansons et les comptes supprimés restent ici ${retention.songsRetentionDays} jours (chansons) et ${retention.usersRetentionDays} jours (comptes), puis sont supprimés définitivement. Le délai se règle dans Paramètres > Général.`}
+        description={`Les chansons, les comptes et les liens invités supprimés restent ici ${retention.songsRetentionDays} jours (chansons), ${retention.usersRetentionDays} jours (comptes) et ${retention.guestLinksRetentionDays} jours (liens invités), puis sont supprimés définitivement. Le délai se règle dans Paramètres > Général.`}
       />
       <section className="admin-metric-row admin-metrics-compact">
         <AdminMetric icon="music-2" value={songs.length.toLocaleString("fr-FR")} label="Chansons en corbeille" />
         <AdminMetric icon="users" value={users.length.toLocaleString("fr-FR")} label="Comptes en corbeille" />
+        <AdminMetric icon="link" value={guestLinks.length.toLocaleString("fr-FR")} label="Liens invités en corbeille" />
       </section>
       <AdminTabs
         ariaLabel="Contenu de la corbeille"
         tabs={[
           { id: "songs", label: `Chansons (${songs.length})` },
           { id: "users", label: `Utilisateurs (${users.length})` },
+          { id: "guest-links", label: `Liens invités (${guestLinks.length})` },
         ]}
       >
         <AdminTabPanel id="songs">
@@ -156,6 +174,62 @@ export default async function AdminTrashPage() {
                 <Icon i="inbox" size={22} />
                 <strong>Aucun compte en corbeille</strong>
                 <p>Un compte supprimé depuis Utilisateurs apparaît ici, suspendu et restaurable.</p>
+              </div>
+            )}
+          </section>
+        </AdminTabPanel>
+        <AdminTabPanel id="guest-links">
+          <section className="admin-panel admin-table-panel">
+            {guestLinks.length ? (
+              <div className="admin-data-table-wrap">
+                <table className="admin-data-table">
+                  <thead>
+                    <tr>
+                      <th>Lien</th>
+                      <th>Supprimé le</th>
+                      <th>Suppression automatique</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {guestLinks.map((entry) => {
+                      const deletedAt = entry.deletedAt ?? entry.updatedAt;
+                      return (
+                        <tr key={entry.id}>
+                          <td className="admin-table-primary" data-label="Lien">
+                            <strong>{entry.label}</strong>
+                            <small style={{ wordBreak: "break-all" }}>{guestLinkUrl(baseUrl, entry.slug)}</small>
+                          </td>
+                          <td data-label="Supprimé le">{formatDay(deletedAt)}</td>
+                          <td data-label="Suppression automatique">
+                            <Remaining deletedAt={deletedAt} retentionDays={retention.guestLinksRetentionDays} />
+                          </td>
+                          <td data-label="Actions">
+                            <div className="admin-table-actions">
+                              <AdminActionForm action={restoreGuestLinkFromTrash}>
+                                <input type="hidden" name="id" value={entry.id} />
+                                <AdminButton type="submit" variant="secondary">
+                                  <Icon i="undo-2" size={15} />
+                                  Restaurer
+                                </AdminButton>
+                              </AdminActionForm>
+                              <AdminActionForm action={purgeGuestLinkFromTrash}>
+                                <input type="hidden" name="id" value={entry.id} />
+                                <AdminTrashPurgeButton label={entry.label} />
+                              </AdminActionForm>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="admin-empty-state">
+                <Icon i="inbox" size={22} />
+                <strong>Aucun lien invité en corbeille</strong>
+                <p>Un lien supprimé depuis Liens invités apparaît ici, désactivé et restaurable.</p>
               </div>
             )}
           </section>

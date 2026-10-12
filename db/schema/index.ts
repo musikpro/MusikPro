@@ -9,6 +9,7 @@ import {
   uniqueIndex,
   index,
   primaryKey,
+  check,
 } from "drizzle-orm/pg-core";
 import { user, organization } from "./auth.generated";
 import { sql } from "drizzle-orm";
@@ -28,6 +29,33 @@ export const plans = pgTable("plans", {
   translations: jsonb("translations"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+
+/**
+ * Liens du mode invité (publicités) : `/g/<slug>` ouvre le parcours de création sans compte. `destination` =
+ * « create » (formulaire, étape 1) ou « dashboard » (accueil invité). Suppression logique : `deleted_at` renseigné =
+ * en corbeille (restaurable, purge automatique après le délai de `trash_settings`) ; le slug reste réservé tant que
+ * la ligne existe.
+ */
+export const guestLinks = pgTable(
+  "guest_links",
+  {
+    id: text("id").primaryKey(),
+    slug: text("slug").notNull().unique(),
+    label: text("label").notNull(),
+    destination: text("destination").notNull().default("create"),
+    active: boolean("active").notNull().default(true),
+    note: text("note").notNull().default(""),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    deletedBy: text("deleted_by"),
+    deletedAt: timestamp("deleted_at"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    deletedIndex: index("guest_links_deleted_idx").on(table.deletedAt),
+    destinationCheck: check("guest_links_destination_check", sql`${table.destination} in ('create', 'dashboard')`),
+  }),
+);
 
 export const coupons = pgTable(
   "coupons",
@@ -1081,6 +1109,7 @@ export const trashSettings = pgTable("trash_settings", {
   id: text("id").primaryKey().default("global"),
   songsRetentionDays: integer("songs_retention_days").notNull().default(30),
   usersRetentionDays: integer("users_retention_days").notNull().default(30),
+  guestLinksRetentionDays: integer("guest_links_retention_days").notNull().default(30),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

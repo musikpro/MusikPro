@@ -3,14 +3,17 @@ import { RESUME_SKIP_COOKIE } from "@/lib/creation-draft/resume-skip";
 import Screen from "@/components/banani/SongCreationStep1Mobile";
 import Preview from "@/components/banani/Preview";
 import ResumeOrRestartCreation, { type ResumableCreationDraft } from "@/components/banani/ResumeOrRestartCreation";
-import { isDemoRequest, requireUser } from "@/lib/auth/session";
+import { isDemoRequest, isGuestRequest, requireUser } from "@/lib/auth/session";
 import { getCreationDraft } from "@/lib/creation-draft/server";
 import { FUNNEL_EVENT, writeFunnelEvent } from "@/lib/analytics/funnel";
 
 export default async function Page() {
   const demo = await isDemoRequest();
+  // Visiteur sans compte (lien invité) : ni brouillon serveur ni événement rattaché à un utilisateur ; son brouillon
+  // vit dans son navigateur (GuestDraftSync).
+  const guest = !demo && (await isGuestRequest());
   let draft: ResumableCreationDraft | null = null;
-  if (!demo) {
+  if (!demo && !guest) {
     const session = await requireUser();
     await writeFunnelEvent({ event: FUNNEL_EVENT.CREATION_STARTED, userId: session.user.id });
     // Parcours déjà commencé sans chanson générée : proposer de le reprendre plutôt que de repartir de zéro.
