@@ -46,6 +46,8 @@ const mappingSchema = z.object({
   provider: z.literal("chariow"),
   productName: z.string().trim().min(2).max(120),
   externalProductId: z.string().trim().min(2).max(200),
+  /** Offre actuellement liée à la ligne modifiée : renseignée seulement quand l'offre est changée. */
+  previousPlanId: z.string().max(120).optional(),
 });
 
 export async function saveProvider(formData: FormData) {
@@ -96,10 +98,7 @@ const chariowSchema = z.object({
   webhookSecret: z.string().trim().max(500),
 });
 
-export async function saveChariowProvider(
-  _previous: AdminActionState,
-  formData: FormData,
-): Promise<AdminActionState> {
+export async function saveChariowProvider(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
     const db = getServiceDb();
@@ -216,7 +215,23 @@ export async function savePlanMapping(_previous: AdminActionState, formData: For
       provider: String(formData.get("provider") || ""),
       productName: String(formData.get("productName") || ""),
       externalProductId: String(formData.get("externalProductId") || ""),
+      previousPlanId: String(formData.get("previousPlanId") || "") || undefined,
     });
+    const movedFrom = parsed.previousPlanId && parsed.previousPlanId !== parsed.planId ? parsed.previousPlanId : null;
+    if (movedFrom) {
+      // Changer l'offre d'une ligne ne doit jamais écraser en silence le produit déjà lié à l'autre offre.
+      const [taken] = await db
+        .select({ id: planProviderMappings.id })
+        .from(planProviderMappings)
+        .where(and(eq(planProviderMappings.planId, parsed.planId), eq(planProviderMappings.provider, parsed.provider)))
+        .limit(1);
+      if (taken) {
+        return {
+          ok: false,
+          message: "Cette offre a déjà un produit Chariow. Modifie ou supprime d'abord ce produit.",
+        };
+      }
+    }
     await db
       .insert(planProviderMappings)
       .values({
@@ -234,6 +249,11 @@ export async function savePlanMapping(_previous: AdminActionState, formData: For
           updatedAt: new Date(),
         },
       });
+    if (movedFrom) {
+      await db
+        .delete(planProviderMappings)
+        .where(and(eq(planProviderMappings.planId, movedFrom), eq(planProviderMappings.provider, parsed.provider)));
+    }
     await writeAuditLog({
       action: "payment.plan_mapping.updated",
       actorId: session.user.id,
@@ -243,6 +263,7 @@ export async function savePlanMapping(_previous: AdminActionState, formData: For
         provider: parsed.provider,
         productName: parsed.productName,
         hasExternalProductId: true,
+        ...(movedFrom ? { movedFromPlanId: movedFrom } : {}),
       },
     });
     revalidatePath("/admin/payment-providers");

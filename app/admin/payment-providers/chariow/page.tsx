@@ -233,11 +233,17 @@ export default async function ChariowProviderPage() {
                 return (
                   <div key={mapping.id} className="admin-product-row">
                     <AdminActionForm id={editFormId} action={savePlanMapping} className="admin-product-edit-form">
-                      <input type="hidden" name="planId" value={mapping.planId} />
+                      <input type="hidden" name="previousPlanId" value={mapping.planId} />
                       <input type="hidden" name="provider" value="chariow" />
-                      <span className="admin-product-plan">
-                        Offre : <strong>{plan?.name || mapping.planId}</strong>
-                      </span>
+                      <div className="admin-editor-field">
+                        <span>Offre MusikPro</span>
+                        <AdminSelect
+                          name="planId"
+                          ariaLabel={`Offre MusikPro de ${metadata.productName || plan?.name || "ce produit"}`}
+                          defaultValue={mapping.planId}
+                          options={allPlans.map((entry) => ({ value: entry.id, label: entry.name }))}
+                        />
+                      </div>
                       <label>
                         <span>Nom du produit</span>
                         <input
