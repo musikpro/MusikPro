@@ -161,7 +161,7 @@ export default function AdminOccasionForm({
           <span>Consigne pour l’IA des paroles (français, facultative)</span>
           <small>
             Guide le fond et le ton des paroles pour cette occasion (thèmes à aborder, registre, ce qu’il faut éviter).
-            Envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne d’occasion.{" "}
+            Envoyée à l’IA des paroles, jamais à Musicful ni au client. Elle ne fixe pas la langue des paroles : celle-ci suit le choix du client. Vide : aucune consigne d’occasion.{" "}
             {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
           </small>
           <textarea
