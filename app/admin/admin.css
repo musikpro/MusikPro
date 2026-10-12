@@ -2914,6 +2914,23 @@
   cursor: not-allowed;
 }
 
+/* Lecteur natif (lecture, pause, barre de progression, volume) pour chaque version générée. */
+.admin-generation-audio-col {
+  min-width: 340px;
+}
+
+.admin-generation-audio {
+  display: block;
+  width: 100%;
+  min-width: 320px;
+  height: 40px;
+}
+
+.admin-generation-no-audio {
+  color: var(--muted-foreground, #6b7280);
+  font-size: 0.8rem;
+}
+
 /* Setting the width here (on the th, the authoritative one for table-layout: auto) rather than
    on the button below keeps the column itself the source of truth — a fixed-width flex child can
    render past its own <td> without actually widening the column, which is what let this ID
@@ -7286,14 +7303,12 @@ body:has(.admin-app),
   }
 
   .admin-generations-table td[data-label="Écoute"] {
-    position: absolute;
-    top: 12px;
-    right: 12px;
     order: 3;
+    grid-column: 1 / -1;
   }
 
-  .admin-generations-table .admin-generation-play {
-    width: 44px;
+  .admin-generations-table .admin-generation-audio {
+    min-width: 0;
     height: 44px;
   }
 
