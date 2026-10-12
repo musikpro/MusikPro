@@ -6,6 +6,7 @@ import { buildMetadata } from "@/lib/seo/metadata";
 import { getPublicSongBySlug } from "@/lib/ai/songs";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { translateForLocale, translateTemplateForLocale } from "@/lib/i18n/translate";
+import VinylDisc from "@/components/ui/vinyl-disc";
 import Icon from "@/components/banani/Icon";
 import PublicSongPlayer from "./PublicSongPlayer";
 
@@ -51,19 +52,7 @@ export default async function PublicSongPage({ params }: Params) {
       )}
       <div className="psp-scrim" />
       <div className="psp-card">
-        <div className="psp-cover-wrap">
-          <div className="psp-cover-glow" />
-          <div className="psp-cover">
-            {song.coverUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={song.coverUrl} alt={song.title} decoding="async" fetchPriority="high" />
-            ) : (
-              <div className="psp-cover-placeholder">
-                <Icon i="music-2" size={40} />
-              </div>
-            )}
-          </div>
-        </div>
+        <VinylDisc coverUrl={song.coverUrl} className="psp-vinyl" />
         <h1 className="psp-title">{song.title}</h1>
         {song.style || song.occasion ? (
           <div className="psp-badges">

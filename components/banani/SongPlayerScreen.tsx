@@ -9,7 +9,7 @@ export const screenSize = "mobile";
 import { useEffect, useRef, useState } from "react";
 import MobileTopBar from "./MobileTopBar";
 import Icon from "./Icon";
-import Image from "./Image";
+import VinylDisc from "@/components/ui/vinyl-disc";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
@@ -122,19 +122,10 @@ export default function SongPlayerScreen() {
           <p className="text-sm text-muted-foreground text-center mt-1">{currentSong.artist}</p>
         </div>
 
-        {/* Album Art */}
+        {/* Vinyle : tourne pendant la lecture, la pochette occupe l'étiquette centrale */}
         <div className="workspace-album-art px-4 pb-8 flex-1 flex items-center justify-center">
-          <div className="w-56 h-56 rounded-3xl overflow-hidden shadow-2xl">
-            {currentSong.cover ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={currentSong.cover} alt="" className="w-full h-full object-cover" decoding="async" />
-            ) : currentSong.img ? (
-              <Image ar="1:1" prompt={currentSong.img} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-secondary flex items-center justify-center">
-                <Icon i="music-2" size={64} className="text-primary" />
-              </div>
-            )}
+          <div className="w-64 max-w-full">
+            <VinylDisc coverUrl={currentSong.cover} playing={demo.playing && Boolean(audioUrl)} />
           </div>
         </div>
 
