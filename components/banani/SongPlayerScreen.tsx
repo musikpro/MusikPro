@@ -8,7 +8,6 @@ export const screenSize = "mobile";
 
 import { useEffect, useRef, useState } from "react";
 import MobileTopBar from "./MobileTopBar";
-import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import Image from "./Image";
 
@@ -102,7 +101,6 @@ export default function SongPlayerScreen() {
             </button>
           </div>
         </div>
-        <MobileBottomNav activeTab={t("Mes chansons")} />
       </div>
     );
   }
@@ -410,8 +408,6 @@ export default function SongPlayerScreen() {
           )}
         </div>
       </div>
-
-      <MobileBottomNav activeTab={t("Découvrir")} />
     </div>
   );
 }
