@@ -642,6 +642,36 @@
         "Un compte administrateur n'est jamais purgé automatiquement."
       ]
     },
+    "guest-mode": {
+      "description": "Mode invité : un lien /g/<slug> (publicités) laisse un visiteur sans compte commencer sa chanson, la connexion n'étant demandée qu'au moment d'obtenir des crédits. Phase 1 livrée : gestion des liens dans /admin/guest-links (créer, modifier, activer, destination formulaire de création ou accueil invité, corbeille restaurable, suppression définitive uniquement depuis la Corbeille). Entrée publique, mode invité du tableau de bord et portail de connexion : phases suivantes du plan.",
+      "optional": true,
+      "env": ["DATABASE_URL", "DATABASE_SERVICE_URL", "NEXT_PUBLIC_APP_URL", "CRON_SECRET"],
+      "files": [
+        "db/schema/index.ts",
+        "db/migrations/0085_guest_links.sql",
+        "lib/validation/guest-links.ts",
+        "lib/guest-links/server.ts",
+        "lib/guest-links/base-url.ts",
+        "app/admin/guest-links/page.tsx",
+        "app/admin/guest-links/actions.ts",
+        "app/admin/guest-links/loading.tsx",
+        "app/admin/guest-links/new/page.tsx",
+        "app/admin/guest-links/[id]/page.tsx",
+        "components/admin/AdminGuestLinkForm.tsx",
+        "components/admin/AdminCopyLinkButton.tsx",
+        "components/admin/AdminTrashGuestLinkButton.tsx",
+        "tests/guest-links-validation.test.ts",
+        "docs/plans/mode-invite.md"
+      ],
+      "routes": [],
+      "dependsOn": ["database", "auth", "owner-trash", "creation-draft-resume"],
+      "removalComplexity": "low",
+      "notes": [
+        "Migration 0085 purement additive (table guest_links + colonne trash_settings.guest_links_retention_days) : à appliquer à la production avant le déploiement du code.",
+        "Suppression logique par deleted_at : le lien est désactivé et sa suppression définitive n'est possible que depuis la Corbeille (garanti par la requête purgeGuestLink) ; purge automatique par /api/cron/purge-trash.",
+        "Aucune route publique ni modification du parcours de création, de l'authentification ou du paiement en phase 1."
+      ]
+    },
     "discover-library": {
       "description": "Page Découvrir des clients : toutes les chansons terminées y apparaissent automatiquement (chaque créateur peut retirer les siennes) ; le propriétaire règle l'affichage et modère depuis /admin/library. Remplace l'ancien système de collections.",
       "optional": false,

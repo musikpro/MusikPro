@@ -69,6 +69,7 @@ export default async function AdminSettingsPage() {
             <TrashRetentionPanel
               songsRetentionDays={trashRetention.songsRetentionDays}
               usersRetentionDays={trashRetention.usersRetentionDays}
+              guestLinksRetentionDays={trashRetention.guestLinksRetentionDays}
             />
             <CountryDetectionPanel
               automaticDetectionEnabled={localization?.automaticDetectionEnabled ?? true}

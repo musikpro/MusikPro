@@ -11,9 +11,11 @@ import { setTrashRetention } from "./actions";
 export default function TrashRetentionPanel({
   songsRetentionDays,
   usersRetentionDays,
+  guestLinksRetentionDays,
 }: {
   songsRetentionDays: number;
   usersRetentionDays: number;
+  guestLinksRetentionDays: number;
 }) {
   return (
     <section className="admin-panel admin-bypass-panel">
@@ -24,14 +26,14 @@ export default function TrashRetentionPanel({
         <div>
           <h2>Corbeille</h2>
           <p>
-            Une chanson ou un compte supprimé depuis le tableau de bord propriétaire va dans la Corbeille : tu peux le
-            restaurer. Passé le délai ci-dessous, il est supprimé définitivement et automatiquement. Par défaut{" "}
-            {TRASH_RETENTION_DEFAULT_DAYS} jours pour chacun ; entre {TRASH_RETENTION_MIN_DAYS} et{" "}
-            {TRASH_RETENTION_MAX_DAYS} jours.
+            Une chanson, un compte ou un lien invité supprimé depuis le tableau de bord propriétaire va dans la
+            Corbeille : tu peux le restaurer. Passé le délai ci-dessous, il est supprimé définitivement et
+            automatiquement. Par défaut {TRASH_RETENTION_DEFAULT_DAYS} jours pour chacun ; entre{" "}
+            {TRASH_RETENTION_MIN_DAYS} et {TRASH_RETENTION_MAX_DAYS} jours.
           </p>
         </div>
         <span className="admin-status is-success">
-          {songsRetentionDays} j / {usersRetentionDays} j
+          {songsRetentionDays} j / {usersRetentionDays} j / {guestLinksRetentionDays} j
         </span>
       </div>
       <AdminActionForm
@@ -61,6 +63,19 @@ export default function TrashRetentionPanel({
             max={TRASH_RETENTION_MAX_DAYS}
             step={1}
             defaultValue={usersRetentionDays}
+            required
+          />
+        </label>
+        <label className="admin-editor-field">
+          <span>Délai avant suppression automatique des liens du mode invité (jours)</span>
+          <input
+            type="number"
+            name="guestLinksRetentionDays"
+            inputMode="numeric"
+            min={TRASH_RETENTION_MIN_DAYS}
+            max={TRASH_RETENTION_MAX_DAYS}
+            step={1}
+            defaultValue={guestLinksRetentionDays}
             required
           />
         </label>

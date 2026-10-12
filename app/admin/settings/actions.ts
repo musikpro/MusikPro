@@ -313,6 +313,11 @@ const trashRetentionSchema = z.object({
     .int("Entier attendu.")
     .min(TRASH_RETENTION_MIN_DAYS, `Minimum ${TRASH_RETENTION_MIN_DAYS} jour.`)
     .max(TRASH_RETENTION_MAX_DAYS, `Maximum ${TRASH_RETENTION_MAX_DAYS} jours.`),
+  guestLinksRetentionDays: z.coerce
+    .number({ error: "Nombre invalide." })
+    .int("Entier attendu.")
+    .min(TRASH_RETENTION_MIN_DAYS, `Minimum ${TRASH_RETENTION_MIN_DAYS} jour.`)
+    .max(TRASH_RETENTION_MAX_DAYS, `Maximum ${TRASH_RETENTION_MAX_DAYS} jours.`),
 });
 
 /** Délai (en jours) avant la suppression automatique des chansons et des comptes qui sont dans la corbeille. */
@@ -322,6 +327,7 @@ export async function setTrashRetention(_previous: AdminActionState, formData: F
     const parsed = trashRetentionSchema.parse({
       songsRetentionDays: formData.get("songsRetentionDays"),
       usersRetentionDays: formData.get("usersRetentionDays"),
+      guestLinksRetentionDays: formData.get("guestLinksRetentionDays"),
     });
     const fields = { ...parsed, updatedBy: session.user.id, updatedAt: new Date() };
     await getServiceDb()
@@ -339,7 +345,7 @@ export async function setTrashRetention(_previous: AdminActionState, formData: F
     revalidatePath("/admin/corbeille");
     return {
       ok: true,
-      message: `Corbeille : chansons conservées ${parsed.songsRetentionDays} jours, comptes ${parsed.usersRetentionDays} jours.`,
+      message: `Corbeille : chansons conservées ${parsed.songsRetentionDays} jours, comptes ${parsed.usersRetentionDays} jours, liens invités ${parsed.guestLinksRetentionDays} jours.`,
     };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
