@@ -7,6 +7,7 @@ import { hasAppRole } from "@/lib/auth/permissions";
 import { DemoProvider } from "@/components/banani/DemoProvider";
 import CreationDraftSync from "@/components/banani/CreationDraftSync";
 import GuestDraftSync from "@/components/banani/GuestDraftSync";
+import GuestDraftMigrate from "@/components/banani/GuestDraftMigrate";
 import NativePushRegistrar from "@/components/native/NativePushRegistrar";
 import { eq } from "drizzle-orm";
 import { db, userQuery } from "@/db";
@@ -160,6 +161,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {children}
       {guest ? <GuestDraftSync /> : <CreationDraftSync />}
       {!demo && !guest && <NativePushRegistrar />}
+      {!demo && !guest && <GuestDraftMigrate />}
       <MobileBottomNav />
       <NativeBottomNav />
     </DemoProvider>

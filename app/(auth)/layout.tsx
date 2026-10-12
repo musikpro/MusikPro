@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { GuestAuthNotice } from "@/components/auth/GuestAuthNotice";
 import { getPrivatePageMetadata } from "@/lib/seo/metadata";
 import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
@@ -11,5 +12,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  return children;
+  return (
+    <>
+      <GuestAuthNotice />
+      {children}
+    </>
+  );
 }

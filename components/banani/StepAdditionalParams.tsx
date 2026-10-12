@@ -18,6 +18,7 @@ import Icon from "./Icon";
 import CreationTopNav from "./CreationTopNav";
 import VoiceMicrophoneButton from "./VoiceMicrophoneButton";
 import { InlineNotice } from "@/components/ui/inline-notice";
+import { GUEST_RESUME_COOKIE, GUEST_RESUME_MAX_AGE_SECONDS } from "@/lib/guest/resume";
 import { translateIssue } from "@/lib/validation/translate-issue";
 
 export default function StepAdditionalParams() {
@@ -33,6 +34,7 @@ export default function StepAdditionalParams() {
   const buyCredits = () => {
     if (demo.isGuest) {
       // Visiteur sans compte : le brouillon est déjà gardé dans le navigateur (GuestDraftSync) ; on le conduit à la connexion.
+      document.cookie = `${GUEST_RESUME_COOKIE}=1; path=/; max-age=${GUEST_RESUME_MAX_AGE_SECONDS}; samesite=lax`;
       window.location.assign("/login");
       return;
     }
