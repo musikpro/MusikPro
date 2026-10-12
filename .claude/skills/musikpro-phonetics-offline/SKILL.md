@@ -1,6 +1,6 @@
 ---
 name: musikpro-phonetics-offline
-description: Intégrer dans MusikPro un moteur phonétique 100 % local, conservant 737 graphies africaines et ajoutant 316 prénoms et noms francophones adoptés en Afrique (Richard, Guillaume, Evra…), avec champs grisés en lecture seule et préparation des paroles Musicful.
+description: Intégrer le moteur phonétique MusikPro sans IA (V4) avec 1 354 graphies : 737 noms africains V2, 316 prénoms francophones adoptés en Afrique V3, 301 variantes supplémentaires de noms/prénoms musulmans rencontrés en Afrique francophone ; champs phonétiques grisés readonly et sortie compatible Musicful.
 ---
 
 ## Langue de réponse
@@ -13,80 +13,109 @@ Toute intervention doit être traitée comme une **refactorisation propre, profe
 
 ## Emplacement dans ce dépôt
 
-Les sources vivent dans `lib/phonetics-offline/` (le dépôt n’a pas de dossier `src/`) ; les tests sont `tests/phonetics-offline.test.ts` (Vitest) et `bash scripts/run-phonetics-tests.sh` ; la documentation est dans `docs/phonetics-offline/`. Partout où ce skill écrit `src/lib/phonetics-offline`, lire `lib/phonetics-offline`.
+Les sources vivent dans `lib/phonetics-offline/` (le dépôt n’a pas de dossier `src/`) ; les tests sont `tests/phonetics-offline.test.ts` (Vitest) et `bash scripts/run-phonetics-tests.sh` ; la documentation est dans `docs/phonetics-offline/`. Partout où ce skill écrit `src/lib/phonetics-offline`, lire `lib/phonetics-offline`. Politique Musicful : `use-local-rules` est remplacé par `keep-original` dans `app/api/songs/generate/route.ts` (recommandation V4 : ne pas injecter une estimation non validée).
 
-# MusikPro — Skill de phonétique locale V3 (ciblage Afrique francophone)
+# MusikPro — Skill phonétique locale V4 : noms africains + francophones + tradition musulmane
 
-## But
+## Objectif
 
-Remplacer **uniquement** les appels IA servant à obtenir la prononciation des noms saisis dans les sections du formulaire « De la part de qui » et « La personne concernée », par un dictionnaire TypeScript local et un moteur déterministe d'analogie/règles. **Ne pas supprimer les appels IA** qui rédigent éventuellement les paroles, ni les appels Musicful qui génèrent la chanson. Aucun token, clé, API distante ou base Neon n'est nécessaire à la phonétisation elle-même.
+Remplacer **seulement les appels à l'IA destinés à phonétiser les noms des utilisateurs** dans les deux formulaires MusikPro, par un lexique local TypeScript synchronisé avec un moteur d'analogie/découpage. Éviter ainsi les crédits liés à ces appels de prononciation. L'IA qui génère les paroles et **Musicful** qui génère l'audio restent opérationnels et peuvent encore consommer leurs propres crédits.
 
-## Portée du dictionnaire — demande utilisateur exacte
+## Lexique inclus
 
-- **Conserver intégralement les 737 graphies africaines/francophones de la V2.** Ce projet V3 en contient bien 737.
-- Ajouter **316 graphies supplémentaires** de prénoms français/francophones utilisés par des personnes en Afrique francophone, plus les noms explicitement ciblés **Evra** et **Evrard**. Exemples : **Richard, Guillaume, Patrick, Jean, Jean-Pierre, François, Didier, Serge, Fabrice, Chantal, Clarisse, Christelle, Bernadette, Rosine**.
-- **Ne pas ajouter** un gros catalogue de noms de famille typiques de France sans rapport avec le besoin (« Dupont », « De Gaulle », « Dubois », etc.). La V3 est une sélection d'usage francophone africain ; la fréquence réelle varie selon le pays et ne doit pas être affirmée sans données.
-- Résultat : **1 053 graphies, 1 040 clés normalisées distinctes** ; variantes accentuées disponibles automatiquement à la recherche.
-- Les prononciations sont des **guides de lecture adaptés au chant en français** : « Richard » → « Ri-char », « Guillaume » → « Gui-yom », « Evra » → « Èv-ra », « François » → « Fran-soua ». Pas de garantie acoustique Musicful, ni de certitude sans connaître la préférence de la famille.
+- **V2 conservée : 737 graphies africaines** (prénoms et noms de famille).
+- **V3 conservée : 316 noms/prénoms francophones d'usage africain**, par exemple Richard, Guillaume, Evra, Patrick et Chantal ; pas de catalogue indiscriminé de patronymes français de France.
+- **V4 ajoutée : 301 graphies distinctes supplémentaires** de noms et prénoms de tradition musulmane rencontrés en Afrique francophone, avec orthographes locales et variantes. Par exemple **Madou, Mouhamed, Mouhamadou, Ahmadou, Djibril, Abdoul, Oumou, Fatimatou, Ramatoulaye**.
+- **Total : 1 354 graphies, 1 341 clés de recherche normalisées.** L'analyse ne dépend pas d'une API ni de Neon.
+- **Mohammed, Mohamed et Mamadou étaient déjà présents** : les entrées existantes sont préservées pour éviter toute régression ; la V4 ajoute les graphies manquantes, dont **Madou**.
 
-## Règles essentielles de l'interface
+**Attention :** les découpages sont des **guides d'aide au chant**, pas une phonétique IPA certifiée. Ils peuvent varier selon la langue locale, le pays, la famille et la façon dont Musicful chante. `confidence: 'high'` signifie **correspondance exacte du dictionnaire**, pas vérification linguistique externe. **Ne déduire jamais la religion d'une personne à partir de son nom.**
 
-Les captures d'écran fournies montrent deux champs **« Prononciation suggérée » grisés** à droite des champs nominaux. **Conserver strictement cette UX** :
+## Règles UI immuables
 
-1. « Votre nom » et « Nom de la personne » restent les **seuls champs éditables** concernant le nom.
-2. Les deux « Prononciation suggérée » restent **grisés, toujours automatiques, jamais éditables par un client** ; employer `readOnly`, `aria-readonly="true"`, `value={getPronunciation(name).pronunciation}`, et **aucun `onChange` sur ces champs**. Préserver les styles/classes, tailles, alignements et labels existants ; **ne pas reconstruire le formulaire**.
-3. Afficher la proposition immédiatement pendant que la personne tape son nom, par appel synchrone local dans React : **aucun `fetch`, aucune route API, aucune requête LLM, aucune facturation phonétique** lors d'un `onChange`, `onBlur` ou d'une soumission.
-4. Pour un nom absent du dictionnaire, l'algorithme applique analogie puis règles. Son résultat est une **estimation** ; ne pas interrompre le formulaire, ne pas inventer une prononciation « certifiée » et ne pas demander une confirmation de l'utilisateur, puisque le champ est verrouillé.
-5. Le client ne peut jamais modifier la suggestion. **Seul le propriétaire** corrige les graphies via un éventuel tableau de bord avec accès serveur, validation Zod et audit.
-6. Si l'interface utilisait `disabled`, passer à `readOnly` **tout en conservant exactement l'apparence grisée**, lorsque nécessaire pour permettre l'affichage/lecture et la compatibilité des formulaires.
-7. Les valeurs des champs readonly du navigateur sont **non fiables** : reconstituer les prononciations **côté serveur** à partir des noms sources avant toute génération Musicful. Ne jamais consommer un `phoneticName` envoyé par le navigateur comme source de vérité.
+1. Conserver **exactement l'interface actuelle** : le client modifie « Votre nom » et « Nom de la personne », tandis que **les deux champs « Prononciation suggérée » restent visuellement grisés et verrouillés**.
+2. Utiliser `readOnly` + `aria-readonly="true"` pour les deux champs grisés ; **pas de `onChange` / bouton / édition manuelle du champ phonétique**, pas de champ additionnel. Préserver leurs `className`, dimensions, position, libellés et couleurs actuels.
+3. Valeur générée **immédiatement et synchroniquement** par `getPronunciation(name, { locale: 'fr-CI' }).pronunciation` quand l'utilisateur saisit/colle/modifie son nom. **Aucun appel `fetch`, aucune API IA, aucune requête réseau** sur la saisie ou à la soumission pour la phonétisation.
+4. Les variantes accentuées et les différences de casse sont reconnues par recherche normalisée ; préserver l'orthographe source.
+5. En absence d'entrée, appliquer l'analogie puis les règles locales et marquer la sortie `needsReview: true` en interne. Ne pas permettre aux clients de modifier les deux champs grisés.
+6. Corrections uniquement dans une interface propriétaire authentifiée/autorisée côté serveur, avec validation Zod et journal d'audit, si l'application possède déjà cette fonctionnalité ou si le propriétaire la demande.
 
-## Mode d'emploi dans le vrai dépôt
+## Installation et raccordement au dépôt réel
 
-1. Lire **`CLAUDE.md`**, puis repérer les sections « De la part de qui », « La personne concernée », les états des noms, les champs gris et tous les appels à l'IA servant *uniquement* à phonétiser. S'aligner sur l'organisation réelle du dépôt Next.js.
-2. Ajouter/importer :
-   - `src/lib/phonetics-offline/dictionary.ts` — 737 entrées précédentes + agrégation des ajouts ciblés ;
-   - `src/lib/phonetics-offline/adopted-french-dictionary.ts` — 316 ajouts sélectionnés ;
-   - `src/lib/phonetics-offline/engine.ts` — `getPronunciation` / `prepareMusicfulLyrics`.
-3. Pour les **deux champs existants** et pas ailleurs, remplacer la valeur calculée par l'appel IA par une valeur locale :
+1. Lire et appliquer **`CLAUDE.md`** (source de vérité du dépôt). Sauvegarder/commiter avant tout changement et inspecter les fichiers existants.
+2. Installer à partir du ZIP les fichiers `src/lib/phonetics-offline/{dictionary,adopted-french-dictionary,african-muslim-used-names-dictionary,engine}.ts`. `dictionary.ts` agrège les **trois corpus sans supprimer l'existant**.
+3. Repérer les deux champs de phonétique grisés et les appels IA qui produisent actuellement leurs valeurs. **Retirer uniquement ces appels de phonétisation**, en conservant tous les autres appels IA et services.
+4. Dans les composants React réels, calculer localement :
 
    ```tsx
    import { getPronunciation } from '@/lib/phonetics-offline/engine';
-   const senderPhonetic = senderName.trim() ? getPronunciation(senderName, { locale: 'fr-CI' }).pronunciation : '';
-   const recipientPhonetic = recipientName.trim() ? getPronunciation(recipientName, { locale: 'fr-CI' }).pronunciation : '';
 
-   // Dans les deux <input> gris EXISTANTS, en gardant leurs className originaux :
-   <input value={senderPhonetic} readOnly aria-readonly="true" /* ... */ />
-   <input value={recipientPhonetic} readOnly aria-readonly="true" /* ... */ />
+   const senderPhonetic = senderName.trim()
+     ? getPronunciation(senderName, { locale: 'fr-CI' }).pronunciation : '';
+   const recipientPhonetic = recipientName.trim()
+     ? getPronunciation(recipientName, { locale: 'fr-CI' }).pronunciation : '';
+
+   // Appliquer aux DEUX inputs gris EXISTANTS. Garder leurs className actuels.
+   <input value={senderPhonetic} readOnly aria-readonly="true" />
+   <input value={recipientPhonetic} readOnly aria-readonly="true" />
    ```
 
-4. Au moment de transmettre les **paroles** à Musicful, recalculer **sur le serveur** avec les *noms* (pas les phonétiques soumises) :
+5. Ne jamais faire confiance à une valeur phonétique venant du navigateur : **recalculer côté serveur** à partir des noms sources, puis préparer une copie des paroles pour Musicful :
 
    ```ts
    const { originalLyrics, musicfulLyrics, results } = prepareMusicfulLyrics(
-     originalLyricsFromGenerator,
+     lyricsFromGenerator,
      [senderName, recipientName],
-     { locale: 'fr-CI', unknownNamePolicy: 'use-local-rules', approvedOverrides: trustedOwnerEntries },
+     {
+       locale: 'fr-CI',
+       unknownNamePolicy: 'keep-original', // recommandation sûre : ne pas injecter une estimation dans Musicful
+       approvedOverrides: trustedOwnerOverrides, // seulement si récupéré serveur, autorisé
+     },
    );
-   // originalLyrics : stocker/afficher comme source ; musicfulLyrics : envoyer au champ paroles.
+   // Stocker les paroles originales ; n'envoyer à Musicful que la copie musicfulLyrics.
    ```
 
-5. Les corrections propriétaires approuvées doivent être chargées **par un code serveur de confiance**, protégé par autorisation ; jamais par JSON ou FormData libre. Si une base de données n'est pas disponible, fonctionner simplement avec le dictionnaire embarqué. Ne **pas** introduire une dépendance à Neon pour lancer `npm run dev`.
-6. Ne modifier aucune politique de coût Musicalful, le format **MP3**, les autres fournisseurs, les paiements, les menus mobiles PWA/Capacitor, le design desktop ou les fonctionnalités de génération des paroles. Ne pas ajouter Codex ni de configuration d'agent autre que Claude Code. Éviter l'icône Sparkles.
-7. Exécuter `bash scripts/run-phonetics-tests.sh`, puis tests/lint/typecheck/build réels du dépôt et validation staging. Tester manuellement la saisie dans les deux champs et l'absence de **requêtes réseau phonétiques** (la simple exécution des tests unitaires ne prouve pas l'absence d'ancien appel IA dans l'application tant qu'elle n'est pas intégrée).
+6. Le paramètre `'keep-original'` évite d'imposer une phonétique **non validée** pour les noms absents du dictionnaire ; le champ grisé peut néanmoins afficher son estimation locale. Si le propriétaire préfère une substitution automatique pour tous les noms, choisir `'use-local-rules'` après tests, sans nouvel appel IA.
+7. Ne pas remplacer les composants réels par `NamePronunciationPreview.tsx` : ce fichier est **un exemple**. Ne modifier ni paiements ni génération IA des paroles, ni crédits Musicful, ni sortie **MP3**, ni PWA/Capacitor, ni interface desktop, ni comportement d'autres pages. **Aucune dépendance obligatoire à Neon pour `npm run dev`.** Pas de fichiers Codex, pas d'icône Sparkles.
+8. Tester d'abord en staging, puis seulement en production après validation.
 
-## Sélection et limites
+## Exemples de sorties attendues
 
-- Rechercher les graphies sans casse/accents et composer « Richard Kouassi », « Guillaume Traoré », « Evra Koffi », les prénoms composés « Jean-Pierre », « Marie-Claire », et les apostrophes africaines.
-- Les règles apprises par analogie sur le lexique existant sont prudentes. Une estimation est marquée `confidence: 'low'` et `needsReview: true` en interne ; seules les entrées du dictionnaire et les corrections validées sont `high`, ce qui **ne constitue pas une certification phonétique**.
-- Une graphie et sa prononciation peuvent avoir plusieurs variantes familiales ; la valeur choisie ne doit pas servir à inférer la nationalité, la religion ou l'origine ethnique.
-- Voir `docs/INTEGRATION.md` et `README.md`. L'archive n'effectue **aucune modification** du site déployé : Claude Code doit intégrer les sources dans le véritable dépôt MusikPro.
+| Nom saisi | Prononciation suggérée |
+| --- | --- |
+| Mohammed | Mo-ha-med |
+| Mohamed | Mo-ha-med |
+| Madou | Ma-dou |
+| Mamadou | Ma-ma-dou |
+| Mouhamadou | Mou-ha-ma-dou |
+| Ahmadou | Ah-ma-dou |
+| Djibril | Dji-bril |
+| Oumou | Ou-mou |
+| Fatimatou | Fa-ti-ma-tou |
+| Aïssatou | Aï-ssa-tou |
+| Khadija | Kha-di-ja |
+| Guillaume Traoré | Gui-yom Tra-o-ré |
+| Richard Abdoul Karim | Ri-char Ab-doul Ka-rim |
+| Bokara (hors lexique) | Bo-ka-ra (estimation) |
 
-## Critères d'acceptation
+Ne pas réécrire arbitrairement « Madou » en « Mamadou » : ce sont des graphies et des noms distincts. Préserver les mots originaux dans les données métier.
 
-- Les **2 champs grisés** restent non éditables pour tous les visiteurs et sont remplis localement sans coût IA.
-- La V2 africaine est conservée **sans suppression** ; seules les **316 entrées françaises/francophones ciblées Afrique** sont ajoutées (pas les 192 patronymes génériques de l'ancien brouillon V3).
-- Les noms **Richard, Guillaume, Evra** sont prioritaires et reconnus dans les deux formulaires et dans les paroles.
-- Les prénoms composés et combinaisons avec patronymes africains restent corrects.
-- Le serveur ne fait confiance qu'au nom original et recalcule la prononciation en local avant Musicful.
-- La génération de musique continue de produire des **MP3**, toutes les autres fonctions restent intactes ; tests de non-régression passés.
+## Tests et critères d'acceptation
+
+1. Exécuter `bash scripts/run-phonetics-tests.sh`. Le script compile le moteur strictement et exécute les tests ; vérifier le résultat « OK V4 ».
+2. L'inventaire doit comporter exactement **1 354 graphies**, dont **301 ajouts V4** sans conflit de normalisation, et **1 341 clés distinctes**.
+3. Vérifier : `Mohammed`, `Mohamed`, `Madou`, `Mamadou`, `Mouhamadou`, `Djibril`, `Fatimatou`, `Aïssatou`, `Richard`, `Guillaume`, `Evra`, les noms composés, les patronymes, le nom vide et un nom inconnu.
+4. Les deux champs grisés doivent rester en **lecture seule** et leur prévisualisation ne doit provoquer **aucun appel réseau IA** (tester la saisie, le collage, le blur, la soumission et la génération).
+5. Recalcul serveur obligatoire avant Musicful ; seules les occurrences des noms fournis sont substituées dans une **copie** des paroles, et pas les sous-chaînes d'autres mots.
+6. Réexécuter les tests / typecheck / build Next.js propres au projet, les parcours Musicful/MP3, les applications PWA/Capacitor et les vérifications de non-régression avant déploiement.
+
+## Livrables du ZIP
+
+- `.claude/skills/musikpro-phonetics-offline/SKILL.md` — présent skill Claude Code.
+- `src/lib/phonetics-offline/african-muslim-used-names-dictionary.ts` — **301 nouveaux noms**.
+- `src/lib/phonetics-offline/{dictionary,adopted-french-dictionary,engine}.ts` — moteur et corpus V2/V3 conservés.
+- `src/components/NamePronunciationPreview.tsx` — **exemple** de champ `readOnly`, ne pas remplacer le formulaire réel.
+- `docs/musikpro-phonetics/INTEGRATION.md`, `scripts/run-phonetics-tests.sh`, `tests/test-phonetics.cjs` — documentation et tests.
+- `INSTALLATION-PHONETIQUE-V4.md` — instructions de déploiement.
+
+Ce skill n'a **pas** été installé dans le dépôt MusikPro ni déployé depuis cette conversation. Il doit être intégré par Claude Code dans le projet réel, puis vérifié dans l'interface et sur le réseau.

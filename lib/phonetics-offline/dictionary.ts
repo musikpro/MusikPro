@@ -5,6 +5,7 @@
  * Faire valider les variantes sensibles par des locuteurs concernés.
  */
 import { AFRICAN_FRANCOPHONE_ADOPTED_NAMES } from "./adopted-french-dictionary";
+import { AFRICAN_MUSLIM_USED_NAMES } from "./african-muslim-used-names-dictionary";
 
 export type DictionaryEntry = {
   name: string;
@@ -768,4 +769,5 @@ const AFRICAN_AND_FRANCOPHONE_NAMES: readonly DictionaryEntry[] = [
 export const BUILTIN_NAMES: readonly DictionaryEntry[] = [
   ...AFRICAN_AND_FRANCOPHONE_NAMES,
   ...AFRICAN_FRANCOPHONE_ADOPTED_NAMES,
+  ...AFRICAN_MUSLIM_USED_NAMES,
 ];

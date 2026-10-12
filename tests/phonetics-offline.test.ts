@@ -5,6 +5,7 @@ import { getPronunciation, normalizedName, prepareMusicfulLyrics } from "@/lib/p
 import { serverPronunciation } from "@/lib/phonetics-offline/server";
 import { BUILTIN_NAMES } from "@/lib/phonetics-offline/dictionary";
 import { AFRICAN_FRANCOPHONE_ADOPTED_NAMES } from "@/lib/phonetics-offline/adopted-french-dictionary";
+import { AFRICAN_MUSLIM_USED_NAMES } from "@/lib/phonetics-offline/african-muslim-used-names-dictionary";
 
 const examples: [string, string, "high" | "low" | "unknown"][] = [
   ["Issa", "Is-sa", "high"],
@@ -24,16 +25,47 @@ const examples: [string, string, "high" | "low" | "unknown"][] = [
   ["Richard Kouassi", "Ri-char Koua-ssi", "high"],
   ["Guillaume Traoré", "Gui-yom Tra-o-ré", "high"],
   ["Jean-Pierre Koné", "Jean-Pierre Ko-né", "high"],
+  ["Madou", "Ma-dou", "high"],
+  ["Mohammed", "Mo-ha-med", "high"],
+  ["Mamadou", "Ma-ma-dou", "high"],
+  ["Mouhamadou", "Mou-ha-ma-dou", "high"],
+  ["Ahmadou", "Ah-ma-dou", "high"],
+  ["Djibril", "Dji-bril", "high"],
+  ["Oumou", "Ou-mou", "high"],
+  ["Aïssatou", "Aï-ssa-tou", "high"],
+  ["AISSATOU", "Aï-ssa-tou", "high"],
+  ["Fatimatou", "Fa-ti-ma-tou", "high"],
+  ["Mamadou Madou", "Ma-ma-dou Ma-dou", "high"],
+  ["Mouhamadou Traoré", "Mou-ha-ma-dou Tra-o-ré", "high"],
+  ["Richard Abdoul Karim", "Ri-char Ab-doul Ka-rim", "high"],
   ["Bokara", "Bo-ka-ra", "low"],
   ["ZZZ", "ZZZ", "unknown"],
 ];
 
 describe("dictionnaire phonétique local", () => {
-  it("conserve les 737 entrées africaines et ajoute les 316 francophones ciblées", () => {
+  it("conserve les 737 entrées africaines et les 316 francophones, et ajoute les 301 noms musulmans africains", () => {
     expect(AFRICAN_FRANCOPHONE_ADOPTED_NAMES).toHaveLength(316);
-    expect(BUILTIN_NAMES).toHaveLength(737 + 316);
+    expect(AFRICAN_MUSLIM_USED_NAMES).toHaveLength(301);
+    expect(BUILTIN_NAMES).toHaveLength(737 + 316 + 301);
     const keys = new Set(BUILTIN_NAMES.map((entry) => normalizedName(entry.name)));
-    expect(keys.size).toBeGreaterThanOrEqual(1000);
+    expect(keys.size).toBe(1341);
+  });
+
+  it("n'écrase aucune entrée existante : les ajouts V4 n'ont ni doublon normalisé ni conflit", () => {
+    const prior = BUILTIN_NAMES.slice(0, 737 + 316);
+    const priorKeys = new Map(prior.map((entry) => [normalizedName(entry.name), entry.pronunciation]));
+    const added = new Set<string>();
+    for (const entry of AFRICAN_MUSLIM_USED_NAMES) {
+      const key = normalizedName(entry.name);
+      expect(priorKeys.has(key), `${entry.name} recoupe l'existant`).toBe(false);
+      expect(added.has(key), `${entry.name} en double dans la V4`).toBe(false);
+      added.add(key);
+    }
+  });
+
+  it("distingue Madou de Mamadou et reconnaît les variantes de casse", () => {
+    expect(getPronunciation("MaDoU").source).toBe("dictionary");
+    expect(getPronunciation("Madou").pronunciation).not.toBe(getPronunciation("Mamadou").pronunciation);
   });
 
   it.each(examples)("%s → %s (%s)", (name, phonetic, confidence) => {
@@ -61,6 +93,17 @@ describe("dictionnaire phonétique local", () => {
     expect(prepared.musicfulLyrics).toBe(
       "Ri-char dédie une chanson à Gui-yom et Èv-ra. Le nom Richardine ne doit pas changer.",
     );
+  });
+
+  it("prépare les paroles avec les noms musulmans africains", () => {
+    expect(
+      prepareMusicfulLyrics("Mohammed chante pour Madou, Mamadou et Aïssatou", [
+        "Mohammed",
+        "Madou",
+        "Mamadou",
+        "Aïssatou",
+      ]).musicfulLyrics,
+    ).toBe("Mo-ha-med chante pour Ma-dou, Ma-ma-dou et Aï-ssa-tou");
   });
 
   it("applique la politique « keep-original » aux noms inconnus", () => {
@@ -91,6 +134,7 @@ describe("prononciation côté serveur", () => {
   it("la route de chanson prépare les paroles Musicful depuis les noms seuls", () => {
     const route = read("app/api/songs/generate/route.ts");
     expect(route).toContain("prepareMusicfulLyrics(lyrics, [input.recipientName, input.senderName]");
+    expect(route).toContain('unknownNamePolicy: "keep-original"');
     expect(route).toMatch(/lyrics:\s*musicfulLyrics/);
     expect(route).not.toMatch(/Pronunciation/);
   });

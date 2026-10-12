@@ -179,10 +179,11 @@ export async function POST(request: Request) {
     buildVocalHint(input.language, input.voice, await resolveAccentHint(input.genre, input.language)),
   );
   // Paroles préparées pour Musicful : les noms saisis sont remplacés par leur prononciation recalculée ici
-  // à partir des noms seuls (jamais d'une prononciation envoyée par le navigateur).
+  // à partir des noms seuls (jamais d'une prononciation envoyée par le navigateur). Un nom absent du dictionnaire
+  // reste tel quel : on n'injecte pas dans Musicful une estimation non validée.
   const { musicfulLyrics } = prepareMusicfulLyrics(lyrics, [input.recipientName, input.senderName], {
     locale: "fr-CI",
-    unknownNamePolicy: "use-local-rules",
+    unknownNamePolicy: "keep-original",
   });
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 

@@ -696,6 +696,7 @@
         "lib/phonetics-offline/engine.ts",
         "lib/phonetics-offline/dictionary.ts",
         "lib/phonetics-offline/adopted-french-dictionary.ts",
+        "lib/phonetics-offline/african-muslim-used-names-dictionary.ts",
         "lib/phonetics-offline/server.ts",
         "lib/ai/moderation.ts",
         "lib/ai/text-generation.ts",
