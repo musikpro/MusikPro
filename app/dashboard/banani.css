@@ -2743,29 +2743,6 @@
   box-shadow: 0 6px 16px rgb(242 101 34 / 28%);
 }
 
-.song-inline-waveform.is-playing > div {
-  transform-origin: bottom;
-  animation: musik-inline-wave 720ms ease-in-out infinite alternate;
-}
-
-.song-inline-waveform.is-playing > div:nth-child(3n + 2) {
-  animation-delay: -240ms;
-}
-
-.song-inline-waveform.is-playing > div:nth-child(3n) {
-  animation-delay: -480ms;
-}
-
-@keyframes musik-inline-wave {
-  from {
-    transform: scaleY(0.45);
-  }
-
-  to {
-    transform: scaleY(1);
-  }
-}
-
 .song-download-button {
   width: 34px;
   height: 34px;
@@ -2974,12 +2951,6 @@
   .pack-currency-select select {
     width: 62px;
     font-size: 11px;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .song-inline-waveform.is-playing > div {
-    animation: none;
   }
 }
 
@@ -6953,77 +6924,6 @@ span.musik-user-avatar {
   width: 28px;
   height: 28px;
   gap: 1px;
-}
-
-.ambient-player-button-waveform {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 2px;
-  height: 7px;
-  width: 100%;
-  pointer-events: none;
-}
-
-.ambient-player-button-bar {
-  display: block;
-  width: 3px;
-  border-radius: 1px;
-  background: var(--color-primary);
-  transform: scaleY(0.45);
-}
-
-.ambient-player-button-waveform.is-playing > .ambient-player-button-bar {
-  transform-origin: bottom;
-  animation: musik-inline-wave 720ms ease-in-out infinite alternate;
-}
-
-.ambient-player-button-waveform.is-playing > .ambient-player-button-bar:nth-child(2) {
-  animation-delay: -240ms;
-}
-
-.ambient-player-button-waveform.is-playing > .ambient-player-button-bar:nth-child(3) {
-  animation-delay: -480ms;
-}
-
-/* Trending card player: audio visualizer bars, animated only while the song plays. */
-.trend-eq {
-  height: 34px;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2px;
-}
-
-.trend-eq span {
-  flex: 1;
-  height: 100%;
-  border-radius: 2px;
-  background: var(--color-primary);
-  transform: scaleY(0.12);
-  transform-origin: bottom;
-  animation: trend-eq-bar 700ms ease-in-out infinite alternate;
-  animation-play-state: paused;
-}
-
-.trend-eq.is-playing span {
-  animation-play-state: running;
-}
-
-@keyframes trend-eq-bar {
-  from {
-    transform: scaleY(0.12);
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .trend-eq span {
-    animation: none;
-    transform: scaleY(0.5);
-  }
 }
 
 /* Landing "Ils ont créé avec MusikPro": swipeable row, 2 cards visible (3 on wide screens). */

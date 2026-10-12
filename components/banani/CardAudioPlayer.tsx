@@ -2,13 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import { translate as t } from "@/lib/i18n/translate";
 import Icon from "./Icon";
+import AudioVisualizer from "@/components/ui/audio-visualizer";
 
 function formatTime(seconds: number) {
   if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
   return `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, "0")}`;
 }
 
-const EQ_BARS = 24;
 
 /**
  * The one internal card player of the whole product — used by the "Tendances" cards of the client
@@ -114,11 +114,7 @@ export default function CardAudioPlayer({
           <Icon i="x" size={14} className="text-white" />
         </button>
       </div>
-      <div className={`trend-eq ${playing ? "is-playing" : ""}`} aria-hidden="true">
-        {Array.from({ length: EQ_BARS }, (_, index) => (
-          <span key={index} style={{ animationDelay: `${(index * 97) % 700}ms`, animationDuration: `${520 + ((index * 53) % 420)}ms` }} />
-        ))}
-      </div>
+      <AudioVisualizer variant="card" playing={playing} />
       <div>
         <div className="flex items-center gap-2">
           <button
