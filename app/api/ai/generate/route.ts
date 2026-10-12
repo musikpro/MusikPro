@@ -11,6 +11,7 @@ import { OccasionDetailsError, resolveOccasionDetails } from "@/lib/occasion-fie
 import { createLogger } from "@/lib/observability/logger";
 import { hasCreditsForLyrics } from "@/lib/credits/lyrics-gate";
 import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
+import { serverPronunciation } from "@/lib/phonetics-offline/server";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -65,7 +66,11 @@ export async function POST(request: Request) {
     throw error;
   }
   try {
-    const result = await runLyricsTask(parsed.data, session.user.id, details);
+    // Prononciations recalculées localement à partir des noms : celles du navigateur sont ignorées.
+    const task = parsed.data;
+    task.input.recipientPronunciation = serverPronunciation(task.input.recipientName);
+    task.input.senderPronunciation = serverPronunciation(task.input.senderName);
+    const result = await runLyricsTask(task, session.user.id, details);
     return NextResponse.json({ lyrics: result.text, requestId: result.id });
   } catch (error) {
     const code = error instanceof Error ? error.message : "AI_REQUEST_FAILED";

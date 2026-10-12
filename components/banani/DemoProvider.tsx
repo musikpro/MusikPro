@@ -896,6 +896,7 @@ function useDemoState(
           occasion: choices.occasion,
           genre: choices.genre,
           recipientName: fields.recipientName,
+          senderName: fields.senderName,
           mood: choices.mood,
           voice: choices.voice,
           language: choices.language,

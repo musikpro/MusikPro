@@ -1,45 +1,37 @@
 import Link from "next/link";
-import { AdminBackLink, AdminEmptyModule, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
+import { AdminBackLink, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
-import { getLyricsProvider } from "@/lib/ai/provider";
+import { BUILTIN_NAMES } from "@/lib/phonetics-offline/dictionary";
 
 export default async function AdminPronunciationProviderPage() {
   await requireAdmin();
-  const provider = await getLyricsProvider();
-  const connected = provider.enabled && Boolean(provider.apiKey);
 
   return (
     <AdminPage>
       <AdminBackLink href="/admin/ai-providers" label="Toutes les capacités IA" />
       <AdminPageHeader
-        eyebrow="Fournisseur phonétique"
+        eyebrow="Moteur phonétique"
         title="Prononciation des noms"
-        description="Suggère la prononciation phonétique des prénoms saisis par les utilisateurs."
+        description="Propose la prononciation des prénoms et noms saisis par les utilisateurs."
       />
-      {connected ? (
-        <section className="admin-panel admin-module-empty">
-          <span>
-            <Icon i="speech" size={26} />
-          </span>
-          <h2>{provider.provider === "anthropic" ? "Claude / Anthropic" : "OpenAI / ChatGPT"}</h2>
-          <p>
-            Modèle utilisé : {provider.model}. Cette capacité réutilise automatiquement le même fournisseur et la même
-            clé que la génération des paroles — aucune configuration ni clé séparée n’est nécessaire.
-          </p>
-          <span className="admin-status is-success">Connecté</span>
-          <Link href="/admin/ai-providers/lyrics" className="admin-back-link" style={{ marginTop: 16 }}>
-            <Icon i="settings" size={16} />
-            Changer le fournisseur de paroles
-          </Link>
-        </section>
-      ) : (
-        <AdminEmptyModule
-          icon="speech"
-          title="Fournisseur à choisir"
-          description="Configure d’abord un fournisseur pour les paroles (OpenAI ou Claude) : la prononciation des noms le réutilisera automatiquement, sans réglage supplémentaire."
-        />
-      )}
+      <section className="admin-panel admin-module-empty">
+        <span>
+          <Icon i="speech" size={26} />
+        </span>
+        <h2>Moteur local</h2>
+        <p>
+          Cette capacité n’utilise plus aucun fournisseur IA : un dictionnaire de {BUILTIN_NAMES.length} graphies
+          africaines et francophones et des règles déterministes calculent la prononciation instantanément, sans clé,
+          sans coût et sans appel réseau. Les deux champs « Prononciation suggérée » sont automatiques et non
+          modifiables par les clients. Pour un nom absent du dictionnaire, il s’agit d’une estimation.
+        </p>
+        <span className="admin-status is-success">Actif</span>
+        <Link href="/admin/ai-providers/lyrics" className="admin-back-link" style={{ marginTop: 16 }}>
+          <Icon i="settings" size={16} />
+          Fournisseur de paroles
+        </Link>
+      </section>
     </AdminPage>
   );
 }

@@ -1,0 +1,4 @@
+V3 corpus: 1053
+V4 ajouts sans doublons normalisés: 301
+V4 total: 1354
+Candidates déjà couvertes: 60

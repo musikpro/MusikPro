@@ -91,6 +91,8 @@ export const songGenerateRequestSchema = z.object({
   occasion: z.string().trim().min(1).max(100),
   genre: z.string().trim().min(1).max(100),
   recipientName: z.string().trim().max(120).optional().default(""),
+  /** Nom de l'expéditeur : sert uniquement à recalculer côté serveur la prononciation chantée (jamais envoyée par le client). */
+  senderName: z.string().trim().max(120).optional().default(""),
   mood: z.string().trim().max(100).optional().default(""),
   voice: z.string().trim().max(80).optional().default(""),
   language: z.string().trim().max(80).optional().default(""),
