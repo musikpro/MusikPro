@@ -67,11 +67,9 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
   const [query, setQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [status, setStatus] = useState<GenerationStatusFilter>("all");
-  const [playingId, setPlayingId] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isLoading, startTransition] = useTransition();
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
   const requestId = useRef(0);
   const showToast = useAdminToast();
@@ -129,22 +127,15 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
 
   const rows = data.rows;
 
-  const playRow = (row: AdminGenerationRow) => {
-    const audio = audioRef.current;
-    if (!audio || !row.audioUrl) return;
-    if (playingId === row.id) {
-      audio.pause();
-      setPlayingId(null);
-      return;
-    }
-    audio.src = row.audioUrl;
-    void audio.play();
-    setPlayingId(row.id);
+  /** Un seul lecteur à la fois : lancer une version met les autres en pause. */
+  const pauseOthers = (current: HTMLAudioElement) => {
+    document.querySelectorAll<HTMLAudioElement>(".admin-generation-audio").forEach((audio) => {
+      if (audio !== current) audio.pause();
+    });
   };
 
   return (
     <section ref={panelRef} className="admin-panel admin-table-panel admin-generations-panel" aria-busy={isLoading}>
-      <audio ref={audioRef} onPause={() => setPlayingId(null)} onEnded={() => setPlayingId(null)} className="sr-only" />
       <AdminTableToolbar
         query={query}
         onQueryChange={setQuery}
@@ -167,9 +158,7 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
               <th>Durée</th>
               <th>Statut</th>
               <th>Délai</th>
-              <th>
-                <span className="sr-only">Écoute</span>
-              </th>
+              <th className="admin-generation-audio-col">Écoute</th>
               <th className="admin-row-toggle-col">
                 <span className="sr-only">Détails</span>
               </th>
@@ -279,21 +268,19 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                     </AdminActionForm>
                   </div>
                 </td>
-                <td data-label="Écoute">
-                  <button
-                    type="button"
-                    disabled={!row.audioUrl}
-                    onClick={() => playRow(row)}
-                    aria-label={
-                      playingId === row.id
-                        ? `Mettre en pause ${row.title ?? "cette version"}`
-                        : `Écouter ${row.title ?? "cette version"}`
-                    }
-                    aria-pressed={playingId === row.id}
-                    className="admin-generation-play"
-                  >
-                    <Icon i={playingId === row.id ? "pause" : "play"} size={15} />
-                  </button>
+                <td data-label="Écoute" className="admin-generation-audio-cell">
+                  {row.audioUrl ? (
+                    <audio
+                      className="admin-generation-audio"
+                      controls
+                      preload="metadata"
+                      src={row.audioUrl}
+                      aria-label={`Écouter ${row.title ?? "cette version"}`}
+                      onPlay={(event) => pauseOthers(event.currentTarget)}
+                    />
+                  ) : (
+                    <span className="admin-generation-no-audio">Pas d’audio</span>
+                  )}
                 </td>
                 <td className="admin-row-toggle-cell">
                   <AdminRowToggle
