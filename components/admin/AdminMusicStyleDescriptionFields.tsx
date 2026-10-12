@@ -156,7 +156,8 @@ export default function AdminMusicStyleDescriptionFields({
         />
         <small id="music-style-lyrics-hint">
           Cette consigne guide l’écriture des paroles (flow, métrique, vocabulaire, structure adaptés à ce style). Elle
-          est envoyée à l’IA des paroles, jamais à Musicful ni au client. Vide : aucune consigne de style.{" "}
+          est envoyée à l’IA des paroles, jamais à Musicful ni au client. Elle ne fixe pas la langue des paroles : celle-ci
+          suit le choix du client. Vide : aucune consigne de style.{" "}
           {lyricsGuidance.length}/{LYRICS_GUIDANCE_MAX_LENGTH} caractères
         </small>
       </div>

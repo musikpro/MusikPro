@@ -22,5 +22,8 @@ export function buildLyricsGuidanceBlock(
       `- Consigne du style musical « ${names.style} » (forme des paroles: métrique, rythme des phrases, vocabulaire, structure, expressions typiques): ${style}`,
     );
   if (!lines.length) return "";
-  return `Consignes d'écriture du catalogue MusikPro (à appliquer en priorité pour l'écriture des paroles, sans les citer):\n${lines.join("\n")}`;
+  return (
+    `Consignes d'écriture du catalogue MusikPro (à appliquer en priorité pour l'écriture des paroles, sans les citer):\n${lines.join("\n")}\n` +
+    "La langue des paroles est TOUJOURS celle du champ « Langue » ci-dessus, choisie par le client : elle prime sur toute mention de langue dans ces consignes."
+  );
 }
