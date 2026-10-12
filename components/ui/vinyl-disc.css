@@ -1,0 +1,95 @@
+/* Disque vinyle du lecteur (dashboard client et page de partage). Carré, taille pilotée par la largeur du parent. */
+.vinyl-disc {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.35));
+}
+
+.vinyl-rotor {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  animation: vinyl-spin 4s linear infinite;
+  animation-play-state: paused;
+}
+
+.vinyl-disc.is-playing .vinyl-rotor,
+.psp-card:has(.psp-player.is-playing) .vinyl-rotor {
+  animation-play-state: running;
+}
+
+.vinyl-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Étiquette centrale : le rayon (35/200 de la largeur) suit celui du cercle blanc du SVG. */
+.vinyl-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 35%;
+  height: 35%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  border: 2px solid #fff;
+  box-sizing: border-box;
+}
+
+.vinyl-label img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.vinyl-spindle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6%;
+  height: 6%;
+  min-width: 5px;
+  min-height: 5px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: #0d0d0f;
+  box-shadow: 0 0 0 2px #fff;
+}
+
+.vinyl-tonearm {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+@keyframes vinyl-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vinyl-rotor {
+    animation: none;
+  }
+}
+
+/* Page de partage : titre plus discret pour laisser la place au disque. */
+.public-song-page .psp-title {
+  font-size: 16px;
+  line-height: 1.3;
+  -webkit-line-clamp: 3;
+}
+
+.psp-vinyl {
+  width: 220px;
+  max-width: 100%;
+}
