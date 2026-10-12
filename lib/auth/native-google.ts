@@ -30,6 +30,9 @@ export async function nativeGoogleIdToken(webClientId: string): Promise<string> 
     // Fermeture de la fenêtre de choix de compte : ce n'est pas une erreur à afficher.
     const message = error instanceof Error ? error.message : String(error);
     if (/cancel|dismiss|closed|12501/i.test(message)) throw new Error(NATIVE_GOOGLE_CANCELLED);
+    // Diagnostic : le texte brut du plugin n'est jamais montré au client, mais reste lisible dans la console de la WebView
+    // (chrome://inspect ou `adb logcat | grep Capacitor/Console`).
+    console.error("[native-google] sign-in failed:", message);
     // Erreurs de configuration Google côté appareil (clé de signature non déclarée dans Google Cloud, écran de
     // consentement, compte restreint…) : le texte technique du plugin n'a aucun sens pour un client.
     if (/reauth|\[16\]|\[10\]|developer_error|credential|google sign-in failed/i.test(message)) {
