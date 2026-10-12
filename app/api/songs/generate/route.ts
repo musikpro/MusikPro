@@ -26,6 +26,7 @@ import { writeAuditLog } from "@/lib/security/audit";
 import { OccasionDetailsError, resolveOccasionDetails } from "@/lib/occasion-fields/server";
 import { createLogger } from "@/lib/observability/logger";
 import { resolveAccentHint } from "@/lib/languages/accents-server";
+import { prepareMusicfulLyrics } from "@/lib/phonetics-offline/engine";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -177,6 +178,12 @@ export async function POST(request: Request) {
     input.occasion,
     buildVocalHint(input.language, input.voice, await resolveAccentHint(input.genre, input.language)),
   );
+  // Paroles préparées pour Musicful : les noms saisis sont remplacés par leur prononciation recalculée ici
+  // à partir des noms seuls (jamais d'une prononciation envoyée par le navigateur).
+  const { musicfulLyrics } = prepareMusicfulLyrics(lyrics, [input.recipientName, input.senderName], {
+    locale: "fr-CI",
+    unknownNamePolicy: "use-local-rules",
+  });
   const gender = mapVoiceToGender(input.voice) || provider.defaultGender || "";
 
   try {
@@ -186,7 +193,7 @@ export async function POST(request: Request) {
         title,
         occasion: input.occasion,
         style,
-        lyrics,
+        lyrics: musicfulLyrics,
         occasionDetails: occasionDetails.answers.map(({ fieldId, label, value }) => ({ fieldId, label, value })),
         gender,
         instrumental: provider.defaultInstrumental ? 1 : 0,

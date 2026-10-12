@@ -62,10 +62,8 @@ export default async function AdminAIProvidersPage() {
           id: "pronunciation",
           title: "Prononciation des noms",
           subtitle: "Assistance phonétique pour les prénoms et mots locaux",
-          meta: lyricsProvider?.enabled
-            ? `Réutilise ${lyricsProvider.provider === "anthropic" ? "Claude" : "OpenAI"} · ${lyricsProvider.model}`
-            : "Configure d'abord les paroles",
-          status: lyricsProvider?.enabled ? "active" : "coming",
+          meta: "Moteur local · sans IA",
+          status: "active",
           icon: "speech",
           href: "/admin/ai-providers/pronunciation",
         },

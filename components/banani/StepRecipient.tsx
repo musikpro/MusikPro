@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { demoRecipientSchema, demoSenderSchema } from "@/lib/validation/musikpro-demo";
-import { apiFetch } from "@/lib/api/client";
+import { getPronunciation } from "@/lib/phonetics-offline/engine";
 import CreationTopNav from "./CreationTopNav";
 import { useDemo } from "./DemoProvider";
 import Icon from "./Icon";
@@ -18,16 +18,8 @@ import { translateIssue } from "@/lib/validation/translate-issue";
 export const displayName = "Étape 3 — Personnalisation de la chanson";
 export const screenSize = "mobile";
 
-function localPronunciationGuess(name: string) {
-  const vowels = "aeiouyàâäéèêëïîôöùûüÿœ";
-  return name
-    .trim()
-    .split(/\s+/)
-    .map((word) => word.replace(new RegExp(`([${vowels}]+)(?=[^${vowels}]+[${vowels}])`, "gi"), "$1-"))
-    .join(" ");
-}
-
-const PRONUNCIATION_DEBOUNCE_MS = 600;
+/** Prononciation proposée localement (dictionnaire + règles), sans réseau ni IA : calcul synchrone à chaque saisie. */
+const localPronunciation = (name: string) => (name.trim() ? getPronunciation(name).pronunciation : "");
 
 type RecipientField = "name" | "pronunciation" | "relation";
 type SenderField = "senderName" | "senderPronunciation";
@@ -36,10 +28,6 @@ export default function StepRecipient() {
   const demo = useDemo();
   const [fieldErrors, setFieldErrors] = useState<Partial<Record<RecipientField | SenderField, string>>>({});
   const [detailErrors, setDetailErrors] = useState<Record<string, AnswerErrorCode>>({});
-  const [pronunciationLoading, setPronunciationLoading] = useState(false);
-  const [senderPronunciationLoading, setSenderPronunciationLoading] = useState(false);
-  const latestRequestedName = useRef("");
-  const latestRequestedSenderName = useRef("");
 
   useEffect(() => {
     if (Object.keys(fieldErrors).length === 0 && Object.keys(detailErrors).length === 0) return;
@@ -50,70 +38,9 @@ export default function StepRecipient() {
     return () => window.clearTimeout(timer);
   }, [fieldErrors, detailErrors]);
 
-  const showRecipientBlock = demo.occasionBlocks.showRecipient;
-  const showSenderBlock = demo.occasionBlocks.showSender;
-  const showRecipientRef = useRef(showRecipientBlock);
-  const showSenderRef = useRef(showSenderBlock);
-  useEffect(() => {
-    showRecipientRef.current = showRecipientBlock;
-    showSenderRef.current = showSenderBlock;
-  }, [showRecipientBlock, showSenderBlock]);
-
-  useEffect(() => {
-    if (demo.isDemo || !showRecipientBlock) return;
-    const name = demo.fields.recipientName.trim();
-    if (!name) return;
-    const timer = window.setTimeout(async () => {
-      latestRequestedName.current = name;
-      setPronunciationLoading(true);
-      try {
-        const result = await apiFetch<{ pronunciation: string }>("/api/ai/pronunciation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, language: demo.choices.language }),
-          timeoutMs: 15_000,
-        });
-        // Ignore a stale response if the user kept typing a different name meanwhile.
-        if (latestRequestedName.current === name && result.pronunciation && showRecipientRef.current) {
-          demo.field("recipientPronunciation", result.pronunciation);
-        }
-      } catch {
-        // Keep the instant local guess already shown — the AI suggestion is a best-effort upgrade.
-      } finally {
-        if (latestRequestedName.current === name) setPronunciationLoading(false);
-      }
-    }, PRONUNCIATION_DEBOUNCE_MS);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo.fields.recipientName, demo.isDemo, showRecipientBlock]);
-
-  useEffect(() => {
-    if (demo.isDemo || !showSenderBlock) return;
-    const name = demo.fields.senderName.trim();
-    if (!name) return;
-    const timer = window.setTimeout(async () => {
-      latestRequestedSenderName.current = name;
-      setSenderPronunciationLoading(true);
-      try {
-        const result = await apiFetch<{ pronunciation: string }>("/api/ai/pronunciation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, language: demo.choices.language }),
-          timeoutMs: 15_000,
-        });
-        // Ignore a stale response if the user kept typing a different name meanwhile.
-        if (latestRequestedSenderName.current === name && result.pronunciation && showSenderRef.current) {
-          demo.field("senderPronunciation", result.pronunciation);
-        }
-      } catch {
-        // Keep the instant local guess already shown — the AI suggestion is a best-effort upgrade.
-      } finally {
-        if (latestRequestedSenderName.current === name) setSenderPronunciationLoading(false);
-      }
-    }, PRONUNCIATION_DEBOUNCE_MS);
-    return () => window.clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demo.fields.senderName, demo.isDemo, showSenderBlock]);
+  // Les champs « Prononciation suggérée » sont toujours calculés depuis le nom saisi : jamais éditables par le client.
+  const recipientPhonetic = useMemo(() => localPronunciation(demo.fields.recipientName), [demo.fields.recipientName]);
+  const senderPhonetic = useMemo(() => localPronunciation(demo.fields.senderName), [demo.fields.senderName]);
 
   const clearFieldError = (field: RecipientField | SenderField) => {
     setFieldErrors((current) => {
@@ -129,14 +56,14 @@ export default function StepRecipient() {
     const parsedRecipient = showRecipient
       ? demoRecipientSchema.safeParse({
           name: demo.fields.recipientName,
-          pronunciation: demo.fields.recipientPronunciation,
+          pronunciation: recipientPhonetic,
           relation: demo.choices.recipientRelation,
         })
       : null;
     const parsedSender = showSender
       ? demoSenderSchema.safeParse({
           name: demo.fields.senderName,
-          pronunciation: demo.fields.senderPronunciation,
+          pronunciation: senderPhonetic,
         })
       : null;
     const details = validateOccasionAnswers(
@@ -236,7 +163,7 @@ export default function StepRecipient() {
                 onChange={(event) => {
                   const name = event.target.value;
                   demo.field("recipientName", name);
-                  demo.field("recipientPronunciation", localPronunciationGuess(name));
+                  demo.field("recipientPronunciation", localPronunciation(name));
                   clearFieldError("name");
                   clearFieldError("pronunciation");
                 }}
@@ -250,13 +177,10 @@ export default function StepRecipient() {
             <div className="story-recipient-field is-pronunciation">
               <span id="recipient-pronunciation-label" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 {t("Prononciation suggérée")}
-                {pronunciationLoading ? (
-                  <Icon i="loader-circle" size={12} className="animate-spin" aria-label={t("Suggestion IA en cours")} />
-                ) : null}
               </span>
               <input
                 type="text"
-                value={demo.fields.recipientPronunciation}
+                value={recipientPhonetic}
                 // eslint-disable-next-line no-restricted-syntax -- exemples de prénoms découpés en syllabes, non traduits
                 placeholder="Aï-cha"
                 aria-labelledby="recipient-pronunciation-label"
@@ -332,7 +256,7 @@ export default function StepRecipient() {
                 onChange={(event) => {
                   const name = event.target.value;
                   demo.field("senderName", name);
-                  demo.field("senderPronunciation", localPronunciationGuess(name));
+                  demo.field("senderPronunciation", localPronunciation(name));
                   clearFieldError("senderName");
                   clearFieldError("senderPronunciation");
                 }}
@@ -346,13 +270,10 @@ export default function StepRecipient() {
             <div className="story-recipient-field is-pronunciation">
               <span id="sender-pronunciation-label" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
                 {t("Prononciation suggérée")}
-                {senderPronunciationLoading ? (
-                  <Icon i="loader-circle" size={12} className="animate-spin" aria-label={t("Suggestion IA en cours")} />
-                ) : null}
               </span>
               <input
                 type="text"
-                value={demo.fields.senderPronunciation}
+                value={senderPhonetic}
                 placeholder="Mou-ssa"
                 aria-labelledby="sender-pronunciation-label"
                 aria-readonly="true"
