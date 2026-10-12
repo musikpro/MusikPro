@@ -5,11 +5,19 @@ import { AdminTabPanel, AdminTabs } from "@/components/admin/AdminTabs";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
 import { getDiscoverSettings, listDiscoverSongsForAdmin } from "@/lib/discover/server";
+import DisplayLimitsPanel from "@/components/admin/DisplayLimitsPanel";
+import { getDisplayLimits } from "@/lib/settings/display-limits";
+import { setDiscoverTitleLimit } from "@/app/admin/settings/actions";
+import { TITLE_MAX_CHARS_MAX, TITLE_MAX_CHARS_MIN } from "@/lib/settings/display-limits-constants";
 import { hideSongFromDiscover, restoreSongToDiscover, saveDiscoverSettings } from "./actions";
 
 export default async function AdminDiscoverPage() {
   await requireAdmin();
-  const [settings, songs] = await Promise.all([getDiscoverSettings(), listDiscoverSongsForAdmin()]);
+  const [settings, songs, displayLimits] = await Promise.all([
+    getDiscoverSettings(),
+    listDiscoverSongsForAdmin(),
+    getDisplayLimits(),
+  ]);
   const hiddenCount = songs.filter((song) => song.hidden).length;
   return (
     <AdminPage>
@@ -34,6 +42,7 @@ export default async function AdminDiscoverPage() {
         tabs={[
           { id: "settings", label: "Réglages" },
           { id: "songs", label: `Chansons (${songs.length})` },
+          { id: "display", label: "Affichage des titres" },
         ]}
       >
         <AdminTabPanel id="settings">
@@ -49,6 +58,23 @@ export default async function AdminDiscoverPage() {
               restoreAction={restoreSongToDiscover}
             />
           </section>
+        </AdminTabPanel>
+        <AdminTabPanel id="display">
+          <DisplayLimitsPanel
+            title="Longueur des titres"
+            description="Nombre maximal de caractères affichés pour le titre d’une chanson sur sa carte dans la page Découvrir du tableau de bord client. Au-delà, le titre est coupé et terminé par « … », ce qui évite d’encombrer la carte ; le titre complet reste visible au survol."
+            action={setDiscoverTitleLimit}
+            fields={[
+              {
+                name: "maxChars",
+                label: "Titre sur la carte Découvrir",
+                value: displayLimits.discoverTitleMaxChars,
+                min: TITLE_MAX_CHARS_MIN,
+                max: TITLE_MAX_CHARS_MAX,
+                unit: "caractères",
+              },
+            ]}
+          />
         </AdminTabPanel>
       </AdminTabs>
     </AdminPage>

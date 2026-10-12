@@ -1,6 +1,6 @@
 /**
  * Limites d'affichage côté client, réglées par le propriétaire : longueur maximale des titres de chansons
- * (landing « Ils ont créé avec MusikPro », « Bibliothèque populaire », Tendances du dashboard) et nombre de
+ * (landing « Ils ont créé avec MusikPro », « Bibliothèque populaire », Tendances et Découvrir du dashboard) et nombre de
  * styles musicaux montrés dans « Tous les styles africains ». Un seul mécanisme, partagé par les trois zones.
  */
 export const TITLE_MAX_CHARS_DEFAULT = 40;
@@ -15,6 +15,7 @@ export type DisplayLimits = {
   landingShowcaseTitleMaxChars: number;
   landingLibraryTitleMaxChars: number;
   trendingTitleMaxChars: number;
+  discoverTitleMaxChars: number;
   landingMusicStylesMaxCount: number;
 };
 
@@ -22,6 +23,7 @@ export const DISPLAY_LIMITS_DEFAULTS: DisplayLimits = {
   landingShowcaseTitleMaxChars: TITLE_MAX_CHARS_DEFAULT,
   landingLibraryTitleMaxChars: TITLE_MAX_CHARS_DEFAULT,
   trendingTitleMaxChars: TITLE_MAX_CHARS_DEFAULT,
+  discoverTitleMaxChars: TITLE_MAX_CHARS_DEFAULT,
   landingMusicStylesMaxCount: MUSIC_STYLES_MAX_COUNT_DEFAULT,
 };
 

@@ -14,6 +14,8 @@ export type DiscoverSong = {
   plays: number;
   coverUrl: string | null;
   audioUrl: string;
+  /** Titre raccourci (« … ») selon le réglage du propriétaire, pour les cartes ; `title` reste le titre complet. */
+  displayTitle?: string;
   /** True for the viewer's own songs — only those get a "Retirer" button. */
   mine: boolean;
 };

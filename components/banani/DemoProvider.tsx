@@ -440,6 +440,7 @@ function useDemoState(
         .map((song) => ({
           id: song.songGroupId as string | number,
           title: song.title,
+          displayTitle: song.displayTitle,
           plays: formatPlays(song.plays),
           style: song.style ?? "",
           img: "",

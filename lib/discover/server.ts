@@ -6,6 +6,8 @@ import { discoverHiddenSongs, discoverSettings, discoverSharedSongs, musicGenera
 import { ADMIN_ROLES } from "@/lib/auth/permissions";
 import { extractGenreLabel } from "@/lib/ai/songs";
 import { stripVersionSuffix } from "@/lib/ai/song-title";
+import { getDisplayLimits } from "@/lib/settings/display-limits";
+import { truncateTitle } from "@/lib/settings/display-limits-constants";
 import {
   DISCOVER_MAX_ITEMS_MAX,
   DISCOVER_MAX_ITEMS_MIN,
@@ -139,7 +141,10 @@ export async function listDiscoverSongs(viewerUserId: string | null): Promise<Di
       (song) => shared.has(song.songGroupId) && !hidden.has(song.songGroupId),
     );
     if (settings.sortBy === "popular") songs.sort((a, b) => b.plays - a.plays);
-    return songs.slice(0, settings.maxItems);
+    const { discoverTitleMaxChars } = await getDisplayLimits();
+    return songs
+      .slice(0, settings.maxItems)
+      .map((song) => ({ ...song, displayTitle: truncateTitle(song.title, discoverTitleMaxChars) }));
   } catch {
     return [];
   }
