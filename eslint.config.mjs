@@ -36,6 +36,8 @@ export default defineConfig([
     "generated/**",
     "next-env.d.ts",
     ".claude/skills/providers/**/examples/**",
+    // Test CommonJS autonome du moteur phonétique, exécuté par `scripts/run-phonetics-tests.sh` (hors périmètre React).
+    "tests/test-phonetics.cjs",
     // Artefacts natifs générés par Capacitor / Gradle / Xcode.
     "android/**",
     "ios/**",
