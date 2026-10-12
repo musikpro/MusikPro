@@ -10,6 +10,8 @@ export const FUNNEL_EVENT = {
   SITE_VISIT: "site_visit",
   CREATION_STARTED: "creation_started",
   CREATION_ABANDONED: "creation_abandoned",
+  /** Arrivée d'un visiteur par un lien du mode invité (`/g/<slug>`) ; métadonnées : lien, destination, utm. */
+  GUEST_ENTRY: "guest_entry",
 } as const;
 
 export type FunnelEventName = (typeof FUNNEL_EVENT)[keyof typeof FUNNEL_EVENT];

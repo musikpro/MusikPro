@@ -37,6 +37,19 @@ export async function getGuestLink(id: string): Promise<GuestLinkRecord | null> 
   return row ?? null;
 }
 
+/**
+ * Lecture publique par `/g/<slug>` : seulement un lien actif et hors corbeille. Un lien inconnu, désactivé ou en
+ * corbeille est indiscernable pour le visiteur (même réponse), ce qui évite d'énumérer les liens.
+ */
+export async function getPublicGuestLinkBySlug(slug: string): Promise<GuestLinkRecord | null> {
+  const [row] = await getServiceDb()
+    .select()
+    .from(guestLinks)
+    .where(and(eq(guestLinks.slug, slug), eq(guestLinks.active, true), isNull(guestLinks.deletedAt)))
+    .limit(1);
+  return row ?? null;
+}
+
 async function assertSlugAvailable(slug: string, exceptId?: string) {
   const [row] = await getServiceDb()
     .select({ id: guestLinks.id, deletedAt: guestLinks.deletedAt })

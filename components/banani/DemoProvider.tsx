@@ -89,7 +89,7 @@ type DemoProfile = { name: string; email: string; location: string };
 type StoreLinks = { googlePlayUrl: string | null; appStoreUrl: string | null; hideInApp: boolean };
 
 function useDemoState(
-  mode: "demo" | "real",
+  mode: "demo" | "real" | "guest",
   initialProfile: DemoProfile,
   initialBalance: number,
   initialCreditPlans: CreditPlanOption[],
@@ -117,6 +117,7 @@ function useDemoState(
   const router = useRouter();
   const browserPathname = usePathname();
   const isDemo = mode === "demo";
+  const isGuest = mode === "guest";
   const defaults = getWorkspaceDefaults(isDemo, initialBalance);
   const pathname = normalizeDashboardPath(browserPathname);
   // Language of the URL (`/en/dashboard/…`): every internal link keeps that prefix.
@@ -333,7 +334,7 @@ function useDemoState(
   // generations debiting 2 credits, refunds) without a page reload. Real workspace only: the demo
   // has its own local, simulated balance.
   useEffect(() => {
-    if (isDemo) return;
+    if (isDemo || isGuest) return;
     let stopped = false;
     let inFlight = false;
     let lastBalance: number | undefined;
@@ -374,7 +375,7 @@ function useDemoState(
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("focus", onVisible);
     };
-  }, [isDemo, router]);
+  }, [isDemo, isGuest, router]);
   const [songs, setSongs] = useState(() => defaults.songs);
   const [demoFavorites, setFavorites] = useState<(string | number)[]>(() => defaults.favorites);
   const [demoVersionFavorites, setVersionFavorites] = useState<string[]>(() => defaults.versionFavorites);
@@ -557,7 +558,7 @@ function useDemoState(
   };
   const exitAccount = async () => {
     notify("");
-    if (!isDemo) await authClient.signOut();
+    if (!isDemo && !isGuest) await authClient.signOut();
     router.replace("/login");
     router.refresh();
   };
@@ -760,7 +761,7 @@ function useDemoState(
     setPlaying(true);
   };
   const refreshSongs = async () => {
-    if (isDemo) return;
+    if (isDemo || isGuest) return;
     // A failed background refresh must not disrupt the current screen, but it must not leave the library
     // stale either (a generating song would stay invisible): retry a couple of times before giving up.
     for (let attempt = 0; attempt < 3; attempt++) {
@@ -982,6 +983,7 @@ function useDemoState(
   };
   return {
     isDemo,
+    isGuest,
     paymentBypassEnabled,
     versionsPerGeneration,
     generationRedirectDelaySeconds,
@@ -1155,7 +1157,8 @@ export function DemoProvider({
   storeLinks = { googlePlayUrl: null, appStoreUrl: null, hideInApp: true },
 }: {
   children: ReactNode;
-  mode: "demo" | "real";
+  /** « guest » : visiteur sans compte (lien invité) — catalogues réels, mais aucun appel qui exige une session. */
+  mode: "demo" | "real" | "guest";
   initialProfile: DemoProfile;
   initialBalance?: number;
   initialCreditPlans: CreditPlanOption[];

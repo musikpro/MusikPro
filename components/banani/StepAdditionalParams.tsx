@@ -31,6 +31,11 @@ export default function StepAdditionalParams() {
   // Enregistre tout de suite le brouillon avant de partir payer : la sauvegarde différée du parcours ne se déclenche
   // pas lors d'un changement d'écran, et le retour du paiement recharge la page depuis le serveur.
   const buyCredits = () => {
+    if (demo.isGuest) {
+      // Visiteur sans compte : le brouillon est déjà gardé dans le navigateur (GuestDraftSync) ; on le conduit à la connexion.
+      window.location.assign("/login");
+      return;
+    }
     const payload = buildCreationDraftPayload("parameters", {
       choices: demo.choices,
       fields: demo.fields,
@@ -225,7 +230,13 @@ export default function StepAdditionalParams() {
               : translateTemplate("Cette génération utilisera {credits} crédits", { credits: CREDITS_PER_GENERATION })}
         </p>
       </div>
-      <CreditsGateModal open={gateOpen} balance={demo.balance} onBuy={buyCredits} onClose={() => setGateOpen(false)} />
+      <CreditsGateModal
+        open={gateOpen}
+        balance={demo.balance}
+        guest={demo.isGuest}
+        onBuy={buyCredits}
+        onClose={() => setGateOpen(false)}
+      />
     </div>
   );
 }

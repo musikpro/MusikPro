@@ -17,11 +17,14 @@ export default function CreditsGateModal({
   balance,
   onBuy,
   onClose,
+  guest = false,
 }: {
   open: boolean;
   balance: number;
   onBuy: () => void;
   onClose: () => void;
+  /** Visiteur sans compte (lien invité) : on lui demande de se connecter avant d'acheter des crédits. */
+  guest?: boolean;
 }) {
   const buyRef = useRef<HTMLButtonElement>(null);
 
@@ -44,11 +47,17 @@ export default function CreditsGateModal({
 
   if (!open || typeof document === "undefined") return null;
 
-  const steps = [
-    t("Choisis ton offre de crédits"),
-    t("Règle ton paiement en toute sécurité"),
-    t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
-  ];
+  const steps = guest
+    ? [
+        t("Connecte-toi avec Google ou crée ton compte en quelques secondes"),
+        t("Choisis ton offre de crédits et règle ton paiement en toute sécurité"),
+        t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
+      ]
+    : [
+        t("Choisis ton offre de crédits"),
+        t("Règle ton paiement en toute sécurité"),
+        t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
+      ];
 
   return createPortal(
     <div className="credits-gate-overlay">
@@ -70,24 +79,33 @@ export default function CreditsGateModal({
           <Icon i="coins" size={26} />
         </span>
         <p className="credits-gate-kicker">{t("Dernière étape")}</p>
-        <h2 id="credits-gate-title">{t("Active tes crédits pour générer tes paroles")}</h2>
+        <h2 id="credits-gate-title">
+          {guest ? t("Connecte-toi pour générer tes paroles") : t("Active tes crédits pour générer tes paroles")}
+        </h2>
         <p id="credits-gate-description" className="credits-gate-text">
-          {translateTemplate(
-            "Tes informations sont complètes. Pour rédiger tes paroles puis composer ta chanson, il faut disposer de {credits} crédits : rien n’est débité avant la composition.",
-            { credits: CREDITS_PER_GENERATION },
-          )}
+          {guest
+            ? translateTemplate(
+                "Tes informations sont complètes. Pour rédiger tes paroles puis composer ta chanson, crée ton compte gratuitement : il faut ensuite disposer de {credits} crédits, et rien n’est débité avant la composition.",
+                { credits: CREDITS_PER_GENERATION },
+              )
+            : translateTemplate(
+                "Tes informations sont complètes. Pour rédiger tes paroles puis composer ta chanson, il faut disposer de {credits} crédits : rien n’est débité avant la composition.",
+                { credits: CREDITS_PER_GENERATION },
+              )}
         </p>
 
-        <dl className="credits-gate-balance">
-          <div>
-            <dt>{t("Ton solde")}</dt>
-            <dd>{balance === 1 ? t("1 crédit") : translateTemplate("{count} crédits", { count: balance })}</dd>
-          </div>
-          <div>
-            <dt>{t("Nécessaire")}</dt>
-            <dd>{translateTemplate("{count} crédits", { count: CREDITS_PER_GENERATION })}</dd>
-          </div>
-        </dl>
+        {guest ? null : (
+          <dl className="credits-gate-balance">
+            <div>
+              <dt>{t("Ton solde")}</dt>
+              <dd>{balance === 1 ? t("1 crédit") : translateTemplate("{count} crédits", { count: balance })}</dd>
+            </div>
+            <div>
+              <dt>{t("Nécessaire")}</dt>
+              <dd>{translateTemplate("{count} crédits", { count: CREDITS_PER_GENERATION })}</dd>
+            </div>
+          </dl>
+        )}
 
         <ol className="credits-gate-steps">
           {steps.map((step, index) => (
@@ -105,7 +123,7 @@ export default function CreditsGateModal({
 
         <div className="credits-gate-actions">
           <button ref={buyRef} type="button" className="credits-gate-primary" onClick={onBuy}>
-            {t("Acheter des crédits")} <Icon i="arrow-right" size={18} />
+            {guest ? t("Se connecter pour continuer") : t("Acheter des crédits")} <Icon i="arrow-right" size={18} />
           </button>
           <button type="button" className="credits-gate-secondary" onClick={onClose}>
             {t("Plus tard")}

@@ -2,6 +2,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { buildContentSecurityPolicy } from "./lib/security/headers";
 import { LOCALE_HEADER, REQUEST_PATH_HEADER, splitLocalePrefix } from "./lib/languages/locale-path";
+import { GUEST_COOKIE, GUEST_HEADER, isGuestAllowedPath, parseGuestCookie } from "./lib/guest/access";
+
+/**
+ * Visiteur sans compte arrivé par un lien invité (`/g/<slug>`) : admis uniquement sur l'accueil et les écrans de
+ * création de la liste blanche, avec le cookie posé par ce lien. Tout autre chemin exige toujours une session.
+ */
+function hasGuestAccess(request: NextRequest, pathname: string) {
+  return isGuestAllowedPath(pathname) && parseGuestCookie(request.cookies.get(GUEST_COOKIE)?.value) !== null;
+}
 
 export function proxy(request: NextRequest) {
   // `/en/dashboard/songs` → locale "en" + route `/dashboard/songs` (same idea as the `/demo` prefix
@@ -18,6 +27,8 @@ export function proxy(request: NextRequest) {
 
   const requestHeaders = new Headers(request.headers);
   requestHeaders.delete("x-musikpro-demo-route");
+  // Jamais fourni par le client : posé plus bas uniquement pour un visiteur invité admis (voir hasGuestAccess).
+  requestHeaders.delete(GUEST_HEADER);
   // Never trust client-sent values for these: they are set here from the URL only.
   requestHeaders.delete(LOCALE_HEADER);
   requestHeaders.set(REQUEST_PATH_HEADER, request.nextUrl.pathname + request.nextUrl.search);
@@ -38,14 +49,24 @@ export function proxy(request: NextRequest) {
     const destination = request.nextUrl.clone();
     destination.pathname = pathname;
     if (pathname.startsWith("/dashboard") && !getSessionCookie(request)) {
-      response = NextResponse.redirect(new URL("/login", request.url));
+      if (hasGuestAccess(request, pathname)) {
+        requestHeaders.set(GUEST_HEADER, "1");
+        response = NextResponse.rewrite(destination, { request: { headers: requestHeaders } });
+      } else {
+        response = NextResponse.redirect(new URL("/login", request.url));
+      }
     } else {
       response = NextResponse.rewrite(destination, { request: { headers: requestHeaders } });
     }
   } else {
     const protectedPath = pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
     if (protectedPath && !getSessionCookie(request)) {
-      response = NextResponse.redirect(new URL("/login", request.url));
+      if (hasGuestAccess(request, pathname)) {
+        requestHeaders.set(GUEST_HEADER, "1");
+        response = NextResponse.next({ request: { headers: requestHeaders } });
+      } else {
+        response = NextResponse.redirect(new URL("/login", request.url));
+      }
     } else {
       response = NextResponse.next({ request: { headers: requestHeaders } });
     }

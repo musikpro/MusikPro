@@ -643,7 +643,7 @@
       ]
     },
     "guest-mode": {
-      "description": "Mode invité : un lien /g/<slug> (publicités) laisse un visiteur sans compte commencer sa chanson, la connexion n'étant demandée qu'au moment d'obtenir des crédits. Phase 1 livrée : gestion des liens dans /admin/guest-links (créer, modifier, activer, destination formulaire de création ou accueil invité, corbeille restaurable, suppression définitive uniquement depuis la Corbeille). Entrée publique, mode invité du tableau de bord et portail de connexion : phases suivantes du plan.",
+      "description": "Mode invité : un lien /g/<slug> (publicités) laisse un visiteur sans compte commencer sa chanson, la connexion n'étant demandée qu'au moment d'obtenir des crédits. Phase 1 : gestion des liens dans /admin/guest-links (créer, modifier, activer, destination formulaire de création ou accueil invité, corbeille restaurable, suppression définitive uniquement depuis la Corbeille). Phase 2 : entrée publique /g/<slug> (cookie invité), accès invité limité à l'accueil et aux écrans de création jusqu'au choix de la langue et de la voix (liste blanche dans proxy.ts), accueil invité allégé, brouillon invité gardé dans le navigateur, portail de connexion provisoire avant « Générer les paroles ». Portail complet (Google d'abord, retour au parcours), reprise du brouillon après connexion et mesure détaillée : phases 3 et 4 du plan.",
       "optional": true,
       "env": ["DATABASE_URL", "DATABASE_SERVICE_URL", "NEXT_PUBLIC_APP_URL", "CRON_SECRET"],
       "files": [
@@ -652,6 +652,15 @@
         "lib/validation/guest-links.ts",
         "lib/guest-links/server.ts",
         "lib/guest-links/base-url.ts",
+        "lib/guest/access.ts",
+        "lib/guest/draft.ts",
+        "lib/guest/tracking.ts",
+        "app/g/[slug]/route.ts",
+        "components/banani/GuestHome.tsx",
+        "components/banani/GuestDraftSync.tsx",
+        "tests/guest-access.test.ts",
+        "tests/guest-draft.test.ts",
+        "tests/guest-tracking.test.ts",
         "app/admin/guest-links/page.tsx",
         "app/admin/guest-links/actions.ts",
         "app/admin/guest-links/loading.tsx",
@@ -669,7 +678,9 @@
       "notes": [
         "Migration 0085 purement additive (table guest_links + colonne trash_settings.guest_links_retention_days) : à appliquer à la production avant le déploiement du code.",
         "Suppression logique par deleted_at : le lien est désactivé et sa suppression définitive n'est possible que depuis la Corbeille (garanti par la requête purgeGuestLink) ; purge automatique par /api/cron/purge-trash.",
-        "Aucune route publique ni modification du parcours de création, de l'authentification ou du paiement en phase 1."
+        "Le proxy n'admet un visiteur sans session que sur une liste fermée de chemins (lib/guest/access.ts), avec le cookie posé par /g/<slug> ; l'en-tête interne x-musikpro-guest-route est supprimé des requêtes entrantes et le chemin est revérifié par isGuestRequest().",
+        "Un visiteur invité n'a aucune ligne en base et n'appelle aucune route API protégée : /api/ai/generate, /api/songs, /api/payments restent derrière une session.",
+        "Aucun changement du pipeline de paiement ; l'accès réel (connecté) est inchangé."
       ]
     },
     "discover-library": {

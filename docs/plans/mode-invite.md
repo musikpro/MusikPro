@@ -1,6 +1,6 @@
 # Mode Invité (parcours de création sans compte)
 
-- Statut : PLANIFIÉ — en attente de validation du propriétaire avant tout code
+- Statut : EN COURS — plan validé ; phase 1 livrée (commit 0e9b287), phase 2 codée et vérifiée en local (voir « Avancement »)
 - Créé : 2026-10-12
 - Workflow : **PLAN → SPEC → TEST → CODE → VERIFY**
 
@@ -163,3 +163,10 @@ Chaque phase se termine par ses gates et sa propre revue ; aucune ne dépend d'u
 5. Le lien invité doit-il pouvoir présélectionner une occasion (ex. Amour) selon la campagne ?
 6. Destination par défaut d'un nouveau lien : formulaire de création (recommandé pour des pubs d'action) ou tableau de bord invité ?
 7. Sur l'accueil invité, voulez-vous aussi « Découvrir » (chansons publiques) en lecture, ou seulement Tendances et le bouton de création ?
+
+## Avancement
+
+- **Phase 1 (admin des liens)** : livrée sur `feat/guest-mode` (commit `0e9b287`). Migration 0085 appliquée à la branche Neon `development` ; à appliquer à la production avant tout déploiement du code.
+- **Phase 2 (entrée et mode invité)** : codée et vérifiée en local. Vérifié : redirections selon la destination, cookie invité, liste blanche du proxy (chemins autorisés/interdits, en-tête forgé, cookie falsifié), session périmée avec cookie invité, accueil invité sans donnée de compte, parcours jusqu'à l'étape 5, brouillon invité conservé au rechargement, portail provisoire sans aucun appel API protégé. Choix de conception : les URL restent en `/dashboard/...` (aucun préfixe `/guest`), le proxy admet le visiteur sur la liste blanche avec le cookie du lien.
+- **Portail provisoire** : « Se connecter pour continuer » mène à `/login` ; le retour automatique au parcours, la reprise du brouillon après connexion et Google en premier arrivent en phase 3. Ne pas diffuser de lien invité en publicité avant la phase 3.
+- **Phase 3 et 4** : à faire.
