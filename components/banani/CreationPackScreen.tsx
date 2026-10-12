@@ -1,4 +1,5 @@
 "use client";
+import "./credits-gate.css";
 
 import Image from "next/image";
 import { useState } from "react";
@@ -80,6 +81,11 @@ export default function CreationPackScreen() {
             </span>
             <h1>{t("Choisis tes crédits")}</h1>
             <p>{t("Sélectionne l’offre adaptée au nombre de générations souhaité.")}</p>
+            {demo.fields.story.trim() && !demo.fields.lyrics.trim() ? (
+              <p className="checkout-lyrics-note">
+                {t("Dès que ton paiement est confirmé, tes paroles sont générées automatiquement.")}
+              </p>
+            ) : null}
           </div>
           <CurrencySelect
             currencies={demo.currencies}
@@ -230,7 +236,9 @@ export default function CreationPackScreen() {
               <strong>{formatDemoPackPrice(demo.coupon.finalAmount, demo.choices.currency, demo.currencies)}</strong>
             </span>
           ) : (
-            <strong>{demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency, demo.currencies) : "—"}</strong>
+            <strong>
+              {demo.pack ? formatDemoPackPrice(demo.pack.priceValue, demo.choices.currency, demo.currencies) : "—"}
+            </strong>
           )}
         </div>
         <button

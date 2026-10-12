@@ -1,5 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { CREDITS_PER_GENERATION } from "@/lib/credit-plans/catalog";
+import { buildCreationDraftPayload } from "./CreationDraftSync";
+import CreditsGateModal from "./CreditsGateModal";
 import { translate as t, translateTemplate } from "@/lib/i18n/translate";
 import { useDemo } from "./DemoProvider";
 
@@ -20,6 +24,29 @@ export default function StepAdditionalParams() {
   const demo = useDemo();
   const [detailError, setDetailError] = useState("");
   const hasRequiredOptions = Boolean(demo.choices.language && demo.choices.voice);
+  // Compte réel sans le solde d'une chanson : les paroles (facturées par le fournisseur IA) passent après l'achat.
+  const needsCredits = !demo.isDemo && !demo.paymentBypassEnabled && demo.balance < CREDITS_PER_GENERATION;
+  const [gateOpen, setGateOpen] = useState(useSearchParams().get("credits") === "required" && needsCredits);
+
+  // Enregistre tout de suite le brouillon avant de partir payer : la sauvegarde différée du parcours ne se déclenche
+  // pas lors d'un changement d'écran, et le retour du paiement recharge la page depuis le serveur.
+  const buyCredits = () => {
+    const payload = buildCreationDraftPayload("parameters", {
+      choices: demo.choices,
+      fields: demo.fields,
+      details: demo.details,
+      packIndex: demo.packIndex,
+    });
+    void fetch("/api/creation-draft", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      credentials: "same-origin",
+      keepalive: true,
+    })
+      .catch(() => undefined)
+      .finally(() => demo.go("/dashboard/payment-preview"));
+  };
 
   useEffect(() => {
     if (!detailError) return;
@@ -100,8 +127,7 @@ export default function StepAdditionalParams() {
         {/* Special Event Section */}
         <div className="mb-6">
           <label className="block text-sm font-bold text-foreground mb-3">
-            {t("Quel souvenir gardes-tu de cette personne ?")}
-            {" "}
+            {t("Quel souvenir gardes-tu de cette personne ?")}{" "}
             <span className="optional-hint">{t("(facultatif)")}</span>
           </label>
           <div className="additional-detail-shell bg-card border-2 border-border rounded-xl p-4 relative">
@@ -178,6 +204,10 @@ export default function StepAdditionalParams() {
               return;
             }
             demo.field("detail", parsed.data);
+            if (needsCredits) {
+              setGateOpen(true);
+              return;
+            }
             demo.go("/dashboard/create/lyrics/generating");
           }}
           className="w-full py-4 bg-primary text-primary-foreground font-bold text-base rounded-xl flex items-center justify-center gap-2 mt-4"
@@ -186,11 +216,16 @@ export default function StepAdditionalParams() {
           {demo.lyricsPending ? t("Génération…") : t("Générer les paroles")} <Icon i="arrow-right" size={18} />
         </button>
         <p className="text-xs text-muted-foreground text-center mt-2">
-          {hasRequiredOptions
-            ? t("Cette génération utilisera 2 crédits")
-            : t("Choisis une langue et une voix pour continuer")}
+          {!hasRequiredOptions
+            ? t("Choisis une langue et une voix pour continuer")
+            : needsCredits
+              ? translateTemplate("Il te faut {credits} crédits pour générer tes paroles et ta chanson", {
+                  credits: CREDITS_PER_GENERATION,
+                })
+              : translateTemplate("Cette génération utilisera {credits} crédits", { credits: CREDITS_PER_GENERATION })}
         </p>
       </div>
+      <CreditsGateModal open={gateOpen} balance={demo.balance} onBuy={buyCredits} onClose={() => setGateOpen(false)} />
     </div>
   );
 }

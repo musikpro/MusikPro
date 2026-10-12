@@ -1,4 +1,5 @@
 "use client";
+import "./credits-gate.css";
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -49,6 +50,9 @@ export default function PaymentScreen() {
     });
   };
 
+  // Achat lancé depuis l'étape « Langue et voix » : les paroles ne sont pas encore générées, elles partiront seules
+  // dès que le paiement est confirmé.
+  const forLyrics = !isCreditsPurchase && Boolean(demo.fields.story.trim()) && !demo.fields.lyrics.trim();
   const hasEnoughCredits = !isCreditsPurchase && (demo.paymentBypassEnabled || demo.balance >= CREDITS_PER_GENERATION);
 
   const handleContinue = () => {
@@ -87,7 +91,10 @@ export default function PaymentScreen() {
 
   return (
     <div className="checkout-information-screen bg-surface flex flex-col">
-      <CreationTopNav backHref="/dashboard/create/confirm" label={t("Informations")} />
+      <CreationTopNav
+        backHref={forLyrics ? "/dashboard/create/parameters" : "/dashboard/create/confirm"}
+        label={t("Informations")}
+      />
 
       <div className="checkout-information-content">
         <header className="checkout-information-heading">
@@ -97,6 +104,11 @@ export default function PaymentScreen() {
           </span>
           <h1>{t("Vos informations")}</h1>
           <p>{t("Vérifie tes coordonnées avant de choisir ton offre de crédits.")}</p>
+          {forLyrics ? (
+            <p className="checkout-lyrics-note">
+              {t("Dès que ton paiement est confirmé, tes paroles sont générées automatiquement.")}
+            </p>
+          ) : null}
         </header>
 
         <section className="checkout-information-card" aria-labelledby="checkout-contact-title">

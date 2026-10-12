@@ -961,6 +961,11 @@ function useDemoState(
       go("/dashboard/create/lyrics");
       return true;
     } catch (error) {
+      if (error instanceof ApiClientError && error.code === "INSUFFICIENT_CREDITS") {
+        // Solde insuffisant côté serveur : retour à l'étape 5, où la fenêtre d'achat de crédits s'ouvre.
+        go("/dashboard/create/parameters?credits=required");
+        return false;
+      }
       notify(
         error instanceof DOMException && error.name === "AbortError"
           ? t("La génération prend plus de temps que prévu. Réessaie dans un instant.")

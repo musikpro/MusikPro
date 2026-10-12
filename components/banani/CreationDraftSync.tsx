@@ -10,6 +10,42 @@ import {
   type CreationDraftStep,
 } from "@/lib/validation/creation-draft";
 
+export function buildCreationDraftPayload(
+  step: CreationDraftStep,
+  state: {
+    choices: Record<string, string | undefined>;
+    fields: Record<string, string | undefined>;
+    details: Record<string, string>;
+    packIndex: number;
+  },
+): CreationDraftSave {
+  const { choices, fields, details, packIndex } = state;
+  return {
+    step,
+    data: {
+      choices: {
+        occasion: choices.occasion ?? "",
+        genre: choices.genre ?? "",
+        mood: choices.mood ?? "",
+        language: choices.language ?? "",
+        voice: choices.voice ?? "",
+        recipientRelation: choices.recipientRelation ?? "",
+      },
+      fields: {
+        story: fields.story ?? "",
+        recipientName: fields.recipientName ?? "",
+        recipientPronunciation: fields.recipientPronunciation ?? "",
+        senderName: fields.senderName ?? "",
+        senderPronunciation: fields.senderPronunciation ?? "",
+        lyrics: fields.lyrics ?? "",
+        detail: fields.detail ?? "",
+      },
+      details,
+      packIndex,
+    },
+  };
+}
+
 const CREATE_PREFIX = "/dashboard/create/";
 const SAVE_DELAY_MS = 1500;
 
@@ -35,30 +71,7 @@ export default function CreationDraftSync() {
 
   const step = isDemo ? null : stepFromPath(pathname);
   const payload: CreationDraftSave | null = step
-    ? {
-        step,
-        data: {
-          choices: {
-            occasion: choices.occasion ?? "",
-            genre: choices.genre ?? "",
-            mood: choices.mood ?? "",
-            language: choices.language ?? "",
-            voice: choices.voice ?? "",
-            recipientRelation: choices.recipientRelation ?? "",
-          },
-          fields: {
-            story: fields.story ?? "",
-            recipientName: fields.recipientName ?? "",
-            recipientPronunciation: fields.recipientPronunciation ?? "",
-            senderName: fields.senderName ?? "",
-            senderPronunciation: fields.senderPronunciation ?? "",
-            lyrics: fields.lyrics ?? "",
-            detail: fields.detail ?? "",
-          },
-          details,
-          packIndex,
-        },
-      }
+    ? buildCreationDraftPayload(step, { choices, fields, details, packIndex })
     : null;
   const parsed = payload ? creationDraftSaveSchema.safeParse(payload) : null;
   const body = parsed?.success && isCreationDraftWorthKeeping(parsed.data.data) ? JSON.stringify(parsed.data) : "";

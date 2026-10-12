@@ -45,7 +45,12 @@ export default function PaymentRedirectScreen() {
           phone: parsedPhone.number,
           phoneCountry: country,
           phoneLocal: parsedPhone.nationalNumber,
-          successUrl: `${origin}/dashboard?payment=success`,
+          // Paroles pas encore générées : l'achat sert à les débloquer, on revient sur la page qui confirme le paiement
+          // puis lance les paroles toute seule.
+          successUrl:
+            demo.fields.story.trim() && !demo.fields.lyrics.trim()
+              ? `${origin}/dashboard/create/lyrics/after-payment`
+              : `${origin}/dashboard?payment=success`,
           cancelUrl: `${origin}/dashboard/create/pack?payment=cancelled`,
           couponCode: demo.coupon?.code,
         }),
