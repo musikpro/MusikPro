@@ -1,0 +1,116 @@
+/*
+ * Visualiseur audio COMMUN (voir lib/audio-visualizer/settings.ts). Toutes les pages l'utilisent via
+ * <AudioVisualizer variant="…" /> ; ne pas dupliquer ces règles ailleurs.
+ */
+.audio-viz {
+  --viz-height: 32px;
+  --viz-gap: 2px;
+  --viz-bar-max: none;
+  --viz-radius: 2px;
+  --viz-idle-scale: 0.35;
+  --viz-min-scale: 0.3;
+  --viz-align: center;
+  --viz-color: var(--color-primary);
+  --viz-color-active: var(--color-primary);
+  display: flex;
+  align-items: var(--viz-align);
+  justify-content: center;
+  gap: var(--viz-gap);
+  height: var(--viz-height);
+  width: 100%;
+  pointer-events: none;
+}
+
+.audio-viz-bar {
+  display: block;
+  flex: 1 1 auto;
+  max-width: var(--viz-bar-max);
+  /* Sans hauteur propre, une barre se réduisait à quelques pixels puis était écrasée par scaleY : trait quasi invisible. */
+  height: var(--viz-bar-h, 100%);
+  min-height: 3px;
+  border-radius: var(--viz-radius);
+  background: var(--viz-color);
+  transform: scaleY(var(--viz-idle-scale));
+  transform-origin: var(--viz-origin, center);
+  transition: background-color 200ms ease;
+}
+
+.audio-viz.is-playing .audio-viz-bar {
+  background: var(--viz-color-active);
+}
+
+.audio-viz.is-playing.is-animated .audio-viz-bar {
+  animation: audio-viz-bar var(--viz-duration, 720ms) var(--viz-delay, 0ms) ease-in-out infinite alternate;
+}
+
+@keyframes audio-viz-bar {
+  from {
+    transform: scaleY(var(--viz-min-scale));
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Page de partage : grand visualiseur centré, relié à l'analyseur audio. */
+.audio-viz--player {
+  --viz-height: 44px;
+  --viz-gap: 4px;
+  --viz-bar-max: 6px;
+  --viz-idle-scale: 0.35;
+  --viz-min-scale: 0.3;
+  --viz-color: color-mix(in srgb, var(--psp-primary) 55%, var(--psp-muted) 45%);
+  --viz-color-active: var(--psp-primary);
+  padding: 0 8px;
+}
+
+/* Carte « tendance » : barres qui montent depuis le bas. */
+.audio-viz--card {
+  --viz-height: 34px;
+  --viz-gap: 2px;
+  --viz-align: flex-end;
+  --viz-origin: bottom;
+  --viz-idle-scale: 0.12;
+  --viz-min-scale: 0.12;
+  justify-content: space-between;
+}
+
+/* Mini forme d'onde d'une version de chanson. */
+.audio-viz--inline {
+  --viz-height: 16px;
+  --viz-gap: 2px;
+  --viz-bar-max: 4px;
+  --viz-align: flex-end;
+  --viz-origin: bottom;
+  --viz-idle-scale: 1;
+  --viz-min-scale: 0.45;
+  --viz-color: color-mix(in srgb, var(--color-muted-foreground) 30%, transparent);
+  --viz-color-active: color-mix(in srgb, var(--color-primary) 60%, transparent);
+  justify-content: flex-start;
+  width: auto;
+}
+
+.audio-viz--inline .audio-viz-bar {
+  flex: 0 0 4px;
+}
+
+/* Bouton de la musique d'ambiance : trois barres. */
+.audio-viz--ambient {
+  --viz-height: 7px;
+  --viz-gap: 2px;
+  --viz-align: flex-end;
+  --viz-origin: bottom;
+  --viz-idle-scale: 0.45;
+  --viz-min-scale: 0.45;
+  --viz-radius: 1px;
+}
+
+.audio-viz--ambient .audio-viz-bar {
+  flex: 0 0 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .audio-viz-bar {
+    animation: none !important;
+  }
+}

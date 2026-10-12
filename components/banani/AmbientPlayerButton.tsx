@@ -2,8 +2,8 @@
 import Icon from "./Icon";
 import { translate as t } from "@/lib/i18n/translate";
 import { useAmbientPlayer } from "./AmbientPlayerContext";
+import AudioVisualizer from "@/components/ui/audio-visualizer";
 
-const WAVEFORM_BARS = [4, 7, 5];
 
 /**
  * Bouton compact destiné à la barre du haut (desktop et mobile) — jamais une bande séparée.
@@ -22,13 +22,7 @@ export default function AmbientPlayerButton({ compact = false }: { compact?: boo
       className={`ambient-player-button ${compact ? "is-compact" : ""}`}
     >
       <Icon i={muted ? "volume-x" : "volume-2"} size={compact ? 15 : 18} className="text-muted-foreground" />
-      <span
-        className={`song-inline-waveform ambient-player-button-waveform ${isPlaying && !muted ? "is-playing" : ""}`}
-      >
-        {WAVEFORM_BARS.map((h, i) => (
-          <span key={i} className="ambient-player-button-bar" style={{ height: `${h}px` }} />
-        ))}
-      </span>
+      <AudioVisualizer variant="ambient" playing={isPlaying && !muted} />
     </button>
   );
 }

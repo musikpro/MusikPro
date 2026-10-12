@@ -3,8 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import Icon from "@/components/banani/Icon";
+import AudioVisualizer from "@/components/ui/audio-visualizer";
+import { audioVisualizerBarCount } from "@/lib/audio-visualizer/settings";
 
-const BAR_COUNT = 28;
+const BAR_COUNT = audioVisualizerBarCount("player");
 // Combien de frames (~60fps) on laisse une chance à l'analyseur audio réel avant
 // d'abandonner et de se rabattre définitivement sur l'animation CSS décorative —
 // certains CDN ne renvoient pas les en-têtes CORS nécessaires à l'AnalyserNode, qui
@@ -203,17 +205,14 @@ export default function PublicSongPlayer({ audioUrl, title, playLabel, pauseLabe
       >
         <Icon i={isPlaying ? "pause" : "play"} size={26} />
       </button>
-      <div className={`psp-waveform ${isPlaying ? "is-playing" : ""} ${useCssFallback ? "is-css-fallback" : ""}`} aria-hidden="true">
-        {Array.from({ length: BAR_COUNT }).map((_, i) => (
-          <span
-            key={i}
-            ref={(el) => {
-              barRefs.current[i] = el;
-            }}
-            className="psp-waveform-bar"
-          />
-        ))}
-      </div>
+      <AudioVisualizer
+        variant="player"
+        playing={isPlaying}
+        animated={useCssFallback}
+        barRef={(element, index) => {
+          barRefs.current[index] = element;
+        }}
+      />
       <div className="psp-progress">
         <input
           type="range"

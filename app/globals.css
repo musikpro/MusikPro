@@ -2158,45 +2158,6 @@ a.psp-badge {
   width: 26px;
   height: 26px;
 }
-.psp-waveform {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  height: 28px;
-  width: 100%;
-  padding: 0 8px;
-}
-.psp-waveform-bar {
-  flex: 1 1 auto;
-  max-width: 4px;
-  min-height: 3px;
-  border-radius: 2px;
-  background: color-mix(in srgb, var(--psp-primary) 55%, var(--psp-muted) 45%);
-  transform: scaleY(0.35);
-  transform-origin: center;
-  transition: background-color 200ms ease;
-}
-.psp-waveform.is-playing .psp-waveform-bar {
-  background: var(--psp-primary);
-}
-.psp-waveform.is-playing.is-css-fallback .psp-waveform-bar {
-  animation: psp-wave 1s ease-in-out infinite alternate;
-}
-.psp-waveform.is-playing.is-css-fallback .psp-waveform-bar:nth-child(3n + 1) {
-  animation-delay: -0.7s;
-}
-.psp-waveform.is-playing.is-css-fallback .psp-waveform-bar:nth-child(3n + 2) {
-  animation-delay: -0.35s;
-}
-@keyframes psp-wave {
-  from {
-    transform: scaleY(0.3);
-  }
-  to {
-    transform: scaleY(1);
-  }
-}
 .psp-progress {
   width: 100%;
   display: flex;
@@ -2332,8 +2293,7 @@ a.psp-badge {
   .psp-card,
   .psp-cta,
   .psp-cover-glow,
-  .psp-play-button::after,
-  .psp-waveform-bar {
+  .psp-play-button::after {
     animation: none !important;
   }
 }

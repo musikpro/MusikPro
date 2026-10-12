@@ -15,6 +15,7 @@ import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import WhatsAppLogo from "./WhatsAppLogo";
+import AudioVisualizer from "@/components/ui/audio-visualizer";
 
 const styleColors: Record<string, string> = {
   Afrobeat: "bg-orange-50 text-coral",
@@ -393,19 +394,7 @@ export default function MySongsGenerated() {
                           </span>
                         </div>
                         {/* Mini waveform */}
-                        {!isPending && !isFailed ? (
-                          <div
-                            className={`song-inline-waveform flex items-end gap-0.5 h-4 ${isPlaying ? "is-playing" : ""}`}
-                          >
-                            {[3, 6, 4, 9, 7, 5, 10, 8, 6, 9, 5, 7, 4, 8, 6, 10, 7, 5, 8, 4].map((h, i) => (
-                              <div
-                                key={i}
-                                className={`w-1 rounded-sm ${isPlaying ? "bg-primary/60" : "bg-muted-foreground/30"}`}
-                                style={{ height: `${h}px` }}
-                              />
-                            ))}
-                          </div>
-                        ) : null}
+                        {!isPending && !isFailed ? <AudioVisualizer variant="inline" playing={isPlaying} /> : null}
                       </div>
 
                       {/* Actions */}
