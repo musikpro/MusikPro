@@ -13,6 +13,7 @@ import MobileTopBar from "./MobileTopBar";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import Image from "./Image";
+import { TITLE_MAX_CHARS_DEFAULT, truncateTitle } from "@/lib/settings/display-limits-constants";
 
 export default function DiscoverLibraryScreen() {
   const demo = useDemo();
@@ -55,7 +56,9 @@ export default function DiscoverLibraryScreen() {
             </div>
           )}
           {results.map((song, index) => {
-            const { cover } = song as { cover?: string | null };
+            const { cover, displayTitle } = song as { cover?: string | null; displayTitle?: string };
+            // Titre raccourci selon le réglage du propriétaire (démo : limite par défaut).
+            const cardTitle = displayTitle ?? truncateTitle(song.title, TITLE_MAX_CHARS_DEFAULT);
             return (
               <div key={song.id} className="rounded-xl overflow-hidden relative group">
                 {cover ? (
@@ -79,6 +82,12 @@ export default function DiscoverLibraryScreen() {
                 <span className="discover-card-number absolute left-2 top-2 flex h-7 min-w-7 items-center justify-center rounded-full bg-black/55 px-2 text-xs font-bold text-white">
                   {index + 1}
                 </span>
+                <p
+                  title={song.title}
+                  className="discover-card-title pointer-events-none absolute inset-x-0 bottom-0 line-clamp-2 break-words px-2 pb-2 pt-6 text-[11px] font-semibold leading-tight text-white"
+                >
+                  {cardTitle}
+                </p>
                 <button
                   type="button"
                   data-demo-ready="true"

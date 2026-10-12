@@ -733,6 +733,7 @@ export const adminDisplaySettings = pgTable("admin_display_settings", {
   landingLibraryTitleMaxChars: integer("landing_library_title_max_chars").notNull().default(40),
   trendingTitleMaxChars: integer("trending_title_max_chars").notNull().default(40),
   landingMusicStylesMaxCount: integer("landing_music_styles_max_count").notNull().default(12),
+  discoverTitleMaxChars: integer("discover_title_max_chars").notNull().default(40),
   updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -22,6 +22,7 @@ export async function getDisplayLimits(): Promise<DisplayLimits> {
         landingShowcaseTitleMaxChars: adminDisplaySettings.landingShowcaseTitleMaxChars,
         landingLibraryTitleMaxChars: adminDisplaySettings.landingLibraryTitleMaxChars,
         trendingTitleMaxChars: adminDisplaySettings.trendingTitleMaxChars,
+        discoverTitleMaxChars: adminDisplaySettings.discoverTitleMaxChars,
         landingMusicStylesMaxCount: adminDisplaySettings.landingMusicStylesMaxCount,
       })
       .from(adminDisplaySettings)
@@ -32,6 +33,7 @@ export async function getDisplayLimits(): Promise<DisplayLimits> {
       landingShowcaseTitleMaxChars: normalizeTitleMaxChars(row.landingShowcaseTitleMaxChars),
       landingLibraryTitleMaxChars: normalizeTitleMaxChars(row.landingLibraryTitleMaxChars),
       trendingTitleMaxChars: normalizeTitleMaxChars(row.trendingTitleMaxChars),
+      discoverTitleMaxChars: normalizeTitleMaxChars(row.discoverTitleMaxChars),
       landingMusicStylesMaxCount: normalizeMusicStylesMaxCount(row.landingMusicStylesMaxCount),
     };
   } catch {

@@ -396,6 +396,7 @@ async function saveDisplayLimits(
     landingShowcaseTitleMaxChars: number;
     landingLibraryTitleMaxChars: number;
     trendingTitleMaxChars: number;
+    discoverTitleMaxChars: number;
     landingMusicStylesMaxCount: number;
   }>,
   auditAction: string,
@@ -422,7 +423,10 @@ const landingTitleLimitsSchema = z.object({
 });
 
 /** Longueur maximale des titres affichés dans les deux sections de chansons de la landing. */
-export async function setLandingTitleLimits(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+export async function setLandingTitleLimits(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
     const parsed = landingTitleLimitsSchema.parse({
@@ -447,7 +451,10 @@ export async function setLandingTitleLimits(_previous: AdminActionState, formDat
 const trendingTitleLimitSchema = z.object({ maxChars: titleMaxCharsField("Tendances") });
 
 /** Longueur maximale des titres du widget « Tendances » du tableau de bord client. */
-export async function setTrendingTitleLimit(_previous: AdminActionState, formData: FormData): Promise<AdminActionState> {
+export async function setTrendingTitleLimit(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
   try {
     const session = await requireAdmin();
     const parsed = trendingTitleLimitSchema.parse({ maxChars: formData.get("maxChars") });
@@ -458,6 +465,28 @@ export async function setTrendingTitleLimit(_previous: AdminActionState, formDat
     );
     revalidatePath("/admin/trending");
     return { ok: true, message: `Titres de « Tendances » limités à ${parsed.maxChars} caractères.` };
+  } catch (error) {
+    return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
+  }
+}
+
+const discoverTitleLimitSchema = z.object({ maxChars: titleMaxCharsField("Découvrir") });
+
+/** Longueur maximale des titres affichés sur les cartes de la page « Découvrir » du tableau de bord client. */
+export async function setDiscoverTitleLimit(
+  _previous: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  try {
+    const session = await requireAdmin();
+    const parsed = discoverTitleLimitSchema.parse({ maxChars: formData.get("maxChars") });
+    await saveDisplayLimits(
+      session.user.id,
+      { discoverTitleMaxChars: parsed.maxChars },
+      "admin_display.discover_title_limit.updated",
+    );
+    revalidatePath("/admin/library");
+    return { ok: true, message: `Titres de « Découvrir » limités à ${parsed.maxChars} caractères.` };
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible d’enregistrer ce réglage.") };
   }
