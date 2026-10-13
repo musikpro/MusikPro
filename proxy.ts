@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { buildContentSecurityPolicy } from "./lib/security/headers";
-import { LOCALE_HEADER, REQUEST_PATH_HEADER, splitLocalePrefix } from "./lib/languages/locale-path";
+import { LOCALE_HEADER, REQUEST_PATH_HEADER, splitLocalePrefix, unprefixedPublicPath } from "./lib/languages/locale-path";
 import { GUEST_COOKIE, GUEST_HEADER, isGuestAllowedPath, parseGuestCookie } from "./lib/guest/access";
 
 /**
@@ -13,6 +13,14 @@ function hasGuestAccess(request: NextRequest, pathname: string) {
 }
 
 export function proxy(request: NextRequest) {
+  // `/fr/login` → `/login` : ces pages n'ont pas de préfixe de langue, une adresse préfixée ne doit pas finir en 404.
+  const publicPath = unprefixedPublicPath(request.nextUrl.pathname);
+  if (publicPath) {
+    const destination = request.nextUrl.clone();
+    destination.pathname = publicPath;
+    return NextResponse.redirect(destination);
+  }
+
   // `/en/dashboard/songs` → locale "en" + route `/dashboard/songs` (same idea as the `/demo` prefix
   // below). Everything after this point reasons on the un-prefixed route, so the dashboard guard,
   // the demo rewrite and the CSP behave exactly as before. The code itself is validated against the
