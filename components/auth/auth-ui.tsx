@@ -36,6 +36,18 @@ export function GoogleLogo() {
   );
 }
 
+export function GmailLogo() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+      <path fill="#4285F4" d="M6 42h8V23.5L2 14.5V38c0 2.2 1.8 4 4 4z" />
+      <path fill="#34A853" d="M34 42h8c2.2 0 4-1.8 4-4V14.5l-12 9z" />
+      <path fill="#FBBC04" d="M34 10v13.5l12-9V12c0-4.9-5.6-7.7-9.6-4.8z" />
+      <path fill="#EA4335" d="M14 23.5V10l10 7.5L34 10v13.5L24 31z" />
+      <path fill="#C5221F" d="M2 12v2.5l12 9V10L11.6 7.2C7.6 4.3 2 7.1 2 12z" />
+    </svg>
+  );
+}
+
 export function AuthBackLink({ href = "/login", label }: { href?: string; label?: string }) {
   return (
     <Link className="auth-back" href={href}>

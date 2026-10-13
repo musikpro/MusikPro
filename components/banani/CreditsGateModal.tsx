@@ -49,7 +49,7 @@ export default function CreditsGateModal({
 
   const steps = guest
     ? [
-        t("Crée ton compte avec Google ou ton e-mail, en moins de 30 secondes"),
+        t("Crée ton compte avec Gmail ou ton e-mail, en moins de 30 secondes"),
         t("Choisis ton offre de crédits et règle ton paiement en toute sécurité"),
         t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
       ]

@@ -191,7 +191,7 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
         </p>
         <form onSubmit={regenerate} className="security-2fa-form">
           <label className="field">
-            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
+            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Gmail)")}
             <input type="password" name="password" autoComplete="current-password" />
           </label>
           <button className="btn security-primary-button">{t("Générer de nouveaux codes")}</button>
@@ -205,7 +205,7 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
         </p>
         <form onSubmit={(e) => enable(e, true)} className="security-2fa-form">
           <label className="field">
-            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
+            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Gmail)")}
             <input type="password" name="password" autoComplete="current-password" />
           </label>
           <button className="btn security-primary-button">{t("Reconnecter l’application")}</button>
@@ -227,7 +227,7 @@ export function TwoFactorSetup({ enabled, totpConfigured }: { enabled: boolean; 
       {!uri && (
         <form onSubmit={(e) => enable(e)} className="security-2fa-form">
           <label className="field">
-            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Google)")}
+            {t("Mot de passe actuel (laissez vide si vous vous connectez avec Gmail)")}
             <input type="password" name="password" autoComplete="current-password" />
           </label>
           <button className="btn security-primary-button">{t("Commencer l’activation")}</button>

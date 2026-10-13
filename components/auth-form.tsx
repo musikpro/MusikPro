@@ -9,7 +9,7 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { emailSchema, loginSchema, registerIdentitySchema, registerSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
-import { AuthLogo, GoogleLogo } from "@/components/auth/auth-ui";
+import { AuthLogo, GmailLogo } from "@/components/auth/auth-ui";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
@@ -154,7 +154,7 @@ export function AuthForm({
       try {
         const token = await nativeGoogleIdToken(googleWebClientId);
         const native = await authClient.signIn.social({ provider: "google", idToken: { token } });
-        if (native?.error) throw new Error(authResultErrorMessage(native.error, t("Connexion Google impossible")));
+        if (native?.error) throw new Error(authResultErrorMessage(native.error, t("Connexion Gmail impossible")));
         if (native?.data && "twoFactorRedirect" in native.data && native.data.twoFactorRedirect) {
           router.push("/two-factor");
           return;
@@ -162,7 +162,7 @@ export function AuthForm({
         goToAuthenticatedSpace();
       } catch (nativeError) {
         const message = nativeError instanceof Error ? nativeError.message : "";
-        if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || t("Connexion Google impossible"));
+        if (message !== NATIVE_GOOGLE_CANCELLED) setError(message || t("Connexion Gmail impossible"));
         setBusy(false);
       }
       return;
@@ -173,7 +173,7 @@ export function AuthForm({
       errorCallbackURL: "/login",
     });
     if (r?.error) {
-      setError(authResultErrorMessage(r.error, t("Connexion Google impossible")));
+      setError(authResultErrorMessage(r.error, t("Connexion Gmail impossible")));
       setBusy(false);
     }
   }
@@ -211,8 +211,8 @@ export function AuthForm({
             {googleEnabled && !isPasswordStep && (
               <>
                 <button className="auth-google" type="button" disabled={busy} onClick={googleSignIn}>
-                  <GoogleLogo />
-                  {isLogin ? t("Connectez-vous avec Google") : t("Créez votre compte avec Google")}
+                  <GmailLogo />
+                  {isLogin ? t("Connectez-vous avec Gmail") : t("Créez votre compte avec Gmail")}
                 </button>
                 <div className="auth-divider">
                   <span>{t("OU")}</span>

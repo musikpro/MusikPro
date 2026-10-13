@@ -45,7 +45,7 @@ export function GuestAuthNotice() {
       {state.inApp && (
         <InlineNotice tone="warning">
           {t(
-            "Google peut refuser la connexion dans ce navigateur intégré. Utilise ton adresse e-mail ci-dessous, ou ouvre ce lien dans Chrome ou Safari.",
+            "La connexion Gmail peut être refusée dans ce navigateur intégré. Utilise ton adresse e-mail ci-dessous, ou ouvre ce lien dans Chrome ou Safari.",
           )}{" "}
           <button type="button" className="underline font-semibold" onClick={copyLink}>
             {state.copied ? t("Lien copié") : t("Copier le lien")}
