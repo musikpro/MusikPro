@@ -10,7 +10,6 @@ export const screenSize = "mobile";
 
 import MobileTopBar from "./MobileTopBar";
 import PackCouponBox from "./PackCouponBox";
-import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import CurrencySelect from "./CurrencySelect";
 import { CREDITS_PER_GENERATION, getCreditsConsumed, getGenerationCount } from "@/lib/credit-plans/catalog";
@@ -227,18 +226,20 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
         <PackCouponBox />
       </div>
 
-      {/* Primary CTA */}
+      {/* Primary CTA : fixé en bas de l'écran sur téléphone/tablette (aucune barre de menu sur cette page). */}
       <div className="pack-checkout-section px-4 pb-4 pt-2">
-        <button
-          type="button"
-          data-demo-ready="true"
-          onClick={() => demo.pack && demo.go("/dashboard/payment-preview?intent=credits")}
-          disabled={!demo.pack}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-55"
-        >
-          <Icon i="zap" size={16} />
-          {t("Acheter des crédits")}
-        </button>
+        <div className="pack-buy-bar">
+          <button
+            type="button"
+            data-demo-ready="true"
+            onClick={() => demo.pack && demo.go("/dashboard/payment-preview?intent=credits")}
+            disabled={!demo.pack}
+            className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-55"
+          >
+            <Icon i="zap" size={16} />
+            {t("Acheter des crédits")}
+          </button>
+        </div>
         <div className="pack-payment-methods" aria-label={t("Moyens de paiement acceptés")}>
           <p>{t("Moyens de paiement acceptés")}</p>
           <div className="pack-payment-logos">
@@ -292,7 +293,6 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
         </div>
       </div>
 
-      <MobileBottomNav activeTab={t("Profil")} />
     </div>
   );
 }

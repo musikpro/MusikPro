@@ -4037,6 +4037,31 @@ button.creation-genre-more:focus-visible {
   gap: 12px;
 }
 
+/* Bouton « Acheter des crédits » : fixé en bas sur téléphone/tablette, en flux normal sur desktop. */
+@media (max-width: 1023px) {
+  .pack-buy-bar {
+    position: fixed;
+    z-index: 50;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 10px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid color-mix(in srgb, var(--color-border) 82%, transparent);
+    background: color-mix(in srgb, var(--color-background) 94%, transparent);
+    box-shadow: 0 -10px 28px rgb(45 35 29 / 10%);
+    backdrop-filter: blur(14px);
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .pack-buy-bar {
+    right: auto;
+    left: 50%;
+    width: min(540px, 100%);
+    transform: translateX(-50%);
+  }
+}
+
 .song-balance-card {
   position: relative;
   isolation: isolate;
