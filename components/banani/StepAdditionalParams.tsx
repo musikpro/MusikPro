@@ -52,7 +52,7 @@ export default function StepAdditionalParams() {
       keepalive: true,
     })
       .catch(() => undefined)
-      .finally(() => demo.go("/dashboard/payment-preview"));
+      .finally(() => demo.go("/dashboard/credits"));
   };
 
   useEffect(() => {

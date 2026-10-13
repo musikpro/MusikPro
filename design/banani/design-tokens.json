@@ -14,7 +14,7 @@
     "components/banani/MusikSelect.tsx",
     "components/banani/SearchField.tsx",
     "components/banani/CreditsPurchaseScreen.tsx",
-    "components/banani/CreationPackScreen.tsx",
+    "components/banani/PackCouponBox.tsx",
     "components/banani/PaymentScreen.tsx",
     "components/banani/UserProfileScreen.tsx",
     "components/banani/StepStory.tsx",

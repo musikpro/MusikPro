@@ -23,6 +23,11 @@ export async function isDemoRequest() {
  *   est périmée ou invalide (ancien client qui clique sur une publicité) : il reste invité plutôt que d'être envoyé à
  *   la connexion. Un visiteur réellement connecté n'est jamais traité en invité.
  */
+/** Le visiteur est arrivé par un lien invité : cookie `musikpro_guest` valide, qu'il soit ensuite connecté ou non. */
+export async function hasGuestOrigin() {
+  return parseGuestCookie((await cookies()).get(GUEST_COOKIE)?.value) !== null;
+}
+
 export async function isGuestRequest() {
   const requestHeaders = await headers();
   const requestedPath = (requestHeaders.get(REQUEST_PATH_HEADER) ?? "").split("?")[0];

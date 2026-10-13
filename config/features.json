@@ -127,7 +127,7 @@
         "app/api/payments/coupons/apply/route.ts",
         "app/api/payments/checkout/route.ts",
         "lib/billing/reconcile.ts",
-        "components/banani/CreationPackScreen.tsx",
+        "components/banani/PackCouponBox.tsx",
         "components/banani/PaymentRedirectChariowScreen.tsx",
         "components/banani/DemoProvider.tsx"
       ],

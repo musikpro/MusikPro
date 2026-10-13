@@ -9,6 +9,7 @@ export const displayName = "Crédits & tarifs";
 export const screenSize = "mobile";
 
 import MobileTopBar from "./MobileTopBar";
+import PackCouponBox from "./PackCouponBox";
 import MobileBottomNav from "./MobileBottomNav";
 import Icon from "./Icon";
 import CurrencySelect from "./CurrencySelect";
@@ -108,6 +109,11 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
 
       {/* Credit Packs */}
       <div className="px-4 py-4">
+        {demo.fields.story.trim() && !demo.fields.lyrics.trim() ? (
+          <p className="checkout-lyrics-note" style={{ marginBottom: 18 }}>
+            {t("Dès que ton paiement est confirmé, tes paroles sont générées automatiquement.")}
+          </p>
+        ) : null}
         <div className="pack-purchase-heading">
           <div className="pack-purchase-title">
             <h2 className="font-bold text-base text-foreground">{t("Acheter des crédits")}</h2>
@@ -144,7 +150,11 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
               <button
                 type="button"
                 data-demo-ready="true"
-                onClick={() => demo.setPackIndex(demo.songPacks.findIndex((p) => p.id === pack.id))}
+                onClick={() => {
+                  // Un code promo vaut pour une offre précise : on le retire dès que l'offre change.
+                  if (demo.pack?.id !== pack.id) demo.setCoupon(null);
+                  demo.setPackIndex(demo.songPacks.findIndex((p) => p.id === pack.id));
+                }}
                 aria-pressed={demo.pack?.id === pack.id}
                 key={pack.id}
                 className={`demo-choice-card pack-choice-card relative rounded-xl border transition-all ${
@@ -211,6 +221,10 @@ export default function CreditsMobile({ history = [] }: { history?: CreditHistor
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="px-4 pb-4">
+        <PackCouponBox />
       </div>
 
       {/* Primary CTA */}

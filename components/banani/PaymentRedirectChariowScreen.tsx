@@ -51,7 +51,7 @@ export default function PaymentRedirectScreen() {
             demo.fields.story.trim() && !demo.fields.lyrics.trim()
               ? `${origin}/dashboard/create/lyrics/after-payment`
               : `${origin}/dashboard?payment=success`,
-          cancelUrl: `${origin}/dashboard/create/pack?payment=cancelled`,
+          cancelUrl: `${origin}/dashboard/credits?payment=cancelled`,
           couponCode: demo.coupon?.code,
         }),
       });
@@ -92,7 +92,7 @@ export default function PaymentRedirectScreen() {
           </p>
           <button
             type="button"
-            onClick={() => demo.go("/dashboard/create/pack")}
+            onClick={() => demo.go("/dashboard/credits")}
             className="mt-6 rounded-xl bg-primary px-5 py-3 font-semibold text-primary-foreground"
           >
             {t("Voir les crédits")}

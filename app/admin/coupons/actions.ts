@@ -51,8 +51,8 @@ const toggleSchema = idSchema.extend({ active: z.enum(["true", "false"]) });
 
 function revalidateCoupons() {
   revalidatePath("/admin/coupons");
-  revalidatePath("/dashboard/create/pack");
-  revalidatePath("/demo/create/pack");
+  revalidatePath("/dashboard/credits");
+  revalidatePath("/demo/credits");
 }
 
 function couponValues(parsed: z.infer<typeof couponFormSchema>) {

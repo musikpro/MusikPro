@@ -86,13 +86,20 @@ export default function PaymentScreen() {
       demo.go("/dashboard/payment-preview/chariow");
       return;
     }
-    demo.go("/dashboard/create/pack");
+    // Aucune offre n'a encore été choisie : on la choisit sur l'unique page « Crédits & tarifs ».
+    demo.go("/dashboard/credits");
   };
 
   return (
     <div className="checkout-information-screen bg-surface flex flex-col">
       <CreationTopNav
-        backHref={forLyrics ? "/dashboard/create/parameters" : "/dashboard/create/confirm"}
+        backHref={
+          isCreditsPurchase
+            ? "/dashboard/credits"
+            : forLyrics
+              ? "/dashboard/create/parameters"
+              : "/dashboard/create/confirm"
+        }
         label={t("Informations")}
       />
 
@@ -103,7 +110,7 @@ export default function PaymentScreen() {
             {t("Dernière vérification")}
           </span>
           <h1>{t("Vos informations")}</h1>
-          <p>{t("Vérifie tes coordonnées avant de choisir ton offre de crédits.")}</p>
+          <p>{t("Vérifie tes coordonnées avant de passer au paiement.")}</p>
           {forLyrics ? (
             <p className="checkout-lyrics-note">
               {t("Dès que ton paiement est confirmé, tes paroles sont générées automatiquement.")}

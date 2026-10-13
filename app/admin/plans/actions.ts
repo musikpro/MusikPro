@@ -53,7 +53,6 @@ function revalidateCreditPlans() {
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/billing");
   revalidatePath("/dashboard/credits");
-  revalidatePath("/dashboard/create/pack");
 }
 
 function planValues(parsed: z.infer<typeof creditPlanFormSchema>) {

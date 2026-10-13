@@ -34,7 +34,7 @@ const saveCurrencySchema = currencyFieldsSchema.extend({ code: codeSchema });
 const codeOnlySchema = z.object({ code: codeSchema });
 
 function refresh() {
-  ["/admin/languages", "/dashboard/credits", "/dashboard/create/pack", "/dashboard"].forEach((path) =>
+  ["/admin/languages", "/dashboard/credits", "/dashboard"].forEach((path) =>
     revalidatePath(path),
   );
 }
