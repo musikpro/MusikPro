@@ -4039,9 +4039,16 @@ button.creation-genre-more:focus-visible {
 
 /* Bouton « Acheter des crédits » : fixé en bas sur téléphone/tablette, en flux normal sur desktop. */
 @media (max-width: 1023px) {
+  /* L'animation d'apparition de la section crée un contexte d'empilement : sans z-index propre, les sections
+     suivantes (ex. Historique) passeraient par-dessus le bouton fixé, quel que soit le z-index de celui-ci. */
+  .pack-checkout-section {
+    position: relative;
+    z-index: 100;
+  }
+
   .pack-buy-bar {
     position: fixed;
-    z-index: 50;
+    z-index: 100;
     right: 0;
     bottom: 0;
     left: 0;
