@@ -82,7 +82,8 @@ export default function GuestHome({ trending }: { trending: TrendingSong[] }) {
           <button
             type="button"
             onClick={() => demo.go("/dashboard/discover")}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-transparent px-4 py-2.5 text-sm font-medium text-primary"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-secondary px-4 py-3 text-sm font-bold text-primary"
+            style={{ boxShadow: "inset 0 0 0 1.5px rgb(237 104 38 / 55%)" }}
           >
             <Icon i="headphones" size={16} />
             {t("Écouter encore plus de musique")}

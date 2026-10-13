@@ -17,11 +17,8 @@ export default function GuestDiscover({ songs }: { songs: DiscoverSong[] }) {
     <div className="bg-background min-h-screen pb-10">
       <GuestTopBar onBack={() => demo.go("/dashboard")} />
       <div className="mx-auto w-full max-w-3xl">
-        <div className="px-4 pt-4 pb-3">
-          <h1 className="font-headings font-bold text-2xl text-foreground">{t("Écouter des chansons")}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("Les chansons créées par notre communauté : écoute-les sans compte avant de te décider.")}
-          </p>
+        <div className="px-4 pt-2 pb-1">
+          <h1 className="font-headings font-bold text-xl text-foreground">{t("Écouter des chansons")}</h1>
         </div>
         {songs.length ? (
           <GuestVinylPlayer songs={songs} />
