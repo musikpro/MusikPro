@@ -1,7 +1,5 @@
 import Link from "next/link";
-import AdminActionForm from "@/components/admin/AdminActionForm";
-import AdminCopyLinkButton from "@/components/admin/AdminCopyLinkButton";
-import AdminTrashGuestLinkButton from "@/components/admin/AdminTrashGuestLinkButton";
+import AdminGuestLinkRowActions from "@/components/admin/AdminGuestLinkRowActions";
 import { AdminMetric, AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import Icon from "@/components/banani/Icon";
 import { requireAdmin } from "@/lib/auth/session";
@@ -10,7 +8,6 @@ import { listGuestLinks } from "@/lib/guest-links/server";
 import { getGuestLinkStats } from "@/lib/guest-links/stats";
 import { emptyGuestLinkStats } from "@/lib/guest-links/stats-summary";
 import { guestLinkUrl } from "@/lib/validation/guest-links";
-import { toggleGuestLinkAction, trashGuestLinkAction } from "./actions";
 
 const DESTINATION_LABELS: Record<string, string> = {
   create: "Formulaire de création",
@@ -19,22 +16,21 @@ const DESTINATION_LABELS: Record<string, string> = {
 
 function GuestLinkEntries({ stats }: { stats: ReturnType<typeof emptyGuestLinkStats> }) {
   if (!stats.total) return <small>Aucune entrée</small>;
+  const returning = `${stats.returningVisits.toLocaleString("fr-FR")} retour${stats.returningVisits > 1 ? "s" : ""}`;
   return (
-    <>
+    <div className="admin-guest-link-entries">
       <strong>{stats.total.toLocaleString("fr-FR")}</strong>
-      <small style={{ display: "block" }}>
-        {stats.last7Days.toLocaleString("fr-FR")} sur 7 j · {stats.last30Days.toLocaleString("fr-FR")} sur 30 j
+      <small>
+        7 j : {stats.last7Days.toLocaleString("fr-FR")} · 30 j : {stats.last30Days.toLocaleString("fr-FR")}
       </small>
-      <small style={{ display: "block" }}>
-        {stats.returningVisits.toLocaleString("fr-FR")} retour{stats.returningVisits > 1 ? "s" : ""}
+      <small>
+        {returning}
         {stats.lastEntryAt ? ` · dernière le ${stats.lastEntryAt.toLocaleDateString("fr-FR")}` : ""}
       </small>
       {stats.topSources.length ? (
-        <small style={{ display: "block" }}>
-          {stats.topSources.map((item) => `${item.source} (${item.entries})`).join(", ")}
-        </small>
+        <small>{stats.topSources.map((item) => `${item.source} (${item.entries})`).join(" · ")}</small>
       ) : null}
-    </>
+    </div>
   );
 }
 
@@ -76,7 +72,7 @@ export default async function AdminGuestLinksPage() {
         </div>
       ) : null}
       {rows.length ? (
-        <section className="admin-panel admin-table-panel">
+        <section className="admin-panel admin-table-panel admin-guest-links-table">
           <div className="admin-data-table-wrap">
             <table className="admin-data-table">
               <thead>
@@ -98,10 +94,15 @@ export default async function AdminGuestLinksPage() {
                     <tr key={row.id}>
                       <td className="admin-table-primary" data-label="Lien">
                         <strong>{row.label}</strong>
-                        <small style={{ wordBreak: "break-all" }}>{url}</small>
+                        <span className="admin-guest-link-url">{url}</span>
                         {row.note ? <small>{row.note}</small> : null}
                       </td>
-                      <td data-label="Destination">{DESTINATION_LABELS[row.destination] ?? row.destination}</td>
+                      <td data-label="Destination">
+                        <span className="admin-guest-link-destination">
+                          <Icon i={row.destination === "dashboard" ? "layout-dashboard" : "square-pen"} size={13} />
+                          {DESTINATION_LABELS[row.destination] ?? row.destination}
+                        </span>
+                      </td>
                       <td data-label="État">
                         <span className={`admin-status ${row.active ? "is-success" : "is-pending"}`}>
                           {row.active ? "Actif" : "Désactivé"}
@@ -112,27 +113,7 @@ export default async function AdminGuestLinksPage() {
                       </td>
                       <td data-label="Créé le">{row.createdAt.toLocaleDateString("fr-FR")}</td>
                       <td data-label="Actions">
-                        <div className="admin-table-actions">
-                          <AdminCopyLinkButton url={url} />
-                          <Link
-                            className="admin-secondary-action admin-style-edit"
-                            href={`/admin/guest-links/${row.id}`}
-                          >
-                            <Icon i="pencil" size={15} /> Modifier
-                          </Link>
-                          <AdminActionForm action={toggleGuestLinkAction}>
-                            <input type="hidden" name="id" value={row.id} />
-                            <input type="hidden" name="active" value={String(row.active)} />
-                            <button className="admin-secondary-action" type="submit">
-                              <Icon i={row.active ? "pause" : "play"} size={15} />
-                              {row.active ? "Désactiver" : "Activer"}
-                            </button>
-                          </AdminActionForm>
-                          <AdminActionForm action={trashGuestLinkAction}>
-                            <input type="hidden" name="id" value={row.id} />
-                            <AdminTrashGuestLinkButton label={row.label} />
-                          </AdminActionForm>
-                        </div>
+                        <AdminGuestLinkRowActions id={row.id} label={row.label} url={url} active={row.active} />
                       </td>
                     </tr>
                   );

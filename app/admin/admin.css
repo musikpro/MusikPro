@@ -8172,3 +8172,209 @@ body:has(.admin-app),
 .admin-product-row.is-editing {
   border-color: var(--admin-accent, #f26522);
 }
+
+/* Liens du mode invité : tableau lisible, actions regroupées (Copier, Modifier, menu « Plus ») sur une seule ligne. */
+.admin-guest-links-table .admin-data-table {
+  min-width: 860px;
+  table-layout: auto;
+}
+
+/* Ordinateur : la colonne des actions prend juste la place de ses boutons ; les autres se partagent le reste. */
+@media (min-width: 768px) {
+  .admin-guest-links-table .admin-data-table :is(th, td):last-child {
+    width: 1%;
+    white-space: nowrap;
+  }
+}
+
+.admin-guest-links-table .admin-data-table :is(th, td) {
+  padding: 16px 14px;
+  vertical-align: middle;
+}
+
+.admin-guest-links-table .admin-data-table :is(th, td):last-child {
+  text-align: right;
+}
+
+.admin-guest-link-url {
+  display: block;
+  margin-top: 3px;
+  color: var(--admin-muted);
+  font-size: 10px;
+  word-break: break-all;
+}
+
+.admin-guest-link-destination {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  background: var(--admin-surface);
+  color: var(--admin-foreground);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-guest-link-entries {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-guest-link-entries strong {
+  font-size: 18px;
+  line-height: 1.1;
+}
+
+.admin-guest-link-entries small {
+  display: block;
+  color: var(--admin-muted);
+  font-size: 10px;
+  line-height: 1.4;
+}
+
+.admin-row-actions {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin-row-actions .admin-secondary-action,
+.admin-row-action {
+  display: inline-flex;
+  width: auto;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: var(--admin-card);
+  color: var(--admin-foreground);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.admin-row-action-icon {
+  width: 38px;
+  padding: 0;
+}
+
+.admin-row-menu {
+  position: relative;
+}
+
+.admin-row-menu-panel {
+  position: fixed;
+  z-index: 60;
+  display: grid;
+  min-width: 190px;
+  padding: 6px;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  background: var(--admin-card);
+  box-shadow: var(--admin-shadow-raised, 0 12px 32px rgb(0 0 0 / 14%));
+  text-align: left;
+}
+
+.admin-row-menu-panel[hidden] {
+  display: none;
+}
+
+.admin-row-menu-panel form {
+  display: block;
+}
+
+.admin-row-menu-item {
+  display: flex;
+  width: 100%;
+  min-height: 40px;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--admin-foreground);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-row-menu-item.is-danger {
+  color: var(--admin-danger);
+}
+
+.admin-row-action:focus-visible,
+.admin-row-menu-item:focus-visible,
+.admin-row-actions .admin-secondary-action:focus-visible {
+  outline: 2px solid var(--admin-primary);
+  outline-offset: 2px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .admin-row-action:hover,
+  .admin-row-actions .admin-secondary-action:hover {
+    border-color: var(--admin-primary);
+  }
+
+  .admin-row-menu-item:hover {
+    background: var(--admin-surface);
+  }
+
+  .admin-row-menu-item.is-danger:hover {
+    background: #fff0ed;
+  }
+}
+
+@media (max-width: 767px) {
+  .admin-guest-links-table .admin-data-table {
+    min-width: 0;
+  }
+
+  /* Cartes mobiles : la cellule d'actions prend toute la largeur (sans étiquette) et ses boutons restent sur une ligne. */
+  .admin-guest-links-table .admin-data-table td[data-label="Actions"] {
+    display: block;
+    padding-top: 14px;
+    border-bottom: 0;
+    text-align: left;
+  }
+
+  .admin-guest-links-table .admin-data-table td[data-label="Actions"]::before {
+    display: none;
+  }
+
+  .admin-row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .admin-row-actions {
+    gap: 6px;
+  }
+
+  .admin-row-actions .admin-secondary-action,
+  .admin-row-action {
+    min-height: 44px;
+    padding: 0 11px;
+  }
+
+  .admin-row-action-icon {
+    width: 44px;
+  }
+
+  .admin-row-menu-panel {
+    min-width: min(240px, calc(100vw - 16px));
+  }
+}

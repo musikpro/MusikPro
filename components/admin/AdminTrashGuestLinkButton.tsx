@@ -3,11 +3,18 @@
 import Icon from "@/components/banani/Icon";
 
 /** Bouton « Supprimer » d'un lien invité : il l'envoie à la corbeille (restaurable) après confirmation. */
-export default function AdminTrashGuestLinkButton({ label }: { label: string }) {
+export default function AdminTrashGuestLinkButton({
+  label,
+  variant = "button",
+}: {
+  label: string;
+  variant?: "button" | "menu";
+}) {
   return (
     <button
       type="submit"
-      className="admin-style-delete"
+      role={variant === "menu" ? "menuitem" : undefined}
+      className={variant === "menu" ? "admin-row-menu-item is-danger" : "admin-style-delete"}
       onClick={(event) => {
         if (
           !window.confirm(
