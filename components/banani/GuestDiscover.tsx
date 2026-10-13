@@ -1,12 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import GuestSongCard from "./GuestSongCard";
+import GuestVinylPlayer from "./GuestVinylPlayer";
 import GuestTopBar from "./GuestTopBar";
 import Icon from "./Icon";
 import { useDemo } from "./DemoProvider";
-import { translate as t, translateTemplate } from "@/lib/i18n/translate";
-import { formatPlays } from "@/lib/trending/format";
+import { translate as t } from "@/lib/i18n/translate";
 import type { DiscoverSong } from "@/lib/discover/types";
 
 /**
@@ -15,7 +13,6 @@ import type { DiscoverSong } from "@/lib/discover/types";
  */
 export default function GuestDiscover({ songs }: { songs: DiscoverSong[] }) {
   const demo = useDemo();
-  const [playingKey, setPlayingKey] = useState<string | null>(null);
   return (
     <div className="bg-background min-h-screen pb-10">
       <GuestTopBar onBack={() => demo.go("/dashboard")} />
@@ -27,34 +24,7 @@ export default function GuestDiscover({ songs }: { songs: DiscoverSong[] }) {
           </p>
         </div>
         {songs.length ? (
-          <>
-            <p role="status" className="px-4 pb-3 text-xs text-muted-foreground">
-              {songs.length !== 1
-                ? translateTemplate("{count} chansons à écouter", { count: songs.length })
-                : translateTemplate("{count} chanson à écouter", { count: songs.length })}
-            </p>
-            <div
-              className="grid gap-2.5 px-4"
-              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(9.5rem, 1fr))" }}
-            >
-              {songs.map((song) => (
-                <GuestSongCard
-                  key={song.songGroupId}
-                  song={{
-                    key: song.songGroupId,
-                    title: song.title,
-                    displayTitle: song.displayTitle,
-                    playsLabel: formatPlays(song.plays),
-                    coverUrl: song.coverUrl,
-                    audioUrl: song.audioUrl,
-                  }}
-                  playing={playingKey === song.songGroupId}
-                  onToggle={() => setPlayingKey(song.songGroupId)}
-                  onClose={() => setPlayingKey(null)}
-                />
-              ))}
-            </div>
-          </>
+          <GuestVinylPlayer songs={songs} />
         ) : (
           <div role="status" className="mx-4 rounded-xl border border-border bg-card px-5 py-8 text-center">
             <Icon i="library" size={26} className="mx-auto mb-2 text-primary" />

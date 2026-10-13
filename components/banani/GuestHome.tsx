@@ -18,11 +18,6 @@ import type { TrendingSong } from "@/lib/trending/server";
 export default function GuestHome({ trending }: { trending: TrendingSong[] }) {
   const demo = useDemo();
   const [playingKey, setPlayingKey] = useState<string | null>(null);
-  const steps = [
-    t("Raconte votre histoire et choisis le style"),
-    t("Crée ton compte gratuitement, en moins de 30 secondes, quand tu es prêt"),
-    t("Reçois ta chanson personnalisée"),
-  ];
   return (
     <div className="bg-background min-h-screen pb-10">
       <GuestTopBar />
@@ -57,20 +52,6 @@ export default function GuestHome({ trending }: { trending: TrendingSong[] }) {
           </button>
         </div>
 
-        <ol className="px-4 mb-6 flex flex-col gap-2">
-          {steps.map((step, index) => (
-            <li key={step} className="flex items-center gap-3 bg-card border border-border rounded-xl px-4 py-3">
-              <span
-                aria-hidden="true"
-                className="w-7 h-7 rounded-full bg-secondary text-primary font-bold text-sm flex items-center justify-center flex-shrink-0"
-              >
-                {index + 1}
-              </span>
-              <span className="text-sm text-foreground">{step}</span>
-            </li>
-          ))}
-        </ol>
-
         {trending.length ? (
           <section className="px-4" aria-labelledby="guest-trending-title">
             <h2 id="guest-trending-title" className="font-headings font-bold text-lg text-foreground mb-3">
@@ -97,11 +78,11 @@ export default function GuestHome({ trending }: { trending: TrendingSong[] }) {
           </section>
         ) : null}
 
-        <div className="px-4 mt-3">
+        <div className="px-4 mt-4">
           <button
             type="button"
             onClick={() => demo.go("/dashboard/discover")}
-            className="w-full flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-3 text-sm font-semibold text-primary"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-transparent px-4 py-2.5 text-sm font-medium text-primary"
           >
             <Icon i="headphones" size={16} />
             {t("Écouter encore plus de musique")}
