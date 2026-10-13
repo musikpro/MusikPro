@@ -165,8 +165,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {guest ? <GuestDraftSync /> : <CreationDraftSync />}
       {!demo && !guest && <NativePushRegistrar />}
       {!demo && !guest && <GuestDraftMigrate />}
-      {guestOrigin ? null : <MobileBottomNav />}
-      {guestOrigin ? null : <NativeBottomNav />}
+      <MobileBottomNav />
+      <NativeBottomNav />
     </DemoProvider>
   );
 }

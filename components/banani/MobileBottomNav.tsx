@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useDemo } from "./DemoProvider";
 import { demoDestination } from "@/lib/demo/navigation";
+import { shouldHideBottomNav } from "@/lib/guest/bottom-nav";
 import { translate as t } from "@/lib/i18n/translate";
 
 import Icon from "./Icon";
@@ -25,8 +26,8 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
   const demo = useDemo();
   const [launching, setLaunching] = useState(false);
   const pathname = demo.pathname;
-  // Visiteur arrivé par un lien invité : aucune barre de menu du bas.
-  if (demo.guestOrigin) return null;
+  // Visiteur arrivé par un lien invité : pas de barre du bas sur le parcours d'achat de crédits uniquement.
+  if (shouldHideBottomNav({ guestOrigin: demo.guestOrigin, pathname })) return null;
   const currentTab = pathname.startsWith("/dashboard/credits")
     ? "Crédits"
     : pathname.startsWith("/dashboard/discover")
