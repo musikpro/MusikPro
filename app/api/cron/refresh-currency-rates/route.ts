@@ -18,7 +18,7 @@ async function handle(request: Request) {
       targetId: "global",
       metadata: { updated: outcome.updated, missing: outcome.missing, source: "cron" },
     });
-    ["/admin/languages", "/dashboard/credits", "/dashboard/create/pack", "/dashboard"].forEach((path) =>
+    ["/admin/languages", "/dashboard/credits", "/dashboard"].forEach((path) =>
       revalidatePath(path),
     );
     return Response.json({ ok: true, message: outcome.message, updated: outcome.updated }, { headers });

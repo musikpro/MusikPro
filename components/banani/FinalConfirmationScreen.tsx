@@ -29,7 +29,8 @@ export default function FinalConfirmationScreen() {
         return;
       }
     }
-    demo.go("/dashboard/payment-preview");
+    // Crédits insuffisants : choix de l'offre sur l'unique page « Crédits & tarifs » ; sinon seules les coordonnées manquent.
+    demo.go(canGenerate ? "/dashboard/payment-preview" : "/dashboard/credits");
   };
   return (
     <div className="bg-surface flex flex-col">

@@ -25,6 +25,8 @@ export default function MobileBottomNav({ activeTab = "Accueil" }) {
   const demo = useDemo();
   const [launching, setLaunching] = useState(false);
   const pathname = demo.pathname;
+  // Visiteur arrivé par un lien invité : aucune barre de menu du bas.
+  if (demo.guestOrigin) return null;
   const currentTab = pathname.startsWith("/dashboard/credits")
     ? "Crédits"
     : pathname.startsWith("/dashboard/discover")

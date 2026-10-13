@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getPrivatePageMetadata } from "@/lib/seo/metadata";
 import { MobileBottomNav } from "@/components/mobile-bottom-nav";
 import { NativeBottomNav } from "@/components/mobile/native-bottom-nav";
-import { isDemoRequest, isGuestRequest, requireUser } from "@/lib/auth/session";
+import { hasGuestOrigin, isDemoRequest, isGuestRequest, requireUser } from "@/lib/auth/session";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { DemoProvider } from "@/components/banani/DemoProvider";
 import CreationDraftSync from "@/components/banani/CreationDraftSync";
@@ -59,6 +59,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const demo = await isDemoRequest();
   // Visiteur sans compte (lien invité) : jamais d'accès à la base pour lui (ni solde, ni chansons, ni profil de paiement).
   const guest = !demo && (await isGuestRequest());
+  // Arrivé par un lien invité (connecté ou non) : pas de barre de menu du bas.
+  const guestOrigin = !demo && (guest || (await hasGuestOrigin()));
   const requestHeaders = await headers();
   const preferredLanguageCode = await readLanguagePreference();
   // Reserved for SaaS owner accounts only — a paying customer never sees it, bypass flag or not.
@@ -130,6 +132,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <DemoProvider
       mode={demo ? "demo" : guest ? "guest" : "real"}
+      guestOrigin={guestOrigin}
       initialBalance={balance}
       paymentBypassEnabled={paymentBypassEnabled}
       versionsPerGeneration={versionsPerGeneration}
@@ -162,8 +165,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
       {guest ? <GuestDraftSync /> : <CreationDraftSync />}
       {!demo && !guest && <NativePushRegistrar />}
       {!demo && !guest && <GuestDraftMigrate />}
-      <MobileBottomNav />
-      <NativeBottomNav />
+      {guestOrigin ? null : <MobileBottomNav />}
+      {guestOrigin ? null : <NativeBottomNav />}
     </DemoProvider>
   );
 }

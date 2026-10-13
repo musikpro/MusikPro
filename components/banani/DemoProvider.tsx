@@ -1127,11 +1127,15 @@ function useDemoState(
   };
 }
 
-type DemoState = ReturnType<typeof useDemoState>;
+type DemoState = ReturnType<typeof useDemoState> & {
+  /** Visiteur arrivé par un lien invité (même connecté ensuite) : aucune barre de menu du bas, pour ne pas le disperser. */
+  guestOrigin: boolean;
+};
 const Context = createContext<DemoState | null>(null);
 export function DemoProvider({
   children,
   mode,
+  guestOrigin = false,
   initialProfile,
   initialBalance = 0,
   initialCreditPlans,
@@ -1159,6 +1163,8 @@ export function DemoProvider({
   children: ReactNode;
   /** « guest » : visiteur sans compte (lien invité) — catalogues réels, mais aucun appel qui exige une session. */
   mode: "demo" | "real" | "guest";
+  /** Vrai quand le visiteur est arrivé par un lien invité (cookie `musikpro_guest`), connecté ou non. */
+  guestOrigin?: boolean;
   initialProfile: DemoProfile;
   initialBalance?: number;
   initialCreditPlans: CreditPlanOption[];
@@ -1223,7 +1229,7 @@ export function DemoProvider({
     };
   }, []);
   return (
-    <Context.Provider value={state}>
+    <Context.Provider value={{ ...state, guestOrigin }}>
       {offline && (
         <InlineNotice tone="warning" className="demo-offline">
           {state.isDemo
