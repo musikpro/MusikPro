@@ -49,7 +49,7 @@ export default function CreditsGateModal({
 
   const steps = guest
     ? [
-        t("Connecte-toi avec Google ou crée ton compte en quelques secondes"),
+        t("Crée ton compte avec Gmail ou ton e-mail, en moins de 30 secondes"),
         t("Choisis ton offre de crédits et règle ton paiement en toute sécurité"),
         t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
       ]
@@ -80,12 +80,12 @@ export default function CreditsGateModal({
         </span>
         <p className="credits-gate-kicker">{t("Dernière étape")}</p>
         <h2 id="credits-gate-title">
-          {guest ? t("Connecte-toi pour générer tes paroles") : t("Active tes crédits pour générer tes paroles")}
+          {guest ? t("Crée ton compte pour générer tes paroles") : t("Active tes crédits pour générer tes paroles")}
         </h2>
         <p id="credits-gate-description" className="credits-gate-text">
           {guest
             ? translateTemplate(
-                "Tes informations sont complètes. Pour rédiger tes paroles puis composer ta chanson, crée ton compte gratuitement : il faut ensuite disposer de {credits} crédits, et rien n’est débité avant la composition.",
+                "Tes informations sont complètes. Crée ton compte gratuitement en moins de 30 secondes : il te faudra ensuite {credits} crédits pour rédiger tes paroles et composer ta chanson, et rien n’est débité avant la composition.",
                 { credits: CREDITS_PER_GENERATION },
               )
             : translateTemplate(
@@ -118,12 +118,14 @@ export default function CreditsGateModal({
 
         <p className="credits-gate-reassure">
           <Icon i="shield-check" size={16} />
-          {t("Tes réponses sont conservées : tu ne perds rien en passant par le paiement.")}
+          {guest
+            ? t("Tes réponses sont conservées : tu les retrouves dès que ton compte est créé.")
+            : t("Tes réponses sont conservées : tu ne perds rien en passant par le paiement.")}
         </p>
 
         <div className="credits-gate-actions">
           <button ref={buyRef} type="button" className="credits-gate-primary" onClick={onBuy}>
-            {guest ? t("Se connecter pour continuer") : t("Acheter des crédits")} <Icon i="arrow-right" size={18} />
+            {guest ? t("Créer mon compte") : t("Acheter des crédits")} <Icon i="arrow-right" size={18} />
           </button>
           <button type="button" className="credits-gate-secondary" onClick={onClose}>
             {t("Plus tard")}

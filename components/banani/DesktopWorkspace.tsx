@@ -12,7 +12,8 @@ import { translate as t } from "@/lib/i18n/translate";
 export default function DesktopWorkspace({ children }: { children: ReactNode }) {
   const demo = useDemo();
   const pathname = demo.pathname;
-  if (pathname === "/dashboard") return children;
+  // Accueil ; et « Découvrir » du visiteur invité, qui a sa propre mise en page (aucun menu ni solde de compte).
+  if (pathname === "/dashboard" || (demo.isGuest && pathname === "/dashboard/discover")) return children;
   const focusedPaymentFlow = pathname.startsWith("/dashboard/payment-preview");
   const creation = pathname.startsWith("/dashboard/create") || focusedPaymentFlow;
   const hasImportedNavigation = [

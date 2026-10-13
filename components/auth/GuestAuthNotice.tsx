@@ -40,12 +40,12 @@ export function GuestAuthNotice() {
   return (
     <div className="mx-auto w-full max-w-md px-4 pt-4 flex flex-col gap-2">
       <InlineNotice tone="success">
-        {t("Ta chanson en cours est gardée : connecte-toi pour la retrouver.")}
+        {t("Ta chanson en cours est gardée : crée ton compte pour la retrouver.")}
       </InlineNotice>
       {state.inApp && (
         <InlineNotice tone="warning">
           {t(
-            "Google peut refuser la connexion dans ce navigateur intégré. Utilise ton adresse e-mail ci-dessous, ou ouvre ce lien dans Chrome ou Safari.",
+            "La connexion Gmail peut être refusée dans ce navigateur intégré. Utilise ton adresse e-mail ci-dessous, ou ouvre ce lien dans Chrome ou Safari.",
           )}{" "}
           <button type="button" className="underline font-semibold" onClick={copyLink}>
             {state.copied ? t("Lien copié") : t("Copier le lien")}
