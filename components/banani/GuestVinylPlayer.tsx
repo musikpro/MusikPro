@@ -25,7 +25,7 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
   const [muted, setMuted] = useState(false);
   const [progress, setProgress] = useState({ current: 0, duration: 0 });
   const song = songs[index] ?? null;
-  const upNext = songs.length > 1 ? [1, 2].map((offset) => songs[(index + offset) % songs.length]).filter((s) => s !== song) : [];
+  const cardRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   const go = (direction: number) => {
     if (!songs.length) return;
@@ -47,6 +47,12 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
     else audio.pause();
   }, [playing, song]);
 
+  // La carte de la chanson en cours reste visible dans le carrousel (centrée) quand on change de piste.
+  useEffect(() => {
+    const card = cardRefs.current[index];
+    card?.scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+  }, [index]);
+
   if (!song) return null;
 
   const canSeek = progress.duration > 0;
@@ -62,19 +68,19 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
 
   return (
     <section aria-label={t("En écoute")} className="px-4">
-      <div className="pt-2 text-center">
+      <div className="text-center">
         <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("En écoute")}</span>
-        <h2 className="mt-2 font-headings text-2xl font-bold text-foreground">{song.displayTitle ?? song.title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{t("Communauté MusikPro")}</p>
+        <h2 className="mt-1 line-clamp-2 font-headings text-xl font-bold leading-tight text-foreground">{song.displayTitle ?? song.title}</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">{t("Communauté MusikPro")}</p>
       </div>
 
-      <div className="flex justify-center py-6">
-        <div className="w-64 max-w-full">
+      <div className="flex justify-center py-3">
+        <div className="w-48 max-w-full">
           <VinylDisc coverUrl={song.coverUrl} playing={playing} />
         </div>
       </div>
 
-      <div className="flex items-center justify-between pb-4">
+      <div className="flex items-center justify-between pb-2">
         <div className="flex min-w-0 items-center gap-2">
           <Icon i="music-2" size={16} className="shrink-0 text-primary" />
           <span className="truncate text-sm font-medium text-foreground">{song.style ?? ""}</span>
@@ -82,6 +88,15 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
         <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <Icon i="headphones" size={14} />
           {formatPlays(song.plays)}
+          <button
+            type="button"
+            onClick={() => setMuted((value) => !value)}
+            aria-pressed={muted}
+            aria-label={muted ? t("Réactiver le son") : t("Couper le son")}
+            className="ml-2 flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-primary"
+          >
+            <Icon i={muted ? "volume-x" : "volume-2"} size={16} />
+          </button>
         </span>
       </div>
 
@@ -106,7 +121,7 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
         onError={() => setPlaying(false)}
       />
 
-      <div className="pb-4">
+      <div className="pb-1">
         <div
           ref={barRef}
           role="slider"
@@ -155,7 +170,7 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
         </div>
       </div>
 
-      <div className="flex items-center justify-center gap-8 pb-4">
+      <div className="flex items-center justify-center gap-8 pb-3">
         <button
           type="button"
           onClick={() => go(-1)}
@@ -183,45 +198,73 @@ export default function GuestVinylPlayer({ songs }: { songs: DiscoverSong[] }) {
         </button>
       </div>
 
-      <div className="flex justify-center pb-5">
-        <button
-          type="button"
-          onClick={() => setMuted((value) => !value)}
-          aria-pressed={muted}
-          aria-label={muted ? t("Réactiver le son") : t("Couper le son")}
-          className="flex h-11 w-11 items-center justify-center text-muted-foreground"
-        >
-          <Icon i={muted ? "volume-x" : "volume-2"} size={18} />
-        </button>
-      </div>
 
-      {upNext.length ? (
-        <div className="border-t border-border pt-4">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("Suivant")}</p>
-          <div className="space-y-2">
-            {upNext.map((next) => (
-              <button
-                key={next.songGroupId}
-                type="button"
-                onClick={() => {
-                  setIndex(songs.indexOf(next));
-                  setProgress({ current: 0, duration: 0 });
-                  setPlaying(true);
-                }}
-                aria-label={translateTemplate("Écouter {title}", { title: next.title })}
-                className="flex w-full items-center gap-3 rounded-xl border border-border/30 bg-card p-3 text-left"
-              >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary">
-                  <Icon i="play" size={14} className="text-primary" />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-foreground">
-                    {next.displayTitle ?? next.title}
+      {songs.length > 1 ? (
+        <div className="-mx-4 border-t border-border pt-3">
+          <div className="mb-3 flex items-baseline justify-between px-4">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{t("À écouter")}</p>
+            <p className="text-xs text-muted-foreground">
+              {translateTemplate("{count} chansons", { count: songs.length })}
+            </p>
+          </div>
+          <div
+            className="flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-3 pt-1.5"
+            style={{ scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}
+          >
+            {songs.map((item, itemIndex) => {
+              const active = itemIndex === index;
+              return (
+                <button
+                  key={item.songGroupId}
+                  ref={(node) => {
+                    cardRefs.current[itemIndex] = node;
+                  }}
+                  type="button"
+                  onClick={() => {
+                    if (active) {
+                      setPlaying((value) => !value);
+                      return;
+                    }
+                    setIndex(itemIndex);
+                    setProgress({ current: 0, duration: 0 });
+                    setPlaying(true);
+                  }}
+                  aria-label={translateTemplate("Écouter {title}", { title: item.title })}
+                  aria-current={active ? "true" : undefined}
+                  className={`relative aspect-square w-36 shrink-0 snap-center overflow-hidden rounded-2xl text-left transition-transform active:scale-95 ${
+                    active ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : ""
+                  }`}
+                >
+                  {item.coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- couverture déjà optimisée côté stockage
+                    <img src={item.coverUrl} alt="" className="h-full w-full object-cover" loading="lazy" decoding="async" />
+                  ) : (
+                    <div className="musik-trend-brand-cover h-full w-full">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src="/icon.svg" alt="" />
+                    </div>
+                  )}
+                  <span className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/10 to-transparent" />
+                  <span
+                    className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full ${
+                      active ? "bg-primary text-primary-foreground" : "bg-black/50 text-white"
+                    }`}
+                  >
+                    <Icon i={active && playing ? "pause" : "play"} size={14} />
                   </span>
-                  <span className="block text-xs text-muted-foreground">{next.style ?? ""}</span>
-                </span>
-              </button>
-            ))}
+                  <span className="absolute inset-x-0 bottom-0 p-2.5">
+                    <span className="line-clamp-2 block text-xs font-bold leading-tight text-white">
+                      {item.displayTitle ?? item.title}
+                    </span>
+                    <span className="mt-0.5 flex items-center gap-1 text-[11px] text-white/75">
+                      <Icon i="headphones" size={10} />
+                      {formatPlays(item.plays)}
+                      {item.style ? <span className="truncate">· {item.style}</span> : null}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       ) : null}
