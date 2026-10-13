@@ -1,0 +1,83 @@
+"use client";
+
+import { useState } from "react";
+import GuestSongCard from "./GuestSongCard";
+import GuestTopBar from "./GuestTopBar";
+import Icon from "./Icon";
+import { useDemo } from "./DemoProvider";
+import { translate as t, translateTemplate } from "@/lib/i18n/translate";
+import { formatPlays } from "@/lib/trending/format";
+import type { DiscoverSong } from "@/lib/discover/types";
+
+/**
+ * « Découvrir » pour le visiteur invité : les chansons que leurs créateurs ont partagées, à écouter sans compte dans le
+ * lecteur interne des cartes. Aucun accès au compte ; un bouton ramène vers la création de sa propre chanson.
+ */
+export default function GuestDiscover({ songs }: { songs: DiscoverSong[] }) {
+  const demo = useDemo();
+  const [playingKey, setPlayingKey] = useState<string | null>(null);
+  return (
+    <div className="bg-background min-h-screen pb-10">
+      <GuestTopBar onBack={() => demo.go("/dashboard")} />
+      <div className="mx-auto w-full max-w-3xl">
+        <div className="px-4 pt-4 pb-3">
+          <h1 className="font-headings font-bold text-2xl text-foreground">{t("Écouter des chansons")}</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {t("Les chansons créées par notre communauté : écoute-les sans compte avant de te décider.")}
+          </p>
+        </div>
+        {songs.length ? (
+          <>
+            <p role="status" className="px-4 pb-3 text-xs text-muted-foreground">
+              {songs.length !== 1
+                ? translateTemplate("{count} chansons à écouter", { count: songs.length })
+                : translateTemplate("{count} chanson à écouter", { count: songs.length })}
+            </p>
+            <div
+              className="grid gap-2.5 px-4"
+              style={{ gridTemplateColumns: "repeat(auto-fill, minmax(9.5rem, 1fr))" }}
+            >
+              {songs.map((song) => (
+                <GuestSongCard
+                  key={song.songGroupId}
+                  song={{
+                    key: song.songGroupId,
+                    title: song.title,
+                    displayTitle: song.displayTitle,
+                    playsLabel: formatPlays(song.plays),
+                    coverUrl: song.coverUrl,
+                    audioUrl: song.audioUrl,
+                  }}
+                  playing={playingKey === song.songGroupId}
+                  onToggle={() => setPlayingKey(song.songGroupId)}
+                  onClose={() => setPlayingKey(null)}
+                />
+              ))}
+            </div>
+          </>
+        ) : (
+          <div role="status" className="mx-4 rounded-xl border border-border bg-card px-5 py-8 text-center">
+            <Icon i="library" size={26} className="mx-auto mb-2 text-primary" />
+            <p className="font-semibold text-foreground">{t("Bibliothèque vide")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("Les chansons partagées par la communauté apparaîtront ici.")}
+            </p>
+          </div>
+        )}
+        <div className="px-4 mt-6">
+          <button
+            type="button"
+            onClick={() => demo.go("/dashboard/create")}
+            className="musik-create-hero w-full bg-primary rounded-xl px-5 py-4 flex items-center gap-4"
+          >
+            <div className="text-left flex-1">
+              <p className="font-bold text-base text-primary-foreground">{t("Créer ma propre chanson")}</p>
+              <p className="text-xs text-primary-foreground/80">{t("Sans compte pour commencer")}</p>
+            </div>
+            <Icon i="chevron-right" size={18} className="text-primary-foreground/70" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

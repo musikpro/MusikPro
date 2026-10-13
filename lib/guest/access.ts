@@ -21,6 +21,8 @@ const GUEST_ALLOWED_PATHS: ReadonlySet<string> = new Set([
   "/dashboard/create/style",
   "/dashboard/create/genre",
   "/dashboard/create/parameters",
+  // Écoute libre de la bibliothèque partagée (chansons que leurs créateurs ont choisi de rendre publiques).
+  "/dashboard/discover",
 ]);
 
 /** `path` est une route interne sans préfixe de langue (ex. `/dashboard/create/story`). La barre finale est tolérée. */

@@ -22,6 +22,8 @@ describe("isGuestAllowedPath", () => {
     "/dashboard/create/style",
     "/dashboard/create/genre",
     "/dashboard/create/parameters",
+    "/dashboard/discover",
+    "/dashboard/discover/",
   ])("autorise %s", (path) => {
     expect(isGuestAllowedPath(path)).toBe(true);
   });
@@ -31,6 +33,8 @@ describe("isGuestAllowedPath", () => {
     "/dashboard/songs",
     "/dashboard/songs/player",
     "/dashboard/billing",
+    "/dashboard/discover/anything",
+    "/dashboard/favorites",
     "/dashboard/security",
     "/dashboard/payment-preview",
     "/dashboard/payment-preview/generating",
