@@ -40,7 +40,7 @@ export function GuestAuthNotice() {
   return (
     <div className="mx-auto w-full max-w-md px-4 pt-4 flex flex-col gap-2">
       <InlineNotice tone="success">
-        {t("Ta chanson en cours est gardée : connecte-toi pour la retrouver.")}
+        {t("Ta chanson en cours est gardée : crée ton compte pour la retrouver.")}
       </InlineNotice>
       {state.inApp && (
         <InlineNotice tone="warning">

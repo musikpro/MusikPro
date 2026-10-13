@@ -33,9 +33,9 @@ export default function StepAdditionalParams() {
   // pas lors d'un changement d'écran, et le retour du paiement recharge la page depuis le serveur.
   const buyCredits = () => {
     if (demo.isGuest) {
-      // Visiteur sans compte : le brouillon est déjà gardé dans le navigateur (GuestDraftSync) ; on le conduit à la connexion.
+      // Visiteur sans compte : le brouillon est déjà gardé dans le navigateur (GuestDraftSync) ; on le conduit à la création de compte.
       document.cookie = `${GUEST_RESUME_COOKIE}=1; path=/; max-age=${GUEST_RESUME_MAX_AGE_SECONDS}; samesite=lax`;
-      window.location.assign("/login");
+      window.location.assign("/register");
       return;
     }
     const payload = buildCreationDraftPayload("parameters", {
