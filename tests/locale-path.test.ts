@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { splitLocalePrefix, stripLocalePrefix, withLocalePrefix } from "@/lib/languages/locale-path";
+import { splitLocalePrefix, stripLocalePrefix, unprefixedPublicPath, withLocalePrefix } from "@/lib/languages/locale-path";
 
 describe("locale-path", () => {
   it("reconnaît le préfixe sur la landing, le dashboard et la démo", () => {
@@ -35,4 +35,24 @@ describe("locale-path", () => {
     expect(stripLocalePrefix("/en/dashboard/credits")).toBe("/dashboard/credits");
     expect(stripLocalePrefix("/dashboard")).toBe("/dashboard");
   });
+});
+
+describe("unprefixedPublicPath", () => {
+  it.each([
+    ["/fr/login", "/login"],
+    ["/en/register", "/register"],
+    ["/pt/forgot-password", "/forgot-password"],
+    ["/es/reset-password", "/reset-password"],
+    ["/fr/terms", "/terms"],
+    ["/en/privacy/", "/privacy"],
+  ])("%s redirige vers %s", (input, expected) => {
+    expect(unprefixedPublicPath(input)).toBe(expected);
+  });
+
+  it.each(["/login", "/fr", "/fr/dashboard", "/fr/demo/credits", "/api/login", "/fr/login/x", "/fr/admin", "/s/login"])(
+    "%s n'est pas redirigé",
+    (input) => {
+      expect(unprefixedPublicPath(input)).toBeNull();
+    },
+  );
 });

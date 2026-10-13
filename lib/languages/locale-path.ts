@@ -38,3 +38,19 @@ export function withLocalePrefix(pathname: string, locale: string): string {
 export function stripLocalePrefix(pathname: string): string {
   return splitLocalePrefix(pathname).path;
 }
+
+// Pages publiques sans préfixe de langue (la langue s'y résout par cookie, `?lang=` ou Accept-Language).
+const UNPREFIXED_PUBLIC_REST = /^\/(login|register|forgot-password|reset-password|terms|privacy)\/?$/;
+
+/**
+ * `/fr/login` n'est pas une route (404) : seules l'accueil, le tableau de bord et la démo portent un préfixe de langue.
+ * Renvoie la page sans préfixe (`/login`) pour qu'une adresse préfixée saisie, mise en favori ou partagée y redirige ;
+ * `null` pour tout autre chemin.
+ */
+export function unprefixedPublicPath(pathname: string): string | null {
+  const match = LOCALE_SEGMENT.exec(pathname);
+  if (!match) return null;
+  const [, code, rest = ""] = match;
+  if (RESERVED_SEGMENTS.has(code) || !UNPREFIXED_PUBLIC_REST.test(rest)) return null;
+  return rest.replace(/\/$/, "");
+}
