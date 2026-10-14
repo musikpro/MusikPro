@@ -149,6 +149,7 @@
 .credits-gate-primary,
 .credits-gate-secondary {
   min-height: 48px;
+  border: 0;
   border-radius: 14px;
   font-size: 15px;
   font-weight: 700;
@@ -162,6 +163,7 @@
   background: var(--color-primary, #f26522);
   color: #fff;
   box-shadow: 0 4px 16px rgba(242, 101, 34, 0.35);
+  outline: none;
 }
 
 .credits-gate-secondary {
