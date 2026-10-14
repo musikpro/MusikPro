@@ -47,18 +47,6 @@ export default function CreditsGateModal({
 
   if (!open || typeof document === "undefined") return null;
 
-  const steps = guest
-    ? [
-        t("Crée ton compte avec Gmail ou ton e-mail, en moins de 30 secondes"),
-        t("Choisis ton offre de crédits et règle ton paiement en toute sécurité"),
-        t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
-      ]
-    : [
-        t("Choisis ton offre de crédits"),
-        t("Règle ton paiement en toute sécurité"),
-        t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
-      ];
-
   return createPortal(
     <div className="credits-gate-overlay">
       <button
@@ -69,7 +57,7 @@ export default function CreditsGateModal({
         onClick={onClose}
       />
       <div
-        className="credits-gate-dialog"
+        className="credits-gate-dialog credits-gate-dialog--simple"
         role="dialog"
         aria-modal="true"
         aria-labelledby="credits-gate-title"
@@ -78,20 +66,15 @@ export default function CreditsGateModal({
         <span className="credits-gate-icon" aria-hidden="true">
           <Icon i="coins" size={26} />
         </span>
-        <p className="credits-gate-kicker">{t("Dernière étape")}</p>
         <h2 id="credits-gate-title">
-          {guest ? t("Crée ton compte pour générer tes paroles") : t("Active tes crédits pour générer tes paroles")}
+          {guest ? t("Crée ton compte pour continuer") : t("Active tes crédits")}
         </h2>
         <p id="credits-gate-description" className="credits-gate-text">
           {guest
-            ? translateTemplate(
-                "Tes informations sont complètes. Crée ton compte gratuitement en moins de 30 secondes : il te faudra ensuite {credits} crédits pour rédiger tes paroles et composer ta chanson, et rien n’est débité avant la composition.",
-                { credits: CREDITS_PER_GENERATION },
-              )
-            : translateTemplate(
-                "Tes informations sont complètes. Pour rédiger tes paroles puis composer ta chanson, il faut disposer de {credits} crédits : rien n’est débité avant la composition.",
-                { credits: CREDITS_PER_GENERATION },
-              )}
+            ? t("C’est gratuit et rapide. Tes réponses sont conservées.")
+            : translateTemplate("Il te faut {credits} crédits pour générer ta chanson.", {
+                credits: CREDITS_PER_GENERATION,
+              })}
         </p>
 
         {guest ? null : (
@@ -107,28 +90,9 @@ export default function CreditsGateModal({
           </dl>
         )}
 
-        <ol className="credits-gate-steps">
-          {steps.map((step, index) => (
-            <li key={step}>
-              <span aria-hidden="true">{index + 1}</span>
-              {step}
-            </li>
-          ))}
-        </ol>
-
-        <p className="credits-gate-reassure">
-          <Icon i="shield-check" size={16} />
-          {guest
-            ? t("Tes réponses sont conservées : tu les retrouves dès que ton compte est créé.")
-            : t("Tes réponses sont conservées : tu ne perds rien en passant par le paiement.")}
-        </p>
-
         <div className="credits-gate-actions">
           <button ref={buyRef} type="button" className="credits-gate-primary" onClick={onBuy}>
             {guest ? t("Créer mon compte") : t("Acheter des crédits")} <Icon i="arrow-right" size={18} />
-          </button>
-          <button type="button" className="credits-gate-secondary" onClick={onClose}>
-            {t("Plus tard")}
           </button>
         </div>
       </div>

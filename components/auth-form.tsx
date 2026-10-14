@@ -9,7 +9,7 @@ import { InlineNotice } from "@/components/ui/inline-notice";
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import { emailSchema, loginSchema, registerIdentitySchema, registerSchema } from "@/lib/validation/auth";
 import Icon from "@/components/banani/Icon";
-import { AuthLogo, GmailLogo } from "@/components/auth/auth-ui";
+import { AppleLogo, AuthLogo, GmailLogo } from "@/components/auth/auth-ui";
 import { translate as t } from "@/lib/i18n/translate";
 import { useI18nOverlay } from "@/lib/i18n/use-overlay";
 import { translateIssue } from "@/lib/validation/translate-issue";
@@ -19,11 +19,14 @@ import { getOAuthErrorMessage } from "@/lib/auth/oauth-error";
 export function AuthForm({
   mode,
   googleEnabled = false,
+  appleEnabled = false,
   googleWebClientId,
   initialErrorCode,
 }: {
   mode: "login" | "register";
   googleEnabled?: boolean;
+  /** Connexion avec Apple (« iCloud ») : affichée seulement si le serveur a les identifiants Apple. */
+  appleEnabled?: boolean;
   /** Identifiant client Google « Web » (public) : requis par la connexion Google native de l'application. */
   googleWebClientId?: string;
   /** Code d'erreur OAuth renvoyé par la page serveur (?error=…) : le texte est calculé au rendu, dans la langue courante. */
@@ -177,6 +180,19 @@ export function AuthForm({
       setBusy(false);
     }
   }
+  async function appleSignIn() {
+    setBusy(true);
+    setError("");
+    const r = await authClient.signIn.social({
+      provider: "apple",
+      callbackURL: "/auth/continue",
+      errorCallbackURL: "/login",
+    });
+    if (r?.error) {
+      setError(authResultErrorMessage(r.error, t("Connexion avec Apple impossible")));
+      setBusy(false);
+    }
+  }
   const isLogin = mode === "login";
   const isIdentityStep = step === "identity";
   const isPasswordStep = step === "password";
@@ -208,12 +224,22 @@ export function AuthForm({
                   ? t("Renseignez votre adresse email pour accéder à votre compte")
                   : t("Rejoignez MusikPro et créez votre première chanson")}
             </p>
-            {googleEnabled && !isPasswordStep && (
+            {(googleEnabled || appleEnabled) && !isPasswordStep && (
               <>
-                <button className="auth-google" type="button" disabled={busy} onClick={googleSignIn}>
-                  <GmailLogo />
-                  {isLogin ? t("Connectez-vous avec Gmail") : t("Créez votre compte avec Gmail")}
-                </button>
+                <div className="auth-social">
+                  {googleEnabled && (
+                    <button className="auth-google" type="button" disabled={busy} onClick={googleSignIn}>
+                      <GmailLogo />
+                      {isLogin ? t("Connectez-vous avec Gmail") : t("Créez votre compte avec Gmail")}
+                    </button>
+                  )}
+                  {appleEnabled && (
+                    <button className="auth-apple" type="button" disabled={busy} onClick={appleSignIn}>
+                      <AppleLogo />
+                      {isLogin ? t("Se connecter avec iCloud") : t("Créer un compte avec iCloud")}
+                    </button>
+                  )}
+                </div>
                 <div className="auth-divider">
                   <span>{t("OU")}</span>
                 </div>

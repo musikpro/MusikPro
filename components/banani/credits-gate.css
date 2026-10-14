@@ -149,6 +149,7 @@
 .credits-gate-primary,
 .credits-gate-secondary {
   min-height: 48px;
+  border: 0;
   border-radius: 14px;
   font-size: 15px;
   font-weight: 700;
@@ -162,6 +163,7 @@
   background: var(--color-primary, #f26522);
   color: #fff;
   box-shadow: 0 4px 16px rgba(242, 101, 34, 0.35);
+  outline: none;
 }
 
 .credits-gate-secondary {
@@ -200,4 +202,37 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
+}
+
+/* Version invité : fenêtre épurée, un seul message et un bouton qui attire l'œil. */
+.credits-gate-dialog--simple .credits-gate-text {
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+.credits-gate-dialog--simple .credits-gate-balance {
+  margin-bottom: 24px;
+}
+
+.credits-gate-dialog--simple .credits-gate-primary {
+  min-height: 56px;
+  font-size: 17px;
+  font-weight: 800;
+  animation: credits-gate-pulse 2s ease-in-out infinite;
+}
+
+@keyframes credits-gate-pulse {
+  0%,
+  100% {
+    box-shadow: 0 4px 16px rgba(242, 101, 34, 0.35);
+  }
+  50% {
+    box-shadow: 0 6px 26px rgba(242, 101, 34, 0.65);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .credits-gate-dialog--simple .credits-gate-primary {
+    animation: none;
+  }
 }
