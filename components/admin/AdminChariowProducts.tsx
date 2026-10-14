@@ -5,6 +5,7 @@ import Icon from "@/components/banani/Icon";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminSelect from "@/components/admin/AdminSelect";
 import { deletePlanMapping, savePlanMapping } from "@/app/admin/payment-providers/actions";
+import { deletePlan } from "@/app/admin/plans/actions";
 
 export type ChariowMappingRow = {
   planId: string;
@@ -159,6 +160,7 @@ export default function AdminChariowProducts({
         {mappings.length ? (
           mappings.map((mapping) => {
             const deleteFormId = `chariow-mapping-delete-${mapping.planId}`;
+            const deletePlanFormId = `chariow-plan-delete-${mapping.planId}`;
             const isEditing = editing?.planId === mapping.planId;
             return (
               <div key={mapping.planId} className={`admin-product-row${isEditing ? " is-editing" : ""}`}>
@@ -179,6 +181,15 @@ export default function AdminChariowProducts({
                   <input type="hidden" name="planId" value={mapping.planId} />
                   <input type="hidden" name="provider" value="chariow" />
                 </AdminActionForm>
+                <AdminActionForm
+                  id={deletePlanFormId}
+                  action={deletePlan}
+                  onSuccess={() => {
+                    if (isEditing) reset();
+                  }}
+                >
+                  <input type="hidden" name="id" value={mapping.planId} />
+                </AdminActionForm>
                 <div className="admin-product-actions">
                   <button
                     type="button"
@@ -193,10 +204,25 @@ export default function AdminChariowProducts({
                     type="submit"
                     form={deleteFormId}
                     className="admin-secondary-action is-danger"
-                    aria-label={`Supprimer ${mapping.productName}`}
+                    aria-label={`Retirer le lien Chariow de ${mapping.productName} (l’offre reste visible pour les clients)`}
+                    title="Retire seulement le lien avec Chariow : l’offre reste affichée aux clients."
+                  >
+                    <Icon i="unlink" size={15} />
+                    Retirer le lien
+                  </button>
+                  <button
+                    type="submit"
+                    form={deletePlanFormId}
+                    className="admin-secondary-action is-danger"
+                    aria-label={`Supprimer le pack ${mapping.planName}`}
+                    title="Supprime l’offre : elle disparaît aussi de l’espace client."
+                    onClick={(event) => {
+                      if (!window.confirm(`Supprimer définitivement le pack « ${mapping.planName} » ? Il disparaîtra aussi de l’espace client.`))
+                        event.preventDefault();
+                    }}
                   >
                     <Icon i="trash-2" size={15} />
-                    Supprimer
+                    Supprimer le pack
                   </button>
                 </div>
               </div>
