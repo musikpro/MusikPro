@@ -203,12 +203,12 @@
 }
 
 /* Version invité : fenêtre épurée, un seul message et un bouton qui attire l'œil. */
-.credits-gate-dialog--guest .credits-gate-text {
+.credits-gate-dialog--simple .credits-gate-text {
   margin-bottom: 20px;
   font-size: 15px;
 }
 
-.credits-gate-dialog--guest .credits-gate-primary {
+.credits-gate-dialog--simple .credits-gate-primary {
   min-height: 56px;
   font-size: 17px;
   font-weight: 800;
@@ -226,7 +226,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .credits-gate-dialog--guest .credits-gate-primary {
+  .credits-gate-dialog--simple .credits-gate-primary {
     animation: none;
   }
 }

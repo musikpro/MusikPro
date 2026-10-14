@@ -47,12 +47,6 @@ export default function CreditsGateModal({
 
   if (!open || typeof document === "undefined") return null;
 
-  const steps = [
-    t("Choisis ton offre de crédits"),
-    t("Règle ton paiement en toute sécurité"),
-    t("Tes paroles sont générées automatiquement dès que le paiement est confirmé"),
-  ];
-
   return createPortal(
     <div className="credits-gate-overlay">
       <button
@@ -63,7 +57,7 @@ export default function CreditsGateModal({
         onClick={onClose}
       />
       <div
-        className={`credits-gate-dialog${guest ? " credits-gate-dialog--guest" : ""}`}
+        className="credits-gate-dialog credits-gate-dialog--simple"
         role="dialog"
         aria-modal="true"
         aria-labelledby="credits-gate-title"
@@ -72,17 +66,15 @@ export default function CreditsGateModal({
         <span className="credits-gate-icon" aria-hidden="true">
           <Icon i="coins" size={26} />
         </span>
-        {guest ? null : <p className="credits-gate-kicker">{t("Dernière étape")}</p>}
         <h2 id="credits-gate-title">
-          {guest ? t("Crée ton compte pour continuer") : t("Active tes crédits pour générer tes paroles")}
+          {guest ? t("Crée ton compte pour continuer") : t("Active tes crédits")}
         </h2>
         <p id="credits-gate-description" className="credits-gate-text">
           {guest
             ? t("C’est gratuit et rapide. Tes réponses sont conservées.")
-            : translateTemplate(
-                "Tes informations sont complètes. Pour rédiger tes paroles puis composer ta chanson, il faut disposer de {credits} crédits : rien n’est débité avant la composition.",
-                { credits: CREDITS_PER_GENERATION },
-              )}
+            : translateTemplate("Il te faut {credits} crédits pour générer ta chanson.", {
+                credits: CREDITS_PER_GENERATION,
+              })}
         </p>
 
         {guest ? null : (
@@ -96,24 +88,6 @@ export default function CreditsGateModal({
               <dd>{translateTemplate("{count} crédits", { count: CREDITS_PER_GENERATION })}</dd>
             </div>
           </dl>
-        )}
-
-        {guest ? null : (
-          <>
-            <ol className="credits-gate-steps">
-              {steps.map((step, index) => (
-                <li key={step}>
-                  <span aria-hidden="true">{index + 1}</span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-
-            <p className="credits-gate-reassure">
-              <Icon i="shield-check" size={16} />
-              {t("Tes réponses sont conservées : tu ne perds rien en passant par le paiement.")}
-            </p>
-          </>
         )}
 
         <div className="credits-gate-actions">
