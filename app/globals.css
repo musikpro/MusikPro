@@ -1241,6 +1241,54 @@ button {
   outline: 3px solid rgba(242, 101, 34, 0.3);
   outline-offset: 3px;
 }
+/* Boutons de connexion sociale empilés (Google, Apple) ; le bouton Apple suit la charte : fond noir, logo blanc. */
+.auth-social {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.auth-social .auth-google {
+  margin-bottom: 0;
+}
+.auth-apple {
+  display: flex;
+  width: 100%;
+  min-height: 54px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1.5px solid #000;
+  border-radius: 14px;
+  background: #000;
+  color: #fff;
+  padding-inline: 10px;
+  font-size: clamp(13.5px, 4.15vw, 15px);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    opacity 160ms ease;
+}
+.auth-apple svg {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+}
+.auth-apple:hover {
+  transform: translateY(-1px);
+  opacity: 0.88;
+}
+.auth-apple:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.auth-apple:focus-visible {
+  outline: 3px solid rgba(242, 101, 34, 0.45);
+  outline-offset: 3px;
+}
 .auth-divider {
   display: flex;
   align-items: center;

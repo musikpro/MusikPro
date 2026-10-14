@@ -7,6 +7,14 @@ export const dynamic = "force-dynamic";
 
 export default function Page() {
   const googleEnabled = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  const appleEnabled = Boolean(process.env.APPLE_CLIENT_ID && process.env.APPLE_CLIENT_SECRET);
 
-  return <AuthForm mode="register" googleEnabled={googleEnabled} googleWebClientId={process.env.GOOGLE_CLIENT_ID} />;
+  return (
+    <AuthForm
+      mode="register"
+      googleEnabled={googleEnabled}
+      appleEnabled={appleEnabled}
+      googleWebClientId={process.env.GOOGLE_CLIENT_ID}
+    />
+  );
 }
