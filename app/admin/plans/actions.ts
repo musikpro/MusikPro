@@ -50,6 +50,8 @@ const reorderSchema = z.object({
 
 function revalidateCreditPlans() {
   revalidatePath("/admin/plans");
+  revalidatePath("/admin/payment-providers");
+  revalidatePath("/admin/payment-providers/chariow");
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/billing");
   revalidatePath("/dashboard/credits");
