@@ -8,6 +8,7 @@ import AdminRowToggle from "@/components/admin/AdminRowToggle";
 import AdminTableToolbar from "@/components/admin/AdminTableToolbar";
 import AdminSongTitleEditor from "@/components/admin/AdminSongTitleEditor";
 import { deleteSong, fetchGenerationsPage, setSongDiscover } from "@/app/admin/generations/actions";
+import { downloadAudioFile } from "@/lib/demo/audio-actions";
 import AdminActionForm from "@/components/admin/AdminActionForm";
 import AdminDeleteSongButton from "@/components/admin/AdminDeleteSongButton";
 import type { AdminGenerationRow, GenerationStatusFilter, GenerationsPage } from "@/lib/admin/generations-types";
@@ -259,6 +260,24 @@ export default function AdminGenerationsTable({ initial }: { initial: Generation
                         </button>
                       </AdminActionForm>
                     ) : null}
+                    <button
+                      type="button"
+                      className="admin-generation-discover"
+                      disabled={row.status !== "completed" || !row.audioUrl}
+                      title={row.status !== "completed" || !row.audioUrl ? "Disponible une fois la chanson terminée" : undefined}
+                      onClick={async () => {
+                        if (!row.audioUrl) return;
+                        const ok = await downloadAudioFile(row.audioUrl, row.title ?? "chanson");
+                        showToast(
+                          ok
+                            ? { message: "Téléchargement lancé.", tone: "success" }
+                            : { message: "Le téléchargement a échoué. Réessaie dans un instant.", tone: "error" },
+                        );
+                      }}
+                    >
+                      <Icon i="download" size={15} />
+                      Télécharger
+                    </button>
                     <AdminActionForm
                       action={deleteSong}
                       onSuccess={() => load(data.page, { status, query: debouncedQuery }, false)}

@@ -6547,7 +6547,7 @@ body:has(.admin-app),
 
 .admin-discover-song {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(180px, 280px) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(180px, 280px) auto auto;
   align-items: center;
   gap: 14px;
   padding: 12px 14px;
