@@ -94,9 +94,6 @@ export default function CreditsGateModal({
           <button ref={buyRef} type="button" className="credits-gate-primary" onClick={onBuy}>
             {guest ? t("Créer mon compte") : t("Acheter des crédits")} <Icon i="arrow-right" size={18} />
           </button>
-          <button type="button" className="credits-gate-secondary" onClick={onClose}>
-            {t("Plus tard")}
-          </button>
         </div>
       </div>
     </div>,
