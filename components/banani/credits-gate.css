@@ -206,8 +206,12 @@
 
 /* Version invité : fenêtre épurée, un seul message et un bouton qui attire l'œil. */
 .credits-gate-dialog--simple .credits-gate-text {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   font-size: 15px;
+}
+
+.credits-gate-dialog--simple .credits-gate-balance {
+  margin-bottom: 24px;
 }
 
 .credits-gate-dialog--simple .credits-gate-primary {
