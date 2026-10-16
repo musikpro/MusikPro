@@ -1,8 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookie } from "better-auth/cookies";
 import { buildContentSecurityPolicy } from "./lib/security/headers";
-import { LOCALE_HEADER, REQUEST_PATH_HEADER, splitLocalePrefix, unprefixedPublicPath } from "./lib/languages/locale-path";
+import {
+  LOCALE_HEADER,
+  REQUEST_PATH_HEADER,
+  splitLocalePrefix,
+  unprefixedPublicPath,
+} from "./lib/languages/locale-path";
 import { GUEST_COOKIE, GUEST_HEADER, isGuestAllowedPath, parseGuestCookie } from "./lib/guest/access";
+import { isMaintenanceActive } from "./lib/maintenance/flag";
+import { isApiPath, isMaintenanceExempt } from "./lib/maintenance/paths";
 
 /**
  * Visiteur sans compte arrivé par un lien invité (`/g/<slug>`) : admis uniquement sur l'accueil et les écrans de
@@ -12,7 +19,7 @@ function hasGuestAccess(request: NextRequest, pathname: string) {
   return isGuestAllowedPath(pathname) && parseGuestCookie(request.cookies.get(GUEST_COOKIE)?.value) !== null;
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // `/fr/login` → `/login` : ces pages n'ont pas de préfixe de langue, une adresse préfixée ne doit pas finir en 404.
   const publicPath = unprefixedPublicPath(request.nextUrl.pathname);
   if (publicPath) {
@@ -45,6 +52,31 @@ export function proxy(request: NextRequest) {
   // Next.js reads the CSP from the *request* header (not just the response) to nonce its own
   // hydration/RSC inline scripts while rendering — both must carry the same value.
   requestHeaders.set("Content-Security-Policy", csp);
+
+  // Mode maintenance (/admin/maintenance) : tout ce qui n'est pas exempté (voir lib/maintenance/paths.ts) reçoit un 503.
+  // L'administration, la connexion, les webhooks de paiement et le cron ne passent jamais par ce blocage.
+  if (!isMaintenanceExempt(pathname) && (await isMaintenanceActive())) {
+    const maintenanceHeaders = {
+      "Retry-After": "300",
+      "Cache-Control": "no-store",
+      "X-Robots-Tag": "noindex",
+      "Content-Security-Policy": csp,
+    };
+    if (isApiPath(pathname)) {
+      return NextResponse.json(
+        { error: "Maintenance en cours. Réessaie dans quelques instants." },
+        { status: 503, headers: maintenanceHeaders },
+      );
+    }
+    const destination = request.nextUrl.clone();
+    destination.pathname = "/maintenance";
+    destination.search = "";
+    return NextResponse.rewrite(destination, {
+      request: { headers: requestHeaders },
+      status: 503,
+      headers: maintenanceHeaders,
+    });
+  }
 
   let response: NextResponse;
 

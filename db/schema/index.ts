@@ -619,6 +619,19 @@ export const paymentBypassSettings = pgTable("payment_bypass_settings", {
 });
 
 /**
+ * Mode maintenance (/admin/maintenance) : réglage global monoligne, lu par proxy.ts (cache de 5 s, échec ouvert) pour
+ * servir la page « Maintenance en cours » en 503 aux visiteurs. Aucune donnée utilisateur, jamais lu par le client.
+ */
+export const maintenanceSettings = pgTable("maintenance_settings", {
+  id: text("id").primaryKey().default("global"),
+  enabled: boolean("enabled").notNull().default(false),
+  message: text("message"),
+  enabledBy: text("enabled_by").references(() => user.id, { onDelete: "set null" }),
+  enabledAt: timestamp("enabled_at"),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/**
  * Brouillon du parcours de création de chanson (un seul par utilisateur) : permet de reprendre là où l'on s'est
  * arrêté depuis un autre appareil, l'application ou le site. Jamais lu directement par le client : accès serveur
  * uniquement (lib/creation-draft/server.ts), filtré par user_id. Expire 30 jours après la dernière sauvegarde.

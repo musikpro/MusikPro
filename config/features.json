@@ -307,6 +307,25 @@
       "dependsOn": ["observability-core"],
       "disableBehavior": "Sans SENTRY_DSN le SDK reste inactif ; ne pas supprimer les fichiers sans retirer withSentryConfig de next.config.ts."
     },
+    "maintenance-mode": {
+      "description": "Mode maintenance commutable depuis /admin/maintenance : page publique 503 pour les clients, administration/connexion/webhooks/cron/santé jamais bloqués ; lecture en échec ouvert dans proxy.ts (cache 5 s)",
+      "optional": false,
+      "env": [],
+      "files": [
+        "app/admin/maintenance/page.tsx",
+        "app/admin/maintenance/actions.ts",
+        "app/admin/maintenance/loading.tsx",
+        "app/maintenance/page.tsx",
+        "lib/maintenance/flag.ts",
+        "lib/maintenance/paths.ts",
+        "lib/maintenance/settings.ts",
+        "lib/validation/maintenance.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "auth", "observability-core"],
+      "disableBehavior": "Désactiver l'interrupteur dans /admin/maintenance (ou passer enabled à false dans maintenance_settings) rouvre le site en quelques secondes ; sans ligne ou en cas d'erreur de lecture, le site reste ouvert."
+    },
     "api-client": {
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,

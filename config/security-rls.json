@@ -28,6 +28,7 @@
     "security_events": "server-only security telemetry",
     "funnel_events": "server-only product funnel telemetry (see lib/analytics/funnel.ts); written and read exclusively via getServiceDb(), never queried directly by clients; purged after 180 days by app/api/cron/funnel-retention/route.ts",
     "payment_provider_configs": "server/admin-only global configuration",
+    "maintenance_settings": "server/admin-only global single-row toggle (maintenance mode); contains no user data and is only written via app/admin/maintenance/actions.ts, read by proxy.ts (lib/maintenance/flag.ts) and lib/maintenance/settings.ts",
     "payment_bypass_settings": "server/admin-only global toggle; contains no user data and is never queried directly by clients",
     "playback_settings": "server/admin-only global single-row setting (exclusive song playback on/off); contains no user data and is only read/written server-side via lib/settings/playback.ts and app/admin/settings/actions.ts",
     "admin_display_settings": "server/admin-only global single-row setting (items per page on /admin/generations and /admin/users, and the number of music styles shown up front in the creation funnel, plus client display limits: title length and landing music-styles count); contains no user data and is only read/written server-side via lib/settings/admin-display.ts, lib/settings/display-limits.ts and app/admin/settings/actions.ts",
