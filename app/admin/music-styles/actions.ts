@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { invalidateCatalogs } from "@/lib/catalog-cache/invalidate";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
 import { musicStyles } from "@/db/schema";
@@ -83,6 +84,7 @@ function slugify(value: string) {
 }
 
 function revalidateMusicStyles() {
+  invalidateCatalogs("musicStyles");
   revalidatePath("/admin/music-styles");
   revalidatePath("/dashboard/create/genre");
   revalidatePath("/dashboard/create/style");
