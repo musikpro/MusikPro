@@ -3,6 +3,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, count, eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { invalidateCatalogs } from "@/lib/catalog-cache/invalidate";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
@@ -42,6 +43,8 @@ const reorderSchema = z.object({
 });
 
 function revalidateOccasionFields(occasionId?: string) {
+  // Les blocs intégrés et le champ du titre vivent dans la table occasions (catalogue mis en cache).
+  invalidateCatalogs("occasions");
   revalidatePath("/admin/occasion-fields");
   if (occasionId) revalidatePath(`/admin/occasion-fields/${occasionId}`);
   revalidatePath("/dashboard/create/recipient");

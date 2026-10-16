@@ -1,6 +1,7 @@
 import "server-only";
 import { eq, sql } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
+import { invalidateCatalogs } from "@/lib/catalog-cache/invalidate";
 import { getServiceDb } from "@/db";
 import {
   heroAnimatedTexts,
@@ -250,6 +251,8 @@ export async function runTranslationsRefresh(): Promise<RefreshResult & { counts
   } finally {
     // Toujours invalider : même en cas d'échec, un saveUi partiel a pu écrire des lignes.
     revalidateTag(OVERLAY_TAG, { expire: 0 });
+    // Les traductions des occasions et des styles sont stockées dans ces tables (colonne jsonb « translations »).
+    invalidateCatalogs("occasions", "musicStyles");
   }
 
   const counts: Counts = {

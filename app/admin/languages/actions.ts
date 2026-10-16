@@ -2,6 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { invalidateCatalogs } from "@/lib/catalog-cache/invalidate";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
@@ -71,6 +72,7 @@ const defaultLanguageSchema = z.object({
     .regex(/^[a-z]{2,3}(?:-[a-z]{2})?$/),
 });
 function refresh() {
+  invalidateCatalogs("languages");
   ["/admin/languages", "/dashboard", "/dashboard/create/parameters", "/demo"].forEach((path) => revalidatePath(path));
 }
 export async function createLanguage(_previous: LanguageActionState, formData: FormData): Promise<LanguageActionState> {
