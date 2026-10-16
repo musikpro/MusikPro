@@ -2,6 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { invalidateCatalogs } from "@/lib/catalog-cache/invalidate";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getServiceDb } from "@/db";
@@ -73,6 +74,7 @@ function slugify(value: string) {
     .slice(0, 60);
 }
 function revalidateOccasions() {
+  invalidateCatalogs("occasions");
   revalidatePath("/admin/occasions");
   revalidatePath("/dashboard/create");
   revalidatePath("/demo/create");

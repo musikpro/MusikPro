@@ -307,6 +307,21 @@
       "dependsOn": ["observability-core"],
       "disableBehavior": "Sans SENTRY_DSN le SDK reste inactif ; ne pas supprimer les fichiers sans retirer withSentryConfig de next.config.ts."
     },
+    "catalog-cache": {
+      "description": "Cache des catalogues (styles musicaux, occasions, langues) avec invalidation par tag",
+      "optional": false,
+      "env": [],
+      "files": [
+        "lib/catalog-cache/tags.ts",
+        "lib/catalog-cache/cached.ts",
+        "lib/catalog-cache/invalidate.ts",
+        "docs/plans/catalog-cache.md"
+      ],
+      "routes": [],
+      "removalComplexity": "low",
+      "dependsOn": ["database"],
+      "disableBehavior": "Chaque lecteur serveur passe par cachedCatalog ; toute mutation admin d'un catalogue doit appeler invalidateCatalogs (garde : tests/catalog-cache-invalidation.test.ts)."
+    },
     "admin-audit-log": {
       "description": "Journal d'audit consultable (/admin/audit) : filtres acteur/action/période, pagination, export CSV ; lecture seule de audit_logs, réservé au Super Admin",
       "optional": false,
