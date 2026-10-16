@@ -322,6 +322,24 @@
       "dependsOn": ["database"],
       "disableBehavior": "Chaque lecteur serveur passe par cachedCatalog ; toute mutation admin d'un catalogue doit appeler invalidateCatalogs (garde : tests/catalog-cache-invalidation.test.ts)."
     },
+    "admin-audit-log": {
+      "description": "Journal d'audit consultable (/admin/audit) : filtres acteur/action/période, pagination, export CSV ; lecture seule de audit_logs, réservé au Super Admin",
+      "optional": false,
+      "env": [],
+      "files": [
+        "app/admin/audit/page.tsx",
+        "app/admin/audit/loading.tsx",
+        "app/api/admin/audit/export/route.ts",
+        "lib/admin/audit.ts",
+        "lib/admin/audit-csv.ts",
+        "lib/admin/audit-types.ts",
+        "lib/validation/audit-filters.ts"
+      ],
+      "routes": ["/api/admin/audit/export"],
+      "removalComplexity": "low",
+      "dependsOn": ["observability-core"],
+      "disableBehavior": "Retirer l'entrée de menu « Journal d'audit » de AdminShell ; writeAuditLog (lib/security/audit.ts) continue d'écrire sans la page."
+    },
     "api-client": {
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,
