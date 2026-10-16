@@ -141,7 +141,7 @@ export default async function AdminAuditPage({
         ) : null}
 
         <div className="admin-data-table-wrap">
-          <table className="admin-data-table admin-row-table admin-audit-table">
+          <table className="admin-data-table admin-audit-table">
             <caption className="sr-only">Entrées du journal d’audit</caption>
             <thead>
               <tr>
