@@ -291,6 +291,22 @@
       "removalComplexity": "never",
       "dependsOn": []
     },
+    "error-monitoring-sentry": {
+      "description": "Suivi d'erreurs Sentry optionnel (serveur + navigateur), données personnelles désactivées",
+      "optional": true,
+      "env": ["SENTRY_DSN", "NEXT_PUBLIC_SENTRY_DSN", "SENTRY_ORG", "SENTRY_PROJECT", "SENTRY_AUTH_TOKEN"],
+      "files": [
+        "instrumentation.ts",
+        "instrumentation-client.ts",
+        "sentry.server.config.ts",
+        "lib/observability/sentry-options.ts",
+        "app/global-error.tsx"
+      ],
+      "routes": [],
+      "removalComplexity": "low",
+      "dependsOn": ["observability-core"],
+      "disableBehavior": "Sans SENTRY_DSN le SDK reste inactif ; ne pas supprimer les fichiers sans retirer withSentryConfig de next.config.ts."
+    },
     "api-client": {
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,
