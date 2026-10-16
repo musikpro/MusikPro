@@ -47,6 +47,7 @@ const SCAN_DIRS_WANTED = [
   "lib/seo/metadata.ts",
   "lib/validation",
   "lib/api/error-messages.ts",
+  "app/maintenance",
   "app/terms",
   "app/privacy",
   "app/download",
