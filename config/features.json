@@ -326,6 +326,24 @@
       "dependsOn": ["database", "auth", "observability-core"],
       "disableBehavior": "Désactiver l'interrupteur dans /admin/maintenance (ou passer enabled à false dans maintenance_settings) rouvre le site en quelques secondes ; sans ligne ou en cas d'erreur de lecture, le site reste ouvert."
     },
+    "admin-audit-log": {
+      "description": "Journal d'audit consultable (/admin/audit) : filtres acteur/action/période, pagination, export CSV ; lecture seule de audit_logs, réservé au Super Admin",
+      "optional": false,
+      "env": [],
+      "files": [
+        "app/admin/audit/page.tsx",
+        "app/admin/audit/loading.tsx",
+        "app/api/admin/audit/export/route.ts",
+        "lib/admin/audit.ts",
+        "lib/admin/audit-csv.ts",
+        "lib/admin/audit-types.ts",
+        "lib/validation/audit-filters.ts"
+      ],
+      "routes": ["/api/admin/audit/export"],
+      "removalComplexity": "low",
+      "dependsOn": ["observability-core"],
+      "disableBehavior": "Retirer l'entrée de menu « Journal d'audit » de AdminShell ; writeAuditLog (lib/security/audit.ts) continue d'écrire sans la page."
+    },
     "api-client": {
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,
