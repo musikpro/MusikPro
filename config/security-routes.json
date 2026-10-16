@@ -370,6 +370,12 @@
         "requireContentType"
       ]
     },
+    "app/api/admin/audit/export/route.ts": {
+      "auth": "session-admin",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": ["auth.api.getSession", "hasAppRole", "auditFiltersSchema.safeParse", "rateLimit(", "hasVerifiedTotp"]
+    },
     "app/api/admin/media/route.ts": {
       "auth": "session-admin",
       "validation": "no-user-body",
