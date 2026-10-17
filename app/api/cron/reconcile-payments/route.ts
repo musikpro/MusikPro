@@ -2,7 +2,7 @@ import { and, desc, gte, inArray } from "drizzle-orm";
 import { getServiceDb } from "@/db";
 import { payments } from "@/db/schema";
 import { reconcilePayment } from "@/lib/billing/reconcile";
-import { writeAuditLog } from "@/lib/security/audit";
+import { logReconcileFailures, type ReconcileFailure } from "@/lib/billing/reconcile-failures";
 import { verifyCronRequest } from "@/lib/cron/auth";
 
 export const runtime = "nodejs";
@@ -19,6 +19,7 @@ async function handle(request: Request) {
     .limit(100);
 
   const result = { checked: 0, paid: 0, pending: 0, failed: 0, errors: 0 };
+  const failures: ReconcileFailure[] = [];
   for (const row of rows) {
     result.checked++;
     try {
@@ -28,14 +29,11 @@ async function handle(request: Request) {
       else result.pending++;
     } catch (error) {
       result.errors++;
-      await writeAuditLog({
-        action: "payment.reconcile.failed",
-        targetType: "payment",
-        targetId: row.id,
-        metadata: { error: error instanceof Error ? error.message : "unknown" },
-      });
+      failures.push({ paymentId: row.id, error: error instanceof Error ? error.message : "unknown" });
     }
   }
+  // Un seul passage en base pour les échecs, sans réécrire ceux déjà journalisés ces dernières 24 h.
+  await logReconcileFailures(failures);
   return Response.json(result, { headers: { "Cache-Control": "no-store" } });
 }
 
