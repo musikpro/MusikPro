@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseTrackingCode, trackingCodeError } from "@/lib/tracking-tags/parse";
-import { trackingTagOrderSchema } from "@/lib/validation/tracking-tags";
+import { isTrackingExcludedPath } from "@/lib/tracking-tags/paths";
+import { trackingTagFormSchema, trackingTagOrderSchema } from "@/lib/validation/tracking-tags";
 
 describe("parseTrackingCode", () => {
   it("accepte la balise de vérification de domaine Facebook", () => {
@@ -49,5 +50,37 @@ describe("trackingTagOrderSchema", () => {
   });
   it.each([["pas du json"], ["[]"], ['["a","a"]'], ["[1]"]])("refuse %s", (order) => {
     expect(trackingTagOrderSchema.safeParse({ order }).success).toBe(false);
+  });
+});
+
+describe("isTrackingExcludedPath", () => {
+  it.each([
+    ["/admin"],
+    ["/admin/tracking-tags"],
+    ["/demo"],
+    ["/demo/create"],
+    ["/setup"],
+    ["/api/health"],
+    ["/admin?x=1"],
+  ])("exclut %s", (path) => {
+    expect(isTrackingExcludedPath(path)).toBe(true);
+  });
+  it.each([
+    ["/"],
+    ["/fr"],
+    ["/en/dashboard"],
+    ["/dashboard/songs"],
+    ["/login"],
+    ["/terms"],
+    ["/administrateur"],
+    [null],
+    [""],
+  ])("inclut %s", (path) => {
+    expect(isTrackingExcludedPath(path)).toBe(false);
+  });
+  it("accepte « all » comme emplacement", () => {
+    expect(
+      trackingTagFormSchema.safeParse({ name: "P", code: '<meta name="a" content="b" />', placement: "all" }).success,
+    ).toBe(true);
   });
 });

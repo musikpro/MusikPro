@@ -11,8 +11,9 @@ export type TrackingTagView = {
 
 export const TRACKING_PLACEMENT_LABELS: Record<TrackingPlacement, string> = {
   landing: "Landing page seulement",
-  dashboard: "Tableau de bord client seulement",
-  both: "Landing page + tableau de bord client",
+  dashboard: "Tableau de bord client et mode invité seulement",
+  both: "Landing page + tableau de bord client et mode invité",
+  all: "Tout le site (sauf administration)",
 };
 
 const fieldStyle = {
@@ -68,6 +69,10 @@ export default function TrackingTagFields({ idPrefix, tag }: { idPrefix: string;
           </option>
         ))}
       </select>
+      <p style={{ margin: "6px 0 0", fontSize: 12, color: "var(--admin-muted)" }}>
+        « Tout le site » couvre la landing page, les pages publiques, le tableau de bord client et le mode invité. Le
+        tableau de bord du propriétaire (administration) n’en reçoit jamais.
+      </p>
       <label style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 12 }}>
         <input type="checkbox" name="enabled" defaultChecked={tag ? tag.enabled : true} />
         Balise active

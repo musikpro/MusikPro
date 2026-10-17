@@ -2,7 +2,7 @@ import { z } from "zod";
 import { TRACKING_CODE_MAX, trackingCodeError } from "@/lib/tracking-tags/parse";
 
 export const TRACKING_NAME_MAX = 80;
-export const TRACKING_PLACEMENTS = ["landing", "dashboard", "both"] as const;
+export const TRACKING_PLACEMENTS = ["landing", "dashboard", "both", "all"] as const;
 export type TrackingPlacement = (typeof TRACKING_PLACEMENTS)[number];
 
 const nameSchema = z

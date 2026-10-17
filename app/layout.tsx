@@ -15,8 +15,12 @@ import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { NonceProvider } from "@/components/security/nonce-provider";
 import ExclusiveAudioPlayback from "@/components/banani/ExclusiveAudioPlayback";
 import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
+import TrackingTags from "@/components/tracking/TrackingTags";
+import { REQUEST_PATH_HEADER } from "@/lib/languages/locale-path";
+import { isTrackingExcludedPath } from "@/lib/tracking-tags/paths";
+import { getTrackingMetaOther } from "@/lib/tracking-tags/server";
 
-export const metadata: Metadata = {
+const baseMetadata: Metadata = {
   ...buildMetadata(),
   title: {
     default: siteConfig.name,
@@ -34,6 +38,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 };
 
+/** Métadonnées communes ; « tout le site » ajoute les <meta name> des balises de suivi, sauf administration/démo/API. */
+export async function generateMetadata(): Promise<Metadata> {
+  const requestPath = (await headers()).get(REQUEST_PATH_HEADER);
+  if (isTrackingExcludedPath(requestPath)) return baseMetadata;
+  return { ...baseMetadata, other: await getTrackingMetaOther("all") };
+}
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -42,7 +53,9 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const nonce = (await headers()).get("x-nonce") ?? undefined;
+  const requestHeaders = await headers();
+  const nonce = requestHeaders.get("x-nonce") ?? undefined;
+  const trackAllSite = !isTrackingExcludedPath(requestHeaders.get(REQUEST_PATH_HEADER));
   // Langue de <html lang> seulement : le layout racine n'affiche aucun texte traduit côté serveur ;
   // chaque composant serveur qui traduit appelle lui-même primeOverlay (pages, layouts, métadonnées, e-mails).
   const locale = await resolvePageLocale();
@@ -58,6 +71,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <ServiceWorkerRegister />
           <InstallPromptCapture />
           <NativeSplashHider />
+          {trackAllSite ? <TrackingTags scope="all" /> : null}
           <I18nBootstrap />
           <ExclusiveAudioPlayback enabled={exclusivePlayback} />
           <div className="app-content">{children}</div>

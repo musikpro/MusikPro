@@ -34,8 +34,17 @@ export async function listTrackingTags(): Promise<TrackingTagRow[]> {
  * tag). Base injoignable, migration pas encore appliquée ou code devenu invalide = aucune balise : une erreur de
  * suivi ne doit jamais casser la landing page ni le tableau de bord.
  */
+export type TrackingScope = "landing" | "dashboard" | "all";
+
+/** Emplacements enregistrés qui s'appliquent à chaque zone (« tout le site » n'est rendu qu'une fois, par le layout racine). */
+const PLACEMENTS_BY_SCOPE: Record<TrackingScope, readonly string[]> = {
+  landing: ["landing", "both"],
+  dashboard: ["dashboard", "both"],
+  all: ["all"],
+};
+
 export async function getActiveTrackingNodes(
-  scope: "landing" | "dashboard",
+  scope: TrackingScope,
 ): Promise<Array<{ id: string; nodes: TrackingNode[] }>> {
   try {
     return await unstable_cache(
@@ -43,7 +52,7 @@ export async function getActiveTrackingNodes(
         const rows = await db
           .select({ id: trackingTags.id, code: trackingTags.code })
           .from(trackingTags)
-          .where(and(eq(trackingTags.enabled, true), inArray(trackingTags.placement, [scope, "both"])))
+          .where(and(eq(trackingTags.enabled, true), inArray(trackingTags.placement, [...PLACEMENTS_BY_SCOPE[scope]])))
           .orderBy(asc(trackingTags.sortOrder), asc(trackingTags.createdAt));
         const out: Array<{ id: string; nodes: TrackingNode[] }> = [];
         for (const row of rows) {
@@ -109,9 +118,12 @@ export async function deleteTrackingTag(id: string): Promise<{ name: string } | 
  * dans le <head> du HTML initial (indispensable à la vérification de domaine Facebook/Google, qui ne lit pas le
  * JavaScript). Un <meta> posé dans un composant arriverait trop tard, dans le flux de rendu diffusé en streaming.
  */
-export async function getTrackingMetaOther(scope: "landing" | "dashboard"): Promise<Record<string, string>> {
+export async function getTrackingMetaOther(scope: TrackingScope): Promise<Record<string, string>> {
   const other: Record<string, string> = {};
-  for (const { nodes } of await getActiveTrackingNodes(scope)) {
+  // Une page qui déclare ses propres métadonnées remplace celles du layout : elle reprend donc aussi « tout le site ».
+  const scopes: TrackingScope[] = scope === "all" ? ["all"] : [scope, "all"];
+  const groups = await Promise.all(scopes.map((current) => getActiveTrackingNodes(current)));
+  for (const { nodes } of groups.flat()) {
     for (const node of nodes) {
       if (node.kind === "meta" && node.attrs.name && node.attrs.content !== undefined) {
         other[node.attrs.name] = node.attrs.content;
