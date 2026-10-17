@@ -52,7 +52,10 @@ import "./banani.css";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await resolveDashboardLocale();
   await primeOverlay(locale);
-  return { ...getPrivatePageMetadata(locale), other: await getTrackingMetaOther("dashboard") };
+  const metadata = getPrivatePageMetadata(locale);
+  // La visite guidée /demo ne compte pas dans l'audience : aucune balise de suivi, scripts comme <meta>.
+  if (await isDemoRequest()) return metadata;
+  return { ...metadata, other: await getTrackingMetaOther("dashboard") };
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

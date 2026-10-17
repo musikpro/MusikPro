@@ -650,7 +650,7 @@ export const trackingTags = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   (table) => ({
-    placementCheck: check("tracking_tags_placement_check", sql`${table.placement} in ('landing', 'dashboard', 'both')`),
+    placementCheck: check("tracking_tags_placement_check", sql`${table.placement} in ('landing', 'dashboard', 'both', 'all')`),
   }),
 );
 

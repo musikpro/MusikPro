@@ -1,6 +1,6 @@
 import Script from "next/script";
 import { headers } from "next/headers";
-import { getActiveTrackingNodes } from "@/lib/tracking-tags/server";
+import { getActiveTrackingNodes, type TrackingScope } from "@/lib/tracking-tags/server";
 
 /**
  * Insère les balises de suivi/publicité configurées dans /admin/tracking-tags pour la zone demandée. Les `<meta name>`
@@ -9,7 +9,7 @@ import { getActiveTrackingNodes } from "@/lib/tracking-tags/server";
  * complet de la page, sans la ralentir) et reçoivent le nonce CSP de la requête. Le contenu est reconstruit à partir de
  * nœuds validés (lib/tracking-tags/parse.ts), jamais injecté en HTML brut.
  */
-export default async function TrackingTags({ scope }: { scope: "landing" | "dashboard" }) {
+export default async function TrackingTags({ scope }: { scope: TrackingScope }) {
   const tags = await getActiveTrackingNodes(scope);
   if (!tags.length) return null;
   const nonce = (await headers()).get("x-nonce") ?? undefined;

@@ -371,6 +371,7 @@
         "components/admin/TrackingTagFields.tsx",
         "components/tracking/TrackingTags.tsx",
         "lib/tracking-tags/parse.ts",
+        "lib/tracking-tags/paths.ts",
         "lib/tracking-tags/server.ts",
         "lib/validation/tracking-tags.ts"
       ],
