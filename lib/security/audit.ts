@@ -15,6 +15,22 @@ export type AuditEvent = {
   metadata?: Record<string, unknown>;
 };
 
+/** Insère plusieurs événements en une seule requête (évite un INSERT par ligne dans une boucle — N+1). */
+export async function writeAuditLogs(events: AuditEvent[]) {
+  if (events.length === 0) return;
+  try {
+    const db = getServiceDb();
+    await db
+      .insert(auditLogs)
+      .values(events.map((event) => ({ id: randomUUID(), ...event, metadata: event.metadata ?? {} })));
+  } catch (error) {
+    log.error("Audit batch write failed", {
+      count: events.length,
+      error: error instanceof Error ? error.message : "unknown",
+    });
+  }
+}
+
 export async function writeAuditLog(event: AuditEvent) {
   try {
     const db = getServiceDb();
