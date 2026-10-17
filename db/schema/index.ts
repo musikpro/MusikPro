@@ -644,6 +644,7 @@ export const trackingTags = pgTable(
     code: text("code").notNull(),
     placement: text("placement").notNull().default("landing"),
     enabled: boolean("enabled").notNull().default(true),
+    sortOrder: integer("sort_order").notNull().default(0),
     createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

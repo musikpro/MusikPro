@@ -360,13 +360,15 @@
       "disableBehavior": "Retirer l'entrée de menu « Journal d'audit » de AdminShell ; writeAuditLog (lib/security/audit.ts) continue d'écrire sans la page."
     },
     "tracking-tags": {
-      "description": "Balises de suivi/publicité (Facebook, Google, TikTok…) gérées depuis /admin/tracking-tags : nom + code + emplacement (landing, tableau de bord client ou les deux), insérées dans l'en-tête après analyse et validation, scripts en lazyOnload avec nonce CSP",
+      "description": "Balises de suivi/publicité (Facebook, Google, TikTok…) gérées depuis /admin/tracking-tags : nom + code + emplacement (landing, tableau de bord client ou les deux), cartes pliées réordonnables par glisser-déposer (AdminSortableGrid), insérées dans l'en-tête après analyse et validation, scripts en lazyOnload avec nonce CSP",
       "optional": false,
       "env": [],
       "files": [
         "app/admin/tracking-tags/page.tsx",
         "app/admin/tracking-tags/actions.ts",
         "app/admin/tracking-tags/loading.tsx",
+        "components/admin/AdminTrackingTagSortableList.tsx",
+        "components/admin/TrackingTagFields.tsx",
         "components/tracking/TrackingTags.tsx",
         "lib/tracking-tags/parse.ts",
         "lib/tracking-tags/server.ts",
