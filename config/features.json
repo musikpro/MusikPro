@@ -359,6 +359,24 @@
       "dependsOn": ["observability-core"],
       "disableBehavior": "Retirer l'entrée de menu « Journal d'audit » de AdminShell ; writeAuditLog (lib/security/audit.ts) continue d'écrire sans la page."
     },
+    "tracking-tags": {
+      "description": "Balises de suivi/publicité (Facebook, Google, TikTok…) gérées depuis /admin/tracking-tags : nom + code + emplacement (landing, tableau de bord client ou les deux), insérées dans l'en-tête après analyse et validation, scripts en lazyOnload avec nonce CSP",
+      "optional": false,
+      "env": [],
+      "files": [
+        "app/admin/tracking-tags/page.tsx",
+        "app/admin/tracking-tags/actions.ts",
+        "app/admin/tracking-tags/loading.tsx",
+        "components/tracking/TrackingTags.tsx",
+        "lib/tracking-tags/parse.ts",
+        "lib/tracking-tags/server.ts",
+        "lib/validation/tracking-tags.ts"
+      ],
+      "routes": [],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "auth"],
+      "disableBehavior": "Désactiver ou supprimer les balises dans /admin/tracking-tags ; sans ligne, en cas d'erreur de lecture ou de code invalide, aucune balise n'est insérée et le site fonctionne normalement."
+    },
     "api-client": {
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,
