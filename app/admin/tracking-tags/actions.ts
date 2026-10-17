@@ -6,8 +6,13 @@ import type { AdminActionState } from "@/components/admin/useAdminActionToast";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { requireAdmin } from "@/lib/auth/session";
 import { writeAuditLog } from "@/lib/security/audit";
-import { deleteTrackingTag, saveTrackingTag, TRACKING_TAGS_CACHE_TAG } from "@/lib/tracking-tags/server";
-import { trackingTagFormSchema, trackingTagIdSchema } from "@/lib/validation/tracking-tags";
+import {
+  deleteTrackingTag,
+  reorderTrackingTags,
+  saveTrackingTag,
+  TRACKING_TAGS_CACHE_TAG,
+} from "@/lib/tracking-tags/server";
+import { trackingTagFormSchema, trackingTagIdSchema, trackingTagOrderSchema } from "@/lib/validation/tracking-tags";
 
 async function requireSuperAdmin() {
   const session = await requireAdmin();
@@ -76,4 +81,19 @@ export async function deleteTrackingTagAction(
   } catch (error) {
     return { ok: false, message: actionErrorMessage(error, "Impossible de supprimer la balise.") };
   }
+}
+
+/** Glisser-déposer : enregistre l'ordre des balises (aussi l'ordre d'insertion dans l'en-tête). */
+export async function reorderTrackingTagsAction(formData: FormData) {
+  const session = await requireSuperAdmin();
+  const { order } = trackingTagOrderSchema.parse(Object.fromEntries(formData));
+  await reorderTrackingTags(order);
+  await writeAuditLog({
+    action: "tracking_tag.reordered",
+    actorId: session.user.id,
+    targetType: "tracking_tags",
+    targetId: "global",
+    metadata: { order },
+  });
+  refresh();
 }

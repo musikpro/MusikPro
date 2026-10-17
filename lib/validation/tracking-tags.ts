@@ -40,4 +40,21 @@ export const trackingTagFormSchema = z
     enabled: value.enabled === "on" || value.enabled === "true",
   }));
 
+/** Nouvel ordre envoyé par le glisser-déposer : liste JSON d'identifiants, chacun une seule fois. */
+export const trackingTagOrderSchema = z.object({
+  order: z
+    .string()
+    .max(30000)
+    .transform((value, context) => {
+      try {
+        return JSON.parse(value) as unknown;
+      } catch {
+        context.addIssue({ code: "custom", message: "Ordre invalide." });
+        return z.NEVER;
+      }
+    })
+    .pipe(z.array(z.string().trim().min(1).max(64)).min(1).max(200))
+    .refine((ids) => new Set(ids).size === ids.length, "Chaque balise doit apparaître une seule fois."),
+});
+
 export const trackingTagIdSchema = z.object({ id: z.string().trim().min(1).max(64) });

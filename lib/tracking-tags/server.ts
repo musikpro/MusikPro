@@ -1,6 +1,6 @@
 import "server-only";
 
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, max, sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { randomUUID } from "node:crypto";
 import { db, getServiceDb } from "@/db";
@@ -20,9 +20,12 @@ export type TrackingTagRow = {
   updatedAt: Date;
 };
 
-/** Liste complète pour l'administration (/admin/tracking-tags), triée par date de création. */
+/** Liste complète pour l'administration (/admin/tracking-tags), dans l'ordre choisi par glisser-déposer. */
 export async function listTrackingTags(): Promise<TrackingTagRow[]> {
-  const rows = await getServiceDb().select().from(trackingTags).orderBy(asc(trackingTags.createdAt));
+  const rows = await getServiceDb()
+    .select()
+    .from(trackingTags)
+    .orderBy(asc(trackingTags.sortOrder), asc(trackingTags.createdAt));
   return rows.map((row) => ({ ...row, placement: row.placement as TrackingPlacement }));
 }
 
@@ -41,7 +44,7 @@ export async function getActiveTrackingNodes(
           .select({ id: trackingTags.id, code: trackingTags.code })
           .from(trackingTags)
           .where(and(eq(trackingTags.enabled, true), inArray(trackingTags.placement, [scope, "both"])))
-          .orderBy(asc(trackingTags.createdAt));
+          .orderBy(asc(trackingTags.sortOrder), asc(trackingTags.createdAt));
         const out: Array<{ id: string; nodes: TrackingNode[] }> = [];
         for (const row of rows) {
           try {
@@ -80,8 +83,10 @@ export async function saveTrackingTag(input: {
     return { id: input.id, created: false };
   }
   const id = randomUUID();
+  const [last] = await database.select({ value: max(trackingTags.sortOrder) }).from(trackingTags);
   await database.insert(trackingTags).values({
     id,
+    sortOrder: (last?.value ?? 0) + 10,
     name: input.name,
     code: input.code,
     placement: input.placement,
@@ -114,4 +119,18 @@ export async function getTrackingMetaOther(scope: "landing" | "dashboard"): Prom
     }
   }
   return other;
+}
+
+/** Enregistre l'ordre complet (même schéma que les autres catalogues triables) ; refuse une liste périmée. */
+export async function reorderTrackingTags(order: string[]): Promise<void> {
+  const database = getServiceDb();
+  const existing = await database.select({ id: trackingTags.id }).from(trackingTags);
+  const existingIds = new Set(existing.map((row) => row.id));
+  if (order.length !== existingIds.size || order.some((id) => !existingIds.has(id))) {
+    throw new Error("La liste des balises a changé. Recharge la page avant de recommencer.");
+  }
+  const orderedRows = JSON.stringify(order.map((id, index) => ({ id, sort_order: (index + 1) * 10 })));
+  await database.execute(
+    sql`update ${trackingTags} set sort_order = ordered.sort_order, updated_at = now() from jsonb_to_recordset(${orderedRows}::jsonb) as ordered(id text, sort_order integer) where ${trackingTags.id} = ordered.id`,
+  );
 }

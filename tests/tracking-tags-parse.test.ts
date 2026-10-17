@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseTrackingCode, trackingCodeError } from "@/lib/tracking-tags/parse";
+import { trackingTagOrderSchema } from "@/lib/validation/tracking-tags";
 
 describe("parseTrackingCode", () => {
   it("accepte la balise de vérification de domaine Facebook", () => {
@@ -39,5 +40,14 @@ describe("parseTrackingCode", () => {
     ["type module", '<script type="module">x()</script>'],
   ])("refuse : %s", (_label, code) => {
     expect(trackingCodeError(code)).not.toBeNull();
+  });
+});
+
+describe("trackingTagOrderSchema", () => {
+  it("accepte une liste JSON d'identifiants uniques", () => {
+    expect(trackingTagOrderSchema.parse({ order: JSON.stringify(["a", "b"]) }).order).toEqual(["a", "b"]);
+  });
+  it.each([["pas du json"], ["[]"], ['["a","a"]'], ["[1]"]])("refuse %s", (order) => {
+    expect(trackingTagOrderSchema.safeParse({ order }).success).toBe(false);
   });
 });
