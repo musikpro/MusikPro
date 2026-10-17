@@ -35,6 +35,8 @@ import LandingPageMobile from "@/components/banani/LandingPageMobile";
 import LandingPageDesktop from "@/components/banani/LandingPageDesktop";
 import SmoothScroll from "@/components/banani/SmoothScroll";
 import LandingNavScrollEffect from "@/components/banani/LandingNavScrollEffect";
+import TrackingTags from "@/components/tracking/TrackingTags";
+import { getTrackingMetaOther } from "@/lib/tracking-tags/server";
 import "./dashboard/banani.css";
 
 const SUPPORTED_LOCALES = ["fr", "en", "es", "pt"] as const;
@@ -53,10 +55,15 @@ function isLandingReferer(referer: string | null): boolean {
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = buildMetadata({
-  description: siteConfig.description,
-  path: "/",
-});
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    ...buildMetadata({
+      description: siteConfig.description,
+      path: "/",
+    }),
+    other: await getTrackingMetaOther("landing"),
+  };
+}
 
 /**
  * Public marketing home page — always the real landing page, in every environment (the
@@ -188,6 +195,7 @@ export default async function Home() {
 
   return (
     <>
+      <TrackingTags scope="landing" />
       <LanguageCookieSync code={activeLanguage?.code ?? "fr"} />
       <SmoothScroll />
       <LandingNavScrollEffect />

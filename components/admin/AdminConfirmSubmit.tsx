@@ -7,6 +7,8 @@ type AdminConfirmSubmitProps = {
   confirmMessage: string;
   variant?: AdminButtonVariant;
   className?: string;
+  /** Id d'un <form> situé ailleurs dans la page (attribut HTML standard `form`). */
+  form?: string;
   children: ReactNode;
 };
 
@@ -21,11 +23,13 @@ export default function AdminConfirmSubmit({
   confirmMessage,
   variant = "secondary",
   className = "",
+  form,
   children,
 }: AdminConfirmSubmitProps) {
   return (
     <button
       type="submit"
+      form={form}
       className={`admin-btn ${VARIANT_CLASS[variant]} ${className}`.trim()}
       onClick={(event) => {
         if (!window.confirm(confirmMessage)) event.preventDefault();

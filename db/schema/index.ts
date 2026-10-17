@@ -632,6 +632,28 @@ export const maintenanceSettings = pgTable("maintenance_settings", {
 });
 
 /**
+ * Balises de suivi/publicité (/admin/tracking-tags) : extraits HTML (meta de vérification de domaine, pixels, tags)
+ * insérés dans l'en-tête de la landing page et/ou du tableau de bord client. Écrites par le Super Admin uniquement,
+ * lues côté serveur (lib/tracking-tags/server.ts) ; jamais lues directement par le client.
+ */
+export const trackingTags = pgTable(
+  "tracking_tags",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    code: text("code").notNull(),
+    placement: text("placement").notNull().default("landing"),
+    enabled: boolean("enabled").notNull().default(true),
+    createdBy: text("created_by").references(() => user.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  (table) => ({
+    placementCheck: check("tracking_tags_placement_check", sql`${table.placement} in ('landing', 'dashboard', 'both')`),
+  }),
+);
+
+/**
  * Brouillon du parcours de création de chanson (un seul par utilisateur) : permet de reprendre là où l'on s'est
  * arrêté depuis un autre appareil, l'application ou le site. Jamais lu directement par le client : accès serveur
  * uniquement (lib/creation-draft/server.ts), filtré par user_id. Expire 30 jours après la dernière sauvegarde.

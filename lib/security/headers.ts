@@ -1,6 +1,26 @@
 const production = process.env.NODE_ENV === "production";
 
 /**
+ * Domaines tiers autorisés à charger un script dans le navigateur (CSP `script-src`, voir lib/security/headers.ts).
+ * Une balise de suivi qui charge un script hors de cette liste serait bloquée par la CSP : on la refuse donc dès
+ * l'enregistrement (lib/tracking-tags/parse.ts) plutôt que de la laisser silencieusement inopérante.
+ */
+export const TRACKING_SCRIPT_HOSTS = [
+  "https://connect.facebook.net",
+  "https://www.googletagmanager.com",
+  "https://www.google-analytics.com",
+  "https://www.googleadservices.com",
+  "https://googleads.g.doubleclick.net",
+  "https://analytics.tiktok.com",
+  "https://sc-static.net",
+  "https://snap.licdn.com",
+  "https://static.ads-twitter.com",
+  "https://static.hotjar.com",
+  "https://script.hotjar.com",
+  "https://www.clarity.ms",
+] as const;
+
+/**
  * script-src uses a per-request nonce instead of 'unsafe-inline' — see proxy.ts, which
  * generates the nonce and is the only place this policy is emitted from. Next.js needs a
  * fresh nonce on every request to authorize its own hydration/RSC inline scripts, so this
@@ -23,7 +43,7 @@ export function buildContentSecurityPolicy(nonce: string): string {
     "media-src 'self' blob: https:",
     "font-src 'self' data: https:",
     "style-src 'self' 'unsafe-inline'",
-    `script-src 'self' 'nonce-${nonce}'${production ? "" : " 'unsafe-eval'"} https://challenges.cloudflare.com`,
+    `script-src 'self' 'nonce-${nonce}'${production ? "" : " 'unsafe-eval'"} https://challenges.cloudflare.com ${TRACKING_SCRIPT_HOSTS.join(" ")}`,
     "frame-src https://challenges.cloudflare.com",
     "connect-src 'self' https:",
     ...(production ? ["upgrade-insecure-requests"] : []),

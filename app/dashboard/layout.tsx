@@ -40,6 +40,8 @@ import { primeOverlay } from "@/lib/i18n/overlay-server";
 import { resolveDashboardLocale } from "@/lib/i18n/dashboard-locale";
 import { translateForLocale } from "@/lib/i18n/translate";
 import { notFound, redirect } from "next/navigation";
+import TrackingTags from "@/components/tracking/TrackingTags";
+import { getTrackingMetaOther } from "@/lib/tracking-tags/server";
 import "@fontsource/dm-sans/400.css";
 import "@fontsource/dm-sans/500.css";
 import "@fontsource/dm-sans/600.css";
@@ -50,7 +52,7 @@ import "./banani.css";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await resolveDashboardLocale();
   await primeOverlay(locale);
-  return getPrivatePageMetadata(locale);
+  return { ...getPrivatePageMetadata(locale), other: await getTrackingMetaOther("dashboard") };
 }
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -161,6 +163,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         location: demo ? t("Visite guidée MusikPro") : guest ? t("Visiteur MusikPro") : t("Compte MusikPro"),
       }}
     >
+      {/* /demo (visite guidée) ne compte pas dans l'audience mesurée. */}
+      {!demo && <TrackingTags scope="dashboard" />}
       {children}
       {guest ? <GuestDraftSync /> : <CreationDraftSync />}
       {!demo && !guest && <NativePushRegistrar />}
