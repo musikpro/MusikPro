@@ -631,6 +631,13 @@
       "when": 1792134349071,
       "tag": "0089_tracking_tags_all_site",
       "breakpoints": true
+    },
+    {
+      "idx": 90,
+      "version": "7",
+      "when": 1792137949071,
+      "tag": "0090_meta_capi_settings",
+      "breakpoints": true
     }
   ]
 }
