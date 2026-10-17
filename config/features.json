@@ -380,6 +380,25 @@
       "dependsOn": ["database", "auth"],
       "disableBehavior": "Désactiver ou supprimer les balises dans /admin/tracking-tags ; sans ligne, en cas d'erreur de lecture ou de code invalide, aucune balise n'est insérée et le site fonctionne normalement."
     },
+    "meta-capi": {
+      "description": "API Conversions de Meta : token chiffré, ID du pixel et code de test saisis dans /admin/tracking-tags (onglet API Conversions) ; page vue envoyée côté serveur (relais /api/meta/events) sur tout le site sauf l'administration, vérification de connexion et événement de test depuis l'admin",
+      "optional": true,
+      "env": ["APP_SECRETS_ENCRYPTION_KEY"],
+      "files": [
+        "app/admin/tracking-tags/capi-actions.ts",
+        "app/api/meta/events/route.ts",
+        "components/admin/MetaCapiPanel.tsx",
+        "components/tracking/MetaCapiBeacon.tsx",
+        "lib/meta-capi/client.ts",
+        "lib/meta-capi/event.ts",
+        "lib/meta-capi/settings.ts",
+        "lib/validation/meta-capi.ts"
+      ],
+      "routes": ["/api/meta/events"],
+      "removalComplexity": "low",
+      "dependsOn": ["database", "tracking-tags"],
+      "disableBehavior": "Désactiver l'interrupteur (ou supprimer le token) dans /admin/tracking-tags → API Conversions ; sans ligne ou token, aucune balise navigateur n'est chargée et la route répond 204 sans rien envoyer."
+    },
     "api-client": {
       "description": "Fetch client avec timeout et retry uniquement GET/HEAD",
       "optional": false,

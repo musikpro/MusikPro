@@ -267,6 +267,18 @@
         "requireContentType"
       ]
     },
+    "app/api/meta/events/route.ts": {
+      "auth": "public-write",
+      "validation": "zod-safeParse",
+      "rateLimit": "distributed-or-fail-closed",
+      "markers": [
+        "metaBeaconSchema.safeParse",
+        "rateLimit(",
+        "rejectCrossSiteMutation",
+        "rejectOversizedRequest",
+        "requireContentType"
+      ]
+    },
     "app/api/push/devices/route.ts": {
       "auth": "session",
       "validation": "zod-safeParse",

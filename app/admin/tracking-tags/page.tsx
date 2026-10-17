@@ -7,6 +7,8 @@ import { AdminPage, AdminPageHeader } from "@/components/admin/AdminPage";
 import { AdminTabs, AdminTabPanel } from "@/components/admin/AdminTabs";
 import { hasAppRole } from "@/lib/auth/permissions";
 import { requireAdmin } from "@/lib/auth/session";
+import MetaCapiPanel from "@/components/admin/MetaCapiPanel";
+import { getMetaCapiStatus } from "@/lib/meta-capi/settings";
 import { listTrackingTags } from "@/lib/tracking-tags/server";
 import { saveTrackingTagAction } from "./actions";
 
@@ -19,7 +21,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminTrackingTagsPage() {
   const session = await requireAdmin();
   if (!hasAppRole((session.user as { role?: string }).role, "admin")) redirect("/admin");
-  const tags = await listTrackingTags();
+  const [tags, capiStatus] = await Promise.all([listTrackingTags(), getMetaCapiStatus().catch(() => null)]);
 
   return (
     <AdminPage>
@@ -33,6 +35,7 @@ export default async function AdminTrackingTagsPage() {
         tabs={[
           { id: "list", label: `Mes balises (${tags.length})` },
           { id: "add", label: "Ajouter une balise" },
+          { id: "capi", label: "API Conversions" },
         ]}
       >
         <AdminTabPanel id="list">
@@ -64,6 +67,15 @@ export default async function AdminTrackingTagsPage() {
               </div>
             </AdminActionForm>
           </section>
+        </AdminTabPanel>
+        <AdminTabPanel id="capi">
+          {capiStatus ? (
+            <MetaCapiPanel status={capiStatus} />
+          ) : (
+            <section className="admin-panel">
+              <p>L’API Conversions n’est pas encore disponible (migration à appliquer).</p>
+            </section>
+          )}
         </AdminTabPanel>
       </AdminTabs>
     </AdminPage>

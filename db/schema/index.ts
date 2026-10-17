@@ -655,6 +655,23 @@ export const trackingTags = pgTable(
 );
 
 /**
+ * API Conversions Meta (/admin/tracking-tags, onglet « API Conversions ») : réglage global monoligne. Le token d'accès est
+ * chiffré (AES-256-GCM, lib/ai/secrets) et ne quitte jamais le serveur ; seuls ses 4 derniers caractères sont affichés.
+ */
+export const metaCapiSettings = pgTable("meta_capi_settings", {
+  id: text("id").primaryKey().default("global"),
+  enabled: boolean("enabled").notNull().default(false),
+  pixelId: text("pixel_id"),
+  tokenCiphertext: text("token_ciphertext"),
+  tokenIv: text("token_iv"),
+  tokenAuthTag: text("token_auth_tag"),
+  tokenLast4: text("token_last4"),
+  testEventCode: text("test_event_code"),
+  updatedBy: text("updated_by").references(() => user.id, { onDelete: "set null" }),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+/**
  * Brouillon du parcours de création de chanson (un seul par utilisateur) : permet de reprendre là où l'on s'est
  * arrêté depuis un autre appareil, l'application ou le site. Jamais lu directement par le client : accès serveur
  * uniquement (lib/creation-draft/server.ts), filtré par user_id. Expire 30 jours après la dernière sauvegarde.

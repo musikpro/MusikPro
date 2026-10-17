@@ -15,7 +15,9 @@ import { resolvePageLocale } from "@/lib/i18n/page-locale-server";
 import { NonceProvider } from "@/components/security/nonce-provider";
 import ExclusiveAudioPlayback from "@/components/banani/ExclusiveAudioPlayback";
 import { isExclusivePlaybackEnabled } from "@/lib/settings/playback";
+import MetaCapiBeacon from "@/components/tracking/MetaCapiBeacon";
 import TrackingTags from "@/components/tracking/TrackingTags";
+import { isMetaCapiActive } from "@/lib/meta-capi/settings";
 import { REQUEST_PATH_HEADER } from "@/lib/languages/locale-path";
 import { isTrackingExcludedPath } from "@/lib/tracking-tags/paths";
 import { getTrackingMetaOther } from "@/lib/tracking-tags/server";
@@ -60,6 +62,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // chaque composant serveur qui traduit appelle lui-même primeOverlay (pages, layouts, métadonnées, e-mails).
   const locale = await resolvePageLocale();
   const exclusivePlayback = await isExclusivePlaybackEnabled();
+  const metaCapiActive = trackAllSite && (await isMetaCapiActive());
   return (
     <html lang={locale}>
       <body suppressHydrationWarning>
@@ -72,6 +75,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <InstallPromptCapture />
           <NativeSplashHider />
           {trackAllSite ? <TrackingTags scope="all" /> : null}
+          {metaCapiActive ? <MetaCapiBeacon /> : null}
           <I18nBootstrap />
           <ExclusiveAudioPlayback enabled={exclusivePlayback} />
           <div className="app-content">{children}</div>

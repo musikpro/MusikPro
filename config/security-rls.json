@@ -29,6 +29,7 @@
     "funnel_events": "server-only product funnel telemetry (see lib/analytics/funnel.ts); written and read exclusively via getServiceDb(), never queried directly by clients; purged after 180 days by app/api/cron/funnel-retention/route.ts",
     "payment_provider_configs": "server/admin-only global configuration",
     "tracking_tags": "server/admin-only: tracking/ad snippets (meta, pixels) written by the Super Admin via app/admin/tracking-tags/actions.ts and read server-side via lib/tracking-tags/server.ts; contains no user data, never queried directly by clients",
+    "meta_capi_settings": "server/admin-only global single-row setting (Meta Conversions API); the access token is stored AES-256-GCM encrypted (lib/ai/secrets), never returned to clients, only its last 4 characters are shown; read/written only via lib/meta-capi/settings.ts and app/admin/tracking-tags/capi-actions.ts",
     "maintenance_settings": "server/admin-only global single-row toggle (maintenance mode); contains no user data and is only written via app/admin/maintenance/actions.ts, read by proxy.ts (lib/maintenance/flag.ts) and lib/maintenance/settings.ts",
     "payment_bypass_settings": "server/admin-only global toggle; contains no user data and is never queried directly by clients",
     "playback_settings": "server/admin-only global single-row setting (exclusive song playback on/off); contains no user data and is only read/written server-side via lib/settings/playback.ts and app/admin/settings/actions.ts",
