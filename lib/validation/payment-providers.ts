@@ -135,35 +135,41 @@ export const paydunyaPayloadSchema = paydunyaData.extend({
   data: paydunyaData.optional(),
 });
 
-/** Only payment summary fields are inspected; unknown provider fields are preserved. */
+/** Only payment summary fields are inspected; unknown provider fields are preserved.
+ * Providers (Chariow) send `null` for blocks that do not apply and `status` as `{ value, label }`:
+ * both must parse, otherwise reconciliation fails on every pass. */
+const summaryText = text.nullable();
+const summaryScalar = scalar.nullable();
+const summaryMetadata = metadata.nullable();
+const summaryStatus = z.union([z.string().max(10000), z.looseObject({ value: text })]).nullish();
 const summaryData = z.looseObject({
-  id: scalar,
-  transactionId: scalar,
-  chargeId: scalar,
-  token: scalar,
-  custom_metadata: metadata,
-  metadata,
-  custom_data: metadata,
-  meta: metadata,
-  tx_ref: text,
-  reference: text,
-  merchant_reference: text,
-  ref_command: text,
-  paymentReference: text,
-  status: text,
-  payment_status: text,
-  state: text,
-  settled_at: scalar,
-  paid_at: scalar,
-  completed_at: scalar,
-  updated_at: scalar,
-  created_at: scalar,
-  created_datetime: scalar,
+  id: summaryScalar,
+  transactionId: summaryScalar,
+  chargeId: summaryScalar,
+  token: summaryScalar,
+  custom_metadata: summaryMetadata,
+  metadata: summaryMetadata,
+  custom_data: summaryMetadata,
+  meta: summaryMetadata,
+  tx_ref: summaryText,
+  reference: summaryText,
+  merchant_reference: summaryText,
+  ref_command: summaryText,
+  paymentReference: summaryText,
+  status: summaryStatus,
+  payment_status: summaryStatus,
+  state: summaryStatus,
+  settled_at: summaryScalar,
+  paid_at: summaryScalar,
+  completed_at: summaryScalar,
+  updated_at: summaryScalar,
+  created_at: summaryScalar,
+  created_datetime: summaryScalar,
 });
 export const paymentSummarySchema = summaryData.extend({
-  data: summaryData.optional(),
-  transaction,
-  entity: entity.optional(),
-  object: entity.optional(),
-  sale: entity.optional(),
+  data: summaryData.nullish(),
+  transaction: transaction.nullable(),
+  entity: entity.nullish(),
+  object: entity.nullish(),
+  sale: entity.nullish(),
 });
