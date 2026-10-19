@@ -36,6 +36,9 @@ export default async function ChariowProviderPage() {
   const planMap = new Map(allPlans.map((plan) => [plan.id, plan]));
   let apiLast4 = "";
   let webhookLast4 = "";
+  // Stored but undecryptable (APP_SECRETS_ENCRYPTION_KEY changed): it reads as empty, so the Pulse URL
+  // would silently lose its ?secret= and Chariow would be refused with 401.
+  let webhookSecretUnreadable = false;
   // Public HTTPS base (PAYMENT_WEBHOOK_BASE_URL, e.g. an ngrok tunnel in development) — never localhost.
   let webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://votre-domaine.com"}/api/webhooks/chariow`;
   try {
@@ -46,6 +49,7 @@ export default async function ChariowProviderPage() {
     apiLast4 = stored.config.apiKey?.last4 || "";
     webhookLast4 = stored.config.webhookSecret?.last4 || "";
     if (stored.webhookSecret) webhookUrl += `?secret=${encodeURIComponent(stored.webhookSecret)}`;
+    else if (stored.config.webhookSecret) webhookSecretUnreadable = true;
   } catch {}
   let chariowProducts: Awaited<ReturnType<typeof listChariowProducts>> = [];
   let chariowProductsError = false;
@@ -157,6 +161,16 @@ export default async function ChariowProviderPage() {
                 <InfoTip text="Copie cette URL complète dans Chariow. Chaque notification déclenche ensuite une vérification directe de la vente avant l’ajout des crédits." />
               </strong>
               <code>{webhookUrl}</code>
+              {webhookSecretUnreadable ? (
+                <p className="admin-bypass-warning" role="alert">
+                  <Icon i="triangle-alert" size={14} />
+                  <span>
+                    Le secret enregistré est illisible (la clé de chiffrement a changé). L’URL ci-dessus n’a donc pas de
+                    secret et Chariow serait refusé en 401. Saisis un nouveau secret dans le champ « Secret du webhook
+                    », enregistre, puis recopie l’URL dans Pulse.
+                  </span>
+                </p>
+              ) : null}
             </div>
           </div>
         </section>

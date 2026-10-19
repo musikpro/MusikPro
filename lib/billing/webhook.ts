@@ -91,7 +91,10 @@ export async function processPaymentWebhook(
       .where(and(eq(payments.provider, provider.id), eq(payments.reference, String(reference))))
       .limit(1);
   }
-  if (!payment) throw new Error("Payment not found for webhook");
+  // Unknown sale (provider test ping, other sales channel): acknowledge with 2xx so the provider
+  // does not flag the endpoint as unreachable. The event stays unprocessed and pending payments
+  // are still settled by the reconciliation cron.
+  if (!payment) return { duplicate: false, ignored: true, reason: "payment_not_found" };
 
   // Some hosted checkouts (notably Flutterwave) only expose the final transaction ID
   // in the webhook. Bind it only if our local payment does not already point elsewhere.
