@@ -12,7 +12,9 @@ function rawReference(input: unknown): string | undefined {
   const raw = parsed.data;
   const data = raw?.data ?? raw;
   const meta = data?.custom_metadata ?? data?.metadata ?? data?.custom_data ?? data?.meta ?? {};
-  return meta?.app_reference ?? data?.tx_ref ?? data?.reference ?? data?.merchant_reference ?? data?.ref_command;
+  return (
+    meta?.app_reference ?? data?.tx_ref ?? data?.reference ?? data?.merchant_reference ?? data?.ref_command ?? undefined
+  );
 }
 
 const currencyDecimals: Record<string, number> = {

@@ -27,7 +27,8 @@ function eventReference(input: unknown): string | undefined {
     data?.reference ??
     data?.merchant_reference ??
     data?.ref_command ??
-    data?.paymentReference
+    data?.paymentReference ??
+    undefined
   );
 }
 
@@ -36,7 +37,9 @@ function eventStatus(input: unknown): string | undefined {
   if (!parsed.success) throw new Error("Invalid payment provider summary");
   const payload = parsed.data;
   const data = payload?.data ?? payload;
-  const value = data?.status ?? data?.payment_status ?? data?.state;
+  const raw = data?.status ?? data?.payment_status ?? data?.state;
+  // Chariow sends the status as `{ value, label }`.
+  const value = typeof raw === "object" && raw !== null ? raw.value : raw;
   return value == null ? undefined : String(value).slice(0, 80);
 }
 
