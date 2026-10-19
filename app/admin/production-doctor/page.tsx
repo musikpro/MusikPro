@@ -19,8 +19,21 @@ export default async function ProductionDoctorPage() {
           <span>
             <Icon i="stethoscope" size={26} />
           </span>
-          <h2>Aucun rapport généré</h2>
-          <p>Lance les commandes ci-dessous pour produire le diagnostic hors ligne puis le contrôle connecté.</p>
+          {process.env.VERCEL_ENV === "production" ? (
+            <>
+              <h2>Rapport indisponible en production</h2>
+              <p>
+                Ce n’est pas une panne. Le diagnostic est produit par la ligne de commande sur ta machine et n’est pas
+                livré avec le déploiement. Lance les commandes ci-dessous en local, puis ouvre cette page sur ton
+                serveur de développement.
+              </p>
+            </>
+          ) : (
+            <>
+              <h2>Aucun rapport généré</h2>
+              <p>Lance les commandes ci-dessous pour produire le diagnostic hors ligne puis le contrôle connecté.</p>
+            </>
+          )}
           <div className="admin-command-list">
             <code>npm run doctor:production</code>
             <code>npm run doctor:production:online</code>
