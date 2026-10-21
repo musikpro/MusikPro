@@ -19,6 +19,19 @@ export function buildSongTitle(input: {
     .join(TITLE_SEPARATOR);
 }
 
+/**
+ * Musicful rejette (HTTP 422) un titre de plus de 80 caractères : un destinataire de 60 caractères
+ * ou un nom composé suffit à dépasser avec « — Version N ». Seul le titre envoyé au fournisseur est
+ * raccourci ; le titre stocké et affiché reste complet.
+ */
+export const PROVIDER_TITLE_MAX_LENGTH = 80;
+
+export function fitProviderTitle(title: string, maxLength = PROVIDER_TITLE_MAX_LENGTH): string {
+  const trimmed = title.trim();
+  if (trimmed.length <= maxLength) return trimmed;
+  return trimmed.slice(0, maxLength).trimEnd();
+}
+
 export function withVersionSuffix(title: string, versionNumber: number): string {
   return `${title}${TITLE_SEPARATOR}Version ${versionNumber}`;
 }

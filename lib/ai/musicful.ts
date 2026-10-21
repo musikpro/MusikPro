@@ -6,6 +6,7 @@ import { tryDecryptSecret } from "./secrets";
 import { MusicfulApiError } from "./errors";
 import { getAudioProviderDefinition } from "./audio-providers/catalog";
 import { getActiveAudioProviderId } from "./audio-providers/active";
+import { fitProviderTitle } from "./song-title";
 
 export { MusicfulApiError };
 
@@ -129,7 +130,7 @@ export class MusicfulClient {
       body: JSON.stringify({
         action: "custom",
         lyrics: input.lyrics,
-        title: input.title || undefined,
+        title: input.title ? fitProviderTitle(input.title) : undefined,
         style: input.style ?? undefined,
         mv: input.mv,
         instrumental: input.instrumental,
